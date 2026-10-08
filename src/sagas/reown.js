@@ -126,6 +126,7 @@ import {
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { STORE } from '../store';
 import { consumePasskeySigningCancelled } from '../passkey/passkeySigner';
+import { isShieldedAddress, shieldedAddressNotSupportedText } from '../utils';
 import { logger } from '../logger';
 
 const log = logger('reown');
@@ -186,6 +187,87 @@ const ERROR_CODES = {
   INVALID_PAYLOAD: 5003,
   INTERNAL_ERROR: 5004,
 };
+
+/**
+ * Lists the strings in the arguments of a nano contract method, the keys of objects included.
+ * An argument of type Address is one of them, alone or inside a list, tuple, dict or SignedData
+ * argument.
+ *
+ * @param {unknown} args The `args` of a nano contract request, as the dApp sent them
+ * @returns {string[]}
+ */
+function getNanoArgumentStrings(args) {
+  if (typeof args === 'string') {
+    return [args];
+  }
+  if (Array.isArray(args)) {
+    return args.flatMap(getNanoArgumentStrings);
+  }
+  if (args !== null && typeof args === 'object') {
+    return Object.entries(args).flatMap(([key, value]) => [key, ...getNanoArgumentStrings(value)]);
+  }
+  return [];
+}
+
+/**
+ * Lists the addresses in a dApp request, read from its raw params: the addresses it pays, mints
+ * or sends change and authorities to, the addresses of its nano contract actions, the strings of
+ * its nano contract method arguments, the oracle, and the address that filters UTXOs.
+ *
+ * @param {Object} request The JSON-RPC request from the dApp, with `method` and `params`
+ * @returns {string[]} The non-empty strings found where the request can carry an address
+ */
+export function getRequestAddresses(request) {
+  const params = request?.params ?? {};
+  const actionAddresses = (actions) => (Array.isArray(actions) ? actions : [])
+    .flatMap((action) => [action?.address, action?.changeAddress, action?.authorityAddress]);
+
+  let addresses;
+  switch (request?.method) {
+    case AVAILABLE_METHODS.HATHOR_SEND_TRANSACTION:
+      addresses = [
+        ...(Array.isArray(params.outputs) ? params.outputs : []).map((output) => output?.address),
+        params.changeAddress,
+      ];
+      break;
+    case AVAILABLE_METHODS.HATHOR_CREATE_TOKEN:
+      addresses = [
+        params.address,
+        params.change_address,
+        params.mint_authority_address,
+        params.melt_authority_address,
+      ];
+      break;
+    case AVAILABLE_METHODS.HATHOR_SEND_NANO_TX:
+      addresses = [
+        ...actionAddresses(params.actions),
+        ...getNanoArgumentStrings(params.args),
+      ];
+      break;
+    case AVAILABLE_METHODS.HATHOR_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: {
+      const createTokenOptions = params.createTokenOptions ?? {};
+      addresses = [
+        params.address,
+        createTokenOptions.mintAddress,
+        createTokenOptions.changeAddress,
+        createTokenOptions.mintAuthorityAddress,
+        createTokenOptions.meltAuthorityAddress,
+        ...actionAddresses(params.data?.actions),
+        ...getNanoArgumentStrings(params.data?.args),
+      ];
+      break;
+    }
+    case AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA:
+      addresses = [params.oracle];
+      break;
+    case AVAILABLE_METHODS.HATHOR_GET_UTXOS:
+      addresses = [params.filterAddress];
+      break;
+    default:
+      addresses = [];
+  }
+  return addresses.filter((address) => typeof address === 'string' && address !== '');
+}
 
 /**
  * Converts tokenDetails Map to plain object and stores unregistered tokens
@@ -636,6 +718,37 @@ export function* processRequest(action) {
         },
       }));
       return false;
+    }
+
+    // wallet-lib validates shielded addresses, but this wallet cannot pay, mint to or otherwise
+    // use them. Reject the request before the rpc handler builds a transaction for it, checking
+    // the addresses on the network of the wallet that would build it.
+    const requestAddresses = getRequestAddresses(params.request);
+    if (requestAddresses.length > 0) {
+      const network = wallet.getNetworkObject();
+      if (requestAddresses.some((address) => isShieldedAddress(address, network))) {
+        log.debug(`Rejecting ${params.request.method}: it has a shielded address.`);
+        yield put(setReownError());
+        yield put(setReownModal({
+          show: true,
+          type: ReownModalTypes.REQUEST_ERROR,
+          data: {
+            errorMessage: shieldedAddressNotSupportedText,
+          },
+        }));
+        yield call(() => walletKit.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.INVALID_PAYLOAD,
+              message: 'Shielded addresses are not supported.',
+            },
+          },
+        }));
+        return false;
+      }
     }
 
     // Track whether this flow shows a success screen that will dispatch the ready signal
