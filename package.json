@@ -24,6 +24,7 @@
     "@fortawesome/free-regular-svg-icons": "6.7.2",
     "@fortawesome/free-solid-svg-icons": "6.7.2",
     "@fortawesome/react-native-fontawesome": "0.3.2",
+    "@hathor/ct-crypto-mobile": "0.5.0",
     "@hathor/hathor-rpc-handler": "5.0.0",
     "@hathor/unleash-client": "0.1.0",
     "@hathor/wallet-lib": "file:../hathor-wallet-lib-mobile-dev/hathor-wallet-lib-4.1.0-local.2.tgz",
