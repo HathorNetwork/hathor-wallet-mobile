@@ -71,6 +71,7 @@ export default function PushNotification(props) {
     enabled,
     showAmountEnabled,
     deviceId,
+    apiErrorMessage,
   } = useSelector((state) => state.pushNotification);
 
   const isPushApiLoading = useSelector((state) => isApiStatusLoading(state));
@@ -110,7 +111,7 @@ export default function PushNotification(props) {
       {hasPushApiFailed && (
         <FeedbackModal
           icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-          text={apiRequestFailedText}
+          text={apiErrorMessage || apiRequestFailedText}
           onDismiss={() => dispatch(pushApiReady())}
         />
       )}

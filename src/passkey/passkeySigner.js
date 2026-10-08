@@ -154,66 +154,94 @@ async function withPasskeyLock(fn) {
 }
 
 /**
+ * Run ONE passkey ceremony for THIS wallet and hand the derived seed words to `fn`.
+ *
+ * Shared by the tx signer, the unlock check and push registration, so they all apply the same
+ * checks: the single-flight lock, the stored credentialId (no OS picker), cancel mapping, the
+ * missing-metadata and xpub-identity checks, and the best-effort credentialId backfill.
+ *
+ * @template T
+ * @param {(words: string) => Promise<T>} fn Runs while the words are in memory.
+ * @param {{ onCancel?: () => void }} [options] `onCancel` runs when the user dismisses the sheet.
+ * @returns {Promise<T>}
+ */
+export function withPasskeyWords(fn, { onCancel } = {}) {
+  return withPasskeyLock(async () => {
+    const meta = STORE.getWalletMeta();
+    // Check the stored identity BEFORE the ceremony: without it the result can't be verified, so
+    // prompting for biometrics first would only waste the user's authentication.
+    if (!meta?.xpub) {
+      throw new PasskeyMetadataMissingError();
+    }
+    let words = null;
+    let credentialId = null;
+    try {
+      // Passing the stored credentialId skips the OS passkey picker and prompts biometrics for
+      // THIS wallet's credential directly.
+      ({ words, credentialId } = await signInWalletWordsFromPasskey({
+        credentialId: meta.credentialId,
+      }));
+    } catch (e) {
+      if (isPasskeyCancel(e)) {
+        onCancel?.();
+        throw new PasskeyCancelledError();
+      }
+      throw e;
+    }
+    try {
+      if (derivePasskeyXpub(words) !== meta.xpub) {
+        throw new PasskeyXpubMismatchError(meta.passkeyLabel);
+      }
+      // Wallets signed in before credentialId was captured (or on another device) learn it here,
+      // so the next ceremony can skip the picker too. Best-effort: fire-and-forget and log (never
+      // block or fail the operation) if the write rejects.
+      if (credentialId && credentialId !== meta.credentialId) {
+        STORE.updateWalletMeta({ credentialId }).catch((e) => log.error('credentialId backfill failed', e));
+      }
+      return await fn(words);
+    } finally {
+      // JS cannot zero string memory; dropping the reference as soon as possible is the best
+      // available hygiene.
+      words = null;
+    }
+  });
+}
+
+/**
  * Build the EcdsaTxSign callback for wallet.setExternalTxSigningMethod().
  * Signature contract (wallet-lib storage.getTxSignatures): async (tx, storage, pinCode) =>
  * { inputSignatures: [{inputIndex, addressIndex, signature, pubkey}], ncCallerSignature }.
  * The pinCode is a placeholder for passkey wallets and is ignored.
+ *
+ * @param {{ onRootKey?: (root: Object) => Promise<void> }} [options]
+ *   `onRootKey` runs inside the same ceremony, right before signing, with the account root xpriv.
+ *   On the wallet-service facade it derives the auth key and mints a full token for the send that
+ *   follows, so a send still costs ONE Face ID and the auth key is never stored.
  */
-export function makePasskeyTxSigner() {
-  return (tx, storage, _pinCode) => {
+export function makePasskeyTxSigner({ onRootKey } = {}) {
+  return async (tx, storage, _pinCode) => {
     // Reset the cancelled flag at the very start of every signing ceremony — BEFORE the
     // single-flight check — so a later consumePasskeySigningCancelled() reflects only this attempt.
     signingCancelled = false;
-    return withPasskeyLock(async () => {
-      let root = null;
-      try {
-        if (typeof transactionUtils.signTxInputs !== 'function') {
-          throw new PasskeySigningUnsupportedError();
-        }
-        const meta = STORE.getWalletMeta();
-        // Check the stored identity BEFORE the ceremony: without it the result can't be verified,
-        // so prompting for biometrics first would only waste the user's authentication.
-        if (!meta?.xpub) {
-          throw new PasskeyMetadataMissingError();
-        }
-        let words;
-        let credentialId;
-        try {
-          // Passing the stored credentialId skips the OS passkey picker and prompts
-          // biometrics for THIS wallet's credential directly.
-          ({ words, credentialId } = await signInWalletWordsFromPasskey({
-            credentialId: meta?.credentialId,
-          }));
-        } catch (e) {
-          if (isPasskeyCancel(e)) {
-            signingCancelled = true;
-            throw new PasskeyCancelledError();
-          }
-          throw e;
-        }
-
-        if (derivePasskeyXpub(words) !== meta.xpub) {
-          throw new PasskeyXpubMismatchError(meta?.passkeyLabel);
-        }
-
-        // Wallets signed in before credentialId was captured (or on another device) learn it
-        // here, so the next ceremony can skip the picker too. Best-effort: this is only an
-        // optimization, so fire-and-forget and log (never block or fail signing) if the write
-        // rejects — awaiting the returned promise avoids an unhandled rejection.
-        if (credentialId && credentialId !== meta.credentialId) {
-          STORE.updateWalletMeta({ credentialId }).catch((e) => log.error('credentialId backfill failed', e));
-        }
-
+    // Fail before any prompt when the bundled wallet-lib can't service an external signer.
+    if (typeof transactionUtils.signTxInputs !== 'function') {
+      throw new PasskeySigningUnsupportedError();
+    }
+    let root = null;
+    try {
+      return await withPasskeyWords(async (words) => {
         // Derive the account root xpriv once; wallet-lib's signTxInputs derives the per-input
         // keys from the chain xprivs it requests through the resolver below.
         root = walletUtils.getXPrivKeyFromSeed(words, { networkName: NETWORK_MAINNET });
-        words = null;
+        if (onRootKey) {
+          await onRootKey(root);
+        }
 
         // Delegate the input-signing loop to wallet-lib so input selection, shielded-spend
         // handling, the nano/OCB caller signature and encoding all live in one place and don't
         // drift as the lib evolves. The resolver returns the change-path xpriv for each chain
         // ('legacy' = m/44'/280'/0'/0, 'spend' = the shielded spend chain m/44'/280'/2'/0).
-        return await transactionUtils.signTxInputs(tx, storage, async (chain) => {
+        return transactionUtils.signTxInputs(tx, storage, async (chain) => {
           // Shielded (spend) keys derive COMPLIANTLY (the lib derives the shielded chain with
           // deriveChild); legacy P2PKH keys stay non-compliant. Using the wrong one produces a
           // key that won't match the address the lib generated, so the signature fails on-chain.
@@ -224,49 +252,24 @@ export function makePasskeyTxSigner() {
           const legacyAcct = root.deriveNonCompliantChild(hathorConstants.P2PKH_ACCT_PATH);
           return legacyAcct.deriveNonCompliantChild(0);
         });
-      } finally {
-        // JS cannot zero string memory; dropping every reference as soon as possible is the
-        // best available hygiene (same exposure window the lib has during getMainXPrivKey).
-        root = null;
-      }
-    });
+      }, { onCancel: () => { signingCancelled = true; } });
+    } finally {
+      // JS cannot zero string memory; dropping every reference as soon as possible is the
+      // best available hygiene (same exposure window the lib has during getMainXPrivKey).
+      root = null;
+    }
   };
 }
 
 /**
  * Verify-only ceremony for the lock screen: asserts the passkey, checks it opens the loaded
  * wallet, and discards the derived material. Runs under the same single-flight guard as signing.
- * Resolves on success; throws PasskeyCancelledError / PasskeyXpubMismatchError / PasskeyBusyError.
+ * Resolves on success, with what `onWords` returned (if given); throws PasskeyCancelledError /
+ * PasskeyXpubMismatchError / PasskeyBusyError.
  */
-export function verifyPasskeyForUnlock() {
-  return withPasskeyLock(async () => {
-    const meta = STORE.getWalletMeta();
-    // Checked before the ceremony (see makePasskeyTxSigner): don't prompt without an identity.
-    if (!meta?.xpub) {
-      throw new PasskeyMetadataMissingError();
-    }
-    let words = null;
-    let credentialId = null;
-    try {
-      ({ words, credentialId } = await signInWalletWordsFromPasskey({
-        credentialId: meta?.credentialId,
-      }));
-    } catch (e) {
-      if (isPasskeyCancel(e)) {
-        throw new PasskeyCancelledError();
-      }
-      throw e;
-    }
-    try {
-      if (derivePasskeyXpub(words) !== meta.xpub) {
-        throw new PasskeyXpubMismatchError(meta?.passkeyLabel);
-      }
-      // Best-effort backfill (see makePasskeyTxSigner): fire-and-forget, log on failure.
-      if (credentialId && credentialId !== meta.credentialId) {
-        STORE.updateWalletMeta({ credentialId }).catch((e) => log.error('credentialId backfill failed', e));
-      }
-    } finally {
-      words = null;
-    }
-  });
+export function verifyPasskeyForUnlock({ onWords } = {}) {
+  // `onWords` lets the unlock ceremony do work that needs the words (preparing the wallet-service
+  // registration) without a second Face ID prompt. It runs inside the passkey lock, so it must be
+  // quick; its result is returned so slow follow-up work can run after the lock is released.
+  return withPasskeyWords(async (words) => (onWords ? onWords(words) : undefined));
 }
