@@ -117,6 +117,18 @@ export function derivePasskeyXpub(words) {
   });
 }
 
+/**
+ * The legacy P2PKH change-level key (m/44'/280'/0'/0) from the account root xpriv, derived
+ * non-compliantly like wallet-lib derives the wallet's legacy addresses. Its children are the
+ * address keys.
+ *
+ * @param {Object} root Account root HDPrivateKey (walletUtils.getXPrivKeyFromSeed)
+ * @returns {Object} HDPrivateKey
+ */
+function legacyChangeKey(root) {
+  return walletUtils.deriveXpriv(root, "0'").deriveNonCompliantChild(0);
+}
+
 // Module-level single-flight guard: the OS shows one credential sheet at a time; a second
 // concurrent ceremony (double-tap through a path without a screen-level guard) must fail fast.
 let signingInFlight = false;
@@ -249,8 +261,7 @@ export function makePasskeyTxSigner({ onRootKey } = {}) {
             const spendAcct = root.deriveChild(hathorConstants.SHIELDED_SPEND_ACCT_PATH);
             return spendAcct.deriveChild(0);
           }
-          const legacyAcct = root.deriveNonCompliantChild(hathorConstants.P2PKH_ACCT_PATH);
-          return legacyAcct.deriveNonCompliantChild(0);
+          return legacyChangeKey(root);
         });
       }, { onCancel: () => { signingCancelled = true; } });
     } finally {
@@ -258,6 +269,94 @@ export function makePasskeyTxSigner({ onRootKey } = {}) {
       // best available hygiene (same exposure window the lib has during getMainXPrivKey).
       root = null;
     }
+  };
+}
+
+// Message and oracle-data signing. These need an address private key (not a tx signature), which
+// wallet-lib gets from the provider registered with wallet.setExternalPrivateKeyMethod(). One
+// passkey ceremony authorizes ONE such signature: it runs at the rpc-handler's PIN step (consent),
+// keeps the account's change-level key until the signing that follows asks for it, and the
+// provider hands it out once. The ceremony has to run before the signing call, not inside the
+// provider: oracle signing first checks the oracle address with isAddressMine, which on the
+// wallet-service facade needs the full auth token that this ceremony mints (onRootKey).
+let authorizedChangeKey = null;
+
+/**
+ * Run the passkey ceremony that authorizes ONE message or oracle-data signature.
+ *
+ * @param {{ onRootKey?: (root: Object) => Promise<void> }} [options]
+ *   `onRootKey` runs inside the ceremony with the account root xpriv; on the wallet-service facade
+ *   it mints the full auth token the oracle ownership check needs.
+ * @throws PasskeyCancelledError (and sets the signing-cancel flag) / PasskeyXpubMismatchError /
+ *   PasskeyBusyError / PasskeyMetadataMissingError
+ */
+export async function authorizePasskeyPrivateKey({ onRootKey } = {}) {
+  // Same contract as the tx signer: the flag reflects only this ceremony.
+  signingCancelled = false;
+  authorizedChangeKey = null;
+  await withPasskeyWords(async (words) => {
+    const root = walletUtils.getXPrivKeyFromSeed(words, { networkName: NETWORK_MAINNET });
+    if (onRootKey) {
+      await onRootKey(root);
+    }
+    authorizedChangeKey = legacyChangeKey(root);
+  }, { onCancel: () => { signingCancelled = true; } });
+}
+
+/**
+ * The passkey wallet's answer to the rpc-handler's PIN prompt (its consent step). Requests that
+ * sign with an address key (message, oracle data) are authorized here with one ceremony; tx
+ * requests need nothing now, since their signer runs its own ceremony when the lib signs. Passkey
+ * wallets have no PIN: an accepted answer carries an empty one, which the lib's signing entry
+ * points ignore when an external signer or key provider is registered.
+ *
+ * @param {{ needsPrivateKey: boolean, onRootKey?: (root: Object) => Promise<void> }} options
+ * @returns {Promise<{ accepted: boolean, pinCode: string|null }>} not accepted when the user
+ *   dismissed the passkey sheet (the signing-cancel flag is set, so the caller can retry)
+ * @throws any other ceremony error (wrong or deleted passkey, a ceremony already open...)
+ */
+export async function passkeyConsentForRequest({ needsPrivateKey, onRootKey }) {
+  if (needsPrivateKey) {
+    try {
+      await authorizePasskeyPrivateKey({ onRootKey });
+    } catch (e) {
+      if (e instanceof PasskeyCancelledError) {
+        return { accepted: false, pinCode: null };
+      }
+      throw e;
+    }
+  }
+  return { accepted: true, pinCode: '' };
+}
+
+/**
+ * Whether `wallet` can sign messages and oracle data for a passkey wallet: the passkey private-key
+ * provider is registered. A wallet-lib without external private-key provider support has no
+ * hasExternalPrivateKeyMethod, so this is false there.
+ */
+export function canSignWithPasskeyPrivateKey(wallet) {
+  return wallet?.hasExternalPrivateKeyMethod?.() === true;
+}
+
+/** Drop an authorization that wasn't used (e.g. the request failed before signing). */
+export function clearPasskeyPrivateKeyAuthorization() {
+  authorizedChangeKey = null;
+}
+
+/**
+ * Build the PrivateKeyProvider for wallet.setExternalPrivateKeyMethod(): returns the key of the
+ * requested address index from the current authorization, once. wallet-lib checks the key belongs
+ * to the requested address before using it.
+ */
+export function makePasskeyPrivateKeyProvider() {
+  return async (addressIndex) => {
+    const changeKey = authorizedChangeKey;
+    // One signature per ceremony: never reuse an authorization.
+    authorizedChangeKey = null;
+    if (!changeKey) {
+      throw new Error('No passkey authorization for this signature.');
+    }
+    return changeKey.deriveNonCompliantChild(addressIndex).privateKey;
   };
 }
 

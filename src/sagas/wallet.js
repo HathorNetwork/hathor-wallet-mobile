@@ -45,11 +45,12 @@ import {
   AMOUNT_FORMAT_KEY,
 } from '../constants';
 import { STORE } from '../store';
-import { makePasskeyTxSigner } from '../passkey/passkeySigner';
+import { makePasskeyPrivateKeyProvider, makePasskeyTxSigner } from '../passkey/passkeySigner';
 import {
   facadeSupportsExternalSigner,
   isWalletServiceRegistered,
   markWalletServiceRegistered,
+  passkeyFullTokenHook,
   startFailureMeansUnregistered,
 } from '../passkey/walletServiceRegistration';
 import {
@@ -328,11 +329,8 @@ export function* startWallet(action) {
         storage,
         singleAddressMode,
       });
-      const facadeWallet = wallet;
       wallet.setExternalTxSigningMethod(makePasskeyTxSigner({
-        onRootKey: (root) => facadeWallet.refreshFullAuthToken(
-          HathorWalletServiceWallet.deriveAuthPrivateKey(root),
-        ),
+        onRootKey: passkeyFullTokenHook(wallet),
       }));
     } else {
       wallet = new HathorWalletServiceWallet({
@@ -376,6 +374,14 @@ export function* startWallet(action) {
       // start() is not enforced — we do it here, before start(), as a safe convention.
       wallet.setExternalTxSigningMethod(makePasskeyTxSigner());
     }
+  }
+
+  if (isPasskeyWallet && typeof wallet.setExternalPrivateKeyMethod === 'function') {
+    // Message and oracle-data signing get the address key from the passkey too: the Reown flow
+    // authorizes each signature with one ceremony (authorizePasskeyPrivateKey) and this provider
+    // hands that key to wallet-lib. On a wallet-lib without external private-key provider support
+    // this is skipped, and the Reown saga keeps rejecting those requests.
+    wallet.setExternalPrivateKeyMethod(makePasskeyPrivateKeyProvider());
   }
 
   // Extra wallet configuration based on customNetwork

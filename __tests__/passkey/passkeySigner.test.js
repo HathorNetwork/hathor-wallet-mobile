@@ -32,6 +32,8 @@ jest.mock('@hathor/wallet-lib', () => ({
   walletUtils: {
     getXPubKeyFromSeed: jest.fn(),
     getXPrivKeyFromSeed: jest.fn(),
+    // Same derivation as wallet-lib: root -> m/44'/280'/<account>, non-compliant.
+    deriveXpriv: jest.fn((xpriv, account) => xpriv.deriveNonCompliantChild(`m/44'/280'/${account}`)),
   },
 }));
 
@@ -64,7 +66,12 @@ import {
   PasskeyNativeError,
 } from '../../src/passkey/passkeyService';
 import {
+  authorizePasskeyPrivateKey,
+  canSignWithPasskeyPrivateKey,
+  clearPasskeyPrivateKeyAuthorization,
   isExpectedPasskeyError,
+  makePasskeyPrivateKeyProvider,
+  passkeyConsentForRequest,
   makePasskeyTxSigner,
   verifyPasskeyForUnlock,
   consumePasskeySigningCancelled,
@@ -480,5 +487,142 @@ describe('isExpectedPasskeyError', () => {
     ['a non-Error value', { error: 'NoCredentials' }],
   ])('%s is not expected', (_case, error) => {
     expect(isExpectedPasskeyError(error)).toBe(false);
+  });
+});
+
+describe('passkey private key for message and oracle signing', () => {
+  // A root whose derived keys are labelled by path, so the tests can see which key was handed out.
+  const makeLabelledRoot = () => ({
+    deriveNonCompliantChild: jest.fn((acct) => ({
+      deriveNonCompliantChild: jest.fn((chain) => ({
+        deriveNonCompliantChild: jest.fn((index) => ({ privateKey: `${acct}/${chain}/${index}` })),
+      })),
+    })),
+  });
+
+  beforeEach(() => {
+    clearPasskeyPrivateKeyAuthorization();
+    consumePasskeySigningCancelled();
+  });
+
+  test('one ceremony authorizes one signature with the key of the requested address', async () => {
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(makeLabelledRoot());
+    const provider = makePasskeyPrivateKeyProvider();
+
+    await authorizePasskeyPrivateKey();
+
+    expect(signInWalletWordsFromPasskey).toHaveBeenCalledTimes(1);
+    await expect(provider(5)).resolves.toBe("m/44'/280'/0'/0/5");
+    // Never reused: a second signature needs a new ceremony.
+    await expect(provider(5)).rejects.toThrow('No passkey authorization');
+  });
+
+  test('the provider refuses without an authorization, without prompting', async () => {
+    await expect(makePasskeyPrivateKeyProvider()(0)).rejects.toThrow('No passkey authorization');
+    expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
+  });
+
+  test('clearing drops an unused authorization', async () => {
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(makeLabelledRoot());
+    await authorizePasskeyPrivateKey();
+
+    clearPasskeyPrivateKeyAuthorization();
+
+    await expect(makePasskeyPrivateKeyProvider()(0)).rejects.toThrow('No passkey authorization');
+  });
+
+  test('runs onRootKey with the root inside the same ceremony', async () => {
+    const root = makeLabelledRoot();
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(root);
+    const onRootKey = jest.fn(async () => {});
+
+    await authorizePasskeyPrivateKey({ onRootKey });
+
+    expect(onRootKey).toHaveBeenCalledWith(root);
+    expect(signInWalletWordsFromPasskey).toHaveBeenCalledTimes(1);
+  });
+
+  test('a failing onRootKey (e.g. the full-token mint) leaves no authorization', async () => {
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(makeLabelledRoot());
+    const onRootKey = jest.fn(async () => { throw new Error('token refresh failed'); });
+
+    await expect(authorizePasskeyPrivateKey({ onRootKey })).rejects.toThrow('token refresh failed');
+    await expect(makePasskeyPrivateKeyProvider()(0)).rejects.toThrow('No passkey authorization');
+  });
+
+  test('a cancel sets the signing-cancel flag and leaves no authorization', async () => {
+    signInWalletWordsFromPasskey.mockRejectedValue({ error: 'UserCancelled' });
+    isPasskeyCancel.mockReturnValue(true);
+
+    await expect(authorizePasskeyPrivateKey()).rejects.toBeInstanceOf(PasskeyCancelledError);
+
+    expect(consumePasskeySigningCancelled()).toBe(true);
+    await expect(makePasskeyPrivateKeyProvider()(0)).rejects.toThrow('No passkey authorization');
+  });
+
+  // Real wallet-lib derivation: the provider's key must be the one behind the wallet's own address
+  // at that index (path m/44'/280'/0'/0/<index>, derived non-compliantly), or wallet-lib's
+  // ownership check would reject it.
+  test("hands out the key of the wallet's own address at the index", async () => {
+    const lib = jest.requireActual('@hathor/wallet-lib');
+    const words = lib.walletUtils.generateWalletWords();
+    signInWalletWordsFromPasskey.mockResolvedValue({ words, credentialId: STORED_CRED });
+    walletUtils.getXPrivKeyFromSeed.mockImplementation(lib.walletUtils.getXPrivKeyFromSeed);
+    walletUtils.deriveXpriv.mockImplementation(lib.walletUtils.deriveXpriv);
+
+    await authorizePasskeyPrivateKey();
+    const key = await makePasskeyPrivateKeyProvider()(7);
+
+    const accountXpub = lib.walletUtils.getXPubKeyFromSeed(words, { networkName: 'mainnet' });
+    const { base58 } = lib.addressUtils.deriveAddressFromXPubP2PKH(
+      lib.walletUtils.xpubDeriveChild(accountXpub, 0),
+      7,
+      'mainnet',
+    );
+    expect(key.toAddress(new lib.Network('mainnet').bitcoreNetwork).toString()).toBe(base58);
+  });
+
+  describe('passkeyConsentForRequest', () => {
+    test('tx requests need no ceremony at the PIN step', async () => {
+      await expect(passkeyConsentForRequest({ needsPrivateKey: false }))
+        .resolves.toEqual({ accepted: true, pinCode: '' });
+      expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
+    });
+
+    test('a message or oracle request is authorized, with the full-token hook', async () => {
+      walletUtils.getXPrivKeyFromSeed.mockReturnValue(makeLabelledRoot());
+      const onRootKey = jest.fn(async () => {});
+
+      await expect(passkeyConsentForRequest({ needsPrivateKey: true, onRootKey }))
+        .resolves.toEqual({ accepted: true, pinCode: '' });
+
+      expect(onRootKey).toHaveBeenCalledTimes(1);
+      await expect(makePasskeyPrivateKeyProvider()(1)).resolves.toBe("m/44'/280'/0'/0/1");
+    });
+
+    test('a dismissed sheet answers false so the request can be retried', async () => {
+      signInWalletWordsFromPasskey.mockRejectedValue({ error: 'UserCancelled' });
+      isPasskeyCancel.mockReturnValue(true);
+
+      await expect(passkeyConsentForRequest({ needsPrivateKey: true }))
+        .resolves.toEqual({ accepted: false, pinCode: null });
+      expect(consumePasskeySigningCancelled()).toBe(true);
+    });
+
+    test('other ceremony errors are thrown', async () => {
+      walletUtils.getXPubKeyFromSeed.mockReturnValue(OTHER_XPUB);
+
+      await expect(passkeyConsentForRequest({ needsPrivateKey: true }))
+        .rejects.toBeInstanceOf(PasskeyXpubMismatchError);
+    });
+  });
+
+  test('canSignWithPasskeyPrivateKey needs a registered provider', () => {
+    expect(canSignWithPasskeyPrivateKey(undefined)).toBe(false);
+    // A wallet-lib without external private-key provider support (e.g. 3.1.1).
+    expect(canSignWithPasskeyPrivateKey({})).toBe(false);
+    const withProvider = (registered) => ({ hasExternalPrivateKeyMethod: () => registered });
+    expect(canSignWithPasskeyPrivateKey(withProvider(false))).toBe(false);
+    expect(canSignWithPasskeyPrivateKey(withProvider(true))).toBe(true);
   });
 });
