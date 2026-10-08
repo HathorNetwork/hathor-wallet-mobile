@@ -39,6 +39,7 @@ import {
   walletServiceRegistrationForUnlock,
 } from '../passkey/walletServiceRegistration';
 import { logger } from '../logger';
+import { getNetworkSettings } from '../sagas/helpers';
 
 const log = logger('passkey');
 
@@ -52,7 +53,7 @@ const PasskeyLockScreen = () => {
   const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
   const featureToggles = useSelector((state) => state.featureToggles);
-  const networkSettings = useSelector((state) => state.networkSettings);
+  const networkSettings = useSelector(getNetworkSettings);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState(null);
   // Synchronous idempotency guard: fire the ceremony at most once even if the mount effect runs
