@@ -34,7 +34,12 @@ import {
   verifyPasskeyForUnlock,
 } from '../passkey/passkeySigner';
 import { sanitizePasskeyLabel } from '../passkey/passkeyService';
+import {
+  finishWalletServiceRegistration,
+  walletServiceRegistrationForUnlock,
+} from '../passkey/walletServiceRegistration';
 import { logger } from '../logger';
+import { getNetworkSettings } from '../sagas/helpers';
 
 const log = logger('passkey');
 
@@ -47,6 +52,8 @@ const log = logger('passkey');
 const PasskeyLockScreen = () => {
   const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
+  const featureToggles = useSelector((state) => state.featureToggles);
+  const networkSettings = useSelector(getNetworkSettings);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState(null);
   // Synchronous idempotency guard: fire the ceremony at most once even if the mount effect runs
@@ -65,7 +72,17 @@ const PasskeyLockScreen = () => {
     setVerifying(true);
     setError(null);
     try {
-      await verifyPasskeyForUnlock();
+      // If the wallet-service flag is on and this wallet isn't registered there yet (wallets
+      // created before that, a failed onboarding registration, a reinstall), prepare the
+      // registration inside the unlock ceremony while the words are in memory — no extra Face ID.
+      // It's finished in the background after the ceremony: creating the wallet on the
+      // wallet-service can take up to a minute, and neither the passkey lock nor the unlock waits
+      // for it. The wallet runs on the wallet-service facade from its next start. A failure never
+      // blocks unlocking.
+      const registration = await verifyPasskeyForUnlock({
+        onWords: walletServiceRegistrationForUnlock(featureToggles, networkSettings),
+      });
+      finishWalletServiceRegistration(registration);
       if (!wallet) {
         // App boot (or wallet stopped): start the xpub-only wallet. The saga derives
         // isPasskeyWallet from the persisted walletMeta; no secret (and no payload flag) via redux.

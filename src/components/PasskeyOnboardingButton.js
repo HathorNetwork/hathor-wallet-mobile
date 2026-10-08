@@ -23,10 +23,15 @@ import {
   isPasskeySupported,
 } from '../passkey/passkeyService';
 import { derivePasskeyXpub } from '../passkey/passkeySigner';
+import {
+  registerOnWalletService,
+  shouldRegisterOnWalletService,
+} from '../passkey/walletServiceRegistration';
 import { startWalletRequested, unlockScreen } from '../actions';
 import { STORE } from '../store';
 import NavigationService from '../NavigationService';
 import { logger } from '../logger';
+import { getNetworkSettings } from '../sagas/helpers';
 
 const log = logger('passkey');
 
@@ -49,6 +54,7 @@ const log = logger('passkey');
 const PasskeyOnboardingButton = () => {
   const dispatch = useDispatch();
   const featureToggles = useSelector((state) => state.featureToggles);
+  const networkSettings = useSelector(getNetworkSettings);
   // Gated by the Unleash feature toggle (off by default).
   const enabled = get(featureToggles, PASSKEY_ONBOARDING_FEATURE_TOGGLE, false);
   const [busy, setBusy] = useState(false);
@@ -110,6 +116,16 @@ const PasskeyOnboardingButton = () => {
         passkeyLabel: label || null,
         credentialId: credentialId ?? null,
       });
+      // With the wallet-service flag on, also create the wallet on the wallet-service now, while
+      // the words are in scope (no extra prompt), so it can start on that facade. Never blocks
+      // onboarding: on failure the wallet starts on the fullnode facade; the next unlock retries.
+      if (shouldRegisterOnWalletService(featureToggles, networkSettings)) {
+        try {
+          await registerOnWalletService(words, networkSettings);
+        } catch (registrationError) {
+          log.error('Passkey wallet-service registration failed at onboarding', registrationError);
+        }
+      }
     } catch (e) {
       // Dismissing the OS passkey sheet is a cancel, not a failure — stay silent and let the user
       // retry (the modal stays open). Only real failures raise the alert.

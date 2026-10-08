@@ -155,7 +155,9 @@ const SendConfirmScreen = () => {
    */
   const signAndSendTx = async (pin) => {
     try {
-      if (useWalletService) {
+      // Re-mint a full token with the PIN. A passkey wallet has no PIN: its signing ceremony mints
+      // the full token itself (see makePasskeyTxSigner onRootKey), so skip this without one.
+      if (useWalletService && pin) {
         await wallet.validateAndRenewAuthToken(pin);
       }
       await wallet.signTx(sendTx.transaction, { pinCode: pin });

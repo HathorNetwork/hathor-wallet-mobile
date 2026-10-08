@@ -415,6 +415,49 @@ describe('withPasskeyWords', () => {
   });
 });
 
+describe('Phase 2 hooks', () => {
+  test('makePasskeyTxSigner runs onRootKey with the root inside the ceremony, before signing', async () => {
+    const order = [];
+    const root = makeRoot();
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(root);
+    transactionUtils.signTxInputs.mockImplementation(async () => {
+      order.push('sign');
+      return { inputSignatures: [], ncCallerSignature: null };
+    });
+    const onRootKey = jest.fn(async () => { order.push('onRootKey'); });
+
+    await makePasskeyTxSigner({ onRootKey })(fakeTx, fakeStorage);
+
+    expect(onRootKey).toHaveBeenCalledWith(root);
+    expect(order).toEqual(['onRootKey', 'sign']);
+    // One ceremony for both the token and the signature.
+    expect(signInWalletWordsFromPasskey).toHaveBeenCalledTimes(1);
+  });
+
+  test('a failing onRootKey aborts the send before signing', async () => {
+    const onRootKey = jest.fn(async () => { throw new Error('token refresh failed'); });
+
+    await expect(makePasskeyTxSigner({ onRootKey })(fakeTx, fakeStorage))
+      .rejects.toThrow('token refresh failed');
+    expect(transactionUtils.signTxInputs).not.toHaveBeenCalled();
+  });
+
+  test('verifyPasskeyForUnlock passes the words to onWords and resolves with its result', async () => {
+    const prepared = { tempWallet: {}, walletServiceUrl: 'https://ws.example/' };
+    const onWords = jest.fn(() => prepared);
+
+    // The result comes back so slow follow-up work can run after the passkey lock is released.
+    await expect(verifyPasskeyForUnlock({ onWords })).resolves.toBe(prepared);
+
+    expect(onWords).toHaveBeenCalledWith(WORDS);
+    expect(signInWalletWordsFromPasskey).toHaveBeenCalledTimes(1);
+  });
+
+  test('verifyPasskeyForUnlock resolves with undefined without onWords', async () => {
+    await expect(verifyPasskeyForUnlock()).resolves.toBeUndefined();
+  });
+});
+
 describe('isExpectedPasskeyError', () => {
   // Expected, user-correctable outcomes: screens show them and don't report them.
   test.each([

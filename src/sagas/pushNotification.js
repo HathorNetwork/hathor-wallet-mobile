@@ -66,6 +66,11 @@ import {
   PasskeyCancelledError,
   withPasskeyWords,
 } from '../passkey/passkeySigner';
+import {
+  makeEphemeralPin,
+  markWalletServiceRegistered,
+  startTempWalletServiceWallet,
+} from '../passkey/walletServiceRegistration';
 
 const log = logger('push-notification-saga');
 log.haltingTxDetailsLoading = () => log.debug('Halting tx details loading.');
@@ -324,9 +329,11 @@ export function* init() {
     const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
     // Update the registration, as per Firebase's recommendation
     if (timeSinceLastRegistration > 1) {
-      // If the user is using the wallet service, we can skip asking for refresh
+      // If the user is using the wallet service, we can skip asking for refresh. Not for passkey
+      // wallets: their registration always needs a passkey ceremony (see loadWallet), so an
+      // automatic refresh would pop an unexpected Face ID prompt — ask first instead.
       const useWalletService = yield select((state) => state.useWalletService);
-      if (useWalletService) {
+      if (useWalletService && !STORE.isPasskeyWallet()) {
         // If wallet not ready, wait
         const walletStartState = yield select((state) => state.walletStartState);
         if (walletStartState !== WALLET_STATUS.READY) {
@@ -378,22 +385,6 @@ export function* setAvailablePushNotification(action) {
 }
 
 /**
- * Build and start a temporary, in-memory wallet-service wallet from seed words. Starting it signs
- * in with a full auth token and creates the wallet in the wallet-service (`wallet/init`) if it
- * doesn't exist yet. The caller must stop it when done.
- *
- * @param {string} seed 24 seed words
- * @param {Network} network
- * @param {string} pin Encrypts the temp wallet's in-memory access data (never persisted)
- * @returns {Promise<HathorWalletServiceWallet>}
- */
-export async function startTempWalletServiceWallet(seed, network, pin) {
-  const wallet = new HathorWalletServiceWallet({ seed, network, enableWs: false });
-  await wallet.start({ pinCode: pin, password: pin });
-  return wallet;
-}
-
-/**
  * It is responsible for loading the wallet for every push notification action that requires
  * to interact with the wallet service api. When the user is using the facade wallet, it will
  * load the wallet service, otherwise it will use the wallet already loaded in the redux store.
@@ -404,7 +395,9 @@ export async function startTempWalletServiceWallet(seed, network, pin) {
  */
 export function* loadWallet() {
   if (STORE.isPasskeyWallet()) {
-    // Passkey wallets always run on the fullnode facade, so they always need the temp wallet.
+    // Passkey wallets always need the temp wallet: on the fullnode facade there is no
+    // wallet-service wallet at all, and on the wallet-service facade the app's wallet only holds a
+    // read-only token (the auth key is never stored), which the push endpoints reject.
     const networkSettings = yield select(getNetworkSettings);
     config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
     config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
@@ -423,9 +416,7 @@ export function* loadWallet() {
       );
       // start() needs a pin to encrypt the temp wallet's IN-MEMORY access data. Nothing is
       // persisted, so a random one-time value is enough.
-      const ephemeralPin = Buffer.from(
-        global.crypto.getRandomValues(new Uint8Array(32)),
-      ).toString('hex');
+      const ephemeralPin = makeEphemeralPin();
       try {
         yield call([tempWallet, tempWallet.start], {
           pinCode: ephemeralPin,
@@ -440,6 +431,9 @@ export function* loadWallet() {
         yield put(pushLoadWalletFailed({ error: startError, cancelled: false, reported: false }));
         return;
       }
+      // Starting the temp wallet created this wallet on the wallet-service (wallet/init), so the
+      // app can start it on the wallet-service facade from now on.
+      yield call(markWalletServiceRegistered, networkSettings.walletServiceUrl);
       yield put(pushLoadWalletSuccess({ walletService: tempWallet }));
     } catch (error) {
       const cancelled = error instanceof PasskeyCancelledError;

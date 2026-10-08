@@ -212,8 +212,13 @@ export function withPasskeyWords(fn, { onCancel } = {}) {
  * Signature contract (wallet-lib storage.getTxSignatures): async (tx, storage, pinCode) =>
  * { inputSignatures: [{inputIndex, addressIndex, signature, pubkey}], ncCallerSignature }.
  * The pinCode is a placeholder for passkey wallets and is ignored.
+ *
+ * @param {{ onRootKey?: (root: Object) => Promise<void> }} [options]
+ *   `onRootKey` runs inside the same ceremony, right before signing, with the account root xpriv.
+ *   On the wallet-service facade it derives the auth key and mints a full token for the send that
+ *   follows, so a send still costs ONE Face ID and the auth key is never stored.
  */
-export function makePasskeyTxSigner() {
+export function makePasskeyTxSigner({ onRootKey } = {}) {
   return async (tx, storage, _pinCode) => {
     // Reset the cancelled flag at the very start of every signing ceremony — BEFORE the
     // single-flight check — so a later consumePasskeySigningCancelled() reflects only this attempt.
@@ -228,6 +233,9 @@ export function makePasskeyTxSigner() {
         // Derive the account root xpriv once; wallet-lib's signTxInputs derives the per-input
         // keys from the chain xprivs it requests through the resolver below.
         root = walletUtils.getXPrivKeyFromSeed(words, { networkName: NETWORK_MAINNET });
+        if (onRootKey) {
+          await onRootKey(root);
+        }
 
         // Delegate the input-signing loop to wallet-lib so input selection, shielded-spend
         // handling, the nano/OCB caller signature and encoding all live in one place and don't
@@ -256,8 +264,12 @@ export function makePasskeyTxSigner() {
 /**
  * Verify-only ceremony for the lock screen: asserts the passkey, checks it opens the loaded
  * wallet, and discards the derived material. Runs under the same single-flight guard as signing.
- * Resolves on success; throws PasskeyCancelledError / PasskeyXpubMismatchError / PasskeyBusyError.
+ * Resolves on success, with what `onWords` returned (if given); throws PasskeyCancelledError /
+ * PasskeyXpubMismatchError / PasskeyBusyError.
  */
-export function verifyPasskeyForUnlock() {
-  return withPasskeyWords(async () => {});
+export function verifyPasskeyForUnlock({ onWords } = {}) {
+  // `onWords` lets the unlock ceremony do work that needs the words (preparing the wallet-service
+  // registration) without a second Face ID prompt. It runs inside the passkey lock, so it must be
+  // quick; its result is returned so slow follow-up work can run after the lock is released.
+  return withPasskeyWords(async (words) => (onWords ? onWords(words) : undefined));
 }
