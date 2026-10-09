@@ -77,6 +77,7 @@ describe('shielded reducer', () => {
     }));
     const next = reducer(ready, shieldedCapabilityUpdate(CAPABILITY));
     expect(next.shielded).toEqual({
+      ...SHIELDED_INITIAL_STATE,
       providerStatus: SHIELDED_PROVIDER_STATUS.READY,
       providerError: null,
       capability: CAPABILITY,

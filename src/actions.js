@@ -284,6 +284,9 @@ export const types = {
   // Token Icons — URLs piggyback on the existing metadata fetch
   TOKEN_ICONS_LOADED: 'TOKEN_ICONS_LOADED',
   TOKEN_ICON_UPDATED: 'TOKEN_ICON_UPDATED',
+
+  // Shielded outputs: the private receive address
+  SHIELDED_RECEIVE_ADDRESS_UPDATE: 'SHIELDED_RECEIVE_ADDRESS_UPDATE',
 };
 
 /**
@@ -1941,4 +1944,29 @@ export const tokenImportDismissBanner = () => ({
 
 export const tokenImportResetStatus = () => ({
   type: types.TOKEN_IMPORT_RESET_STATUS,
+});
+
+/**
+ * The private (shielded) receive address of the running wallet, or why it can't give one out.
+ * It holds a receive address at most, never key material.
+ *
+ * @param {Object} payload
+ * @param {string} payload.status One of SHIELDED_RECEIVE_STATUS
+ * @param {string|null} [payload.address] The current shielded address, when the status is ready
+ * @param {number|null} [payload.index] Its index on the shielded chain
+ * @param {string|null} [payload.reason] Why the status is locked or unavailable
+ */
+export const shieldedReceiveAddressUpdate = ({
+  status,
+  address = null,
+  index = null,
+  reason = null,
+}) => ({
+  type: types.SHIELDED_RECEIVE_ADDRESS_UPDATE,
+  payload: {
+    status,
+    address,
+    index,
+    reason,
+  },
 });

@@ -20,6 +20,7 @@ import { DEFAULT_TOKEN, SHIELDED_PROVIDER_STATUS } from '../constants';
 import {
   types,
   shieldedCapabilityUpdate,
+  shieldedReceiveAddressUpdate,
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   tokenInvalidateHistory,
@@ -27,8 +28,17 @@ import {
 } from '../actions';
 import { getRegisteredTokenUids } from './helpers';
 import { WALLET_STATUS } from './wallet';
-import { selectShieldedCapability } from '../shielded/gating';
+import { isShieldedEnvironment, selectShieldedCapability } from '../shielded/gating';
 import { SHIELDED_UNLOCK_STATUS, unlockShieldedViewIfLocked } from '../shielded/unlock';
+import {
+  RECEIVE_REASON_ERROR,
+  SHIELDED_RECEIVE_INITIAL_STATE,
+  SHIELDED_RECEIVE_STATUS,
+  isSameReceiveState,
+  receiveStateFromCapability,
+  receiveStateFromError,
+  selectShieldedReceive,
+} from '../shielded/receiveState';
 import { logger } from '../logger';
 
 const log = logger('shielded');
@@ -115,14 +125,111 @@ export function createLoadedCapability() {
 }
 
 /**
- * Handles SHIELDED_CAPABILITY_UPDATE: once the changes settle, refreshes the balances when the
- * capability differs from the one they were loaded with, in a way that can change them.
+ * Reads where the private receive address of a wallet stands: its shielded capability, then, at
+ * level 'view' or 'full', its current shielded address. It throws the errors the receive state
+ * doesn't expect.
+ *
+ * @param {HathorWallet} wallet A started fullnode-facade wallet
+ * @returns {Promise<Object>} The receive state: status, address, index and reason
+ */
+export async function readShieldedReceive(wallet) {
+  const capability = await wallet.getShieldedCapability();
+  const fromCapability = receiveStateFromCapability(capability);
+  if (fromCapability) {
+    return { ...SHIELDED_RECEIVE_INITIAL_STATE, ...fromCapability };
+  }
+
+  try {
+    const { address, index } = await wallet.getCurrentAddress({}, { legacy: false });
+    return {
+      status: SHIELDED_RECEIVE_STATUS.READY,
+      address,
+      index,
+      reason: null,
+    };
+  } catch (e) {
+    const fromError = receiveStateFromError(e);
+    if (!fromError) {
+      throw e;
+    }
+    return { ...SHIELDED_RECEIVE_INITIAL_STATE, ...fromError };
+  }
+}
+
+/**
+ * Numbers the refreshes of the private receive state, so that a refresh another one started
+ * after doesn't overwrite what the later one read.
+ */
+export function createReceiveRefreshes() {
+  let latest = 0;
+  return {
+    /** Starts a refresh and returns its number. */
+    next: () => {
+      latest += 1;
+      return latest;
+    },
+    /** Whether no refresh started after the one numbered `refresh`. */
+    isLatest: (refresh) => refresh === latest,
+  };
+}
+
+/**
+ * Refreshes state.shielded.receive: the running wallet's private receive address, or why it
+ * gives none out. While the shielded UI is off, it reads nothing from the wallet and the state
+ * goes back to idle. It keeps what it read only for the wallet that still runs, when no refresh
+ * started after it, and puts nothing when the state is the same.
+ *
+ * @param {ReturnType<createReceiveRefreshes>} refreshes
+ */
+export function* refreshShieldedReceive(refreshes) {
+  const refresh = refreshes.next();
+  try {
+    const { wallet, environment } = yield select((state) => ({
+      wallet: state.wallet,
+      environment: isShieldedEnvironment(state),
+    }));
+
+    let next = SHIELDED_RECEIVE_INITIAL_STATE;
+    if (wallet && environment) {
+      try {
+        next = yield call(readShieldedReceive, wallet);
+      } catch (e) {
+        log.error('Failed to read the private receive address.', e);
+        next = {
+          ...SHIELDED_RECEIVE_INITIAL_STATE,
+          status: SHIELDED_RECEIVE_STATUS.UNAVAILABLE,
+          reason: RECEIVE_REASON_ERROR,
+        };
+      }
+    }
+
+    const { currentWallet, current } = yield select((state) => ({
+      currentWallet: state.wallet,
+      current: selectShieldedReceive(state),
+    }));
+    if (!refreshes.isLatest(refresh)
+      || currentWallet !== wallet
+      || isSameReceiveState(current, next)) {
+      return;
+    }
+    yield put(shieldedReceiveAddressUpdate(next));
+  } catch (e) {
+    log.error('Failed to refresh the private receive address.', e);
+  }
+}
+
+/**
+ * Handles SHIELDED_CAPABILITY_UPDATE: once the changes settle, refreshes the private receive
+ * address, and refreshes the balances when the capability differs from the one they were loaded
+ * with, in a way that can change them.
  *
  * @param {ReturnType<createLoadedCapability>} loaded
+ * @param {ReturnType<createReceiveRefreshes>} receiveRefreshes
  */
-export function* onShieldedCapabilityUpdate(loaded) {
+export function* onShieldedCapabilityUpdate(loaded, receiveRefreshes) {
   try {
     yield delay(CAPABILITY_REFRESH_DELAY_MS);
+    yield call(refreshShieldedReceive, receiveRefreshes);
     const { wallet, capability } = yield select((state) => ({
       wallet: state.wallet,
       capability: selectShieldedCapability(state),
@@ -217,9 +324,17 @@ export function* onShieldedViewUnlockRequested(loaded, action) {
 
 export function* saga() {
   const loaded = createLoadedCapability();
+  const receiveRefreshes = createReceiveRefreshes();
   yield all([
-    takeLatest(types.SHIELDED_CAPABILITY_UPDATE, onShieldedCapabilityUpdate, loaded),
+    takeLatest(
+      types.SHIELDED_CAPABILITY_UPDATE,
+      onShieldedCapabilityUpdate,
+      loaded,
+      receiveRefreshes,
+    ),
     takeEvery(types.START_WALLET_SUCCESS, onWalletBalancesLoaded, loaded),
     takeLatest(types.SHIELDED_VIEW_UNLOCK_REQUESTED, onShieldedViewUnlockRequested, loaded),
+    // Dispatched at the end of a start or a reload, by handleTx and after a balance refresh.
+    takeEvery(types.WALLET_REFRESH_SHARED_ADDRESS, refreshShieldedReceive, receiveRefreshes),
   ]);
 }
