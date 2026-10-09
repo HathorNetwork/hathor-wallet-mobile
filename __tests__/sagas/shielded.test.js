@@ -382,6 +382,27 @@ describe('the unlock at the next PIN entry', () => {
     expect(dispatched).toEqual([]);
   });
 
+  test('leaves a wallet locked with a corrupt key as it is, with no unlock or log at each PIN entry', async () => {
+    const { state, wallet, deliver, dispatched } = setupLocked();
+    state.shielded = { ...state.shielded, capability: { ...LOCKED, cause: 'corrupt-key' } };
+    wallet.unlockShieldedView.mockRejectedValue(new errors.ShieldedKeyError(
+      'shielded-corrupt-key',
+      'The shielded view key of the wallet record cannot be decrypted.',
+    ));
+
+    deliver(unlockRequest());
+    await wait(0);
+    deliver(unlockRequest());
+    await wait(0);
+    deliver(unlockRequest());
+    await wait(0);
+
+    expect(wallet.getShieldedCapability).toHaveBeenCalledTimes(3);
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    expect(log.error).not.toHaveBeenCalled();
+    expect(dispatched).toEqual([]);
+  });
+
   test.each([
     ['no wallet runs', { wallet: null }, {}],
     ['no provider was registered', {}, { providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED }],

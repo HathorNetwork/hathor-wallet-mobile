@@ -21,11 +21,11 @@ const capability = (level, overrides = {}) => ({
   ...overrides,
 });
 
-function fakeWallet(level) {
+function fakeWallet(level, overrides = {}) {
   const unlocked = capability('full');
   const reprocessed = Promise.resolve(unlocked);
   return {
-    getShieldedCapability: jest.fn(async () => capability(level)),
+    getShieldedCapability: jest.fn(async () => capability(level, overrides)),
     unlockShieldedView: jest.fn(async () => ({ capability: unlocked, reprocessed })),
     unlocked,
     reprocessed,
@@ -45,15 +45,30 @@ describe('unlockShieldedViewIfLocked', () => {
     expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
   });
 
-  test('unlocks a locked wallet with the PIN, without waiting for the walk', async () => {
-    const wallet = fakeWallet('watch');
+  test.each(['not-supplied', 'wrong-pin', 'error'])(
+    'unlocks a wallet locked with the cause %s with the PIN, without waiting for the walk',
+    async (cause) => {
+      const wallet = fakeWallet('watch', { cause });
+
+      const result = await unlockShieldedViewIfLocked(wallet, PIN);
+
+      expect(wallet.unlockShieldedView).toHaveBeenCalledWith({ pinCode: PIN });
+      expect(result.status).toBe(SHIELDED_UNLOCK_STATUS.UNLOCKED);
+      expect(result.capability).toBe(wallet.unlocked);
+      expect(result.reprocessed).toBe(wallet.reprocessed);
+    },
+  );
+
+  test('leaves a wallet locked with a corrupt key as it is: no PIN can unlock it', async () => {
+    const wallet = fakeWallet('watch', { cause: 'corrupt-key' });
 
     const result = await unlockShieldedViewIfLocked(wallet, PIN);
 
-    expect(wallet.unlockShieldedView).toHaveBeenCalledWith({ pinCode: PIN });
-    expect(result.status).toBe(SHIELDED_UNLOCK_STATUS.UNLOCKED);
-    expect(result.capability).toBe(wallet.unlocked);
-    expect(result.reprocessed).toBe(wallet.reprocessed);
+    expect(result).toEqual({
+      status: SHIELDED_UNLOCK_STATUS.SKIPPED,
+      capability: capability('watch', { cause: 'corrupt-key' }),
+    });
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
   });
 
   test.each([

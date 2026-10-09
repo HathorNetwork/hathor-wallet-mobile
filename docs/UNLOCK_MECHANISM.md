@@ -57,7 +57,7 @@ This document describes what happens with the app and the lib during the wallet 
 	1. If the biometry migration re-encrypted the access data, it dispatches `walletPinChanged(actualPin)`, so a reload starts the wallet with it
 	1. It dispatches `shieldedViewUnlockRequested({ pinCode: actualPin, source: 'lock-screen' })`. No reducer handles it, so the PIN never enters the redux state
 1. The shielded saga (`src/sagas/shielded.js`) handles the request only where the provider passed its self-test (`providerStatus` is `ready`):
-	1. `unlockShieldedViewIfLocked` reads `getShieldedCapability()`; only at level `watch` does it call `wallet.unlockShieldedView({ pinCode })`
+	1. `unlockShieldedViewIfLocked` reads `getShieldedCapability()`; only at level `watch` does it call `wallet.unlockShieldedView({ pinCode })`, and not when the cause is `corrupt-key`: the PIN passes the check of the stored scan key, but the key doesn't decrypt to a valid one, so no PIN can unlock it
 	1. The returned capability is stored, and a detached task waits for `reprocessed`, the end of the walk that decodes the locked outputs, then refreshes the balances
 	1. A `ShieldedKeyError` (for example `shielded-wrong-pin`) is logged with its code, never with the PIN, and nothing is shown to the user
 1. Whenever `state.shielded.capability` changes in a way that can change the balances (its level, cause or history completeness, or fewer locked or failed outputs), the shielded saga waits 300 ms for the changes to settle, then fetches the balances of the registered tokens again, but only while the wallet is ready
