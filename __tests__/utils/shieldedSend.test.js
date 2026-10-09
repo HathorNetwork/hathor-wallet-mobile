@@ -16,6 +16,7 @@ import {
   getPrivacyModeOptions,
   initialPrivacyMode,
   isPrivateAmountAllowed,
+  mapShieldedSendError,
   privacyModeToShieldedMode,
   waitForWalletReady,
 } from '../../src/utils/shieldedSend';
@@ -206,5 +207,23 @@ describe('computeSendFees', () => {
     expect(computeSendFees(send)).toEqual({
       total: 1n, privacy: 0n, network: 1n, privateOutputs: 0,
     });
+  });
+});
+
+describe('mapShieldedSendError', () => {
+  test('gives no copy for an error that is not about private sends', () => {
+    expect(mapShieldedSendError(new Error('Transaction has 256 outputs and can have at most 255.')))
+      .toBeNull();
+    expect(mapShieldedSendError(new Error('Token: 00. Insufficient amount of tokens to fill the amount.')))
+      .toBeNull();
+    expect(mapShieldedSendError(null)).toBeNull();
+    expect(mapShieldedSendError({})).toBeNull();
+  });
+
+  test('maps by the message alone where the error lost its type', () => {
+    // A dApp's send reaches the app wrapped by the rpc handler, with the message only.
+    const message = 'A shielded change is required, but the wallet has no shielded address to receive it.';
+    expect(mapShieldedSendError({ message }))
+      .toBe('This wallet cannot receive the private change this transaction needs.');
   });
 });

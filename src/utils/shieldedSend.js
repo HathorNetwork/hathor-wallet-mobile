@@ -5,7 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { constants as hathorLibConstants, shielded } from '@hathor/wallet-lib';
+import { constants as hathorLibConstants, errors, shielded } from '@hathor/wallet-lib';
+import { t } from 'ttag';
 import { DEFAULT_PRIVACY_MODE, PRIVACY_MODE } from '../constants';
 
 const {
@@ -173,4 +174,91 @@ export function computeSendFees(sendTx) {
     network: total > privacy ? total - privacy : 0n,
     privateOutputs: shieldedOutputs.length,
   };
+}
+
+// The start of wallet-lib's messages for a change its rules made private, but that can't be:
+// the change stands in for a shielded input the token lacks, so the amount of its only private
+// output can't be computed by subtraction; or the change was forced on a private UTXO the
+// selection spent exactly, so its value can't be.
+const STAND_IN_CHANGE = "The change must be shielded (so the amount of its token's only shielded output cannot be computed by subtraction), but ";
+const FORCED_CHANGE = 'The change must be shielded (so the value of the shielded UTXO spent exactly cannot be computed by subtraction), but ';
+
+// The messages of a private change the wallet can't receive: ShieldedChangeUnavailableError's.
+const CHANGE_UNAVAILABLE = [
+  `${STAND_IN_CHANGE}a shielded change is not supported for multisig wallets`,
+  `${STAND_IN_CHANGE}the wallet has no shielded address to receive it`,
+  'A shielded change is not supported for multisig wallets',
+  'A shielded change is required, but the wallet has no shielded address to receive it',
+];
+
+// wallet-lib's messages for a privacy fee the HTR the wallet can add doesn't cover. The rules
+// keep a change private even when the payment is public, and a private change pays its own fee.
+const UNPAID_PRIVACY_FEE = [
+  'HTR change is too small to fund its shielded-output fee',
+  'The shielded HTR change is too small to split into the two shielded outputs',
+  'The HTR change cannot fund the shielded-output split',
+  'Splitting the lone shielded output requires extra HTR for its fee',
+  "The transaction's only shielded output holds ",
+];
+
+// A selection short of HTR because a change was made private says so after the usual message.
+const SHIELDED_CHANGE_FEE = 'The amount includes the fee to shield the change';
+
+const SHIELDED_LOCKED = 'shielded-locked';
+
+/**
+ * Whether the error is of a wallet-lib error class. The class may be missing from the wallet-lib
+ * build the app runs with, in which case the error isn't of it.
+ *
+ * @param {unknown} error
+ * @param {Function|undefined} ErrorClass
+ * @returns {boolean}
+ */
+function isErrorOf(error, ErrorClass) {
+  return typeof ErrorClass === 'function' && error instanceof ErrorClass;
+}
+
+/**
+ * The copy for an error of a send that involves private outputs, or null for any other error.
+ * wallet-lib fails such a send rather than make public what its rules keep private, and its
+ * messages suggest an option this app doesn't offer: keeping the change public. They are
+ * matched by their text, since every one of them is a SendTxError, and by their class where the
+ * wallet-lib build has it: a dApp's send reaches the app with the message alone.
+ *
+ * @param {unknown} error
+ * @returns {string|null}
+ */
+export function mapShieldedSendError(error) {
+  if (isErrorOf(error, errors.ShieldedKeyError) && error.errorCode === SHIELDED_LOCKED) {
+    return t`Your private balance is locked. Unlock it to send privately.`;
+  }
+  const message = typeof error?.message === 'string' ? error.message : '';
+  const changeUnavailable = t`This wallet cannot receive the private change this transaction needs.`;
+  if (isErrorOf(error, errors.ShieldedChangeUnavailableError)
+    || CHANGE_UNAVAILABLE.some((start) => message.startsWith(start))
+    || (message.startsWith("The transaction's only shielded output holds ")
+      && message.includes('the wallet cannot receive a shielded change'))) {
+    return changeUnavailable;
+  }
+  if (message.startsWith(FORCED_CHANGE)) {
+    return t`To keep the value of the private funds it spends hidden, this transaction needs a private change, and there is not enough HTR to pay its privacy fee.`;
+  }
+  if (message.startsWith(STAND_IN_CHANGE)
+    && (message.includes('no HTR change is left') || message.includes('too small to fund'))) {
+    return t`To keep the amount it sends hidden, this transaction needs a private change, and there is not enough HTR to pay its privacy fee.`;
+  }
+  if (message.includes(SHIELDED_CHANGE_FEE)
+    || UNPAID_PRIVACY_FEE.some((start) => message.startsWith(start))) {
+    return t`Insufficient HTR to cover the privacy fees of this transaction.`;
+  }
+  if (/^Shielded output \d+: value must be in \[1, 2\^40\)/.test(message)) {
+    return t`An amount in this transaction, its change included, is too large to be private.`;
+  }
+  if (message.startsWith('Shielded crypto provider is not set')) {
+    return t`Private transfers could not be loaded on this device.`;
+  }
+  if (message.startsWith("The wallet's shielded change address could not be resolved")) {
+    return t`The private change of this transaction could not be prepared. Try again.`;
+  }
+  return null;
 }

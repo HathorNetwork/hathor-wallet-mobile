@@ -49,6 +49,7 @@ import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import {
   buildSendOutput,
   computeSendFees,
+  mapShieldedSendError,
   privacyModeToShieldedMode,
   waitForWalletReady,
 } from '../utils/shieldedSend';
@@ -83,10 +84,19 @@ function NoFee() {
 // app has no way to do.
 const INPUT_LIMIT_ERROR = /inputs, more than the \d+ a transaction can hold|Transaction has \d+ inputs and can have at most/;
 
+// The fullnode facade's message for a token whose UTXOs don't cover what the send needs of it.
+const INSUFFICIENT_TOKENS_ERROR = /^Token: (\w+)\. Insufficient amount of tokens to fill the amount\./;
+
 // Translates wallet-lib error messages to user-friendly text. The UTXO
 // patterns apply during build (auto-selection in prepare-tx); other errors
 // (auth, signing, mining) fall through to the original lib message.
 export function mapTxError(err) {
+  // The errors of sends with private outputs, the ones where HTR is short of a privacy fee
+  // included, come first.
+  const shieldedCopy = mapShieldedSendError(err);
+  if (shieldedCopy) {
+    return shieldedCopy;
+  }
   const msg = err?.message || '';
   const htrUid = hathorLib.constants.NATIVE_TOKEN_UID;
   if (msg.includes(`No UTXOs available for the token ${htrUid}`)) {
@@ -94,6 +104,13 @@ export function mapTxError(err) {
   }
   if (msg.includes('No UTXOs available for the token')) {
     return t`Insufficient balance to send this transaction.`;
+  }
+  const insufficientTokens = INSUFFICIENT_TOKENS_ERROR.exec(msg);
+  if (insufficientTokens) {
+    // HTR pays the fees: for HTR, they count with the amount.
+    return insufficientTokens[1] === htrUid
+      ? t`Insufficient HTR to cover this transaction and its fees.`
+      : t`Insufficient balance to send this transaction.`;
   }
   if (INPUT_LIMIT_ERROR.test(msg)) {
     return t`This amount needs more inputs than a transaction can hold. Try sending a smaller amount.`;

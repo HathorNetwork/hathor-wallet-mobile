@@ -127,6 +127,45 @@ msgstr ""
 msgid "New transaction received"
 msgstr ""
 
+#: src/screens/SendConfirmScreen.js:518 src/utils/shieldedSend.js:233
+msgid "Your private balance is locked. Unlock it to send privately."
+msgstr ""
+
+#: src/utils/shieldedSend.js:236
+msgid "This wallet cannot receive the private change this transaction needs."
+msgstr ""
+
+#: src/utils/shieldedSend.js:244
+msgid ""
+"To keep the value of the private funds it spends hidden, this transaction "
+"needs a private change, and there is not enough HTR to pay its privacy fee."
+msgstr ""
+
+#: src/utils/shieldedSend.js:248
+msgid ""
+"To keep the amount it sends hidden, this transaction needs a private change, "
+"and there is not enough HTR to pay its privacy fee."
+msgstr ""
+
+#: src/utils/shieldedSend.js:252
+msgid "Insufficient HTR to cover the privacy fees of this transaction."
+msgstr ""
+
+#: src/utils/shieldedSend.js:255
+msgid ""
+"An amount in this transaction, its change included, is too large to be "
+"private."
+msgstr ""
+
+#: src/shielded/receiveState.js:149 src/utils/shieldedSend.js:258
+msgid "Private transfers could not be loaded on this device."
+msgstr ""
+
+#: src/utils/shieldedSend.js:261
+msgid ""
+"The private change of this transaction could not be prepared. Try again."
+msgstr ""
+
 #: src/utils/tokenSwap.js:459
 msgid "Insufficient HTR balance to cover the network fee."
 msgstr ""
@@ -139,17 +178,13 @@ msgstr ""
 msgid "Could not build the swap transaction. Please try again."
 msgstr ""
 
-#: src/shielded/receiveState.js:149
-msgid "Private transfers could not be loaded on this device."
-msgstr ""
-
 #: src/shielded/receiveState.js:152
 msgid "Could not load your private address."
 msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:101
 #: src/components/Shielded/ShieldedBalanceSplit.js:157
-#: src/screens/SendConfirmScreen.js:192 src/screens/SendConfirmScreen.js:220
+#: src/screens/SendConfirmScreen.js:209 src/screens/SendConfirmScreen.js:237
 #: src/shielded/receiveState.js:154
 msgid "Private transfers are not available for this wallet."
 msgstr ""
@@ -456,7 +491,7 @@ msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:394
+#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:411
 #: src/screens/TokenSwapReview.js:265
 msgid "Building transaction"
 msgstr ""
@@ -1073,72 +1108,77 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:182 src/screens/SendConfirmScreen.js:485
+#: src/screens/SendAmountInput.js:182 src/screens/SendConfirmScreen.js:502
 #, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:76 src/screens/TokenSwapReview.js:364
+#: src/screens/SendConfirmScreen.js:77 src/screens/TokenSwapReview.js:364
 msgid "No fee"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:93
+#: src/screens/SendConfirmScreen.js:103
 msgid "Insufficient HTR to cover the network fee."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:96
+#: src/screens/SendConfirmScreen.js:106 src/screens/SendConfirmScreen.js:113
 msgid "Insufficient balance to send this transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:99
+#.  HTR pays the fees: for HTR, they count with the amount.
+#: src/screens/SendConfirmScreen.js:112
+msgid "Insufficient HTR to cover this transaction and its fees."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:116
 msgid ""
 "This amount needs more inputs than a transaction can hold. Try sending a "
 "smaller amount."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:101
+#: src/screens/SendConfirmScreen.js:118
 msgid "Failed to process transaction."
 msgstr ""
 
 #: src/components/TransactionPrivacyModal.js:67
-#: src/screens/SendConfirmScreen.js:184
+#: src/screens/SendConfirmScreen.js:201
 msgid "Payments to a private address are always private."
 msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:103
 #: src/components/Shielded/ShieldedUnlockAction.js:61
-#: src/screens/SendConfirmScreen.js:270 src/screens/SendConfirmScreen.js:287
+#: src/screens/SendConfirmScreen.js:287 src/screens/SendConfirmScreen.js:304
 msgid "Could not unlock your private balance."
 msgstr ""
 
 #: src/components/Shielded/ShieldedUnlockAction.js:53
-#: src/screens/SendConfirmScreen.js:297
+#: src/screens/SendConfirmScreen.js:314
 msgid "Enter your 6-digit pin to unlock your private balance"
 msgstr ""
 
 #: src/components/Shielded/ShieldedUnlockAction.js:54
 #: src/components/Shielded/ShieldedUnlockAction.js:64
-#: src/screens/SendConfirmScreen.js:298 src/screens/SendConfirmScreen.js:505
+#: src/screens/SendConfirmScreen.js:315 src/screens/SendConfirmScreen.js:522
 msgid "Unlock private balance"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:373 src/screens/TokenSwapReview.js:220
+#: src/screens/SendConfirmScreen.js:390 src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:392
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:409
 #: src/screens/TokenSwapReview.js:263
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:393
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:410
 #: src/screens/TokenSwapReview.js:264
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
-#: src/screens/SendConfirmScreen.js:433
+#: src/screens/SendConfirmScreen.js:450
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
@@ -1146,74 +1186,70 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendConfirmScreen.js:456
+#: src/screens/SendConfirmScreen.js:473
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:459
+#: src/screens/SendConfirmScreen.js:476
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:462
+#: src/screens/SendConfirmScreen.js:479
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:464
+#: src/screens/SendConfirmScreen.js:481
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:469
+#: src/screens/SendConfirmScreen.js:486
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:491
+#: src/screens/SendConfirmScreen.js:508
 msgid "Building your transaction"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:501
-msgid "Your private balance is locked. Unlock it to send privately."
-msgstr ""
-
-#: src/screens/SendConfirmScreen.js:512
+#: src/screens/SendConfirmScreen.js:529
 msgid "Reading your private balance"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:532
+#: src/screens/SendConfirmScreen.js:549
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ amountAndToken }** был подтвержден"
 
-#: src/screens/SendConfirmScreen.js:548
+#: src/screens/SendConfirmScreen.js:565
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:570
+#: src/screens/SendConfirmScreen.js:587
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:573
+#: src/screens/SendConfirmScreen.js:590
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:578
+#: src/screens/SendConfirmScreen.js:595
 msgid "Private address"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:587
+#: src/screens/SendConfirmScreen.js:604
 msgid "**Privacy**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:601
+#: src/screens/SendConfirmScreen.js:618
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:610
+#: src/screens/SendConfirmScreen.js:627
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:617
+#: src/screens/SendConfirmScreen.js:634
 msgid "Send"
 msgstr "Отправить"
 
