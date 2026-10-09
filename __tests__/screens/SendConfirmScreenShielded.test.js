@@ -19,9 +19,15 @@ jest.mock('../../src/hooks/navigation', () => ({
   useParams: () => mockParams,
 }));
 
-// Every send the screen builds, with the facade and the arguments it was built with.
+// Every send the screen builds, with the facade and the arguments it was built with. A build
+// waits for `pendingRun`, when a test sets it.
 const mockSends = [];
-const mockSendSetup = { feeHeader: null, fullTxData: null, buildError: null };
+const mockSendSetup = {
+  feeHeader: null,
+  fullTxData: null,
+  buildError: null,
+  pendingRun: null,
+};
 function mockCreateSend(send, facade, options) {
   Object.assign(send, {
     facade,
@@ -30,6 +36,9 @@ function mockCreateSend(send, facade, options) {
     transaction: { getFeeHeader: () => mockSendSetup.feeHeader },
     fullTxData: mockSendSetup.fullTxData,
     run: jest.fn(async () => {
+      if (mockSendSetup.pendingRun) {
+        await mockSendSetup.pendingRun;
+      }
       if (mockSendSetup.buildError) {
         throw mockSendSetup.buildError;
       }
@@ -123,7 +132,12 @@ afterEach(async () => {
   jest.restoreAllMocks();
   jest.clearAllMocks();
   mockSends.length = 0;
-  Object.assign(mockSendSetup, { feeHeader: null, fullTxData: null, buildError: null });
+  Object.assign(mockSendSetup, {
+    feeHeader: null,
+    fullTxData: null,
+    buildError: null,
+    pendingRun: null,
+  });
   mockParams = {};
 });
 
@@ -195,6 +209,40 @@ describe('SendConfirmScreen with private sends', () => {
       outputs: [{ address: P2PKH, value: 100n, token: HTR.uid }],
     });
     expect(mockSends[0].run).toHaveBeenCalledWith('prepare-tx');
+  });
+
+  test('builds at once where no provider is registered, even while the wallet is not ready', async () => {
+    // Only the wallet-bound build waits for the wallet: elsewhere the build is as before.
+    const wallet = createWallet();
+    wallet.isReady.mockReturnValue(false);
+    await render(
+      { address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC },
+      { wallet, providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED },
+    );
+
+    expect(mockSends).toHaveLength(1);
+    expect(mockSends[0].options).toEqual({
+      storage: wallet.storage,
+      outputs: [{ address: P2PKH, value: 100n, token: HTR.uid }],
+    });
+    expect(wallet.on).not.toHaveBeenCalledWith('state', expect.anything());
+  });
+
+  test('keeps the building spinner as before where no provider is registered: it can not be dismissed', async () => {
+    let finishBuild;
+    mockSendSetup.pendingRun = new Promise((resolve) => { finishBuild = resolve; });
+    const { renderer } = await render(
+      { address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC },
+      { providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED },
+    );
+
+    const building = renderer.root.find((node) => node.props.text === 'Building your transaction');
+    expect(building.props.onDismiss).toBeUndefined();
+
+    await act(async () => { finishBuild(); });
+    await settle();
+    expect(renderer.root.findAll((node) => node.props.text === 'Building your transaction'))
+      .toEqual([]);
   });
 
   test.each([
