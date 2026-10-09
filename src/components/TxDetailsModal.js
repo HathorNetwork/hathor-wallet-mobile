@@ -24,6 +24,7 @@ import { COLORS } from '../styles/themes';
 import { TransactionStatusLabel } from './TransactionStatusLabel';
 import BackdropModal from './BackdropModal';
 import TxFeesRow from './TxFeesRow';
+import AuditUnblindingRows from './AuditUnblindingRows';
 import { getWalletPaidFees } from '../shielded/fees';
 
 class TxDetailsModal extends Component {
@@ -185,6 +186,7 @@ class TxDetailsModal extends Component {
             {isNc && <ListItem title={t`Nano Contract Caller`} text={ncCallerAddrComponent} />}
             {isNc && <PublicExplorerListButton txId={shortNcId} title={t`Nano Contract`} />}
             <PublicExplorerListButton txId={tx.txId} />
+            <AuditUnblindingRows txId={tx.txId} />
           </View>
         </ScrollView>
       </BackdropModal>

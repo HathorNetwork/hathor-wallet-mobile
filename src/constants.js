@@ -512,3 +512,9 @@ export const SHIELDED_UNLOCK_SOURCE = {
  * clipboard, in milliseconds.
  */
 export const SENSITIVE_CLIPBOARD_CLEAR_MS = 60 * 1000;
+
+/**
+ * The explorers that read the unblinding values of a tx from the #unblind= fragment of its link:
+ * only the shielded testnet's explorer has the parser.
+ */
+export const UNBLIND_EXPLORER_URLS = [EXPLORER_SHIELDED_TESTNET_URL];

@@ -5,9 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, test, expect } from '@jest/globals';
+import { jest, describe, test, expect } from '@jest/globals';
 import {
   DEFAULT_PRIVACY_MODE,
+  EXPLORER_MAINNET_URL,
+  EXPLORER_SHIELDED_TESTNET_URL,
+  EXPLORER_TESTNET_URL,
   PRE_SETTINGS_MAINNET,
   PRE_SETTINGS_SHIELDED_TESTNET,
   PRE_SETTINGS_TESTNET,
@@ -16,7 +19,9 @@ import {
 } from '../../src/constants';
 import {
   PRIVACY_DEFAULT_MODE_OPTIONS,
+  getUnblindingEncoder,
   normalizePrivacyDefaultMode,
+  supportsUnblindLink,
 } from '../../src/utils/privacy';
 
 describe('the default privacy mode', () => {
@@ -65,5 +70,73 @@ describe('privacyDefaultModeKey', () => {
 
   test('starts with the prefix a wallet reset clears', () => {
     expect(privacyDefaultModeKey(PRE_SETTINGS_SHIELDED_TESTNET).startsWith('wallet:')).toBe(true);
+  });
+});
+
+describe('getUnblindingEncoder', () => {
+  // The isolated modules below get this copy of wallet-lib: a second one would load a second
+  // bitcore-lib, which refuses to.
+  const walletLib = jest.requireActual('@hathor/wallet-lib');
+
+  test('finds no encoder in the wallet-lib build the app runs with', () => {
+    expect(getUnblindingEncoder()).toBeNull();
+  });
+
+  test('returns the encoder of a wallet-lib build that has one, looked up at each call', () => {
+    // wallet-lib's own exports are read-only, so a stand-in shielded namespace starts without
+    // the encoder and gets it once the module that looks it up is loaded.
+    const shieldedNamespace = {};
+    let isolated;
+    jest.isolateModules(() => {
+      jest.doMock('@hathor/wallet-lib', () => {
+        Object.assign(shieldedNamespace, walletLib.shielded);
+        return { ...walletLib, shielded: shieldedNamespace };
+      });
+      // eslint-disable-next-line global-require
+      isolated = require('../../src/utils/privacy');
+    });
+    jest.dontMock('@hathor/wallet-lib');
+    expect(isolated.getUnblindingEncoder()).toBeNull();
+
+    const encoder = jest.fn();
+    shieldedNamespace.encodeShieldedUnblindingPayload = encoder;
+
+    expect(isolated.getUnblindingEncoder()).toBe(encoder);
+  });
+
+  test('ignores an encoder that is not a function', () => {
+    let isolated;
+    jest.isolateModules(() => {
+      jest.doMock('@hathor/wallet-lib', () => ({
+        ...walletLib,
+        shielded: { ...walletLib.shielded, encodeShieldedUnblindingPayload: 'v1' },
+      }));
+      // eslint-disable-next-line global-require
+      isolated = require('../../src/utils/privacy');
+    });
+    jest.dontMock('@hathor/wallet-lib');
+
+    expect(isolated.getUnblindingEncoder()).toBeNull();
+  });
+});
+
+describe('supportsUnblindLink', () => {
+  test.each([
+    EXPLORER_SHIELDED_TESTNET_URL,
+    EXPLORER_SHIELDED_TESTNET_URL.replace(/\/+$/, ''),
+    `${EXPLORER_SHIELDED_TESTNET_URL}/`,
+  ])('is true for the shielded testnet explorer, at %s', (url) => {
+    expect(supportsUnblindLink(url)).toBe(true);
+  });
+
+  test.each([
+    EXPLORER_MAINNET_URL,
+    EXPLORER_TESTNET_URL,
+    'https://explorer.shielded-outputs.testnet.hathor.network.example/',
+    '',
+    null,
+    undefined,
+  ])('is false for %s', (url) => {
+    expect(supportsUnblindLink(url)).toBe(false);
   });
 });

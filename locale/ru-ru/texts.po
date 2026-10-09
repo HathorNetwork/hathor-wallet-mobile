@@ -673,6 +673,7 @@ msgstr "ТокенЫ"
 msgid "Nano Contracts"
 msgstr ""
 
+#: src/components/AuditUnblindingRows.js:129
 #: src/screens/ExportPrivacyKeys.js:94
 msgid "Copied. The clipboard clears in one minute."
 msgstr ""
@@ -991,6 +992,7 @@ msgstr "Введите свой PIN-код "
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
+#: src/components/AuditUnblindingRows.js:99
 #: src/components/Reown/RequestConfirmationModal.js:110
 #: src/screens/PinScreen.js:325 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
@@ -1817,7 +1819,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:82
-#: src/components/TxDetailsModal.js:184
+#: src/components/TxDetailsModal.js:185
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:202
 msgid "Nano Contract ID"
 msgstr ""
@@ -1918,7 +1920,7 @@ msgstr ""
 msgid "Transaction"
 msgstr ""
 
-#: src/sagas/pushNotification.js:89
+#: src/components/AuditUnblindingRows.js:101 src/sagas/pushNotification.js:89
 msgid "Open"
 msgstr "Открыть"
 
@@ -2030,6 +2032,25 @@ msgstr ""
 msgid ""
 "In order to keep receiving push notifications, you need to refresh your "
 "registration. Do you want to do it now?"
+msgstr ""
+
+#: src/components/AuditUnblindingRows.js:96
+msgid "Open the unblinded link?"
+msgstr ""
+
+#: src/components/AuditUnblindingRows.js:97
+msgid ""
+"The link holds the values that reveal the amounts and tokens you received in "
+"this transaction. Your browser keeps it in its history, which may sync to "
+"your other devices."
+msgstr ""
+
+#: src/components/AuditUnblindingRows.js:122
+msgid "View in Explorer unblinded"
+msgstr ""
+
+#: src/components/AuditUnblindingRows.js:129
+msgid "Copy unblinding values"
 msgstr ""
 
 #: src/components/CopyClipboard.js:55
@@ -2218,7 +2239,7 @@ msgstr ""
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:161
+#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:162
 msgid "Date & Time"
 msgstr "Дата и Время"
 
@@ -2284,7 +2305,7 @@ msgid ""
 "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr "Это конфигурация вашего токена ${ tokenLabel }: ${ configString }"
 
-#: src/components/TokenDetails.js:47 src/components/TxDetailsModal.js:89
+#: src/components/TokenDetails.js:47 src/components/TxDetailsModal.js:90
 msgid "Native Token"
 msgstr ""
 
@@ -2346,53 +2367,53 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:92
+#: src/components/TxDetailsModal.js:93
 msgid "Deposit Based"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:95
+#: src/components/TxDetailsModal.js:96
 msgid "Fee Based"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:159
+#: src/components/TxDetailsModal.js:160
 msgid "Token"
 msgstr "Токен"
 
-#: src/components/TxDetailsModal.js:160
+#: src/components/TxDetailsModal.js:161
 msgid "Description"
 msgstr "Описание"
 
-#: src/components/TxDetailsModal.js:162
+#: src/components/TxDetailsModal.js:163
 msgid "Fee Model"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
-#: src/components/TxDetailsModal.js:171
+#: src/components/TxDetailsModal.js:172
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:174
+#: src/components/TxDetailsModal.js:175
 msgid "Nano Contract Status"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:89
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:115
-#: src/components/TxDetailsModal.js:183
+#: src/components/TxDetailsModal.js:184
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:185
+#: src/components/TxDetailsModal.js:186
 msgid "Nano Contract Caller"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:100
-#: src/components/TxDetailsModal.js:186
+#: src/components/TxDetailsModal.js:187
 msgid "Nano Contract"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:103
-#: src/components/TxDetailsModal.js:229
+#: src/components/TxDetailsModal.js:231
 msgid "Amount"
 msgstr "Количество"
 

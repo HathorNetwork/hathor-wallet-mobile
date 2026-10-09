@@ -5,7 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { DEFAULT_PRIVACY_MODE } from '../constants';
+import { shielded } from '@hathor/wallet-lib';
+import { DEFAULT_PRIVACY_MODE, UNBLIND_EXPLORER_URLS } from '../constants';
 import { getPrivacyModeOptions } from './shieldedSend';
 
 /**
@@ -24,4 +25,34 @@ export const PRIVACY_DEFAULT_MODE_OPTIONS = getPrivacyModeOptions(true);
  */
 export function normalizePrivacyDefaultMode(value) {
   return PRIVACY_DEFAULT_MODE_OPTIONS.includes(value) ? value : DEFAULT_PRIVACY_MODE;
+}
+
+/**
+ * wallet-lib's encoder of the unblinding values of a tx, which the explorer reads from the
+ * #unblind= fragment of the tx's link: encodeShieldedUnblindingPayload(txId, outputs, inputs),
+ * with the openings getShieldedUnblindingForTx gives. It is looked up at each call, never when a
+ * module loads, so a wallet-lib build without it fails nothing; it is null then.
+ *
+ * @returns {function(string, Object[], Object[]): string|null}
+ */
+export function getUnblindingEncoder() {
+  const encoder = shielded?.encodeShieldedUnblindingPayload;
+  return typeof encoder === 'function' ? encoder : null;
+}
+
+const withoutTrailingSlashes = (url) => url.replace(/\/+$/, '');
+
+/**
+ * Whether the explorer at the URL reads the unblinding values from the #unblind= fragment of a
+ * tx's link: one of UNBLIND_EXPLORER_URLS, with or without trailing slashes.
+ *
+ * @param {string|null|undefined} explorerUrl The explorer URL of the network settings
+ * @returns {boolean}
+ */
+export function supportsUnblindLink(explorerUrl) {
+  if (typeof explorerUrl !== 'string' || explorerUrl === '') {
+    return false;
+  }
+  const url = withoutTrailingSlashes(explorerUrl);
+  return UNBLIND_EXPLORER_URLS.some((known) => withoutTrailingSlashes(known) === url);
 }

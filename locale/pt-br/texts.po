@@ -714,6 +714,7 @@ msgstr "Tokens"
 msgid "Nano Contracts"
 msgstr "Nano Contracts"
 
+#: src/components/AuditUnblindingRows.js:129
 #: src/screens/ExportPrivacyKeys.js:94
 msgid "Copied. The clipboard clears in one minute."
 msgstr "Copiado. A área de transferência será limpa em um minuto."
@@ -1049,6 +1050,7 @@ msgstr "Digite seu PIN "
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
+#: src/components/AuditUnblindingRows.js:99
 #: src/components/Reown/RequestConfirmationModal.js:110
 #: src/screens/PinScreen.js:325 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
@@ -1893,7 +1895,7 @@ msgstr "Carregando primeiro endereço da wallet."
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:82
-#: src/components/TxDetailsModal.js:184
+#: src/components/TxDetailsModal.js:185
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:202
 msgid "Nano Contract ID"
 msgstr "ID do Nano Contract"
@@ -1994,7 +1996,7 @@ msgstr "walletServiceWsUrl deve ser uma URL válida."
 msgid "Transaction"
 msgstr "Transação"
 
-#: src/sagas/pushNotification.js:89
+#: src/components/AuditUnblindingRows.js:101 src/sagas/pushNotification.js:89
 msgid "Open"
 msgstr "Abrir"
 
@@ -2123,6 +2125,28 @@ msgid ""
 msgstr ""
 "Para continuar recebendo notificações, é necessário atualizar sua "
 "configuração de notificação. Deseja atualizar agora?"
+
+#: src/components/AuditUnblindingRows.js:96
+msgid "Open the unblinded link?"
+msgstr "Abrir o link com os dados revelados?"
+
+#: src/components/AuditUnblindingRows.js:97
+msgid ""
+"The link holds the values that reveal the amounts and tokens you received in "
+"this transaction. Your browser keeps it in its history, which may sync to "
+"your other devices."
+msgstr ""
+"O link contém os dados que revelam os valores e os tokens que você recebeu "
+"nesta transação. Seu navegador o guarda no histórico, que pode ser "
+"sincronizado com seus outros dispositivos."
+
+#: src/components/AuditUnblindingRows.js:122
+msgid "View in Explorer unblinded"
+msgstr "Ver no Explorer com os dados revelados"
+
+#: src/components/AuditUnblindingRows.js:129
+msgid "Copy unblinding values"
+msgstr "Copiar os dados de revelação"
 
 #: src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
@@ -2331,7 +2355,7 @@ msgstr "Envios privados precisam de um endereço privado."
 msgid "Public Explorer"
 msgstr "Explorer Público"
 
-#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:161
+#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:162
 msgid "Date & Time"
 msgstr "Data & Hora"
 
@@ -2401,7 +2425,7 @@ msgid ""
 "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr "Essa é a configuração do seu token ${ tokenLabel }: ${ configString }"
 
-#: src/components/TokenDetails.js:47 src/components/TxDetailsModal.js:89
+#: src/components/TokenDetails.js:47 src/components/TxDetailsModal.js:90
 msgid "Native Token"
 msgstr "Token nativo"
 
@@ -2466,53 +2490,53 @@ msgstr "Processando"
 msgid "Voided"
 msgstr "Inválida"
 
-#: src/components/TxDetailsModal.js:92
+#: src/components/TxDetailsModal.js:93
 msgid "Deposit Based"
 msgstr "Depósito"
 
-#: src/components/TxDetailsModal.js:95
+#: src/components/TxDetailsModal.js:96
 msgid "Fee Based"
 msgstr "Token com taxa"
 
-#: src/components/TxDetailsModal.js:159
+#: src/components/TxDetailsModal.js:160
 msgid "Token"
 msgstr "Token"
 
-#: src/components/TxDetailsModal.js:160
+#: src/components/TxDetailsModal.js:161
 msgid "Description"
 msgstr "Descrição"
 
-#: src/components/TxDetailsModal.js:162
+#: src/components/TxDetailsModal.js:163
 msgid "Fee Model"
 msgstr "Modelo de taxa"
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
-#: src/components/TxDetailsModal.js:171
+#: src/components/TxDetailsModal.js:172
 msgid "Transaction ID"
 msgstr "ID da Transação"
 
-#: src/components/TxDetailsModal.js:174
+#: src/components/TxDetailsModal.js:175
 msgid "Nano Contract Status"
 msgstr "Status do Nano Contract"
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:89
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:115
-#: src/components/TxDetailsModal.js:183
+#: src/components/TxDetailsModal.js:184
 msgid "Blueprint Method"
 msgstr "Método do Blueprint"
 
-#: src/components/TxDetailsModal.js:185
+#: src/components/TxDetailsModal.js:186
 msgid "Nano Contract Caller"
 msgstr "Endereço de assinatura do Nano Contract"
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:100
-#: src/components/TxDetailsModal.js:186
+#: src/components/TxDetailsModal.js:187
 msgid "Nano Contract"
 msgstr "Nano Contract"
 
 #: src/components/Reown/CreateTokenRequest.js:103
-#: src/components/TxDetailsModal.js:229
+#: src/components/TxDetailsModal.js:231
 msgid "Amount"
 msgstr "Quantidade"
 
