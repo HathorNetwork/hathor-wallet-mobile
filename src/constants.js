@@ -147,6 +147,25 @@ const ADDRESS_MODE_KEY_PREFIX = 'wallet:address_mode:';
 export const addressModeKey = (network) => `${ADDRESS_MODE_KEY_PREFIX}${network}`;
 
 /**
+ * What a send hides:
+ * - PUBLIC: nothing, the amount and the token are visible;
+ * - HIDE_AMOUNT: the amount (an amount-shielded output);
+ * - PRIVATE: the amount and the token (a fully shielded output).
+ *
+ * A default mode can be stored as a user preference, so keep these values stable.
+ */
+export const PRIVACY_MODE = {
+  PUBLIC: 'public',
+  HIDE_AMOUNT: 'hide_amount',
+  PRIVATE: 'private',
+};
+
+/**
+ * The privacy mode a send to a private address starts in.
+ */
+export const DEFAULT_PRIVACY_MODE = PRIVACY_MODE.HIDE_AMOUNT;
+
+/**
  * Amount display format (wallet-wide, network-independent).
  */
 export const AMOUNT_FORMAT = {

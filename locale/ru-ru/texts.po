@@ -1810,6 +1810,7 @@ msgid "Max"
 msgstr ""
 
 #: src/components/AmountInputAccessory.js:105
+#: src/components/TransactionPrivacyModal.js:72
 msgid "Done"
 msgstr ""
 
@@ -1962,6 +1963,49 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
+#: src/components/PrivacyModeCard.js:38 src/components/ReceiveMyAddress.js:46
+#: src/components/Shielded/ShieldedBalanceSplit.js:145
+msgid "Private"
+msgstr ""
+
+#.  A fully shielded output hides its token only among the tokens the tx spends, and the
+#.  fee always spends HTR: an HTR output stays known as HTR.
+#: src/components/PrivacyModeCard.js:41
+msgid ""
+"Amount hidden. The token is hidden among the tokens this send spends, but "
+"never when it is HTR."
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:47
+msgid "Hide amount"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:48
+msgid "Token visible, amount hidden"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:54 src/components/ReceiveMyAddress.js:45
+#: src/components/Shielded/ShieldedBalanceSplit.js:150
+msgid "Public"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:55
+msgid "Token and amount visible"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:92
+msgid "No privacy fee unless the send spends private funds"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:95
+#, javascript-format
+msgid "Fee: ${ fee } ${ symbol } per private output"
+msgstr ""
+
+#: src/components/PrivacyModeSelector.js:64
+msgid "Private sends need a private address."
+msgstr ""
+
 #: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"
 msgstr "Public Explorer"
@@ -1976,16 +2020,6 @@ msgstr "ID"
 
 #: src/components/PushTxDetailsModal.js:107
 msgid "New Transaction"
-msgstr ""
-
-#: src/components/ReceiveMyAddress.js:45
-#: src/components/Shielded/ShieldedBalanceSplit.js:150
-msgid "Public"
-msgstr ""
-
-#: src/components/ReceiveMyAddress.js:46
-#: src/components/Shielded/ShieldedBalanceSplit.js:145
-msgid "Private"
 msgstr ""
 
 #: src/components/ReceiveMyAddress.js:76
@@ -2066,6 +2100,18 @@ msgstr ""
 
 #: src/components/TokenImportBanner.js:70
 msgid "We found tokens linked to your address that are not yet in your wallet."
+msgstr ""
+
+#: src/components/TransactionPrivacyModal.js:56
+msgid "Transaction privacy"
+msgstr ""
+
+#: src/components/TransactionPrivacyModal.js:57
+msgid "Choose what this transaction hides."
+msgstr ""
+
+#: src/components/TransactionPrivacyModal.js:67
+msgid "Payments to a private address are always private."
 msgstr ""
 
 #: src/components/TransactionStatusLabel.js:69
