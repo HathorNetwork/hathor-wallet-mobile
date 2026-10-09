@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
+import { ListMenu } from '../components/HathorList';
 import PrivacyModeCard, { PRIVACY_MODE_CARD_VARIANT } from '../components/PrivacyModeCard';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
@@ -31,6 +32,9 @@ import { PRIVACY_DEFAULT_MODE_OPTIONS } from '../utils/privacy';
  * for the network, and every start of the wallet on the network loads it. The privacy sheet of a
  * send still overrides it for that send.
  *
+ * Its audit section opens the export of the privacy keys, with no params: the export asks for the
+ * PIN itself. A passkey wallet's record holds no scan key, so it gets no export.
+ *
  * Settings opens it where the shielded UI is available. It goes back when it no longer is: the
  * flag turns off, or a reload or a network change starts.
  *
@@ -42,6 +46,7 @@ export default function PrivacySettings({ navigation }) {
   const available = useSelector(isShieldedAvailable);
   const networkSettings = useSelector(getNetworkSettings);
   const selectedMode = useSelector((state) => state.privacyDefaultMode);
+  const canExportKeys = !STORE.isPasskeyWallet();
 
   useEffect(() => {
     if (!available) {
@@ -76,6 +81,20 @@ export default function PrivacySettings({ navigation }) {
           options={PRIVACY_DEFAULT_MODE_OPTIONS}
           variant={PRIVACY_MODE_CARD_VARIANT.DEFAULT}
         />
+
+        {canExportKeys && (
+          <>
+            <Text style={[styles.sectionLabel, styles.sectionSpaced]}>{t`AUDIT`}</Text>
+            <View style={styles.menu}>
+              <ListMenu
+                title={t`Export privacy keys`}
+                onPress={() => navigation.navigate('ExportPrivacyKeys')}
+                isFirst
+                isLast
+              />
+            </View>
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -103,5 +122,14 @@ const styles = StyleSheet.create({
     color: COLORS.textColorShadow,
     letterSpacing: 0.5,
     marginBottom: 12,
+  },
+  sectionSpaced: {
+    marginTop: 32,
+  },
+  menu: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
+    overflow: 'hidden',
   },
 });

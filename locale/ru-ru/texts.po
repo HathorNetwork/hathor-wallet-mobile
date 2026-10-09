@@ -134,8 +134,9 @@ msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:101
 #: src/components/Shielded/ShieldedBalanceSplit.js:157
-#: src/screens/SendConfirmScreen.js:209 src/screens/SendConfirmScreen.js:237
-#: src/shielded/receiveState.js:154 src/utils/shieldedSend.js:90
+#: src/screens/ExportPrivacyKeys.js:250 src/screens/SendConfirmScreen.js:209
+#: src/screens/SendConfirmScreen.js:237 src/shielded/receiveState.js:154
+#: src/utils/shieldedSend.js:90
 msgid "Private transfers are not available for this wallet."
 msgstr ""
 
@@ -672,6 +673,87 @@ msgstr "ТокенЫ"
 msgid "Nano Contracts"
 msgstr ""
 
+#: src/screens/ExportPrivacyKeys.js:94
+msgid "Copied. The clipboard clears in one minute."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:96
+msgid "Copy"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:225
+msgid "Enter your 6-digit pin to export the privacy keys"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:226 src/screens/PrivacySettings.js:90
+msgid "Export privacy keys"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:237
+msgid "I understand, export the keys"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:243
+msgid "Unlock your private balance to export the privacy keys."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:259
+msgid "EXPORT PRIVACY KEYS"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:264
+msgid "Read this before you export"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:266
+msgid ""
+"These keys give read access to every private output this wallet receives, "
+"its change included: whoever holds them sees the amount and the token of "
+"each one."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:269
+msgid ""
+"This access can't be revoked. To end it, move your funds to a new wallet."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:272
+msgid "The keys can't spend: they don't move funds or sign transactions."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:275
+msgid ""
+"Share them only with an auditor you trust, over a secure channel. The "
+"auditor needs a tool that reads Hathor's private outputs."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:282
+msgid "Reading the keys…"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:287
+msgid "The privacy keys could not be read."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:293
+msgid "Spend public key (xpub)"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:294
+msgid ""
+"Path m/44'/280'/2'/0. It finds the private outputs this wallet receives."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:300
+msgid "Scan private key (xpriv)"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:301
+msgid ""
+"Path m/44'/280'/1'/0. It reads the amount and the token of each private "
+"output this wallet receives. It never signs."
+msgstr ""
+
 #: src/screens/ImportTokensScreen.js:135
 msgid "No tokens available to import"
 msgstr ""
@@ -918,18 +1000,22 @@ msgstr "Отмена"
 msgid "Biometry failed or canceled."
 msgstr "Биометрия не удалась или была отменена."
 
-#: src/screens/PrivacySettings.js:64
+#: src/screens/PrivacySettings.js:69
 msgid "PRIVACY SETTINGS"
 msgstr ""
 
-#: src/screens/PrivacySettings.js:69
+#: src/screens/PrivacySettings.js:74
 msgid ""
 "The default applies to your sends to private addresses. You can change it "
 "for each send."
 msgstr ""
 
-#: src/screens/PrivacySettings.js:72
+#: src/screens/PrivacySettings.js:77
 msgid "DEFAULT FOR SENDS TO PRIVATE ADDRESSES"
+msgstr ""
+
+#: src/screens/PrivacySettings.js:87
+msgid "AUDIT"
 msgstr ""
 
 #: src/screens/PushNotification.js:58 src/screens/Settings.js:152

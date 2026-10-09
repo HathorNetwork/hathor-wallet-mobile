@@ -99,7 +99,14 @@ async function render({ flag = true, level = 'full', saved = null } = {}) {
   const switchOn = (index) => act(async () => {
     switches()[index].props.onValueChange(true);
   });
-  return { store, navigation, texts, switches, switchOn };
+  return {
+    store,
+    renderer,
+    navigation,
+    texts,
+    switches,
+    switchOn,
+  };
 }
 
 describe('PrivacySettings', () => {
@@ -190,5 +197,29 @@ describe('PrivacySettings', () => {
     });
 
     expect(navigation.goBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('PrivacySettings and the key export', () => {
+  const exportRows = (renderer) => renderer.root.findAll(
+    (node) => node.props.title === 'Export privacy keys' && typeof node.props.onPress === 'function',
+  );
+
+  test('opens the export of the privacy keys, with no params', async () => {
+    const { renderer, texts, navigation } = await render();
+
+    expect(texts()).toContain('AUDIT');
+    await act(async () => { exportRows(renderer)[0].props.onPress(); });
+
+    expect(navigation.navigate).toHaveBeenCalledTimes(1);
+    expect(navigation.navigate.mock.calls[0]).toEqual(['ExportPrivacyKeys']);
+  });
+
+  test('offers no export to a passkey wallet, whose record holds no scan key', async () => {
+    jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(true);
+    const { renderer, texts } = await render();
+
+    expect(exportRows(renderer)).toEqual([]);
+    expect(texts()).not.toContain('AUDIT');
   });
 });
