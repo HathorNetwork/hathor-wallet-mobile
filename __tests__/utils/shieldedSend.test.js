@@ -12,6 +12,7 @@ import { DEFAULT_PRIVACY_MODE, PRIVACY_MODE } from '../../src/constants';
 import {
   MAX_PRIVATE_AMOUNT,
   buildSendOutput,
+  computeSendFees,
   getPrivacyModeOptions,
   initialPrivacyMode,
   isPrivateAmountAllowed,
@@ -148,5 +149,62 @@ describe('waitForWalletReady', () => {
     cancel();
     await expect(promise).resolves.toBe(false);
     expect(wallet.listenerCount('state')).toBe(0);
+  });
+});
+
+describe('computeSendFees', () => {
+  const AS = { shieldedMode: 1 };
+  const FS = { shieldedMode: 2 };
+  // A prepared send, as wallet-lib leaves it: its tx with a fee header, and the data it was
+  // built from, with its shielded outputs (change and split outputs included).
+  const prepared = (entries, shieldedOutputs) => ({
+    transaction: { getFeeHeader: () => (entries ? { entries } : null) },
+    fullTxData: shieldedOutputs ? { shieldedOutputs } : { inputs: [], outputs: [] },
+  });
+
+  test('is all zero for a send without a fee header', () => {
+    expect(computeSendFees(prepared(null))).toEqual({
+      total: 0n, privacy: 0n, network: 0n, privateOutputs: 0,
+    });
+  });
+
+  test('bills 1 per amount-shielded and 2 per fully shielded output', () => {
+    expect(computeSendFees(prepared([{ tokenIndex: 0, amount: 3n }], [AS, FS]))).toEqual({
+      total: 3n, privacy: 3n, network: 0n, privateOutputs: 2,
+    });
+  });
+
+  test('reads the shieldedMode of the prepared outputs, not the mode of history entries', () => {
+    // A history entry's `mode: 2` is not what the prepared tx gives: it bills as amount-shielded.
+    const fees = computeSendFees(prepared([{ tokenIndex: 0, amount: 2n }], [{ mode: 2 }, AS]));
+    expect(fees.privacy).toBe(2n);
+  });
+
+  test('leaves the rest of the total as the network fee, as a fee-based token pays', () => {
+    expect(computeSendFees(prepared([{ tokenIndex: 0, amount: 4n }], [AS, AS]))).toEqual({
+      total: 4n, privacy: 2n, network: 2n, privateOutputs: 2,
+    });
+  });
+
+  test('sums the HTR entries of the fee header', () => {
+    const fees = computeSendFees(prepared(
+      [{ tokenIndex: 0, amount: 1n }, { tokenIndex: 0, amount: 2n }],
+      [AS],
+    ));
+    expect(fees.total).toBe(3n);
+    expect(fees.network).toBe(2n);
+  });
+
+  test('throws on a fee entry in another token', () => {
+    expect(() => computeSendFees(prepared([{ tokenIndex: 1, amount: 1n }], [])))
+      .toThrow('Unexpected fee entry with non-HTR token index');
+  });
+
+  test('bills no privacy fee for a send of the wallet-service facade', () => {
+    const entries = [{ tokenIndex: 0, amount: 1n }];
+    const send = { transaction: { getFeeHeader: () => ({ entries }) } };
+    expect(computeSendFees(send)).toEqual({
+      total: 1n, privacy: 0n, network: 1n, privateOutputs: 0,
+    });
   });
 });

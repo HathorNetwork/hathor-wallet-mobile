@@ -57,6 +57,7 @@ jest.mock('@hathor/wallet-lib', () => ({
 
 /* eslint-disable import/first */
 import React from 'react';
+import { TouchableOpacity } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
@@ -374,5 +375,87 @@ describe('SendConfirmScreen with private sends', () => {
     expect(wallet.signTx.mock.invocationCallOrder[0])
       .toBeLessThan(send.runFromMining.mock.invocationCallOrder[0]);
     expect(send.pin).toBeNull();
+  });
+});
+
+describe('SendConfirmScreen fees and summary', () => {
+  const PRIVATE_SEND = {
+    address: SHIELDED,
+    amount: 100n,
+    token: HTR,
+    privacyMode: PRIVACY_MODE.HIDE_AMOUNT,
+  };
+  const expandFees = (renderer) => act(async () => {
+    renderer.root.find((node) => node.props.privateOutputs !== undefined && node.props.total)
+      .findAllByType(TouchableOpacity)[0].props.onPress();
+  });
+
+  test('breaks the fee of a send that pays a privacy fee down', async () => {
+    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 3n }] };
+    mockSendSetup.fullTxData = { shieldedOutputs: [{ shieldedMode: 1 }, { shieldedMode: 2 }] };
+    const { renderer, texts } = await render(PRIVATE_SEND);
+
+    expect(texts()).toEqual(expect.arrayContaining(['Fees', '0.03 HTR', '1.00 HTR + 0.03 HTR']));
+    expect(texts()).not.toContain('Network Fee');
+
+    await expandFees(renderer);
+    expect(texts()).toEqual(expect.arrayContaining(['Privacy fee', '2 private outputs']));
+    expect(texts()).not.toContain('Network fee');
+  });
+
+  test('keeps the network fee row of a send that pays no privacy fee', async () => {
+    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 1n }] };
+    const { texts } = await render({
+      address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC,
+    });
+
+    expect(texts()).toEqual(expect.arrayContaining(['Network Fee', '1.00 HTR + 0.01 HTR']));
+    expect(texts()).not.toContain('Fees');
+  });
+
+  test('breaks down the privacy fee of a public send that spends private funds', async () => {
+    // Its change is private, so it pays a privacy fee for it, and the split it needs.
+    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 2n }] };
+    mockSendSetup.fullTxData = { shieldedOutputs: [{ shieldedMode: 1 }, { shieldedMode: 1 }] };
+    const { texts } = await render({
+      address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC,
+    }, { flag: false });
+
+    expect(texts()).toEqual(expect.arrayContaining(['Fees', '0.02 HTR']));
+  });
+
+  test('shows the privacy mode, and that the recipient is a private address', async () => {
+    const { texts } = await render(PRIVATE_SEND);
+
+    expect(texts()).toEqual(expect.arrayContaining(['Privacy', 'Hide amount', 'Private address']));
+  });
+
+  test('shows Public for a send to a legacy address where private sends are available', async () => {
+    const { texts } = await render({
+      address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC,
+    });
+
+    expect(texts()).toEqual(expect.arrayContaining(['Privacy', 'Public']));
+    expect(texts()).not.toContain('Private address');
+  });
+
+  test('shows no privacy while the shielded UI is off', async () => {
+    const { texts } = await render({
+      address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC,
+    }, { flag: false });
+
+    expect(texts()).not.toContain('Privacy');
+    expect(texts()).not.toContain('Private address');
+  });
+
+  test('fails a send whose fee is in another token, and releases its UTXOs', async () => {
+    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 1, amount: 1n }] };
+    const { renderer, texts } = await render(PRIVATE_SEND);
+
+    expect(texts()).toContain('Unexpected fee entry with non-HTR token index');
+
+    await act(async () => { renderer.unmount(); });
+    mounted = null;
+    expect(mockSends[0].releaseUtxos).toHaveBeenCalled();
   });
 });

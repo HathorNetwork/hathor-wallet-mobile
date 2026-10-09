@@ -5,7 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Image } from 'react-native';
 import { useSelector } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
@@ -17,10 +22,17 @@ import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
+import SendFeeSummary from '../components/SendFeeSummary';
+import { getPrivacyModeDetail } from '../components/PrivacyModeCard';
 import TooltipModal from '../components/TooltipModal';
 import FeedbackModal from '../components/FeedbackModal';
 import Spinner from '../components/Spinner';
-import { renderValue, isTokenNFT, isShieldedAddress } from '../utils';
+import {
+  getDisplayAmountFormat,
+  isShieldedAddress,
+  isTokenNFT,
+  renderValue,
+} from '../utils';
 import NavigationService from '../NavigationService';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { COLORS } from '../styles/themes';
@@ -35,9 +47,11 @@ import {
 import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import {
   buildSendOutput,
+  computeSendFees,
   privacyModeToShieldedMode,
   waitForWalletReady,
 } from '../utils/shieldedSend';
+import { canSendPrivately } from '../shielded/gating';
 import errorIcon from '../assets/images/icErrorBig.png';
 
 const PHASE = Object.freeze({
@@ -91,6 +105,9 @@ const SendConfirmScreen = () => {
   const providerReady = useSelector(
     (state) => state.shielded?.providerStatus === SHIELDED_PROVIDER_STATUS.READY,
   );
+  const privateSendsAvailable = useSelector(canSendPrivately);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+  const amountFormat = useSelector(getDisplayAmountFormat);
 
   const navigation = useNavigation();
   const params = useParams();
@@ -104,9 +121,21 @@ const SendConfirmScreen = () => {
   } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
   const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
+  // The build checks the recipient again, and refuses what it can't pay.
+  const recipientIsShielded = useMemo(() => {
+    try {
+      return isShieldedAddress(address, new hathorLib.Network(networkName));
+    } catch (e) {
+      return false;
+    }
+  }, [address, networkName]);
+  // The send's privacy shows where the user could pick it, and for every private send.
+  const showsPrivacy = privateSendsAvailable || privacyMode !== PRIVACY_MODE.PUBLIC;
 
   const [phase, setPhase] = useState(PHASE.BUILDING);
   const [sendTx, setSendTx] = useState(null);
+  // The fees of the prepared send: { total, network, privacy, privateOutputs }.
+  const [fees, setFees] = useState(null);
   const [buildError, setBuildError] = useState(null);
   const [modal, setModal] = useState(null);
   const [isTooltipShown, setIsTooltipShown] = useState(false);
@@ -196,7 +225,9 @@ const SendConfirmScreen = () => {
         return;
       }
 
+      // From here on, the screen releases the send's UTXOs when it leaves.
       setSendTx(sendTransaction);
+      setFees(computeSendFees(sendTransaction));
       setPhase(PHASE.READY);
     } catch (err) {
       if (unmountedRef.current) return;
@@ -236,9 +267,10 @@ const SendConfirmScreen = () => {
     return focusListener;
   }, [navigation]);
 
-  const networkFee = phase === PHASE.READY && sendTx
-    ? (sendTx.transaction.getFeeHeader()?.entries?.[0]?.amount ?? 0n)
-    : null;
+  // The whole fee of the send. The Network Fee row shows it when no part of it is a privacy fee;
+  // otherwise SendFeeSummary breaks it down.
+  const networkFee = phase === PHASE.READY && fees ? fees.total : null;
+  const paysPrivacyFee = fees !== null && fees.privacy > 0n;
 
   /**
    * Sign and mine the pre-built transaction.
@@ -454,17 +486,41 @@ const SendConfirmScreen = () => {
               <View style={styles.summaryContainer}>
                 <View style={styles.summaryItem}>
                   <TextFmt>{t`**To**`}</TextFmt>
-                  <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
+                  {recipientIsShielded ? (
+                    <View style={styles.recipient}>
+                      <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
+                      <View style={styles.privateBadge}>
+                        <Text style={styles.privateBadgeText}>{t`Private address`}</Text>
+                      </View>
+                    </View>
+                  ) : (
+                    <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
+                  )}
                 </View>
-                <View style={styles.summaryItem}>
-                  <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
-                    <TextFmt>{t`**Network Fee**`}</TextFmt>
-                    <TouchableOpacity onPress={handleFeeInfoPress} style={{ marginLeft: 4 }}>
-                      <InfoCircleIcon size={16} />
-                    </TouchableOpacity>
+                {showsPrivacy && (
+                  <View style={styles.summaryItem}>
+                    <TextFmt>{t`**Privacy**`}</TextFmt>
+                    <Text>{getPrivacyModeDetail(privacyMode)?.title}</Text>
                   </View>
-                  {renderNetworkFeeValue()}
-                </View>
+                )}
+                {paysPrivacyFee ? (
+                  <SendFeeSummary
+                    fees={fees}
+                    symbol={nativeSymbol}
+                    decimalPlaces={decimalPlaces}
+                    amountFormat={amountFormat}
+                  />
+                ) : (
+                  <View style={styles.summaryItem}>
+                    <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
+                      <TextFmt>{t`**Network Fee**`}</TextFmt>
+                      <TouchableOpacity onPress={handleFeeInfoPress} style={{ marginLeft: 4 }}>
+                        <InfoCircleIcon size={16} />
+                      </TouchableOpacity>
+                    </View>
+                    {renderNetworkFeeValue()}
+                  </View>
+                )}
                 <View style={styles.summaryItem}>
                   <TextFmt>{t`**Total**`}</TextFmt>
                   <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} ${nativeSymbol}` : ''}`}</Text>
@@ -500,6 +556,20 @@ const styles = StyleSheet.create({
     padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  recipient: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  privateBadge: {
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    backgroundColor: COLORS.lowContrastDetail,
+  },
+  privateBadgeText: {
+    fontSize: 12,
+    color: COLORS.textColor,
   },
   nofee: {
     flexDirection: 'row',

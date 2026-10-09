@@ -9,10 +9,11 @@ import React, { useState } from 'react';
 import {
   StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
-import { t } from 'ttag';
+import { msgid, ngettext, t } from 'ttag';
 
 import { ChevronDownIcon } from '../Icons/ChevronDown.icon';
 import { ChevronUpIcon } from '../Icons/ChevronUp.icon';
+import { InfoCircleIcon } from '../Icons/InfoCircle';
 import { renderValue } from '../../utils';
 import { COLORS } from '../../styles/themes';
 
@@ -30,6 +31,13 @@ import { COLORS } from '../../styles/themes';
  * @param {string} props.amountFormat
  * @param {Object} [props.style] The container's style
  * @param {Object} [props.rowStyle] The style of the row of the total
+ * @param {Object} [props.labelStyle] The style of the total's label
+ * @param {Object} [props.valueStyle] The style of the total's value
+ * @param {Object} [props.breakdownStyle] The style of the expanded network and privacy fees
+ * @param {number} [props.privateOutputs] How many shielded outputs pay the privacy fee, said
+ *   under it when given
+ * @param {function(): void} [props.onInfoPress] When given, an info icon beside the total's label
+ *   calls it
  */
 export default function FeeBreakdown({
   total,
@@ -40,11 +48,20 @@ export default function FeeBreakdown({
   amountFormat,
   style,
   rowStyle,
+  labelStyle,
+  valueStyle,
+  breakdownStyle,
+  privateOutputs,
+  onInfoPress,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const formatFee = (amount) => (
     `${renderValue(amount, false, decimalPlaces, amountFormat)} ${symbol}`
   );
+
+  const label = <Text style={[styles.feeRowLabel, labelStyle]}>{t`Fees`}</Text>;
+  const privacyLabel = <Text style={styles.feeBreakdownLabel}>{t`Privacy fee`}</Text>;
+  const count = privateOutputs;
 
   return (
     <View style={style}>
@@ -53,16 +70,27 @@ export default function FeeBreakdown({
         onPress={() => setIsExpanded((expanded) => !expanded)}
         activeOpacity={0.6}
       >
-        <Text style={styles.feeRowLabel}>{t`Fees`}</Text>
+        {onInfoPress ? (
+          <View style={styles.feeRowLabelWrapper}>
+            {label}
+            <TouchableOpacity
+              onPress={onInfoPress}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole='button'
+            >
+              <InfoCircleIcon size={16} />
+            </TouchableOpacity>
+          </View>
+        ) : label}
         <View style={styles.feeRowValueWrapper}>
-          <Text style={styles.feeRowValue}>{formatFee(total)}</Text>
+          <Text style={[styles.feeRowValue, valueStyle]}>{formatFee(total)}</Text>
           {isExpanded
             ? <ChevronUpIcon size={16} color={COLORS.textColor} />
             : <ChevronDownIcon size={16} color={COLORS.textColor} />}
         </View>
       </TouchableOpacity>
       {isExpanded && (
-        <View style={styles.feeBreakdown}>
+        <View style={[styles.feeBreakdown, breakdownStyle]}>
           {network > 0n && (
             <View style={styles.feeBreakdownRow}>
               <Text style={styles.feeBreakdownLabel}>{t`Network fee`}</Text>
@@ -71,7 +99,14 @@ export default function FeeBreakdown({
           )}
           {privacy > 0n && (
             <View style={styles.feeBreakdownRow}>
-              <Text style={styles.feeBreakdownLabel}>{t`Privacy fee`}</Text>
+              {count > 0 ? (
+                <View>
+                  {privacyLabel}
+                  <Text style={styles.feeBreakdownDetail}>
+                    {ngettext(msgid`${count} private output`, `${count} private outputs`, count)}
+                  </Text>
+                </View>
+              ) : privacyLabel}
               <Text style={styles.feeBreakdownValue}>{formatFee(privacy)}</Text>
             </View>
           )}
@@ -95,6 +130,11 @@ const styles = StyleSheet.create({
   feeRowLabel: {
     fontSize: 14,
     color: COLORS.textColorShadow,
+  },
+  feeRowLabelWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   feeRowValueWrapper: {
     flexDirection: 'row',
@@ -124,5 +164,10 @@ const styles = StyleSheet.create({
   feeBreakdownValue: {
     fontSize: 13,
     color: COLORS.textColorShadow,
+  },
+  feeBreakdownDetail: {
+    fontSize: 12,
+    color: COLORS.textColorShadow,
+    paddingLeft: 10,
   },
 });

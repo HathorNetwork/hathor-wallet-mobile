@@ -8,7 +8,11 @@
 import { constants as hathorLibConstants, shielded } from '@hathor/wallet-lib';
 import { DEFAULT_PRIVACY_MODE, PRIVACY_MODE } from '../constants';
 
-const { MAX_SHIELDED_OUTPUT_VALUE } = hathorLibConstants;
+const {
+  FEE_PER_AMOUNT_SHIELDED_OUTPUT,
+  FEE_PER_FULL_SHIELDED_OUTPUT,
+  MAX_SHIELDED_OUTPUT_VALUE,
+} = hathorLibConstants;
 const { ShieldedOutputMode } = shielded;
 
 /**
@@ -128,4 +132,45 @@ export function waitForWalletReady(wallet) {
     wallet.on('state', onState);
   });
   return { promise, cancel };
+}
+
+/**
+ * The fees of a prepared send, from what wallet-lib built:
+ * - total: the fee the tx declares, the sum of its fee header's entries, all in HTR;
+ * - privacy: what its shielded outputs cost, change and split outputs included: the fee of an
+ *   amount-shielded output for each one, and of a fully shielded output for each one, by the
+ *   shieldedMode the prepared tx gives them;
+ * - network: the rest of the total;
+ * - privateOutputs: how many shielded outputs it has.
+ * A send without shielded outputs, as every send of the wallet-service facade, pays no privacy
+ * fee.
+ *
+ * @param {Object} sendTx A SendTransaction or SendTransactionWalletService, prepared
+ * @returns {{ total: bigint, privacy: bigint, network: bigint, privateOutputs: number }}
+ * @throws {Error} When the fee header has an entry in another token than HTR
+ */
+export function computeSendFees(sendTx) {
+  const entries = sendTx.transaction?.getFeeHeader()?.entries ?? [];
+  let total = 0n;
+  for (const entry of entries) {
+    if (entry.tokenIndex !== 0) {
+      throw new Error('Unexpected fee entry with non-HTR token index');
+    }
+    total += entry.amount;
+  }
+
+  const shieldedOutputs = sendTx.fullTxData?.shieldedOutputs ?? [];
+  let privacy = 0n;
+  for (const output of shieldedOutputs) {
+    privacy += output.shieldedMode === ShieldedOutputMode.FULLY_SHIELDED
+      ? FEE_PER_FULL_SHIELDED_OUTPUT
+      : FEE_PER_AMOUNT_SHIELDED_OUTPUT;
+  }
+
+  return {
+    total,
+    privacy,
+    network: total > privacy ? total - privacy : 0n,
+    privateOutputs: shieldedOutputs.length,
+  };
 }
