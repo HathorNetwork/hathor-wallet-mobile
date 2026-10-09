@@ -184,55 +184,59 @@ msgstr ""
 "Para mais informações, veja os |link1:Termos de Serviço| e |link2:Política "
 "de Privacidade|, ou visite nosso site |link3:https://hathor.network/|."
 
-#: src/screens/AddressMode.js:123
+#: src/screens/AddressMode.js:132
 msgid "Error"
 msgstr "Erro"
 
-#: src/screens/AddressMode.js:124
+#: src/screens/AddressMode.js:133
 msgid "Failed to change address mode. Please try again."
 msgstr "Falha ao alterar o modo de endereço. Por favor, tente novamente."
 
-#: src/screens/AddressMode.js:137 src/screens/AddressMode.js:150
+#: src/screens/AddressMode.js:146 src/screens/AddressMode.js:159
 msgid "ADDRESS MODE"
 msgstr "MODO DE ENDEREÇO"
 
-#: src/screens/AddressMode.js:156
+#: src/screens/AddressMode.js:165
 msgid "You can set your wallet to "
 msgstr "Você pode configurar sua carteira para "
 
-#: src/screens/AddressMode.js:158
+#: src/screens/AddressMode.js:167
 msgid "single or multi address mode"
 msgstr "modo de endereço único ou múltiplos"
 
-#: src/screens/AddressMode.js:163
+#: src/screens/AddressMode.js:172
 msgid "You can switch anytime in the settings."
 msgstr "Você pode trocar a qualquer momento nas configurações."
 
-#: src/screens/AddressMode.js:173
+#: src/screens/AddressMode.js:182
 msgid "Single Address"
 msgstr "Endereço Único"
 
-#: src/screens/AddressMode.js:174
+#: src/screens/AddressMode.js:183
 msgid "Your wallet will use only one address (index 0)."
 msgstr "Sua carteira usará apenas um endereço (índice 0)."
 
-#: src/screens/AddressMode.js:175
+#: src/screens/AddressMode.js:184
 msgid "Easier to manage and compatible with all dApps."
 msgstr "Mais fácil de gerenciar e compatível com todos os dApps."
 
-#: src/screens/AddressMode.js:180
+#: src/screens/AddressMode.js:189
 msgid "Multi Address"
 msgstr "Múltiplos Endereços"
 
-#: src/screens/AddressMode.js:181
+#: src/screens/AddressMode.js:190
 msgid "Your wallet will let you generate multiple addresses."
 msgstr "Sua carteira permitirá gerar múltiplos endereços."
 
-#: src/screens/AddressMode.js:182
+#: src/screens/AddressMode.js:191
 msgid "Useful for advanced users."
 msgstr "Útil para usuários avançados."
 
-#: src/screens/AddressMode.js:192
+#: src/screens/AddressMode.js:202
+msgid "Single address mode is not available on this network."
+msgstr "O modo de endereço único não está disponível nesta rede."
+
+#: src/screens/AddressMode.js:203
 msgid ""
 "You can't switch to single address mode because other addresses in your "
 "wallet are already in use."
@@ -240,11 +244,11 @@ msgstr ""
 "Você não pode mudar para o modo de endereço único porque outros endereços da "
 "sua carteira já estão em uso."
 
-#: src/screens/AddressMode.js:202 src/screens/AmountFormat.js:99
+#: src/screens/AddressMode.js:213 src/screens/AmountFormat.js:99
 msgid "Save preferences"
 msgstr "Salvar preferências"
 
-#: src/screens/AddressMode.js:223
+#: src/screens/AddressMode.js:234
 msgid ""
 "Changing\n"
 "address mode..."
@@ -1763,21 +1767,21 @@ msgstr "Transação"
 msgid "Open"
 msgstr "Abrir"
 
-#: src/sagas/wallet.js:1099
+#: src/sagas/wallet.js:1121
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1113
+#: src/sagas/wallet.js:1135
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:1123
+#: src/sagas/wallet.js:1145
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:1139
+#: src/sagas/wallet.js:1161
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."

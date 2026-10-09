@@ -168,67 +168,71 @@ msgid ""
 "|link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#: src/screens/AddressMode.js:123
+#: src/screens/AddressMode.js:132
 msgid "Error"
 msgstr ""
 
-#: src/screens/AddressMode.js:124
+#: src/screens/AddressMode.js:133
 msgid "Failed to change address mode. Please try again."
 msgstr ""
 
-#: src/screens/AddressMode.js:137
-#: src/screens/AddressMode.js:150
+#: src/screens/AddressMode.js:146
+#: src/screens/AddressMode.js:159
 msgid "ADDRESS MODE"
 msgstr ""
 
-#: src/screens/AddressMode.js:156
+#: src/screens/AddressMode.js:165
 msgid "You can set your wallet to "
 msgstr ""
 
-#: src/screens/AddressMode.js:158
+#: src/screens/AddressMode.js:167
 msgid "single or multi address mode"
 msgstr ""
 
-#: src/screens/AddressMode.js:163
+#: src/screens/AddressMode.js:172
 msgid "You can switch anytime in the settings."
 msgstr ""
 
-#: src/screens/AddressMode.js:173
+#: src/screens/AddressMode.js:182
 msgid "Single Address"
 msgstr ""
 
-#: src/screens/AddressMode.js:174
+#: src/screens/AddressMode.js:183
 msgid "Your wallet will use only one address (index 0)."
 msgstr ""
 
-#: src/screens/AddressMode.js:175
+#: src/screens/AddressMode.js:184
 msgid "Easier to manage and compatible with all dApps."
 msgstr ""
 
-#: src/screens/AddressMode.js:180
+#: src/screens/AddressMode.js:189
 msgid "Multi Address"
 msgstr ""
 
-#: src/screens/AddressMode.js:181
+#: src/screens/AddressMode.js:190
 msgid "Your wallet will let you generate multiple addresses."
 msgstr ""
 
-#: src/screens/AddressMode.js:182
+#: src/screens/AddressMode.js:191
 msgid "Useful for advanced users."
 msgstr ""
 
-#: src/screens/AddressMode.js:192
+#: src/screens/AddressMode.js:202
+msgid "Single address mode is not available on this network."
+msgstr ""
+
+#: src/screens/AddressMode.js:203
 msgid ""
 "You can't switch to single address mode because other addresses in your "
 "wallet are already in use."
 msgstr ""
 
-#: src/screens/AddressMode.js:202
+#: src/screens/AddressMode.js:213
 #: src/screens/AmountFormat.js:99
 msgid "Save preferences"
 msgstr ""
 
-#: src/screens/AddressMode.js:223
+#: src/screens/AddressMode.js:234
 msgid ""
 "Changing\n"
 "address mode..."
@@ -1725,20 +1729,20 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/sagas/wallet.js:1099
+#: src/sagas/wallet.js:1121
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:1113
+#: src/sagas/wallet.js:1135
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1123
+#: src/sagas/wallet.js:1145
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:1139
+#: src/sagas/wallet.js:1161
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""

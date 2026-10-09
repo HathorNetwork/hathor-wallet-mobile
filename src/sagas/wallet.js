@@ -130,13 +130,23 @@ export const EXPIRE_WS_IGNORE_FLAG = 24 * 60 * 60 * 1000; // 24 hours
  * tx on addresses with index > 0 during the first connection, it changes to
  * GAP_LIMIT. We sync after wallet.start (see startWallet).
  *
+ * A wallet with a shielded chain always gets MULTI: wallet-lib's check of addresses past index 0
+ * (hasTxOutsideFirstAddress) only looks at the legacy chain, so in SINGLE the private funds
+ * received past index 0 would drop out of the balance.
+ *
  * @param {object} opts
  * @param {boolean} opts.singleAddressFeatureEnabled
  * @param {string|null} opts.storedAddressMode  ADDRESS_MODE.SINGLE, ADDRESS_MODE.MULTI, or null
+ * @param {boolean} [opts.shieldedChainActive] Whether the start registers the shielded crypto
+ *   provider, which gives the wallet its shielded chain
  * @returns {string} ADDRESS_MODE.SINGLE or ADDRESS_MODE.MULTI
  */
-export function decideAddressMode({ singleAddressFeatureEnabled, storedAddressMode }) {
-  if (!singleAddressFeatureEnabled) {
+export function decideAddressMode({
+  singleAddressFeatureEnabled,
+  storedAddressMode,
+  shieldedChainActive = false,
+}) {
+  if (!singleAddressFeatureEnabled || shieldedChainActive) {
     return ADDRESS_MODE.MULTI;
   }
   if (storedAddressMode === ADDRESS_MODE.MULTI) {
@@ -308,9 +318,17 @@ export function* startWallet(action) {
     SINGLE_ADDRESS_FEATURE_TOGGLE,
   );
   const storedAddressMode = STORE.getItem(addressModeKey(networkSettings.network));
+  // The start that registers the shielded crypto provider gives the wallet a shielded chain,
+  // which keeps it in multi-address mode.
+  const shieldedChainActive = shouldRegisterShieldedProvider({
+    networkSettings,
+    useWalletService,
+    isPasskeyWallet,
+  });
   const attemptedAddressMode = decideAddressMode({
     singleAddressFeatureEnabled,
     storedAddressMode,
+    shieldedChainActive,
   });
 
   const singleAddressMode = attemptedAddressMode === ADDRESS_MODE.SINGLE;
@@ -533,7 +551,11 @@ export function* startWallet(action) {
     : ADDRESS_MODE.MULTI;
 
   yield put(setAddressMode(finalAddressMode));
-  STORE.setItem(addressModeKey(networkSettings.network), finalAddressMode);
+  // A mode the shielded chain forced is not the user's: the shielded testnet's network is
+  // 'testnet', so it would overwrite the mode stored for the public testnet.
+  if (!shieldedChainActive) {
+    STORE.setItem(addressModeKey(networkSettings.network), finalAddressMode);
+  }
 
   try {
     yield call(loadTokens);
