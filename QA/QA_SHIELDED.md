@@ -117,3 +117,39 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 
 ### More timings on a low-end Android device
 On the Shielded Testnet, record the time from the PIN entry of "Unlock private balance" to the private part of the balance, and the time a token screen with many private UTXOs takes to show its parts.
+
+### Private sends
+With the flag on, on the Shielded Testnet, with public and private HTR and a registered custom token. Copy a private address from another wallet's Receive screen, on Private.
+1. Send HTR to a public address. The amount screen shows the privacy mode above Next: Public, disabled, with "Private sends need a private address."
+1. Send HTR to the private address. The amount screen starts in Hide amount. Tap it: the sheet offers Private and Hide amount only, says "Payments to a private address are always private.", and each fee pill shows the fee in HTR per private output. Pick Private and tap Done: the selector shows Private.
+1. Send an amount with change in Hide amount. The confirmation shows To with a "Private address" badge, Privacy: Hide amount, and Fees with their total. Tap Fees: it expands into the privacy fee, with its count of private outputs, and the network fee if any. The info icon opens "Transaction fees". The total is the amount plus the fees.
+1. Send it. The recipient wallet receives it, and this wallet's balance shows the private change at once, without a reload.
+1. Repeat in Private, with the custom token: each fully shielded output costs 0.02 HTR.
+1. Send the whole private balance of the custom token, then a 1-unit amount of an NFT, then an amount of a fee-based token: each is built and sent, and the fee-based token's network fee shows in the breakdown.
+1. Send in Private an HTR amount that leaves less HTR than the privacy fees need: the send isn't built, and the screen says "Insufficient HTR to cover this transaction and its fees." When the HTR change can't pay its own privacy fee, it says "Insufficient HTR to cover the privacy fees of this transaction." instead, and never suggests keeping the change public.
+1. Send to a public address an amount the public HTR can't cover, so the send spends private HTR. The confirmation shows Fees with a privacy fee for the private change, and after the send the private change is in the balance at once.
+1. Compare the fees of a few sends with the fees the explorer shows for them: the totals match.
+1. With a fee-based token of more than 2^40 base units (no deposit needed), type a private amount of 10,995,116,277.76 or more: the screen says "A private send can be at most 10,995,116,277.75" and the token's symbol, and doesn't go on. The same amount in public goes on.
+
+### A private send while the private balance is locked
+This needs a start with a PIN that doesn't decrypt the scan key, as in "A start that leaves the private funds locked" above.
+1. Start a send in Hide amount to a private address. The confirmation says "Your private balance is locked. Unlock it to send privately." and offers "Unlock private balance".
+1. Tap it and cancel the PIN screen: the request shows again.
+1. Tap it and enter the PIN, then with safe biometry on: "Reading your private balance" shows until the wallet decoded its private outputs, then the send is built. Send it.
+1. A public send to a public address while locked is built at once, with no unlock.
+
+### Private addresses where private sends aren't available
+1. With the flag off on the Shielded Testnet, on Mainnet, on Testnet, and on the wallet-service facade, type and scan a private address of the network: "This wallet does not support shielded addresses." shows under the input.
+1. With the flag on, type a private address whose checksum is right but whose key isn't a point of the curve: "Invalid address".
+1. On Mainnet and Testnet, send to a public address: the screens are as before, with no privacy mode.
+
+### Reown sends that spend private funds
+1. With the flag on, have a connected dApp send with `htr_sendTransaction`, with its own legacy `changeAddress`, an HTR amount the public funds can't cover. The request error modal says "This transaction spends private funds, so its change must stay private, but the dApp asked to send the change to an address that can't receive private funds.", See why shows wallet-lib's message, and the dApp gets "Transaction failed validation".
+1. Repeat without a `changeAddress`: the send goes through, and its private change shows in the balance.
+
+### Token creation
+1. With the flag on and private HTR in the wallet, create a token: the confirmation warns "Creating a token can spend private HTR and make its amount public."
+1. Without private HTR, or with the flag off, there is no warning.
+
+### Timings of private sends on a low-end Android device
+On the Shielded Testnet, record the time from Next on the amount screen to the confirmation's summary, for a Hide amount send and for a Private send of a custom token, and compare it with a public send.
