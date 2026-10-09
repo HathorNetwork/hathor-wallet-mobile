@@ -148,7 +148,8 @@ msgid "Private transfers could not be loaded on this device."
 msgstr ""
 "Não foi possível carregar as transferências privadas neste dispositivo."
 
-#: src/components/Shielded/ShieldedBalanceSplit.js:120
+#: src/components/Shielded/ShieldedBalanceSplit.js:101
+#: src/components/Shielded/ShieldedBalanceSplit.js:157
 #: src/shielded/receiveState.js:150
 msgid "Private transfers are not available for this wallet."
 msgstr "Transferências privadas não estão disponíveis para esta carteira."
@@ -2054,12 +2055,12 @@ msgid "New Transaction"
 msgstr "Transação"
 
 #: src/components/ReceiveMyAddress.js:45
-#: src/components/Shielded/ShieldedBalanceSplit.js:107
+#: src/components/Shielded/ShieldedBalanceSplit.js:150
 msgid "Public"
 msgstr "Público"
 
 #: src/components/ReceiveMyAddress.js:46
-#: src/components/Shielded/ShieldedBalanceSplit.js:102
+#: src/components/Shielded/ShieldedBalanceSplit.js:145
 msgid "Private"
 msgstr "Privado"
 
@@ -2093,7 +2094,7 @@ msgstr "A transação ainda não chegou na sua carteira. Deseja tentar novamente
 
 #: src/components/NanoContract/SelectAddressModal.js:111
 #: src/components/Reown/GetAddressClientRequest.js:129
-#: src/components/Shielded/ShieldedBalanceSplit.js:87
+#: src/components/Shielded/ShieldedBalanceSplit.js:130
 #: src/components/ShowPushNotificationTxDetails.js:18
 msgid "Retry"
 msgstr "Tentar novamente"
@@ -2242,18 +2243,23 @@ msgstr ""
 "Somente carteiras que suportam transferências privadas podem pagar este "
 "endereço."
 
-#: src/components/Shielded/ShieldedBalanceSplit.js:112
+#: src/components/Shielded/ShieldedBalanceSplit.js:51
 #, javascript-format
 msgid "${ count } private output is locked"
 msgid_plural "${ count } private outputs are locked"
 msgstr[0] "${ count } saída privada está bloqueada"
 msgstr[1] "${ count } saídas privadas estão bloqueadas"
 
-#: src/components/Shielded/ShieldedBalanceSplit.js:123
+#: src/components/Shielded/ShieldedBalanceSplit.js:103
+#: src/components/Shielded/ShieldedUnlockAction.js:61
+msgid "Could not unlock your private balance."
+msgstr "Não foi possível desbloquear seu saldo privado."
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:160
 msgid "Some private funds could not be read."
 msgstr "Não foi possível ler alguns fundos privados."
 
-#: src/components/Shielded/ShieldedBalanceSplit.js:126
+#: src/components/Shielded/ShieldedBalanceSplit.js:163
 msgid "Your private balance may be incomplete."
 msgstr "Seu saldo privado pode estar incompleto."
 
@@ -2265,10 +2271,6 @@ msgstr "Digite seu PIN de 6 dígitos para desbloquear seu saldo privado"
 #: src/components/Shielded/ShieldedUnlockAction.js:64
 msgid "Unlock private balance"
 msgstr "Desbloquear saldo privado"
-
-#: src/components/Shielded/ShieldedUnlockAction.js:61
-msgid "Could not unlock your private balance."
-msgstr "Não foi possível desbloquear seu saldo privado."
 
 #: src/components/Reown/AdvancedErrorOptions.js:41
 msgid "Advanced options"

@@ -143,7 +143,8 @@ msgstr ""
 msgid "Private transfers could not be loaded on this device."
 msgstr ""
 
-#: src/components/Shielded/ShieldedBalanceSplit.js:120
+#: src/components/Shielded/ShieldedBalanceSplit.js:101
+#: src/components/Shielded/ShieldedBalanceSplit.js:157
 #: src/shielded/receiveState.js:150
 msgid "Private transfers are not available for this wallet."
 msgstr ""
@@ -1974,12 +1975,12 @@ msgid "New Transaction"
 msgstr ""
 
 #: src/components/ReceiveMyAddress.js:45
-#: src/components/Shielded/ShieldedBalanceSplit.js:107
+#: src/components/Shielded/ShieldedBalanceSplit.js:150
 msgid "Public"
 msgstr ""
 
 #: src/components/ReceiveMyAddress.js:46
-#: src/components/Shielded/ShieldedBalanceSplit.js:102
+#: src/components/Shielded/ShieldedBalanceSplit.js:145
 msgid "Private"
 msgstr ""
 
@@ -2013,7 +2014,7 @@ msgstr ""
 
 #: src/components/NanoContract/SelectAddressModal.js:111
 #: src/components/Reown/GetAddressClientRequest.js:129
-#: src/components/Shielded/ShieldedBalanceSplit.js:87
+#: src/components/Shielded/ShieldedBalanceSplit.js:130
 #: src/components/ShowPushNotificationTxDetails.js:18
 msgid "Retry"
 msgstr ""
@@ -2155,7 +2156,7 @@ msgstr ""
 msgid "Only wallets that support private transfers can pay this address."
 msgstr ""
 
-#: src/components/Shielded/ShieldedBalanceSplit.js:112
+#: src/components/Shielded/ShieldedBalanceSplit.js:51
 #, javascript-format
 msgid "${ count } private output is locked"
 msgid_plural "${ count } private outputs are locked"
@@ -2163,11 +2164,16 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/components/Shielded/ShieldedBalanceSplit.js:123
+#: src/components/Shielded/ShieldedBalanceSplit.js:103
+#: src/components/Shielded/ShieldedUnlockAction.js:61
+msgid "Could not unlock your private balance."
+msgstr ""
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:160
 msgid "Some private funds could not be read."
 msgstr ""
 
-#: src/components/Shielded/ShieldedBalanceSplit.js:126
+#: src/components/Shielded/ShieldedBalanceSplit.js:163
 msgid "Your private balance may be incomplete."
 msgstr ""
 
@@ -2178,10 +2184,6 @@ msgstr ""
 #: src/components/Shielded/ShieldedUnlockAction.js:54
 #: src/components/Shielded/ShieldedUnlockAction.js:64
 msgid "Unlock private balance"
-msgstr ""
-
-#: src/components/Shielded/ShieldedUnlockAction.js:61
-msgid "Could not unlock your private balance."
 msgstr ""
 
 #: src/components/Reown/AdvancedErrorOptions.js:41

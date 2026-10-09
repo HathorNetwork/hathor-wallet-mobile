@@ -38,6 +38,16 @@ const locked = (count, cause = 'wrong-pin') => capability({
   canSpend: false,
   undecoded: { locked: count },
 });
+// A wallet with no shielded chain it can use, as wallet-lib reports it at level none.
+const unusable = (reason, cause = null, undecoded = {}) => capability({
+  level: 'none',
+  reason,
+  cause,
+  canReceive: false,
+  canSpend: false,
+  historyComplete: false,
+  undecoded,
+});
 
 async function render(props, { progress } = {}) {
   const actions = [];
@@ -122,11 +132,40 @@ describe('ShieldedBalanceSplit', () => {
 
   test.each([
     ['no capability yet', null],
-    ['a wallet with no usable shielded keys', capability({ level: 'none', reason: 'needs-password' })],
+    ['a wallet that is not started', unusable('not-started')],
   ])('renders nothing for %s', async (_label, current) => {
     const { renderer } = await render({ capability: current });
 
     expect(renderer.toJSON()).toBeNull();
+  });
+
+  test.each([
+    ['shielded keys do not match', 'integrity', 'key-mismatch'],
+    ['record lacks the shielded keys', 'needs-password', null],
+  ])('says private transfers are not available for a wallet whose %s', async (_label, reason, cause) => {
+    const { texts, buttonTitles } = await render({ capability: unusable(reason, cause) });
+
+    expect(texts()).toEqual(['Private transfers are not available for this wallet.']);
+    expect(buttonTitles()).toEqual([]);
+  });
+
+  test('keeps the locked count and the failure of an unlock that found the keys do not match', async () => {
+    const { texts, buttonTitles } = await render(
+      { capability: unusable('integrity', 'key-mismatch', { locked: 2 }) },
+      {
+        progress: {
+          status: SHIELDED_UNLOCK_PROGRESS.FAILED,
+          errorCode: 'shielded-key-mismatch',
+        },
+      },
+    );
+
+    expect(texts()).toEqual([
+      '2 private outputs are locked',
+      'Private transfers are not available for this wallet.',
+      'Could not unlock your private balance.',
+    ]);
+    expect(buttonTitles()).toEqual([]);
   });
 
   test.each([

@@ -16,7 +16,11 @@ import { ShieldPadlockIcon } from '../Icons/ShieldPadlock.icon';
 import { EyeIcon } from '../Icons/Eye.icon';
 import { shieldedReprocessRequested } from '../../actions';
 import { splitAvailableBalance } from '../../shielded/balance';
-import { isShieldedUnlockInProgress, selectShieldedUnlock } from '../../shielded/unlockState';
+import {
+  SHIELDED_UNLOCK_PROGRESS,
+  isShieldedUnlockInProgress,
+  selectShieldedUnlock,
+} from '../../shielded/unlockState';
 import { renderHomeValue } from '../../utils';
 import { COLORS } from '../../styles/themes';
 
@@ -27,9 +31,28 @@ import { COLORS } from '../../styles/themes';
 const SPLIT_LEVELS = ['watch', 'view', 'full'];
 
 /**
+ * The capability level of a wallet with no shielded chain it can use, and its reason while the
+ * wallet isn't started.
+ */
+const NONE_LEVEL = 'none';
+const NOT_STARTED_REASON = 'not-started';
+
+/**
  * The lock cause of a stored scan key that no PIN can unlock.
  */
 const CORRUPT_KEY_CAUSE = 'corrupt-key';
+
+/**
+ * How many private outputs are locked, a count over the whole wallet.
+ *
+ * @param {number} count
+ * @returns {string}
+ */
+const lockedCountText = (count) => ngettext(
+  msgid`${count} private output is locked`,
+  `${count} private outputs are locked`,
+  count,
+);
 
 /**
  * The available balance of a token, split into its private and public parts, which add up to
@@ -41,6 +64,11 @@ const CORRUPT_KEY_CAUSE = 'corrupt-key';
  * While an unlock or a retry runs, a spinner stands in for the actions.
  *
  * It renders nothing until the private part is known, or when it couldn't be read.
+ *
+ * A started wallet with no shielded chain it can use (level 'none'), as when its shielded keys
+ * don't match each other or its record lacks them, has no private part to show: a notice says
+ * that private transfers aren't available for it, with the private outputs it holds locked, and
+ * that the user's unlock failed, when it just did, as on keys that don't match.
  *
  * @param {Object} props
  * @param {bigint} props.available The token's available balance
@@ -62,6 +90,21 @@ export default function ShieldedBalanceSplit({
 }) {
   const dispatch = useDispatch();
   const unlock = useSelector(selectShieldedUnlock);
+
+  if (capability?.level === NONE_LEVEL && capability.reason !== NOT_STARTED_REASON) {
+    const lockedCount = capability.undecoded.locked;
+    return (
+      <View style={styles.wrapper}>
+        {lockedCount > 0 && (
+          <Text style={styles.hint}>{lockedCountText(lockedCount)}</Text>
+        )}
+        <Text style={styles.hint}>{t`Private transfers are not available for this wallet.`}</Text>
+        {unlock.status === SHIELDED_UNLOCK_PROGRESS.FAILED && (
+          <Text style={styles.failed}>{t`Could not unlock your private balance.`}</Text>
+        )}
+      </View>
+    );
+  }
 
   if (typeof privateAvailable !== 'bigint' || !SPLIT_LEVELS.includes(capability?.level)) {
     return null;
@@ -108,13 +151,7 @@ export default function ShieldedBalanceSplit({
         </View>
       </View>
       {count > 0 && (
-        <Text style={styles.hint}>
-          {ngettext(
-            msgid`${count} private output is locked`,
-            `${count} private outputs are locked`,
-            count,
-          )}
-        </Text>
+        <Text style={styles.hint}>{lockedCountText(count)}</Text>
       )}
       {locked && !unlockable && (
         <Text style={styles.hint}>{t`Private transfers are not available for this wallet.`}</Text>
@@ -164,6 +201,13 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     textAlign: 'center',
     color: COLORS.textColorShadow,
+  },
+  failed: {
+    marginTop: 8,
+    fontSize: 12,
+    lineHeight: 16,
+    textAlign: 'center',
+    color: COLORS.errorTextColor,
   },
   action: {
     fontWeight: 'bold',
