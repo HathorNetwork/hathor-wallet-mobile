@@ -79,6 +79,7 @@ import { call } from 'redux-saga/effects';
 import { HathorWallet, HistorySyncMode, SCANNING_POLICY } from '@hathor/wallet-lib';
 import {
   isWalletServiceEnabled,
+  onStartWalletFailed,
   setupWalletListeners,
   startWallet,
   waitForWalletRestart,
@@ -88,6 +89,7 @@ import {
   reloadWalletRequested,
   resetWallet,
   setUseWalletService,
+  setWallet,
   shieldedCapabilityUpdate,
   startWalletRequested,
   types,
@@ -251,11 +253,11 @@ describe('startWallet on the fullnode facade', () => {
     expect(registerShieldedCryptoProvider).toHaveBeenCalledWith(wallet);
     const syncMode = indexOf(log, `setHistorySyncMode:${HistorySyncMode.POLLING_HTTP_API}`);
     const provider = indexOf(log, 'setShieldedCryptoProvider');
-    const setWallet = indexOf(log, `dispatch:${types.SET_WALLET}`);
+    const walletSet = indexOf(log, `dispatch:${types.SET_WALLET}`);
     const start = indexOf(log, 'start');
     expect(syncMode).toBeLessThan(provider);
-    expect(provider).toBeLessThan(setWallet);
-    expect(setWallet).toBeLessThan(start);
+    expect(provider).toBeLessThan(walletSet);
+    expect(walletSet).toBeLessThan(start);
   });
 
   test('registers it with the wallet-service flag on and a wallet-service URL', async () => {
@@ -395,19 +397,54 @@ describe('isWalletServiceEnabled', () => {
   });
 });
 
+/**
+ * A running fullnode-facade wallet whose stop() records its options, and resolves when the test
+ * calls finishStop().
+ */
+function runningWallet() {
+  const wallet = new HathorWallet({});
+  wallet.walletStopped = false;
+  wallet.stopCalls = [];
+  wallet.stop = jest.fn((options) => {
+    wallet.stopCalls.push(options);
+    return new Promise((resolve) => { wallet.finishStop = resolve; });
+  });
+  return wallet;
+}
+
+// A wallet-service-facade wallet: it is not a HathorWallet.
+function walletServiceWallet() {
+  const { EventEmitter } = jest.requireActual('events');
+  const wallet = new EventEmitter();
+  wallet.conn = new EventEmitter();
+  wallet.stop = jest.fn(async () => {});
+  return wallet;
+}
+
+const flush = () => new Promise((resolve) => { setImmediate(resolve); });
+
 describe('waitForWalletRestart', () => {
   const startAction = startWalletRequested({ words: 'seed words', pin: '111111' });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   // Runs the saga for a wallet started with startAction, then dispatches `actions` to it in order.
-  async function run(actions) {
+  function start(actions, wallet = null) {
     const channel = stdChannel();
     const dispatched = [];
     const task = runSaga(
-      { channel, dispatch: (action) => dispatched.push(action) },
+      { channel, dispatch: (action) => dispatched.push(action), getState: () => ({ wallet }) },
       waitForWalletRestart,
       startAction,
     );
     actions.forEach((action) => channel.put(action));
+    return { task, dispatched };
+  }
+
+  async function run(actions, wallet = null) {
+    const { task, dispatched } = start(actions, wallet);
     await task.toPromise();
     return dispatched;
   }
@@ -430,10 +467,110 @@ describe('waitForWalletRestart', () => {
   });
 
   test('ends without starting the wallet on a new start request or a wallet reset', async () => {
+    const wallet = runningWallet();
     expect(await run([
       walletPinChanged('222222'),
       startWalletRequested({ words: 'other words', pin: '333333' }),
-    ])).toEqual([]);
-    expect(await run([resetWallet()])).toEqual([]);
+    ], wallet)).toEqual([]);
+    expect(await run([resetWallet()], wallet)).toEqual([]);
+    expect(wallet.stop).not.toHaveBeenCalled();
+  });
+
+  test('stops the running wallet, keeping its storage, before it starts the wallet again', async () => {
+    const wallet = runningWallet();
+
+    const { task, dispatched } = start([reloadWalletRequested()], wallet);
+    await flush();
+    expect(wallet.stopCalls).toEqual([{ cleanStorage: false }]);
+    expect(dispatched).toEqual([]);
+    wallet.finishStop();
+    await task.toPromise();
+
+    expect(dispatched).toEqual([startAction]);
+  });
+
+  test('does not stop a wallet that is already stopped, as after a network change', async () => {
+    const wallet = runningWallet();
+    wallet.walletStopped = true;
+
+    expect(await run([reloadWalletRequested()], wallet)).toEqual([startAction]);
+    expect(wallet.stop).not.toHaveBeenCalled();
+  });
+
+  test('does not stop a wallet-service wallet', async () => {
+    const wallet = walletServiceWallet();
+
+    expect(await run([reloadWalletRequested()], wallet)).toEqual([startAction]);
+    expect(wallet.stop).not.toHaveBeenCalled();
+  });
+
+  test('logs a stop that fails and starts the wallet again', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const wallet = runningWallet();
+    wallet.stop.mockRejectedValue(new Error('stop failed'));
+
+    expect(await run([reloadWalletRequested()], wallet)).toEqual([startAction]);
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining('[wallet]'),
+      expect.objectContaining({ message: 'stop failed' }),
+    );
+  });
+});
+
+describe('onStartWalletFailed', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  function run(wallet) {
+    const dispatched = [];
+    const task = runSaga(
+      { dispatch: (action) => dispatched.push(action), getState: () => ({ wallet }) },
+      onStartWalletFailed,
+    );
+    return { task, dispatched };
+  }
+
+  test('stops the failed wallet, keeping its storage, then drops it', async () => {
+    const wallet = runningWallet();
+
+    const { task, dispatched } = run(wallet);
+    await flush();
+    expect(wallet.stopCalls).toEqual([{ cleanStorage: false }]);
+    expect(dispatched).toEqual([]);
+    wallet.finishStop();
+    await task.toPromise();
+
+    expect(dispatched).toEqual([setWallet(null)]);
+  });
+
+  test('logs a stop that fails, and drops the wallet', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const wallet = runningWallet();
+    wallet.stop.mockImplementation(() => { throw new Error('stop failed'); });
+
+    const { task, dispatched } = run(wallet);
+    await task.toPromise();
+
+    expect(dispatched).toEqual([setWallet(null)]);
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining('[wallet]'),
+      expect.objectContaining({ message: 'stop failed' }),
+    );
+  });
+
+  test.each([
+    ['a wallet that is already stopped', () => Object.assign(runningWallet(), {
+      walletStopped: true,
+    })],
+    ['a wallet-service wallet', walletServiceWallet],
+  ])('drops %s without a stop', async (_label, makeWallet) => {
+    const wallet = makeWallet();
+
+    const { task, dispatched } = run(wallet);
+    await task.toPromise();
+
+    expect(dispatched).toEqual([setWallet(null)]);
+    expect(wallet.stop).not.toHaveBeenCalled();
   });
 });

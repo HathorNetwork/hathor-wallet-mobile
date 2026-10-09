@@ -560,10 +560,30 @@ export function* startWallet(action) {
 }
 
 /**
+ * Stops the fullnode-facade wallet that a reload or a failed start drops, keeping its storage
+ * (cleanStorage: false): the next start builds its own. Without it, the dropped wallet keeps its
+ * websocket open and its shielded scan key in memory. A wallet that is already stopped, as after
+ * a network change, and a wallet-service wallet are left as they are. A stop that fails is
+ * logged, and the caller goes on.
+ *
+ * @param {Object|null} wallet The wallet the app drops
+ */
+export function* stopDroppedWallet(wallet) {
+  if (!(wallet instanceof HathorWallet) || wallet.walletStopped) {
+    return;
+  }
+  try {
+    yield call([wallet, wallet.stop], { cleanStorage: false });
+  } catch (e) {
+    log.error('Failed to stop the wallet the app drops.', e);
+  }
+}
+
+/**
  * Waits for the request that ends the running wallet: a new start, a wallet reset or a reload.
- * A reload dispatches the start action again, with the PIN of the last WALLET_PIN_CHANGED: a PIN
- * change or a safe-biometry switch re-encrypts the access data, and start() decrypts it with the
- * PIN it is given.
+ * A reload stops the running wallet, then dispatches the start action again, with the PIN of the
+ * last WALLET_PIN_CHANGED: a PIN change or a safe-biometry switch re-encrypts the access data,
+ * and start() decrypts it with the PIN it is given.
  *
  * @param {Object} action The START_WALLET_REQUESTED action that started the running wallet
  */
@@ -581,6 +601,8 @@ export function* waitForWalletRestart(action) {
 
     if (!pinChange) {
       if (reload) {
+        const wallet = yield select((state) => state.wallet);
+        yield call(stopDroppedWallet, wallet);
         // Yield the start action again to reload the wallet
         yield put(startAction);
       }
@@ -1053,6 +1075,8 @@ export function* onStartWalletFailed() {
     // Same with wallet.conn
     wallet.conn.removeAllListeners();
   }
+
+  yield call(stopDroppedWallet, wallet);
 
   // Remove the wallet from redux so we can retry the
   // startWallet on the next PIN unlock
