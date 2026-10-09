@@ -13,51 +13,51 @@ msgstr ""
 "X-Generator: Poedit 3.3.1\n"
 
 #.  This should never happen!
-#: src/components/Reown/CreateTokenRequest.js:89 src/models.js:85
+#: src/components/Reown/CreateTokenRequest.js:89 src/models.js:94
 msgid "Unknown"
 msgstr "Ukendt"
 
-#: src/models.js:88
+#: src/models.js:97
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr "Modtaget ${ symbol }"
 
-#: src/models.js:90
+#: src/models.js:99
 msgid "Sent ${ symbol }"
 msgstr "Sendt ${ symbol }"
 
-#: src/models.js:92
+#: src/models.js:101
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr "Du sendte ${ symbol } til dig selv"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:102
+#: src/models.js:111
 msgid "[Today •] HH:mm"
 msgstr "[I dag •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:103
+#: src/models.js:112
 msgid "[Tomorrow •] HH:mm"
 msgstr "[I morgen •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:104
+#: src/models.js:113
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:105
+#: src/models.js:114
 msgid "[Yesterday •] HH:mm"
 msgstr "[I går •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:106
+#: src/models.js:115
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:860
+#: src/models.js:116 src/utils.js:860
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -477,6 +477,7 @@ msgstr "Token symbol"
 msgid "Deposit"
 msgstr "Indsæt"
 
+#: src/components/Shielded/FeeBreakdown.js:68
 #: src/screens/CreateTokenConfirm.js:277
 msgid "Network fee"
 msgstr ""
@@ -774,31 +775,31 @@ msgstr "Nulstil wallet"
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:168
+#: src/screens/MainScreen.js:177
 msgid "No transactions"
 msgstr "Ingen transaktioner"
 
-#: src/screens/MainScreen.js:171
+#: src/screens/MainScreen.js:180
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr "|share:Del din adresse| med venner og begynd at udveksle tokens"
 
-#: src/screens/MainScreen.js:188
+#: src/screens/MainScreen.js:197
 msgid "Loading transactions"
 msgstr "Indlæser dine transaktioner"
 
-#: src/screens/MainScreen.js:197
+#: src/screens/MainScreen.js:206
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:200
+#: src/screens/MainScreen.js:209
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:631 src/screens/MainScreen.js:666
+#: src/screens/MainScreen.js:640 src/screens/MainScreen.js:675
 msgid "Available Balance"
 msgstr "Tilgængelig saldo"
 
-#: src/screens/MainScreen.js:641
+#: src/screens/MainScreen.js:650
 msgid "Locked"
 msgstr "Låst"
 
@@ -1610,7 +1611,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:82
-#: src/components/TxDetailsModal.js:135
+#: src/components/TxDetailsModal.js:184
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:202
 msgid "Nano Contract ID"
 msgstr ""
@@ -1969,7 +1970,7 @@ msgstr ""
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:120
+#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:161
 msgid "Date & Time"
 msgstr "Dato & Tid"
 
@@ -2033,7 +2034,7 @@ msgid ""
 msgstr ""
 "Her er konfigurationsstrengen for token ${ tokenLabel }: ${ configString }"
 
-#: src/components/TokenDetails.js:47 src/components/TxDetailsModal.js:51
+#: src/components/TokenDetails.js:47 src/components/TxDetailsModal.js:89
 msgid "Native Token"
 msgstr ""
 
@@ -2083,55 +2084,63 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:54
+#: src/components/TxDetailsModal.js:92
 msgid "Deposit Based"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:57
+#: src/components/TxDetailsModal.js:95
 msgid "Fee Based"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:118
+#: src/components/TxDetailsModal.js:159
 msgid "Token"
 msgstr "Token"
 
-#: src/components/TxDetailsModal.js:119
+#: src/components/TxDetailsModal.js:160
 msgid "Description"
 msgstr "Beskrivelse"
 
-#: src/components/TxDetailsModal.js:121
+#: src/components/TxDetailsModal.js:162
 msgid "Fee Model"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
-#: src/components/TxDetailsModal.js:122
+#: src/components/TxDetailsModal.js:171
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:125
+#: src/components/TxDetailsModal.js:174
 msgid "Nano Contract Status"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:89
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:115
-#: src/components/TxDetailsModal.js:134
+#: src/components/TxDetailsModal.js:183
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:136
+#: src/components/TxDetailsModal.js:185
 msgid "Nano Contract Caller"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:100
-#: src/components/TxDetailsModal.js:137
+#: src/components/TxDetailsModal.js:186
 msgid "Nano Contract"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:103
-#: src/components/TxDetailsModal.js:180
+#: src/components/TxDetailsModal.js:229
 msgid "Amount"
 msgstr "Antal"
+
+#: src/components/Shielded/FeeBreakdown.js:56
+msgid "Fees"
+msgstr ""
+
+#: src/components/Shielded/FeeBreakdown.js:74
+msgid "Privacy fee"
+msgstr ""
 
 #: src/components/Shielded/PrivateReceiveAddress.js:56
 msgid "Private receiving is locked"

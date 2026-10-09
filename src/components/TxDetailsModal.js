@@ -23,8 +23,22 @@ import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
 import { TransactionStatusLabel } from './TransactionStatusLabel';
 import BackdropModal from './BackdropModal';
+import TxFeesRow from './TxFeesRow';
+import { getWalletPaidFees } from '../shielded/fees';
 
 class TxDetailsModal extends Component {
+  /**
+   * fees {Object|null} The fees the wallet paid for the tx, once loaded
+   */
+  state = {
+    fees: null,
+  };
+
+  /**
+   * Whether the modal is still open, so the fees that load after it closes are dropped.
+   */
+  isOpen = false;
+
   style = StyleSheet.create({
     container: {
       paddingHorizontal: 8,
@@ -46,6 +60,30 @@ class TxDetailsModal extends Component {
     />
   );
 
+  componentDidMount() {
+    this.isOpen = true;
+    this.loadFees();
+  }
+
+  componentWillUnmount() {
+    this.isOpen = false;
+  }
+
+  /**
+   * Loads the fees of a tx the wallet paid, where the shielded UI decodes private outputs
+   * (props.showFees). The history has no fees: the fullnode lists them.
+   */
+  async loadFees() {
+    const { showFees, wallet, tx } = this.props;
+    if (!showFees || !wallet) {
+      return;
+    }
+    const fees = await getWalletPaidFees(wallet, tx.txId, tx.privacyFee);
+    if (this.isOpen && fees) {
+      this.setState({ fees });
+    }
+  }
+
   getFeeModelText = (version) => {
     if (version === TokenVersion.NATIVE) {
       return t`Native Token`;
@@ -65,6 +103,9 @@ class TxDetailsModal extends Component {
      *   token: unknown;
      *   tx: TxHistory;
      *   isNFT: boolean;
+     *   wallet?: HathorWallet;
+     *   showFees?: boolean;
+     *   nativeSymbol?: string;
      * }} TxDetailsModal properties
      */
     const { token, tx, isNFT } = this.props;
@@ -119,6 +160,14 @@ class TxDetailsModal extends Component {
             <ListItem title={t`Description`} text={description} />
             <ListItem title={t`Date & Time`} text={timestampStr} />
             {feeModelText && <ListItem title={t`Fee Model`} text={feeModelText} />}
+            {this.state.fees && (
+              <TxFeesRow
+                fees={this.state.fees}
+                symbol={this.props.nativeSymbol}
+                decimalPlaces={this.props.decimalPlaces}
+                amountFormat={this.props.amountFormat}
+              />
+            )}
             <ListItem title={t`Transaction ID`} text={txIdComponent} />
             {isNc && (
               <ListItem

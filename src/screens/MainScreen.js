@@ -32,12 +32,16 @@ import {
 } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
-import { IS_MULTI_TOKEN } from '../constants';
+import { DEFAULT_TOKEN, IS_MULTI_TOKEN } from '../constants';
 import { fetchMoreHistory, tokenFetchBalanceRequested, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
 import ShieldedBalanceSplit from '../components/Shielded/ShieldedBalanceSplit';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
-import { isShieldedAvailable, selectShieldedCapability } from '../shielded/gating';
+import {
+  isShieldedAvailable,
+  isShieldedEnabled,
+  selectShieldedCapability,
+} from '../shielded/gating';
 import { createPrivateBalanceRequests } from '../shielded/balance';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from '../components/HathorFlatList';
@@ -64,6 +68,8 @@ const mapStateToProps = (state) => ({
   decimalPlaces: state.serverInfo?.decimal_places,
   shieldedAvailable: isShieldedAvailable(state),
   shieldedCapability: selectShieldedCapability(state),
+  shieldedEnabled: isShieldedEnabled(state),
+  nativeSymbol: state.serverInfo?.native_token?.symbol ?? DEFAULT_TOKEN.symbol,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -146,6 +152,9 @@ class MainScreen extends React.Component {
         isNFT={this.isNFT()}
         amountFormat={this.props.amountFormat}
         decimalPlaces={this.props.decimalPlaces}
+        wallet={this.props.wallet}
+        showFees={this.props.shieldedEnabled}
+        nativeSymbol={this.props.nativeSymbol}
       />
     );
     this.setState({ modal: txDetailsModal });

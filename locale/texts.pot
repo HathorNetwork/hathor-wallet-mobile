@@ -4,51 +4,51 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
 #: src/components/Reown/CreateTokenRequest.js:89
-#: src/models.js:85
+#: src/models.js:94
 #.  This should never happen!
 msgid "Unknown"
 msgstr ""
 
-#: src/models.js:88
+#: src/models.js:97
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr ""
 
-#: src/models.js:90
+#: src/models.js:99
 msgid "Sent ${ symbol }"
 msgstr ""
 
-#: src/models.js:92
+#: src/models.js:101
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr ""
 
-#: src/models.js:102
+#: src/models.js:111
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Today •] HH:mm"
 msgstr ""
 
-#: src/models.js:103
+#: src/models.js:112
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Tomorrow •] HH:mm"
 msgstr ""
 
-#: src/models.js:104
+#: src/models.js:113
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "dddd [•] HH:mm"
 msgstr ""
 
-#: src/models.js:105
+#: src/models.js:114
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Yesterday •] HH:mm"
 msgstr ""
 
-#: src/models.js:106
+#: src/models.js:115
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
-#: src/models.js:107
+#: src/models.js:116
 #: src/utils.js:860
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
@@ -480,6 +480,7 @@ msgstr ""
 msgid "Deposit"
 msgstr ""
 
+#: src/components/Shielded/FeeBreakdown.js:68
 #: src/screens/CreateTokenConfirm.js:277
 msgid "Network fee"
 msgstr ""
@@ -772,32 +773,32 @@ msgstr ""
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:168
+#: src/screens/MainScreen.js:177
 msgid "No transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:171
+#: src/screens/MainScreen.js:180
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 
-#: src/screens/MainScreen.js:188
+#: src/screens/MainScreen.js:197
 msgid "Loading transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:197
+#: src/screens/MainScreen.js:206
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:200
+#: src/screens/MainScreen.js:209
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:631
-#: src/screens/MainScreen.js:666
+#: src/screens/MainScreen.js:640
+#: src/screens/MainScreen.js:675
 msgid "Available Balance"
 msgstr ""
 
-#: src/screens/MainScreen.js:641
+#: src/screens/MainScreen.js:650
 msgid "Locked"
 msgstr ""
 
@@ -1624,7 +1625,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:82
-#: src/components/TxDetailsModal.js:135
+#: src/components/TxDetailsModal.js:184
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:202
 msgid "Nano Contract ID"
 msgstr ""
@@ -1970,7 +1971,7 @@ msgid "Public Explorer"
 msgstr ""
 
 #: src/components/PushTxDetailsModal.js:82
-#: src/components/TxDetailsModal.js:120
+#: src/components/TxDetailsModal.js:161
 msgid "Date & Time"
 msgstr ""
 
@@ -2032,7 +2033,7 @@ msgid "Here is the configuration string of token ${ tokenLabel }: ${ configStrin
 msgstr ""
 
 #: src/components/TokenDetails.js:47
-#: src/components/TxDetailsModal.js:51
+#: src/components/TxDetailsModal.js:89
 msgid "Native Token"
 msgstr ""
 
@@ -2082,54 +2083,62 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:54
+#: src/components/TxDetailsModal.js:92
 msgid "Deposit Based"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:57
+#: src/components/TxDetailsModal.js:95
 msgid "Fee Based"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:118
+#: src/components/TxDetailsModal.js:159
 msgid "Token"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:119
+#: src/components/TxDetailsModal.js:160
 msgid "Description"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:121
+#: src/components/TxDetailsModal.js:162
 msgid "Fee Model"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
-#: src/components/TxDetailsModal.js:122
+#: src/components/TxDetailsModal.js:171
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:125
+#: src/components/TxDetailsModal.js:174
 msgid "Nano Contract Status"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:89
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:115
-#: src/components/TxDetailsModal.js:134
+#: src/components/TxDetailsModal.js:183
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:136
+#: src/components/TxDetailsModal.js:185
 msgid "Nano Contract Caller"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:100
-#: src/components/TxDetailsModal.js:137
+#: src/components/TxDetailsModal.js:186
 msgid "Nano Contract"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:103
-#: src/components/TxDetailsModal.js:180
+#: src/components/TxDetailsModal.js:229
 msgid "Amount"
+msgstr ""
+
+#: src/components/Shielded/FeeBreakdown.js:56
+msgid "Fees"
+msgstr ""
+
+#: src/components/Shielded/FeeBreakdown.js:74
+msgid "Privacy fee"
 msgstr ""
 
 #: src/components/Shielded/PrivateReceiveAddress.js:56
