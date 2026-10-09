@@ -35,21 +35,26 @@ const CORRUPT_KEY_CAUSE = 'corrupt-key';
  * unlocked, without waiting for the walk that decodes the locked outputs: `reprocessed`
  * resolves with the capability when that walk ends, and never rejects.
  *
- * A wallet at another level is left as it is, and so is a locked wallet whose cause is
- * 'corrupt-key', which no PIN can unlock: a try would only run the PIN check and the decrypt
- * again, and fail. A PIN can fix the other causes ('not-supplied', 'wrong-pin' and 'error'). When
- * wallet-lib refuses the unlock, it returns the ShieldedKeyError's code, one of the 'shielded-*'
- * strings (such as 'shielded-wrong-pin' or 'shielded-corrupt-key'). Any other error is thrown.
+ * A wallet without a shielded capability, such as a wallet-service facade wallet, is skipped with a
+ * null capability. A wallet at another level is left as it is, and so is a locked wallet whose
+ * cause is 'corrupt-key', which no PIN can unlock: a try would only run the PIN check and the
+ * decrypt again, and fail. A PIN can fix the other causes ('not-supplied', 'wrong-pin' and
+ * 'error'). When wallet-lib refuses the unlock, it returns the ShieldedKeyError's code, one of the
+ * 'shielded-*' strings (such as 'shielded-wrong-pin' or 'shielded-corrupt-key'). Any other error is
+ * thrown.
  *
- * @param {HathorWallet} wallet A started fullnode-facade wallet
+ * @param {HathorWallet|HathorWalletServiceWallet} wallet A started wallet
  * @param {string} pinCode The wallet's PIN, or its safe-biometry password
  * @returns {Promise<
- *   { status: 'skipped', capability: Object }
+ *   { status: 'skipped', capability: Object|null }
  *   | { status: 'unlocked', capability: Object, reprocessed: Promise<Object> }
  *   | { status: 'failed', errorCode: string }
  * >}
  */
 export async function unlockShieldedViewIfLocked(wallet, pinCode) {
+  if (typeof wallet.getShieldedCapability !== 'function') {
+    return { status: SHIELDED_UNLOCK_STATUS.SKIPPED, capability: null };
+  }
   const current = await wallet.getShieldedCapability();
   if (current.level !== 'watch' || current.cause === CORRUPT_KEY_CAUSE) {
     return { status: SHIELDED_UNLOCK_STATUS.SKIPPED, capability: current };
