@@ -468,7 +468,7 @@ msgid "Back"
 msgstr "Voltar"
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:125
+#: src/screens/SendAmountInput.js:140
 msgid "Invalid amount"
 msgstr "Quantidade inválida"
 
@@ -497,7 +497,7 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:69
-#: src/screens/SendAmountInput.js:222
+#: src/screens/SendAmountInput.js:241
 msgid "Next"
 msgstr "Próximo"
 
@@ -1153,22 +1153,22 @@ msgstr "ENVIAR"
 msgid "Address to send"
 msgstr "Endereço para enviar"
 
-#: src/screens/SendAmountInput.js:130
+#: src/screens/SendAmountInput.js:145
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:137
+#: src/screens/SendAmountInput.js:152
 #, javascript-format
 msgid "A private send can be at most ${ max } ${ symbol }."
 msgstr "Um envio privado pode ter no máximo ${ max } ${ symbol }."
 
-#: src/screens/SendAmountInput.js:168
+#: src/screens/SendAmountInput.js:183
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:182 src/screens/SendConfirmScreen.js:502
+#: src/screens/SendAmountInput.js:197 src/screens/SendConfirmScreen.js:502
 #, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"

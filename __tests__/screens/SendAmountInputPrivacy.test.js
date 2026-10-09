@@ -20,10 +20,10 @@ jest.mock('../../src/hooks/navigation', () => ({
 
 /* eslint-disable import/first */
 import React from 'react';
-import { Switch } from 'react-native';
+import { ActivityIndicator, Switch } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
-import { legacy_createStore as createStore } from 'redux';
+import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { reducer } from '../../src/reducers/reducer';
 import {
   networkSettingsUpdateState,
@@ -32,7 +32,9 @@ import {
   setServerInfo,
   shieldedCapabilityUpdate,
   shieldedProviderUpdate,
+  shieldedUnlockStatusUpdate,
   tokenFetchBalanceSuccess,
+  types,
 } from '../../src/actions';
 import {
   DEFAULT_TOKEN,
@@ -42,7 +44,9 @@ import {
   PRIVACY_MODE,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   SHIELDED_PROVIDER_STATUS,
+  SHIELDED_UNLOCK_SOURCE,
 } from '../../src/constants';
+import { SHIELDED_UNLOCK_PROGRESS } from '../../src/shielded/unlockState';
 import { PortalProvider } from '../../src/components/Portal';
 import AmountTextInput from '../../src/components/AmountTextInput';
 import PrivacyModeSelector from '../../src/components/PrivacyModeSelector';
@@ -54,14 +58,18 @@ import SendAmountInput from '../../src/screens/SendAmountInput';
 const P2PKH = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';
 const SHIELDED = 'K3KokZRo7DyNRRiyijpsVix2VADrd4HeA8vWLR5itAj81BVC4Vv7xoXbrYyKYwsLMWhefXqXKgJvC6HcVkDuJ7AJ7qUMS7fVc';
 
-const capability = (level) => ({
+/**
+ * The capability at a level; below 'full', the private balance is locked, by default by a wrong
+ * PIN, with `locked` private outputs the wallet holds but can't decode.
+ */
+const capability = (level, { cause = 'wrong-pin', locked = 0 } = {}) => ({
   level,
   reason: level === 'full' ? null : 'locked',
-  cause: level === 'full' ? null : 'wrong-pin',
+  cause: level === 'full' ? null : cause,
   canReceive: level === 'full',
   canSpend: level === 'full',
   historyComplete: true,
-  undecoded: { txIds: [], locked: 0, unreadable: 0, error: 0 },
+  undecoded: { txIds: [], locked, unreadable: 0, error: 0 },
 });
 
 let mounted = null;
@@ -77,11 +85,21 @@ afterEach(async () => {
 
 /**
  * Renders the amount screen of an HTR send to the address, for a seed wallet on the shielded
- * testnet with a ready provider, and a balance of 2^41 base units.
+ * testnet with a ready provider, and a balance of 2^41 base units. `progress` is where the
+ * unlock of the private balance stands, if one runs.
  */
-async function render(address, { flag = true, level = capability('full') } = {}) {
+async function render(address, {
+  flag = true,
+  level = capability('full'),
+  progress = null,
+} = {}) {
   mockParams = { address };
-  const store = createStore(reducer);
+  const actions = [];
+  const recordActions = () => (next) => (action) => {
+    actions.push(action);
+    return next(action);
+  };
+  const store = createStore(reducer, applyMiddleware(recordActions));
   store.dispatch(networkSettingsUpdateState(PRE_SETTINGS_SHIELDED_TESTNET));
   store.dispatch(setServerInfo({ decimal_places: 2, native_token: { name: 'Hathor', symbol: 'HTR' } }));
   store.dispatch(setFeatureToggles({
@@ -92,6 +110,10 @@ async function render(address, { flag = true, level = capability('full') } = {})
   store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
   store.dispatch(shieldedCapabilityUpdate(level));
   store.dispatch(tokenFetchBalanceSuccess(DEFAULT_TOKEN.uid, { available: 2n ** 41n, locked: 0n }));
+  if (progress) {
+    store.dispatch(shieldedUnlockStatusUpdate(progress));
+  }
+  actions.length = 0;
 
   let renderer;
   await act(async () => {
@@ -116,7 +138,26 @@ async function render(address, { flag = true, level = capability('full') } = {})
     // BackdropModal shows its content 100 ms after it opens.
     await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 150); }); });
   };
-  return { renderer, enterAmount, next, selector, texts, openSheet };
+  const buttonTitles = () => renderer.root
+    .findAll((node) => typeof node.props.title === 'string' && typeof node.props.onPress === 'function')
+    .map((node) => node.props.title);
+  const press = (title) => act(async () => {
+    renderer.root.find(
+      (node) => node.props.title === title && typeof node.props.onPress === 'function',
+    ).props.onPress();
+  });
+  return {
+    renderer,
+    store,
+    actions,
+    enterAmount,
+    next,
+    selector,
+    texts,
+    openSheet,
+    buttonTitles,
+    press,
+  };
 }
 
 const confirmParams = (address, amount, privacyMode) => ['SendConfirmScreen', {
@@ -245,5 +286,87 @@ describe('SendAmountInput with private sends', () => {
     expect(mockNavigation.navigate).toHaveBeenCalledWith(
       ...confirmParams(P2PKH, 2n ** 40n, PRIVACY_MODE.PUBLIC),
     );
+  });
+});
+
+describe('SendAmountInput with a locked private balance', () => {
+  const UNLOCK = 'Unlock private balance';
+  // The available balance leaves out the private outputs the wallet holds locked.
+  const LOCKED = capability('watch', { locked: 2 });
+  const PIN = '135790';
+
+  test('says how many private outputs are locked, and offers to unlock them', async () => {
+    const { texts, buttonTitles } = await render(SHIELDED, { level: LOCKED });
+
+    expect(texts()).toContain('2 private outputs are locked');
+    expect(buttonTitles()).toContain(UNLOCK);
+  });
+
+  test('offers the unlock when the amount is more than the balance without them', async () => {
+    const { texts, buttonTitles, enterAmount, next } = await render(P2PKH, { level: LOCKED });
+
+    await enterAmount('21990232555.53', 2n ** 41n + 1n);
+    await next();
+
+    expect(mockNavigation.navigate).not.toHaveBeenCalled();
+    expect(texts()).toEqual(expect.arrayContaining([
+      'Insufficient funds',
+      '2 private outputs are locked',
+    ]));
+    expect(buttonTitles()).toContain(UNLOCK);
+  });
+
+  test('unlocks the private balance with the PIN', async () => {
+    const { press, actions, store } = await render(P2PKH, { level: LOCKED });
+
+    await press(UNLOCK);
+    expect(mockNavigation.navigate).toHaveBeenCalledTimes(1);
+    const [route, params] = mockNavigation.navigate.mock.calls[0];
+    expect(route).toBe('PinScreen');
+    expect(params).toEqual(expect.objectContaining({ canCancel: true }));
+
+    await act(async () => { params.cb(PIN); });
+
+    expect(actions.filter((action) => action.type === types.SHIELDED_VIEW_UNLOCK_REQUESTED))
+      .toEqual([{
+        type: types.SHIELDED_VIEW_UNLOCK_REQUESTED,
+        payload: { pinCode: PIN, source: SHIELDED_UNLOCK_SOURCE.USER },
+      }]);
+    expect(JSON.stringify(store.getState().shielded)).not.toContain(PIN);
+  });
+
+  test.each([
+    SHIELDED_UNLOCK_PROGRESS.UNLOCKING,
+    SHIELDED_UNLOCK_PROGRESS.DECODING,
+  ])('shows a spinner while the unlock is %s, until the balance is read again', async (status) => {
+    // The unlocked wallet is at level full while it decodes the outputs it held locked.
+    const level = status === SHIELDED_UNLOCK_PROGRESS.UNLOCKING ? LOCKED : capability('full');
+    const { renderer, buttonTitles } = await render(P2PKH, { level, progress: { status } });
+
+    expect(renderer.root.findAllByType(ActivityIndicator)).toHaveLength(1);
+    expect(buttonTitles()).not.toContain(UNLOCK);
+  });
+
+  test.each([
+    ['at level full', { level: capability('full') }],
+    ['while no private output is locked', { level: capability('watch') }],
+    ['for a scan key no PIN can unlock', { level: capability('watch', { cause: 'corrupt-key', locked: 2 }) }],
+    ['while the shielded UI is off', { flag: false, level: LOCKED }],
+  ])('shows no locked outputs and no unlock %s', async (_label, options) => {
+    const { renderer, texts, buttonTitles } = await render(P2PKH, options);
+
+    expect(texts().join(' ')).not.toContain('locked');
+    expect(buttonTitles()).not.toContain(UNLOCK);
+    expect(renderer.root.findAllByType(ActivityIndicator)).toEqual([]);
+  });
+
+  test('shows no spinner for an unlock while the shielded UI is off', async () => {
+    const { renderer } = await render(P2PKH, {
+      flag: false,
+      level: capability('full'),
+      progress: { status: SHIELDED_UNLOCK_PROGRESS.DECODING },
+    });
+
+    expect(renderer.root.findAllByType(ActivityIndicator)).toEqual([]);
   });
 });

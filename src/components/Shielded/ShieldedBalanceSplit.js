@@ -48,7 +48,7 @@ const CORRUPT_KEY_CAUSE = 'corrupt-key';
  * @param {number} count
  * @returns {string}
  */
-const lockedCountText = (count) => ngettext(
+export const lockedCountText = (count) => ngettext(
   msgid`${count} private output is locked`,
   `${count} private outputs are locked`,
   count,

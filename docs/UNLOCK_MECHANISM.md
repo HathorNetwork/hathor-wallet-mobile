@@ -73,6 +73,7 @@ This document describes what happens with the app and the lib during the wallet 
 1. A later PIN entry, at the lock screen for example, replaces a running unlock, which goes back to `idle`
 1. `ShieldedUnlockAction` shows a spinner while the status is `unlocking` or `decoding`, and says when the unlock failed
 1. An unlock that finds the wallet's scan key doesn't match its shielded xpub fails with `shielded-key-mismatch`, and wallet-lib stops using the record's shielded keys: the level drops to `none`, reason `integrity`, and no PIN fixes it. The token screen then shows no unlock: it says that private transfers aren't available for this wallet, with the locked count and the failure
+1. The send amount screen (`SendAmountInput`) checks the amount against the available balance, which leaves out the private outputs the wallet holds locked. Where private sends are available and a PIN can unlock them, it shows how many there are and `ShieldedUnlockAction`, as the token screen does, so that a send that needs them can unlock them first
 
 ## Unlocking before a private send
 

@@ -30,10 +30,13 @@ import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import PrivacyModeSelector from '../components/PrivacyModeSelector';
 import TransactionPrivacyModal from '../components/TransactionPrivacyModal';
+import ShieldedUnlockAction from '../components/Shielded/ShieldedUnlockAction';
+import { lockedCountText } from '../components/Shielded/ShieldedBalanceSplit';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { useNavigation, useParams } from '../hooks/navigation';
-import { canSendPrivately } from '../shielded/gating';
+import { canSendPrivately, selectShieldedCapability } from '../shielded/gating';
+import { isShieldedUnlockInProgress, selectShieldedUnlock } from '../shielded/unlockState';
 import {
   MAX_PRIVATE_AMOUNT,
   getPrivacyModeOptions,
@@ -49,6 +52,8 @@ const SendAmountInput = () => {
     decimalPlaces: state.serverInfo?.decimal_places
   }));
   const privateSendsAvailable = useSelector(canSendPrivately);
+  const capability = useSelector(selectShieldedCapability);
+  const unlock = useSelector(selectShieldedUnlock);
   const networkName = useSelector((state) => state.networkSettings.network);
 
   const navigation = useNavigation();
@@ -80,6 +85,16 @@ const SendAmountInput = () => {
       ? chosenPrivacyMode
       : initialPrivacyMode(privacyOptions);
   }
+
+  // The available balance leaves out the private outputs the wallet holds locked. Where a PIN
+  // can unlock them (private sends are available at level watch only then), the screen says how
+  // many there are and offers the unlock, which reads the balance again once they are decoded.
+  // A spinner stands in for it while an unlock runs.
+  const lockedCount = privateSendsAvailable && capability?.level === 'watch'
+    ? capability.undecoded.locked
+    : 0;
+  const showsUnlock = privateSendsAvailable
+    && (lockedCount > 0 || isShieldedUnlockInProgress(unlock));
 
   useEffect(() => {
     const focusEvent = navigation.addListener('focus', () => {
@@ -208,6 +223,10 @@ const SendAmountInput = () => {
               <InputLabel style={{ textAlign: 'center', marginTop: 8 }}>
                 {getAvailableString()}
               </InputLabel>
+              {lockedCount > 0 && (
+                <Text style={styles.hint}>{lockedCountText(lockedCount)}</Text>
+              )}
+              {showsUnlock && <ShieldedUnlockAction navigation={navigation} />}
               <Text style={styles.error}>{error}</Text>
             </View>
             <View>
@@ -246,6 +265,13 @@ const SendAmountInput = () => {
 };
 
 const styles = StyleSheet.create({
+  hint: {
+    marginTop: 8,
+    fontSize: 12,
+    lineHeight: 16,
+    textAlign: 'center',
+    color: COLORS.textColorShadow,
+  },
   error: {
     marginTop: 12,
     fontSize: 12,

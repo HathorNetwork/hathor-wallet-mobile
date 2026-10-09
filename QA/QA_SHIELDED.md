@@ -133,6 +133,8 @@ With the flag on, on the Shielded Testnet, with public and private HTR and a reg
 
 ### A private send while the private balance is locked
 This needs a start with a PIN that doesn't decrypt the scan key, as in "A start that leaves the private funds locked" above.
+1. Start a send of HTR. Under the available balance, which lacks the locked private funds, the amount screen counts them ("2 private outputs are locked") and offers "Unlock private balance". Type more than the available balance and tap Next: it says "Insufficient funds", and still offers the unlock.
+1. Tap "Unlock private balance" and enter the PIN: a spinner shows until the private funds are decoded, then the available balance includes them, and the count and the unlock are gone. Start the wallet locked again, as above, for the next steps.
 1. Start a send in Hide amount to a private address. The confirmation says "Your private balance is locked. Unlock it to send privately." and offers "Unlock private balance".
 1. Tap it and cancel the PIN screen: the request shows again.
 1. Tap it and enter the PIN, then with safe biometry on: "Reading your private balance" shows until the wallet decoded its private outputs, then the send is built. Send it.
