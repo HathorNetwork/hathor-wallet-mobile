@@ -16,6 +16,7 @@ import {
   getPrivacyModeOptions,
   initialPrivacyMode,
   isPrivateAmountAllowed,
+  mapDappSendPrepareError,
   mapShieldedSendError,
   privacyModeToShieldedMode,
   waitForWalletReady,
@@ -225,5 +226,26 @@ describe('mapShieldedSendError', () => {
     const message = 'A shielded change is required, but the wallet has no shielded address to receive it.';
     expect(mapShieldedSendError({ message }))
       .toBe('This wallet cannot receive the private change this transaction needs.');
+  });
+});
+
+describe('mapDappSendPrepareError', () => {
+  const DAPP_CHANGE = "This transaction spends private funds, so its change must stay private, but the dApp asked to send the change to an address that can't receive private funds.";
+
+  test.each([
+    "The change must be shielded (all of its token's outputs are shielded, or the transaction spends a shielded UTXO), and a legacy change address cannot receive it. Use a new-format change address, or changeShieldedMode: OutputKind.TRANSPARENT to keep the change transparent.",
+    "The change must be shielded (so the amount of its token's only shielded output cannot be computed by subtraction), and a legacy change address cannot receive it. Use a new-format change address.",
+  ])('explains a private change sent to a legacy change address: "%s"', (message) => {
+    expect(mapDappSendPrepareError(message)).toBe(DAPP_CHANGE);
+  });
+
+  test('maps the other errors of private sends as an in-app send does', () => {
+    expect(mapDappSendPrepareError('HTR change is too small to fund its shielded-output fee and no additional HTR is available to cover the difference.'))
+      .toBe('Insufficient HTR to cover the privacy fees of this transaction.');
+  });
+
+  test('gives no copy for other errors', () => {
+    expect(mapDappSendPrepareError('Change address is not from the wallet')).toBeNull();
+    expect(mapDappSendPrepareError(undefined)).toBeNull();
   });
 });

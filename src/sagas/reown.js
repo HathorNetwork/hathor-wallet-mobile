@@ -127,6 +127,7 @@ import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenFor
 import { STORE } from '../store';
 import { consumePasskeySigningCancelled } from '../passkey/passkeySigner';
 import { isShieldedAddress, shieldedAddressNotSupportedText } from '../utils';
+import { mapDappSendPrepareError } from '../utils/shieldedSend';
 import { logger } from '../logger';
 
 const log = logger('reown');
@@ -895,8 +896,22 @@ export function* processRequest(action) {
             return result; // Recursive call handles waiting
           }
         } break;
-        case PrepareSendTransactionError:
+        case PrepareSendTransactionError: {
           shouldAnswer = false;
+
+          // A send that spends the wallet's private funds keeps its change private, which can
+          // fail it before any prompt: the user sees why, and the dApp gets the same answer.
+          const shieldedErrorMessage = mapDappSendPrepareError(e.message);
+          if (shieldedErrorMessage) {
+            yield put(setReownError(extractErrorDetails(e)));
+            yield put(setReownModal({
+              show: true,
+              type: ReownModalTypes.REQUEST_ERROR,
+              data: {
+                errorMessage: shieldedErrorMessage,
+              },
+            }));
+          }
 
           yield call(() => walletKit.respondSessionRequest({
             topic: payload.topic,
@@ -908,7 +923,8 @@ export function* processRequest(action) {
                 message: 'Transaction failed validation',
               },
             },
-          })); break;
+          }));
+        } break;
         case InvalidParamsError: {
           shouldAnswer = false;
           const errorMessage = e.message;

@@ -182,6 +182,16 @@ msgid ""
 msgstr ""
 "Não foi possível preparar o troco privado desta transação. Tente novamente."
 
+#: src/utils/shieldedSend.js:280
+msgid ""
+"This transaction spends private funds, so its change must stay private, but "
+"the dApp asked to send the change to an address that can't receive private "
+"funds."
+msgstr ""
+"Esta transação gasta fundos privados, então o troco precisa continuar "
+"privado, mas o dApp pediu para enviar o troco a um endereço que não pode "
+"receber fundos privados."
+
 #: src/utils/tokenSwap.js:459
 msgid "Insufficient HTR balance to cover the network fee."
 msgstr "Saldo insuficiente de HTR para cobrir a taxa da rede."

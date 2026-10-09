@@ -262,3 +262,22 @@ export function mapShieldedSendError(error) {
   }
   return null;
 }
+
+// wallet-lib's message for a change its rules made private, which the legacy change address a
+// dApp asked for can't receive.
+const LEGACY_CHANGE_ADDRESS = /^The change must be shielded \(.+\), and a legacy change address cannot receive it/;
+
+/**
+ * The copy for a dApp's send that failed while it was prepared because of the wallet's private
+ * funds, or null for any other failure. A send that spends private funds keeps its change
+ * private; the change address a dApp passes is a legacy one, which can't receive it.
+ *
+ * @param {string} message The message of the error the rpc handler wrapped
+ * @returns {string|null}
+ */
+export function mapDappSendPrepareError(message) {
+  if (LEGACY_CHANGE_ADDRESS.test(message ?? '')) {
+    return t`This transaction spends private funds, so its change must stay private, but the dApp asked to send the change to an address that can't receive private funds.`;
+  }
+  return mapShieldedSendError({ message });
+}

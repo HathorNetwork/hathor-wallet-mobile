@@ -164,6 +164,13 @@ msgid ""
 "The private change of this transaction could not be prepared. Try again."
 msgstr ""
 
+#: src/utils/shieldedSend.js:280
+msgid ""
+"This transaction spends private funds, so its change must stay private, but "
+"the dApp asked to send the change to an address that can't receive private "
+"funds."
+msgstr ""
+
 #: src/utils/tokenSwap.js:459
 msgid "Insufficient HTR balance to cover the network fee."
 msgstr ""
