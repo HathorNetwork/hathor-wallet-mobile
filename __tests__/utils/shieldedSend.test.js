@@ -8,7 +8,12 @@
 import { jest, describe, test, expect } from '@jest/globals';
 import { EventEmitter } from 'events';
 import { constants, shielded } from '@hathor/wallet-lib';
-import { DEFAULT_PRIVACY_MODE, PRIVACY_MODE } from '../../src/constants';
+import {
+  DEFAULT_PRIVACY_MODE,
+  PRIVACY_MODE,
+  SHIELDED_OUTPUTS_FEATURE_TOGGLE,
+  SHIELDED_PROVIDER_STATUS,
+} from '../../src/constants';
 import {
   MAX_PRIVATE_AMOUNT,
   buildSendOutput,
@@ -19,6 +24,7 @@ import {
   mapDappSendPrepareError,
   mapShieldedSendError,
   privacyModeToShieldedMode,
+  selectPrivateSendsUnavailableText,
   waitForWalletReady,
 } from '../../src/utils/shieldedSend';
 
@@ -247,5 +253,83 @@ describe('mapDappSendPrepareError', () => {
   test('gives no copy for other errors', () => {
     expect(mapDappSendPrepareError('Change address is not from the wallet')).toBeNull();
     expect(mapDappSendPrepareError(undefined)).toBeNull();
+  });
+});
+
+describe('selectPrivateSendsUnavailableText', () => {
+  const NOT_LOADED = 'Private transfers could not be loaded on this device.';
+  const NOT_AVAILABLE = 'Private transfers are not available for this wallet.';
+  const capability = (level, { reason = null, cause = null } = {}) => ({
+    level,
+    reason,
+    cause,
+    canReceive: level === 'view' || level === 'full',
+    canSpend: level === 'full',
+    historyComplete: true,
+    undecoded: { txIds: [], locked: 0, unreadable: 0, error: 0 },
+  });
+  // A seed wallet on the shielded testnet, with the flag on and a provider that passed.
+  const state = ({ shielded: shieldedState, ...rest } = {}) => ({
+    featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: true },
+    useWalletService: false,
+    fullNodeNetworkName: 'testnet-shielded-outputs',
+    ...rest,
+    shielded: {
+      providerStatus: SHIELDED_PROVIDER_STATUS.READY,
+      providerError: null,
+      capability: capability('full'),
+      ...shieldedState,
+    },
+  });
+  const noProvider = capability('none', { reason: 'no-provider' });
+
+  test('gives no reason where the wallet can send privately, once unlocked if need be', () => {
+    expect(selectPrivateSendsUnavailableText(state())).toBeNull();
+    const locked = capability('watch', { reason: 'locked', cause: 'wrong-pin' });
+    expect(selectPrivateSendsUnavailableText(state({ shielded: { capability: locked } })))
+      .toBeNull();
+  });
+
+  test.each([
+    ['the flag is off', state({ featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false } })],
+    ['on the wallet-service facade', state({
+      useWalletService: true,
+      shielded: {
+        providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+        capability: capability('none', { reason: 'wallet-service' }),
+      },
+    })],
+    ['on another network', state({
+      fullNodeNetworkName: 'testnet',
+      shielded: { providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED, capability: noProvider },
+    })],
+  ])('gives no reason where the shielded UI does not show: %s', (_label, current) => {
+    expect(selectPrivateSendsUnavailableText(current)).toBeNull();
+  });
+
+  test.each([
+    ['the crypto provider failed its self-test', {
+      providerStatus: SHIELDED_PROVIDER_STATUS.FAILED,
+      capability: noProvider,
+    }],
+    ['the provider failed, before the wallet reports its capability', {
+      providerStatus: SHIELDED_PROVIDER_STATUS.FAILED,
+      capability: null,
+    }],
+    ['the wallet reports no provider', { capability: noProvider }],
+  ])('says the device could not load private transfers when %s', (_label, shieldedState) => {
+    expect(selectPrivateSendsUnavailableText(state({ shielded: shieldedState })))
+      .toBe(NOT_LOADED);
+  });
+
+  test.each([
+    ['a scan key no PIN can unlock', capability('watch', { reason: 'locked', cause: 'corrupt-key' })],
+    ['shielded keys that do not match', capability('none', { reason: 'integrity', cause: 'key-mismatch' })],
+    ['no shielded keys', capability('none', { reason: 'needs-password' })],
+    ['no authority to spend its private outputs', capability('view', { reason: 'no-spend-authority' })],
+    ['no capability yet', null],
+  ])('says private transfers are not available for a wallet with %s', (_label, current) => {
+    expect(selectPrivateSendsUnavailableText(state({ shielded: { capability: current } })))
+      .toBe(NOT_AVAILABLE);
   });
 });

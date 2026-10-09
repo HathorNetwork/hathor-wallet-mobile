@@ -49,7 +49,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:116
-#: src/utils.js:868
+#: src/utils.js:873
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
@@ -58,15 +58,15 @@ msgstr ""
 msgid "This wallet does not support shielded addresses."
 msgstr ""
 
-#: src/utils.js:305
+#: src/utils.js:310
 msgid "Invalid address"
 msgstr ""
 
-#: src/utils.js:853
+#: src/utils.js:858
 msgid "CREATE DEPOSIT TOKEN"
 msgstr ""
 
-#: src/utils.js:855
+#: src/utils.js:860
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
@@ -74,7 +74,7 @@ msgstr ""
 #: src/screens/CreateTokenConfirm.js:115
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94
-#: src/utils.js:857
+#: src/utils.js:862
 msgid "CREATE TOKEN"
 msgstr ""
 
@@ -120,47 +120,57 @@ msgstr ""
 msgid "New transaction received"
 msgstr ""
 
+#: src/shielded/receiveState.js:149
+#: src/utils/shieldedSend.js:89
+#: src/utils/shieldedSend.js:290
+msgid "Private transfers could not be loaded on this device."
+msgstr ""
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:101
+#: src/components/Shielded/ShieldedBalanceSplit.js:157
+#: src/screens/SendConfirmScreen.js:209
+#: src/screens/SendConfirmScreen.js:237
+#: src/shielded/receiveState.js:154
+#: src/utils/shieldedSend.js:90
+msgid "Private transfers are not available for this wallet."
+msgstr ""
+
 #: src/screens/SendConfirmScreen.js:518
-#: src/utils/shieldedSend.js:233
+#: src/utils/shieldedSend.js:265
 msgid "Your private balance is locked. Unlock it to send privately."
 msgstr ""
 
-#: src/utils/shieldedSend.js:236
+#: src/utils/shieldedSend.js:268
 msgid "This wallet cannot receive the private change this transaction needs."
 msgstr ""
 
-#: src/utils/shieldedSend.js:244
+#: src/utils/shieldedSend.js:276
 msgid ""
 "To keep the value of the private funds it spends hidden, this transaction "
 "needs a private change, and there is not enough HTR to pay its privacy fee."
 msgstr ""
 
-#: src/utils/shieldedSend.js:248
+#: src/utils/shieldedSend.js:280
 msgid ""
 "To keep the amount it sends hidden, this transaction needs a private "
 "change, and there is not enough HTR to pay its privacy fee."
 msgstr ""
 
-#: src/utils/shieldedSend.js:252
+#: src/utils/shieldedSend.js:284
 msgid "Insufficient HTR to cover the privacy fees of this transaction."
 msgstr ""
 
-#: src/utils/shieldedSend.js:255
+#: src/utils/shieldedSend.js:287
 msgid ""
 "An amount in this transaction, its change included, is too large to be "
 "private."
 msgstr ""
 
-#: src/shielded/receiveState.js:149
-#: src/utils/shieldedSend.js:258
-msgid "Private transfers could not be loaded on this device."
-msgstr ""
-
-#: src/utils/shieldedSend.js:261
+#: src/utils/shieldedSend.js:293
 msgid "The private change of this transaction could not be prepared. Try again."
 msgstr ""
 
-#: src/utils/shieldedSend.js:280
+#: src/utils/shieldedSend.js:312
 msgid ""
 "This transaction spends private funds, so its change must stay private, but "
 "the dApp asked to send the change to an address that can't receive private "
@@ -181,14 +191,6 @@ msgstr ""
 
 #: src/shielded/receiveState.js:152
 msgid "Could not load your private address."
-msgstr ""
-
-#: src/components/Shielded/ShieldedBalanceSplit.js:101
-#: src/components/Shielded/ShieldedBalanceSplit.js:157
-#: src/screens/SendConfirmScreen.js:209
-#: src/screens/SendConfirmScreen.js:237
-#: src/shielded/receiveState.js:154
-msgid "Private transfers are not available for this wallet."
 msgstr ""
 
 #: src/screens/About.js:83
@@ -464,7 +466,7 @@ msgstr ""
 #: src/screens/CreateTokenSymbol.js:86
 #: src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421
-#: src/screens/SendAddressInput.js:69
+#: src/screens/SendAddressInput.js:75
 #: src/screens/SendAmountInput.js:241
 msgid "Next"
 msgstr ""
@@ -1101,12 +1103,12 @@ msgstr ""
 msgid "Lock wallet"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:56
+#: src/screens/SendAddressInput.js:62
 #: src/screens/SendScanQRCode.js:80
 msgid "SEND"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:62
+#: src/screens/SendAddressInput.js:68
 msgid "Address to send"
 msgstr ""
 

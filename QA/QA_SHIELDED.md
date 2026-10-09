@@ -142,6 +142,8 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 
 ### Private addresses where private sends aren't available
 1. With the flag off on the Shielded Testnet, on Mainnet, on Testnet, and on the wallet-service facade, type and scan a private address of the network: "This wallet does not support shielded addresses." shows under the input.
+1. With the flag on, in a debug build, make the provider's self-test fail, as in "When private receiving is unavailable", then type and scan a private address: the input says "Private transfers could not be loaded on this device.", as Receive does on Private. A public address is still taken.
+1. With the flag on, after an unlock that found the wallet's shielded keys don't match, as in "Unlocking a locked private balance", type a private address: the input says "Private transfers are not available for this wallet."
 1. With the flag on, type a private address whose checksum is right but whose key isn't a point of the curve: "Invalid address".
 1. On Mainnet and Testnet, send to a public address: the screens are as before, with no privacy mode.
 

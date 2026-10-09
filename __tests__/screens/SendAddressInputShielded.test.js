@@ -26,6 +26,7 @@ import {
   networkSettingsUpdateState,
   setFeatureToggles,
   setFullNodeNetworkName,
+  setUseWalletService,
   shieldedCapabilityUpdate,
   shieldedProviderUpdate,
 } from '../../src/actions';
@@ -44,15 +45,19 @@ import SendAddressInput from '../../src/screens/SendAddressInput';
 const P2PKH = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';
 const SHIELDED = 'K3KokZRo7DyNRRiyijpsVix2VADrd4HeA8vWLR5itAj81BVC4Vv7xoXbrYyKYwsLMWhefXqXKgJvC6HcVkDuJ7AJ7qUMS7fVc';
 
-const capability = (level, cause = null) => ({
+// The capability at a level: below 'full', locked unless another reason is given.
+const capability = (level, cause = null, reason = level === 'full' ? null : 'locked') => ({
   level,
-  reason: level === 'full' ? null : 'locked',
+  reason,
   cause,
   canReceive: level === 'full',
   canSpend: level === 'full',
   historyComplete: true,
   undecoded: { txIds: [], locked: 0, unreadable: 0, error: 0 },
 });
+
+const NOT_LOADED = 'Private transfers could not be loaded on this device.';
+const NOT_AVAILABLE = 'Private transfers are not available for this wallet.';
 
 let mounted = null;
 
@@ -67,17 +72,25 @@ afterEach(async () => {
 
 /**
  * Renders the send address input of a seed wallet on the shielded testnet, on the fullnode
- * facade, with a ready provider.
+ * facade, with a ready provider, unless the options say otherwise. The wallet-service facade's
+ * wallets have no provider.
  */
-async function render({ flag = true, level = capability('full') } = {}) {
+async function render({
+  flag = true,
+  level = capability('full'),
+  providerStatus = SHIELDED_PROVIDER_STATUS.READY,
+  useWalletService = false,
+  fullNodeNetworkName = FULL_NETWORK_SHIELDED_TESTNET,
+} = {}) {
   const store = createStore(reducer);
   store.dispatch(networkSettingsUpdateState(PRE_SETTINGS_SHIELDED_TESTNET));
   store.dispatch(setFeatureToggles({
     ...FEATURE_TOGGLE_DEFAULTS,
     [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag,
   }));
-  store.dispatch(setFullNodeNetworkName(FULL_NETWORK_SHIELDED_TESTNET));
-  store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
+  store.dispatch(setUseWalletService(useWalletService));
+  store.dispatch(setFullNodeNetworkName(fullNodeNetworkName));
+  store.dispatch(shieldedProviderUpdate({ status: providerStatus }));
   store.dispatch(shieldedCapabilityUpdate(level));
 
   let renderer;
@@ -128,9 +141,17 @@ describe('SendAddressInput with private sends', () => {
 
   test.each([
     ['the flag is off', { flag: false }],
-    ['no PIN can unlock the private balance', { level: capability('watch', 'corrupt-key') }],
-    ['the wallet has no private transfers', { level: capability('none') }],
-  ])('rejects a private address when %s', async (_label, options) => {
+    ['on the wallet-service facade', {
+      useWalletService: true,
+      providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+      level: capability('none', null, 'wallet-service'),
+    }],
+    ['on another network', {
+      fullNodeNetworkName: 'testnet',
+      providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+      level: capability('none', null, 'no-provider'),
+    }],
+  ])('rejects a private address as unsupported when %s', async (_label, options) => {
     const { type, next, texts } = await render(options);
 
     await type(SHIELDED);
@@ -138,6 +159,59 @@ describe('SendAddressInput with private sends', () => {
 
     expect(mockNavigation.navigate).not.toHaveBeenCalled();
     expect(texts()).toContain(shieldedAddressNotSupportedText);
+  });
+
+  test.each([
+    ['the crypto provider failed its self-test', {
+      providerStatus: SHIELDED_PROVIDER_STATUS.FAILED,
+      level: capability('none', null, 'no-provider'),
+    }, NOT_LOADED],
+    ['the wallet has no crypto provider', {
+      level: capability('none', null, 'no-provider'),
+    }, NOT_LOADED],
+    ['no PIN can unlock the private balance', {
+      level: capability('watch', 'corrupt-key'),
+    }, NOT_AVAILABLE],
+    ['the shielded keys of the wallet do not match', {
+      level: capability('none', 'key-mismatch', 'integrity'),
+    }, NOT_AVAILABLE],
+    ['the wallet has no shielded keys', {
+      level: capability('none', null, 'needs-password'),
+    }, NOT_AVAILABLE],
+  ])('says why it rejects a private address when %s', async (_label, options, reason) => {
+    const { type, next, texts } = await render(options);
+
+    await type(SHIELDED);
+    await next();
+
+    expect(mockNavigation.navigate).not.toHaveBeenCalled();
+    expect(texts()).toContain(reason);
+    expect(texts()).not.toContain(shieldedAddressNotSupportedText);
+  });
+
+  test('says why it rejects a scanned private address the same way', async () => {
+    mockRouteParams = { address: SHIELDED };
+    const { next, texts } = await render({
+      providerStatus: SHIELDED_PROVIDER_STATUS.FAILED,
+      level: capability('none', null, 'no-provider'),
+    });
+
+    await next();
+
+    expect(mockNavigation.navigate).not.toHaveBeenCalled();
+    expect(texts()).toContain(NOT_LOADED);
+  });
+
+  test('still takes a public address where private transfers are unavailable', async () => {
+    const { type, next } = await render({
+      providerStatus: SHIELDED_PROVIDER_STATUS.FAILED,
+      level: capability('none', null, 'no-provider'),
+    });
+
+    await type(P2PKH);
+    await next();
+
+    expect(mockNavigation.navigate).toHaveBeenCalledWith('SendAmountInput', { address: P2PKH });
   });
 
   test('still takes a public address', async () => {

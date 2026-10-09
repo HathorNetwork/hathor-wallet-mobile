@@ -284,16 +284,21 @@ export const isShieldedAddress = (address, network) => (
    * @param {Object} [options]
    * @param {boolean} [options.allowShielded=false] Whether a shielded address of the network is
    *   valid
+   * @param {string|null} [options.shieldedRejection] Why a shielded address of the network isn't
+   *   valid, when allowShielded is false; by default, that this wallet doesn't support them
    *
    * @return {Object} boolean indicating if address is valid and possibly an error message
    */
-export const validateAddress = (address, network, { allowShielded = false } = {}) => {
+export const validateAddress = (address, network, {
+  allowShielded = false,
+  shieldedRejection = null,
+} = {}) => {
   try {
     const addressObj = new hathorLib.Address(address, { network });
     addressObj.validateAddress();
     if (addressObj.isShielded()) {
       if (!allowShielded) {
-        return { isValid: false, message: shieldedAddressNotSupportedText };
+        return { isValid: false, message: shieldedRejection ?? shieldedAddressNotSupportedText };
       }
       addressObj.parseShielded();
     }
