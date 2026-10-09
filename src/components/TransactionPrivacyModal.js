@@ -17,7 +17,8 @@ import { PRIVACY_MODE } from '../constants';
 
 /**
  * Bottom sheet that picks the privacy mode of one send. The choice applies when the user taps
- * Done; until then it stays in the sheet.
+ * Done; until then it stays in the sheet. For a send to a private address, the sheet points to
+ * the default the send started in, which the privacy settings change.
  *
  * @param {Object} props
  * @param {boolean} props.visible Whether the sheet shows
@@ -63,9 +64,14 @@ const TransactionPrivacyModal = ({
         />
 
         {!options.includes(PRIVACY_MODE.PUBLIC) && (
-          <Text style={styles.note}>
-            {t`Payments to a private address are always private.`}
-          </Text>
+          <>
+            <Text style={styles.note}>
+              {t`Payments to a private address are always private.`}
+            </Text>
+            <Text style={styles.hint}>
+              {t`You can change the default in Settings, under Privacy.`}
+            </Text>
+          </>
         )}
 
         <NewHathorButton
@@ -111,6 +117,12 @@ const styles = StyleSheet.create({
     color: COLORS.textColorShadow,
     textAlign: 'center',
     marginTop: 16,
+  },
+  hint: {
+    fontSize: 12,
+    color: COLORS.textColorShadow,
+    textAlign: 'center',
+    marginTop: 8,
   },
   done: {
     marginTop: 20,

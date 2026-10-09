@@ -30,6 +30,7 @@ import { COLORS } from '../styles/themes';
 import { NetworkSettingsFlowNav } from './NetworkSettings';
 import { isNanoContractsEnabled, isPushNotificationAvailableForUser } from '../utils';
 import { getNetworkSettings } from '../sagas/helpers';
+import { isShieldedAvailable } from '../shielded/gating';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -57,6 +58,8 @@ const mapStateToProps = (state) => {
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
     singleAddressEnabled: state.featureToggles[SINGLE_ADDRESS_FEATURE_TOGGLE],
     amountFormatEnabled: state.featureToggles[AMOUNT_FORMAT_FEATURE_TOGGLE],
+    // Where the shielded UI is available, also while the private balance is locked.
+    privacySettingsEnabled: isShieldedAvailable(state),
     addressMode: state.addressMode,
   };
 };
@@ -180,6 +183,13 @@ export class Settings extends React.Component {
                 <ListMenu
                   title={t`Amount format`}
                   onPress={() => this.props.navigation.navigate('AmountFormat')}
+                />
+              )}
+            {this.props.privacySettingsEnabled
+              && (
+                <ListMenu
+                  title={t`Privacy`}
+                  onPress={() => this.props.navigation.navigate('PrivacySettings')}
                 />
               )}
             <ListMenu

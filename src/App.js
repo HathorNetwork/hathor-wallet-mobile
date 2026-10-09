@@ -76,6 +76,7 @@ import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import About from './screens/About';
 import AddressMode from './screens/AddressMode';
 import AmountFormat from './screens/AmountFormat';
+import PrivacySettings from './screens/PrivacySettings';
 import Security from './screens/Security';
 import PushNotification from './screens/PushNotification';
 import ChangePin from './screens/ChangePin';
@@ -503,6 +504,7 @@ const AppStack = () => {
         <Stack.Screen name='About' component={About} />
         <Stack.Screen name='AddressMode' component={AddressMode} />
         <Stack.Screen name='AmountFormat' component={AmountFormat} />
+        <Stack.Screen name='PrivacySettings' component={PrivacySettings} />
         <Stack.Screen name='Security' component={Security} />
         <Stack.Screen name='ReownList' component={ReownList} />
         <Stack.Screen name='ReownManual' component={ReownManual} />

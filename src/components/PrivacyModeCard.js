@@ -24,13 +24,26 @@ const {
 } = hathorLibConstants;
 
 /**
+ * What the card's copy describes: the privacy of one send (PER_SEND), or the default privacy
+ * mode of the network's sends to private addresses (DEFAULT), which the privacy settings keep.
+ */
+export const PRIVACY_MODE_CARD_VARIANT = {
+  PER_SEND: 'per-send',
+  DEFAULT: 'default',
+};
+
+/**
  * The privacy modes, most private first: each mode's icon, title and description, and the
  * privacy fee each of its outputs pays (null for Public, whose outputs pay none).
  *
+ * @param {string} [variant] One of PRIVACY_MODE_CARD_VARIANT, PER_SEND by default. The DEFAULT
+ *   descriptions say that the mode applies to new sends to private addresses; Public, which no
+ *   send to a private address takes, has none of its own.
  * @returns {{ mode: string, Icon: Function, title: string, description: string,
  *   feePerOutput: bigint|null }[]}
  */
-export function getPrivacyModeDetails() {
+export function getPrivacyModeDetails(variant = PRIVACY_MODE_CARD_VARIANT.PER_SEND) {
+  const isDefault = variant === PRIVACY_MODE_CARD_VARIANT.DEFAULT;
   return [
     {
       mode: PRIVACY_MODE.PRIVATE,
@@ -38,14 +51,18 @@ export function getPrivacyModeDetails() {
       title: t`Private`,
       // A fully shielded output hides its token only among the tokens the tx spends, and the
       // fee always spends HTR: an HTR output stays known as HTR.
-      description: t`Amount hidden. The token is hidden among the tokens this send spends, but never when it is HTR.`,
+      description: isDefault
+        ? t`Amount hidden on new sends to private addresses. The token is hidden among the tokens each send spends, but never when it is HTR.`
+        : t`Amount hidden. The token is hidden among the tokens this send spends, but never when it is HTR.`,
       feePerOutput: FEE_PER_FULL_SHIELDED_OUTPUT,
     },
     {
       mode: PRIVACY_MODE.HIDE_AMOUNT,
       Icon: EyeOffSlashIcon,
       title: t`Hide amount`,
-      description: t`Token visible, amount hidden`,
+      description: isDefault
+        ? t`Token visible, amount hidden on new sends to private addresses`
+        : t`Token visible, amount hidden`,
       feePerOutput: FEE_PER_AMOUNT_SHIELDED_OUTPUT,
     },
     {
@@ -79,8 +96,15 @@ const ALL_MODES = Object.values(PRIVACY_MODE);
  * @param {string} props.selectedMode One of PRIVACY_MODE
  * @param {function(string): void} props.onSelect Called with the mode the user switches on
  * @param {string[]} [props.options] The modes to offer, all of them by default
+ * @param {string} [props.variant] One of PRIVACY_MODE_CARD_VARIANT: the copy of one send's
+ *   privacy, by default, or of the default privacy mode
  */
-const PrivacyModeCard = ({ selectedMode, onSelect, options = ALL_MODES }) => {
+const PrivacyModeCard = ({
+  selectedMode,
+  onSelect,
+  options = ALL_MODES,
+  variant = PRIVACY_MODE_CARD_VARIANT.PER_SEND,
+}) => {
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
   const amountFormat = useSelector(getDisplayAmountFormat);
   const symbol = useSelector(
@@ -95,7 +119,7 @@ const PrivacyModeCard = ({ selectedMode, onSelect, options = ALL_MODES }) => {
     return t`Fee: ${fee} ${symbol} per private output`;
   };
 
-  const rows = getPrivacyModeDetails().filter((detail) => options.includes(detail.mode));
+  const rows = getPrivacyModeDetails(variant).filter((detail) => options.includes(detail.mode));
 
   return (
     <View style={styles.card}>

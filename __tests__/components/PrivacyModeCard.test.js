@@ -15,7 +15,7 @@ import { reducer } from '../../src/reducers/reducer';
 import { setServerInfo } from '../../src/actions';
 import { PRIVACY_MODE } from '../../src/constants';
 import { PortalProvider } from '../../src/components/Portal';
-import PrivacyModeCard from '../../src/components/PrivacyModeCard';
+import PrivacyModeCard, { PRIVACY_MODE_CARD_VARIANT } from '../../src/components/PrivacyModeCard';
 import PrivacyModeSelector from '../../src/components/PrivacyModeSelector';
 import TransactionPrivacyModal from '../../src/components/TransactionPrivacyModal';
 
@@ -208,5 +208,74 @@ describe('PrivacyModeSelector', () => {
       'Private sends need a private address.',
     ]);
     expect(renderer.root.findByType(Pressable).props.disabled).toBe(true);
+  });
+});
+
+describe('PrivacyModeCard for the default privacy mode', () => {
+  test('says the default applies to new sends to private addresses, with each fee', async () => {
+    const { texts } = await render(
+      <PrivacyModeCard
+        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
+        onSelect={jest.fn()}
+        options={PRIVATE_ONLY}
+        variant={PRIVACY_MODE_CARD_VARIANT.DEFAULT}
+      />,
+      { decimalPlaces: 4, symbol: 'XHT' },
+    );
+
+    expect(texts()).toEqual([
+      'Private',
+      'Amount hidden on new sends to private addresses. The token is hidden among the tokens each send spends, but never when it is HTR.',
+      'Fee: 0.0002 XHT per private output',
+      'Hide amount',
+      'Token visible, amount hidden on new sends to private addresses',
+      'Fee: 0.0001 XHT per private output',
+    ]);
+  });
+
+  test("keeps a send's copy for the per-send variant", async () => {
+    const { texts } = await render(
+      <PrivacyModeCard
+        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
+        onSelect={jest.fn()}
+        options={PRIVATE_ONLY}
+        variant={PRIVACY_MODE_CARD_VARIANT.PER_SEND}
+      />,
+    );
+
+    expect(texts()).toContain('Token visible, amount hidden');
+    expect(texts().join('\n')).not.toContain('new sends');
+  });
+});
+
+describe('TransactionPrivacyModal and the default privacy mode', () => {
+  test('points a send to a private address to the default in Settings', async () => {
+    const { texts } = await render(
+      <TransactionPrivacyModal
+        visible
+        onDismiss={jest.fn()}
+        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
+        options={PRIVATE_ONLY}
+        onConfirm={jest.fn()}
+      />,
+    );
+    await waitForSheetContent();
+
+    expect(texts()).toContain('You can change the default in Settings, under Privacy.');
+  });
+
+  test('points to no default where Public is offered, since the default never applies', async () => {
+    const { texts } = await render(
+      <TransactionPrivacyModal
+        visible
+        onDismiss={jest.fn()}
+        selectedMode={PRIVACY_MODE.PUBLIC}
+        options={[PRIVACY_MODE.PUBLIC]}
+        onConfirm={jest.fn()}
+      />,
+    );
+    await waitForSheetContent();
+
+    expect(texts()).not.toContain('You can change the default in Settings, under Privacy.');
   });
 });

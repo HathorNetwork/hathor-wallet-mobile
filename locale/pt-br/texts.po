@@ -457,7 +457,7 @@ msgid "You are about to add these tokens to your wallet:"
 msgstr "Você está prestes a adicionar esses tokens à sua carteira:"
 
 #: src/components/TokenImportBanner.js:77
-#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:131
+#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:134
 msgid "Import tokens"
 msgstr "Importar tokens"
 
@@ -725,7 +725,7 @@ msgstr "Não encontramos nenhum token não registrado vinculado à sua carteira.
 msgid "You can register a new one manually."
 msgstr "Você pode registrar um novo token manualmente."
 
-#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:123
+#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:126
 msgid "Register a token"
 msgstr "Registrar um token"
 
@@ -866,7 +866,7 @@ msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:199
-#: src/screens/PinScreen.js:334 src/screens/Settings.js:186
+#: src/screens/PinScreen.js:334 src/screens/Settings.js:196
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
 
@@ -964,7 +964,23 @@ msgstr "Cancelar"
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
-#: src/screens/PushNotification.js:58 src/screens/Settings.js:149
+#: src/screens/PrivacySettings.js:64
+msgid "PRIVACY SETTINGS"
+msgstr "CONFIGURAÇÕES DE PRIVACIDADE"
+
+#: src/screens/PrivacySettings.js:69
+msgid ""
+"The default applies to your sends to private addresses. You can change it "
+"for each send."
+msgstr ""
+"O padrão vale para os seus envios para endereços privados. Você pode mudá-lo "
+"em cada envio."
+
+#: src/screens/PrivacySettings.js:72
+msgid "DEFAULT FOR SENDS TO PRIVATE ADDRESSES"
+msgstr "PADRÃO PARA ENVIOS A ENDEREÇOS PRIVADOS"
+
+#: src/screens/PushNotification.js:58 src/screens/Settings.js:152
 msgid "Push Notification"
 msgstr "Notificação"
 
@@ -1203,7 +1219,7 @@ msgstr ""
 msgid "Failed to process transaction."
 msgstr "Falha ao processar a transação"
 
-#: src/components/TransactionPrivacyModal.js:67
+#: src/components/TransactionPrivacyModal.js:69
 #: src/screens/SendConfirmScreen.js:201
 msgid "Payments to a private address are always private."
 msgstr "Pagamentos para um endereço privado são sempre privados."
@@ -1324,51 +1340,55 @@ msgstr "QR code inválido"
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
-#: src/screens/Settings.js:110
+#: src/screens/Settings.js:113
 msgid "You are connected to"
 msgstr "Você está conectado à"
 
-#: src/screens/Settings.js:119
+#: src/screens/Settings.js:122
 msgid "General Settings"
 msgstr "Configurações Gerais"
 
-#: src/screens/Settings.js:138
+#: src/screens/Settings.js:141
 msgid "Create a new token"
 msgstr "Criar um novo token"
 
-#: src/screens/Settings.js:143
+#: src/screens/Settings.js:146
 msgid "Security"
 msgstr "Segurança"
 
-#: src/screens/Settings.js:156
+#: src/screens/Settings.js:159
 msgid "Reown"
 msgstr "Reown"
 
-#: src/screens/Settings.js:163
+#: src/screens/Settings.js:166
 msgid "Advanced Settings"
 msgstr "Configurações Avançadas"
 
-#: src/screens/Settings.js:167
+#: src/screens/Settings.js:170
 msgid "Network Settings"
 msgstr "Configurações de Rede"
 
-#: src/screens/Settings.js:174
+#: src/screens/Settings.js:177
 msgid "Address Mode"
 msgstr "Modo de Endereço"
 
-#: src/screens/Settings.js:181
+#: src/screens/Settings.js:184
 msgid "Amount format"
 msgstr "Formato de Valor"
 
-#: src/screens/Settings.js:194
+#: src/screens/Settings.js:191
+msgid "Privacy"
+msgstr "Privacidade"
+
+#: src/screens/Settings.js:204
 msgid "About"
 msgstr "Sobre"
 
-#: src/screens/Settings.js:202
+#: src/screens/Settings.js:212
 msgid "Unique app identifier"
 msgstr "Identificador único do aplicativo"
 
-#: src/screens/Settings.js:215
+#: src/screens/Settings.js:225
 msgid "Connected to"
 msgstr "Conectado ao servidor"
 
@@ -1978,7 +1998,7 @@ msgid "Max"
 msgstr "Máx"
 
 #: src/components/AmountInputAccessory.js:105
-#: src/components/TransactionPrivacyModal.js:72
+#: src/components/TransactionPrivacyModal.js:78
 msgid "Done"
 msgstr "Ok"
 
@@ -2150,14 +2170,24 @@ msgstr "e.g. Poupança"
 msgid "Create"
 msgstr "Criar"
 
-#: src/components/PrivacyModeCard.js:38 src/components/ReceiveMyAddress.js:46
+#: src/components/PrivacyModeCard.js:51 src/components/ReceiveMyAddress.js:46
 #: src/components/Shielded/ShieldedBalanceSplit.js:145
 msgid "Private"
 msgstr "Privado"
 
 #.  A fully shielded output hides its token only among the tokens the tx spends, and the
 #.  fee always spends HTR: an HTR output stays known as HTR.
-#: src/components/PrivacyModeCard.js:41
+#: src/components/PrivacyModeCard.js:55
+msgid ""
+"Amount hidden on new sends to private addresses. The token is hidden among "
+"the tokens each send spends, but never when it is HTR."
+msgstr ""
+"Valor oculto nos novos envios para endereços privados. O token fica oculto "
+"entre os tokens que cada envio gasta, mas nunca quando é HTR."
+
+#.  A fully shielded output hides its token only among the tokens the tx spends, and the
+#.  fee always spends HTR: an HTR output stays known as HTR.
+#: src/components/PrivacyModeCard.js:56
 msgid ""
 "Amount hidden. The token is hidden among the tokens this send spends, but "
 "never when it is HTR."
@@ -2165,28 +2195,32 @@ msgstr ""
 "Valor oculto. O token fica oculto entre os tokens que este envio gasta, mas "
 "nunca quando é HTR."
 
-#: src/components/PrivacyModeCard.js:47
+#: src/components/PrivacyModeCard.js:62
 msgid "Hide amount"
 msgstr "Ocultar valor"
 
-#: src/components/PrivacyModeCard.js:48
+#: src/components/PrivacyModeCard.js:64
+msgid "Token visible, amount hidden on new sends to private addresses"
+msgstr "Token visível, valor oculto nos novos envios para endereços privados"
+
+#: src/components/PrivacyModeCard.js:65
 msgid "Token visible, amount hidden"
 msgstr "Token visível, valor oculto"
 
-#: src/components/PrivacyModeCard.js:54 src/components/ReceiveMyAddress.js:45
+#: src/components/PrivacyModeCard.js:71 src/components/ReceiveMyAddress.js:45
 #: src/components/Shielded/ShieldedBalanceSplit.js:150
 msgid "Public"
 msgstr "Público"
 
-#: src/components/PrivacyModeCard.js:55
+#: src/components/PrivacyModeCard.js:72
 msgid "Token and amount visible"
 msgstr "Token e valor visíveis"
 
-#: src/components/PrivacyModeCard.js:92
+#: src/components/PrivacyModeCard.js:116
 msgid "No privacy fee unless the send spends private funds"
 msgstr "Sem taxa de privacidade, a menos que o envio gaste fundos privados"
 
-#: src/components/PrivacyModeCard.js:95
+#: src/components/PrivacyModeCard.js:119
 #, javascript-format
 msgid "Fee: ${ fee } ${ symbol } per private output"
 msgstr "Taxa: ${ fee } ${ symbol } por saída privada"
@@ -2310,13 +2344,17 @@ msgstr ""
 "Encontramos tokens vinculados aos seus endereços que não estão em sua "
 "carteira ainda."
 
-#: src/components/TransactionPrivacyModal.js:56
+#: src/components/TransactionPrivacyModal.js:57
 msgid "Transaction privacy"
 msgstr "Privacidade da transação"
 
-#: src/components/TransactionPrivacyModal.js:57
+#: src/components/TransactionPrivacyModal.js:58
 msgid "Choose what this transaction hides."
 msgstr "Escolha o que esta transação oculta."
+
+#: src/components/TransactionPrivacyModal.js:72
+msgid "You can change the default in Settings, under Privacy."
+msgstr "Você pode mudar o padrão em Configurações, em Privacidade."
 
 #: src/components/TransactionStatusLabel.js:69
 msgid "Executed"

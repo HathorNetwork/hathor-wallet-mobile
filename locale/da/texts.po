@@ -422,7 +422,7 @@ msgid "You are about to add these tokens to your wallet:"
 msgstr ""
 
 #: src/components/TokenImportBanner.js:77
-#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:131
+#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:134
 msgid "Import tokens"
 msgstr ""
 
@@ -683,7 +683,7 @@ msgstr ""
 msgid "You can register a new one manually."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:123
+#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:126
 msgid "Register a token"
 msgstr "Registrer en token"
 
@@ -820,7 +820,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:199
-#: src/screens/PinScreen.js:334 src/screens/Settings.js:186
+#: src/screens/PinScreen.js:334 src/screens/Settings.js:196
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
@@ -916,7 +916,21 @@ msgstr "Annuller"
 msgid "Biometry failed or canceled."
 msgstr "Biometri mislykkedes eller blev annulleret."
 
-#: src/screens/PushNotification.js:58 src/screens/Settings.js:149
+#: src/screens/PrivacySettings.js:64
+msgid "PRIVACY SETTINGS"
+msgstr ""
+
+#: src/screens/PrivacySettings.js:69
+msgid ""
+"The default applies to your sends to private addresses. You can change it "
+"for each send."
+msgstr ""
+
+#: src/screens/PrivacySettings.js:72
+msgid "DEFAULT FOR SENDS TO PRIVATE ADDRESSES"
+msgstr ""
+
+#: src/screens/PushNotification.js:58 src/screens/Settings.js:152
 msgid "Push Notification"
 msgstr ""
 
@@ -1150,7 +1164,7 @@ msgstr ""
 msgid "Failed to process transaction."
 msgstr ""
 
-#: src/components/TransactionPrivacyModal.js:67
+#: src/components/TransactionPrivacyModal.js:69
 #: src/screens/SendConfirmScreen.js:201
 msgid "Payments to a private address are always private."
 msgstr ""
@@ -1271,51 +1285,55 @@ msgstr "Ugyldig QR-kode"
 msgid "Scan the QR code"
 msgstr "Scan QR-koden"
 
-#: src/screens/Settings.js:110
+#: src/screens/Settings.js:113
 msgid "You are connected to"
 msgstr "Du er tilsluttet til"
 
-#: src/screens/Settings.js:119
+#: src/screens/Settings.js:122
 msgid "General Settings"
 msgstr ""
 
-#: src/screens/Settings.js:138
+#: src/screens/Settings.js:141
 msgid "Create a new token"
 msgstr "Opret en ny token"
 
-#: src/screens/Settings.js:143
+#: src/screens/Settings.js:146
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:156
+#: src/screens/Settings.js:159
 msgid "Reown"
 msgstr ""
 
-#: src/screens/Settings.js:163
+#: src/screens/Settings.js:166
 msgid "Advanced Settings"
 msgstr ""
 
-#: src/screens/Settings.js:167
+#: src/screens/Settings.js:170
 msgid "Network Settings"
 msgstr ""
 
-#: src/screens/Settings.js:174
+#: src/screens/Settings.js:177
 msgid "Address Mode"
 msgstr ""
 
-#: src/screens/Settings.js:181
+#: src/screens/Settings.js:184
 msgid "Amount format"
 msgstr ""
 
-#: src/screens/Settings.js:194
+#: src/screens/Settings.js:191
+msgid "Privacy"
+msgstr ""
+
+#: src/screens/Settings.js:204
 msgid "About"
 msgstr "Om"
 
-#: src/screens/Settings.js:202
+#: src/screens/Settings.js:212
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:215
+#: src/screens/Settings.js:225
 msgid "Connected to"
 msgstr "Forbundet til"
 
@@ -1897,7 +1915,7 @@ msgid "Max"
 msgstr ""
 
 #: src/components/AmountInputAccessory.js:105
-#: src/components/TransactionPrivacyModal.js:72
+#: src/components/TransactionPrivacyModal.js:78
 msgid "Done"
 msgstr ""
 
@@ -2064,41 +2082,53 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:38 src/components/ReceiveMyAddress.js:46
+#: src/components/PrivacyModeCard.js:51 src/components/ReceiveMyAddress.js:46
 #: src/components/Shielded/ShieldedBalanceSplit.js:145
 msgid "Private"
 msgstr ""
 
 #.  A fully shielded output hides its token only among the tokens the tx spends, and the
 #.  fee always spends HTR: an HTR output stays known as HTR.
-#: src/components/PrivacyModeCard.js:41
+#: src/components/PrivacyModeCard.js:55
+msgid ""
+"Amount hidden on new sends to private addresses. The token is hidden among "
+"the tokens each send spends, but never when it is HTR."
+msgstr ""
+
+#.  A fully shielded output hides its token only among the tokens the tx spends, and the
+#.  fee always spends HTR: an HTR output stays known as HTR.
+#: src/components/PrivacyModeCard.js:56
 msgid ""
 "Amount hidden. The token is hidden among the tokens this send spends, but "
 "never when it is HTR."
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:47
+#: src/components/PrivacyModeCard.js:62
 msgid "Hide amount"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:48
+#: src/components/PrivacyModeCard.js:64
+msgid "Token visible, amount hidden on new sends to private addresses"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:65
 msgid "Token visible, amount hidden"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:54 src/components/ReceiveMyAddress.js:45
+#: src/components/PrivacyModeCard.js:71 src/components/ReceiveMyAddress.js:45
 #: src/components/Shielded/ShieldedBalanceSplit.js:150
 msgid "Public"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:55
+#: src/components/PrivacyModeCard.js:72
 msgid "Token and amount visible"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:92
+#: src/components/PrivacyModeCard.js:116
 msgid "No privacy fee unless the send spends private funds"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:95
+#: src/components/PrivacyModeCard.js:119
 #, javascript-format
 msgid "Fee: ${ fee } ${ symbol } per private output"
 msgstr ""
@@ -2216,12 +2246,16 @@ msgstr ""
 msgid "We found tokens linked to your address that are not yet in your wallet."
 msgstr ""
 
-#: src/components/TransactionPrivacyModal.js:56
+#: src/components/TransactionPrivacyModal.js:57
 msgid "Transaction privacy"
 msgstr ""
 
-#: src/components/TransactionPrivacyModal.js:57
+#: src/components/TransactionPrivacyModal.js:58
 msgid "Choose what this transaction hides."
+msgstr ""
+
+#: src/components/TransactionPrivacyModal.js:72
+msgid "You can change the default in Settings, under Privacy."
 msgstr ""
 
 #: src/components/TransactionStatusLabel.js:69
