@@ -11,12 +11,23 @@ import {
   reloadWalletRequested,
   resetData,
   resetWalletSuccess,
+  shieldedCapabilityUpdate,
   shieldedProviderUpdate,
   startWalletRequested,
 } from '../../src/actions';
 import { SHIELDED_PROVIDER_STATUS } from '../../src/constants';
 
 const getInitialState = () => reducer(undefined, { type: '@@INIT' });
+
+const CAPABILITY = {
+  level: 'watch',
+  reason: 'locked',
+  cause: 'wrong-pin',
+  canReceive: false,
+  canSpend: false,
+  historyComplete: true,
+  undecoded: { txIds: ['tx1'], locked: 1, unreadable: 0, error: 0 },
+};
 
 // A wallet whose provider failed its self-test.
 const failedState = () => reducer(getInitialState(), shieldedProviderUpdate({
@@ -25,10 +36,11 @@ const failedState = () => reducer(getInitialState(), shieldedProviderUpdate({
 }));
 
 describe('shielded reducer', () => {
-  test('starts with no provider registered', () => {
+  test('starts with no provider registered and no capability', () => {
     expect(getInitialState().shielded).toEqual(SHIELDED_INITIAL_STATE);
     expect(SHIELDED_INITIAL_STATE.providerStatus).toBe(SHIELDED_PROVIDER_STATUS.UNREGISTERED);
     expect(SHIELDED_INITIAL_STATE.providerError).toBeNull();
+    expect(SHIELDED_INITIAL_STATE.capability).toBeNull();
   });
 
   test('records the provider status', () => {
@@ -56,5 +68,23 @@ describe('shielded reducer', () => {
   test('keeps the status through a reload request, until the start it dispatches', () => {
     expect(reducer(failedState(), reloadWalletRequested()).shielded)
       .toEqual(failedState().shielded);
+  });
+
+  test('records the capability the wallet reports, next to the provider status', () => {
+    const ready = reducer(getInitialState(), shieldedProviderUpdate({
+      status: SHIELDED_PROVIDER_STATUS.READY,
+    }));
+    const next = reducer(ready, shieldedCapabilityUpdate(CAPABILITY));
+    expect(next.shielded).toEqual({
+      providerStatus: SHIELDED_PROVIDER_STATUS.READY,
+      providerError: null,
+      capability: CAPABILITY,
+    });
+  });
+
+  test('drops the capability at the next start', () => {
+    const withCapability = reducer(getInitialState(), shieldedCapabilityUpdate(CAPABILITY));
+    expect(reducer(withCapability, startWalletRequested({ words: 'words', pin: '111111' })).shielded)
+      .toEqual(SHIELDED_INITIAL_STATE);
   });
 });

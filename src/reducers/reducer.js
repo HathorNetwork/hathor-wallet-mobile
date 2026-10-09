@@ -31,13 +31,19 @@ import { WALLET_STATUS } from '../sagas/wallet';
 
 /**
  * The shielded state of the running wallet: whether its shielded crypto provider was
- * registered, and why it failed. Every start resets it. It never holds a PIN or key material.
+ * registered, why it failed, and what the wallet can do with shielded outputs. Every start
+ * resets it. It never holds a PIN or key material.
  */
 export const SHIELDED_INITIAL_STATE = {
   /** One of SHIELDED_PROVIDER_STATUS. */
   providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
   /** @type {string|null} Why the provider failed to load or failed its self-test. */
   providerError: null,
+  /**
+   * @type {Object|null} The wallet's IShieldedCapability (level, reason, cause, canReceive,
+   * canSpend, historyComplete and the undecoded counts), or null until the wallet reports it.
+   */
+  capability: null,
 };
 
 /**
@@ -828,6 +834,8 @@ export const reducer = (state = initialState, action) => {
       return onSetFullNodeNetworkName(state, action);
     case types.SHIELDED_PROVIDER_UPDATE:
       return onShieldedProviderUpdate(state, action);
+    case types.SHIELDED_CAPABILITY_UPDATE:
+      return onShieldedCapabilityUpdate(state, action);
 
     case types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS:
       return onTokenSwapFetchAllowedTokens(state);
@@ -2283,6 +2291,17 @@ export const onShieldedProviderUpdate = (state, { payload }) => ({
     ...state.shielded,
     providerStatus: payload.status,
     providerError: payload.error,
+  },
+});
+
+/**
+ * @param {Object} action.payload The wallet's IShieldedCapability
+ */
+export const onShieldedCapabilityUpdate = (state, { payload }) => ({
+  ...state,
+  shielded: {
+    ...state.shielded,
+    capability: payload,
   },
 });
 

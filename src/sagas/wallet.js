@@ -88,6 +88,7 @@ import {
   tokenImportFetchRequested,
   setAmountFormat,
   startWalletRequested,
+  shieldedCapabilityUpdate,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -511,6 +512,17 @@ export function* startWallet(action) {
     }
   }
 
+  // The listener above gets every capability change from now on. Read the capability once the
+  // wallet is ready too, as the event fires only when the capability changes.
+  if (typeof wallet.getShieldedCapability === 'function') {
+    try {
+      const capability = yield call([wallet, wallet.getShieldedCapability]);
+      yield put(shieldedCapabilityUpdate(capability));
+    } catch (e) {
+      log.error('Failed to read the shielded capability.', e);
+    }
+  }
+
   // After connection, confirm the actual scan policy. The wallet-lib changes
   // SINGLE_ADDRESS → GAP_LIMIT during the first connection if it finds tx on
   // addresses with index > 0. Persist the *real* mode here — single point of
@@ -880,6 +892,13 @@ export function* setupWalletListeners(wallet) {
       type: 'WALLET_NEW_TX',
       data,
     }));
+    // What the wallet can do with shielded outputs. start() emits it once, and the wallet emits
+    // it again whenever it changes.
+    const onShieldedCapability = (capability) => emitter({
+      type: types.SHIELDED_CAPABILITY_UPDATE,
+      data: capability,
+    });
+    wallet.on('shielded-capability', onShieldedCapability);
 
     return () => {
       // XXX: Is this cleanup working?
@@ -890,6 +909,7 @@ export function* setupWalletListeners(wallet) {
       wallet.removeListener('reload-data', listener);
       wallet.removeListener('update-tx', listener);
       wallet.removeListener('new-tx', listener);
+      wallet.removeListener('shielded-capability', onShieldedCapability);
     };
   });
 

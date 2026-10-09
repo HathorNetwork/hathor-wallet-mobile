@@ -73,6 +73,7 @@ export const types = {
   RELOAD_WALLET_REQUESTED: 'RELOAD_WALLET_REQUESTED',
   WALLET_PIN_CHANGED: 'WALLET_PIN_CHANGED',
   SHIELDED_PROVIDER_UPDATE: 'SHIELDED_PROVIDER_UPDATE',
+  SHIELDED_CAPABILITY_UPDATE: 'SHIELDED_CAPABILITY_UPDATE',
   START_WALLET_REQUESTED: 'START_WALLET_REQUESTED',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
@@ -817,6 +818,17 @@ export const walletPinChanged = (pin) => ({
 export const shieldedProviderUpdate = ({ status, error = null }) => ({
   type: types.SHIELDED_PROVIDER_UPDATE,
   payload: { status, error },
+});
+
+/**
+ * What the running wallet can do with shielded outputs, as getShieldedCapability() returns it and
+ * the 'shielded-capability' event carries it. It holds no key material.
+ *
+ * @param {Object} capability The wallet's IShieldedCapability
+ */
+export const shieldedCapabilityUpdate = (capability) => ({
+  type: types.SHIELDED_CAPABILITY_UPDATE,
+  payload: capability,
 });
 
 export const networkChanged = () => ({

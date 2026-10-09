@@ -9,6 +9,7 @@ import {
   FEATURE_TOGGLE_DEFAULTS,
   FULL_NETWORK_SHIELDED_TESTNET,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
+  SHIELDED_PROVIDER_STATUS,
 } from '../constants';
 
 /**
@@ -69,4 +70,55 @@ export function shouldRegisterShieldedProvider({
   isPasskeyWallet,
 }) {
   return isShieldedNetwork(networkSettings) && !useWalletService && !isPasskeyWallet;
+}
+
+/**
+ * The running wallet's shielded capability, or null until the wallet reports one.
+ *
+ * @param {Object} state Redux state
+ * @returns {Object|null} IShieldedCapability
+ */
+export function selectShieldedCapability(state) {
+  return state.shielded?.capability ?? null;
+}
+
+/**
+ * Whether the app may show shielded UI at all: the flag is on, the wallet runs on the fullnode
+ * facade, the fullnode reports the shielded testnet, and a crypto provider was registered for
+ * the wallet or failed to load. A provider is only ever tried for seed wallets, so this also
+ * rules out passkey wallets.
+ *
+ * @param {Object} state Redux state
+ * @returns {boolean}
+ */
+export function isShieldedEnvironment(state) {
+  const providerStatus = state.shielded?.providerStatus ?? SHIELDED_PROVIDER_STATUS.UNREGISTERED;
+  return getShieldedFeatureToggle(state)
+    && !state.useWalletService
+    && isShieldedNetworkName(state.fullNodeNetworkName)
+    && providerStatus !== SHIELDED_PROVIDER_STATUS.UNREGISTERED;
+}
+
+/**
+ * Whether the shielded environment holds and the crypto provider passed its self-test, at any
+ * capability level: a locked wallet ('watch') can still be unlocked.
+ *
+ * @param {Object} state Redux state
+ * @returns {boolean}
+ */
+export function isShieldedAvailable(state) {
+  return isShieldedEnvironment(state)
+    && state.shielded.providerStatus === SHIELDED_PROVIDER_STATUS.READY;
+}
+
+/**
+ * Whether the wallet decodes its shielded outputs: shielded support is available and the
+ * capability level is 'view' or 'full'.
+ *
+ * @param {Object} state Redux state
+ * @returns {boolean}
+ */
+export function isShieldedEnabled(state) {
+  const level = selectShieldedCapability(state)?.level;
+  return isShieldedAvailable(state) && (level === 'view' || level === 'full');
 }

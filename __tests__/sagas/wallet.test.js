@@ -37,6 +37,11 @@ jest.mock('@hathor/wallet-lib', () => {
       return MockHathorWallet.onStart(this);
     }
 
+    getShieldedCapability() {
+      this.record('getShieldedCapability');
+      return Promise.resolve(MockHathorWallet.capability);
+    }
+
     // eslint-disable-next-line class-methods-use-this
     isReady() {
       return true;
@@ -46,6 +51,7 @@ jest.mock('@hathor/wallet-lib', () => {
   MockHathorWallet.log = [];
   MockHathorWallet.instances = [];
   MockHathorWallet.onStart = () => new Promise(() => {});
+  MockHathorWallet.capability = null;
 
   class MockConnection extends EventEmitter {
     constructor(options) {
@@ -70,13 +76,19 @@ jest.mock('../../src/sagas/featureToggle', () => ({
 /* eslint-disable import/first */
 import { runSaga, stdChannel } from 'redux-saga';
 import { call } from 'redux-saga/effects';
-import { HathorWallet, HistorySyncMode } from '@hathor/wallet-lib';
-import { isWalletServiceEnabled, startWallet, waitForWalletRestart } from '../../src/sagas/wallet';
+import { HathorWallet, HistorySyncMode, SCANNING_POLICY } from '@hathor/wallet-lib';
+import {
+  isWalletServiceEnabled,
+  setupWalletListeners,
+  startWallet,
+  waitForWalletRestart,
+} from '../../src/sagas/wallet';
 import { registerShieldedCryptoProvider } from '../../src/sagas/shieldedProvider';
 import {
   reloadWalletRequested,
   resetWallet,
   setUseWalletService,
+  shieldedCapabilityUpdate,
   startWalletRequested,
   types,
   walletPinChanged,
@@ -134,6 +146,7 @@ describe('startWallet saga', () => {
 const WORDS = 'seed words';
 const PIN = '111111';
 const PASSKEY_META = { walletType: 'passkey', xpub: 'xpub-passkey-wallet' };
+const PROVIDER = { name: 'mobile shielded crypto provider' };
 // The Customize form saves the network name the node reports, and may add a wallet-service.
 const CUSTOM_SHIELDED_NETWORK = {
   ...PRE_SETTINGS_SHIELDED_TESTNET,
@@ -150,6 +163,7 @@ function stubStart({ networkSettings, walletMeta = null, featureToggles = {} }) 
   jest.spyOn(STORE, 'getStorage').mockReturnValue({
     store: { cleanMetadata: jest.fn() },
     cleanStorage: jest.fn(),
+    getScanningPolicy: jest.fn(async () => SCANNING_POLICY.GAP_LIMIT),
   });
   jest.spyOn(STORE, 'getItem').mockImplementation(
     (key) => (key === networkSettingsKeyMap.networkSettings ? networkSettings : null),
@@ -163,22 +177,29 @@ function stubStart({ networkSettings, walletMeta = null, featureToggles = {} }) 
 }
 
 /**
- * Runs startWallet until it calls wallet.start(), then cancels it. Returns HathorWallet.log, where
- * the dispatched actions are recorded too, and the wallet.
+ * Runs startWallet until `until` is recorded in HathorWallet.log, where the types of the
+ * dispatched actions are recorded too, then cancels it. By default the wallet's start() never
+ * settles and the run stops there.
  */
-async function runUntilStart(options) {
+async function runStartWallet(options, until = 'start') {
   const getState = stubStart(options);
-  let started;
-  const startCalled = new Promise((resolve) => { started = resolve; });
-  HathorWallet.onStart = () => {
-    started();
-    return new Promise(() => {});
+  let reached;
+  const untilReached = new Promise((resolve) => { reached = resolve; });
+  const log = [];
+  const dispatched = [];
+  HathorWallet.log = {
+    push: (entry) => {
+      log.push(entry);
+      if (entry === until) reached();
+    },
   };
   const task = runSaga(
     {
       channel: stdChannel(),
       dispatch: (action) => {
-        if (action?.type) HathorWallet.log.push(`dispatch:${action.type}`);
+        if (!action?.type) return;
+        dispatched.push(action);
+        HathorWallet.log.push(`dispatch:${action.type}`);
       },
       getState,
     },
@@ -186,20 +207,21 @@ async function runUntilStart(options) {
     startWalletRequested({ words: WORDS, pin: PIN }),
   );
   const ended = task.toPromise().then(() => {
-    throw new Error('startWallet ended before it called wallet.start()');
+    throw new Error(`startWallet ended before ${until}`);
   });
-  await Promise.race([startCalled, ended]);
+  await Promise.race([untilReached, ended]);
   task.cancel();
   const wallet = HathorWallet.instances[HathorWallet.instances.length - 1];
-  return { log: HathorWallet.log, wallet };
+  return { log, dispatched, wallet };
 }
 
-describe('startWallet on the fullnode facade', () => {
-  const PROVIDER = { name: 'mobile shielded crypto provider' };
+const runUntilStart = (options) => runStartWallet(options);
 
+describe('startWallet on the fullnode facade', () => {
   beforeEach(() => {
     HathorWallet.log = [];
     HathorWallet.instances = [];
+    HathorWallet.onStart = () => new Promise(() => {});
     registerShieldedCryptoProvider.mockReset();
     registerShieldedCryptoProvider.mockImplementation(function* register(wallet) {
       yield call([wallet, wallet.setShieldedCryptoProvider], PROVIDER);
@@ -267,6 +289,74 @@ describe('startWallet on the fullnode facade', () => {
     expect(registerShieldedCryptoProvider).not.toHaveBeenCalled();
     expect(log).toContain('setExternalTxSigningMethod');
     expect(log).toContain('start');
+  });
+});
+
+const CAPABILITY = {
+  level: 'watch',
+  reason: 'locked',
+  cause: 'wrong-pin',
+  canReceive: false,
+  canSpend: false,
+  historyComplete: true,
+  undecoded: { txIds: ['tx1'], locked: 1, unreadable: 0, error: 0 },
+};
+
+describe('the shielded capability', () => {
+  beforeEach(() => {
+    HathorWallet.instances = [];
+    HathorWallet.capability = CAPABILITY;
+    registerShieldedCryptoProvider.mockReset();
+    registerShieldedCryptoProvider.mockImplementation(function* register(wallet) {
+      yield call([wallet, wallet.setShieldedCryptoProvider], PROVIDER);
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    HathorWallet.onStart = () => new Promise(() => {});
+  });
+
+  test('setupWalletListeners forwards what the wallet emits until it is cancelled', async () => {
+    const wallet = new HathorWallet({});
+    const dispatched = [];
+    const task = runSaga(
+      { dispatch: (action) => dispatched.push(action) },
+      setupWalletListeners,
+      wallet,
+    );
+
+    wallet.emit('shielded-capability', CAPABILITY);
+    await new Promise((resolve) => { setImmediate(resolve); });
+
+    expect(dispatched).toEqual([shieldedCapabilityUpdate(CAPABILITY)]);
+    expect(dispatched[0]).toEqual({ type: types.SHIELDED_CAPABILITY_UPDATE, payload: CAPABILITY });
+    task.cancel();
+    expect(wallet.listenerCount('shielded-capability')).toBe(0);
+  });
+
+  test('startWallet listens before start() and reads the capability once the wallet is ready', async () => {
+    HathorWallet.onStart = async (wallet) => {
+      HathorWallet.log.push(`listening:${wallet.listenerCount('shielded-capability')}`);
+      return { network: 'testnet-shielded-outputs' };
+    };
+
+    const { log, dispatched } = await runStartWallet(
+      { networkSettings: PRE_SETTINGS_SHIELDED_TESTNET },
+      `dispatch:${types.TOKEN_FETCH_BALANCE_REQUESTED}`,
+    );
+
+    expect(log).toContain('listening:1');
+    expect(dispatched).toContainEqual(shieldedCapabilityUpdate(CAPABILITY));
+    const order = [
+      'start',
+      `dispatch:${types.SET_FULLNODE_NETWORK_NAME}`,
+      'getShieldedCapability',
+      `dispatch:${types.SHIELDED_CAPABILITY_UPDATE}`,
+      `dispatch:${types.TOKEN_FETCH_BALANCE_REQUESTED}`,
+    ].map((entry) => log.indexOf(entry));
+    expect(order.every((index) => index >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 });
 
