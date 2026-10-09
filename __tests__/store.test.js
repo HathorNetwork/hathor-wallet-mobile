@@ -2,6 +2,12 @@ import { jest, describe, test, expect, afterEach } from '@jest/globals';
 import { walletUtils } from '@hathor/wallet-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AsyncStorageStore, { WALLET_META_KEY } from '../src/store';
+import {
+  PRE_SETTINGS_SHIELDED_TESTNET,
+  PRE_SETTINGS_TESTNET,
+  PRIVACY_MODE,
+  privacyDefaultModeKey,
+} from '../src/constants';
 
 // A promise the test settles by hand, to check what a caller does while a native write is pending.
 const deferred = () => {
@@ -177,5 +183,23 @@ describe('AsyncStorageStore durable writes', () => {
     jest.spyOn(AsyncStorage, 'setItem').mockRejectedValueOnce(failure);
 
     await expect(store.updateWalletMeta({ credentialId: 'cred-1' })).rejects.toBe(failure);
+  });
+});
+
+describe('AsyncStorageStore.resetWallet', () => {
+  test('clears the default privacy mode of every network', async () => {
+    const store = new AsyncStorageStore();
+    const shieldedKey = privacyDefaultModeKey(PRE_SETTINGS_SHIELDED_TESTNET);
+    const testnetKey = privacyDefaultModeKey(PRE_SETTINGS_TESTNET);
+    await store.setItem(shieldedKey, PRIVACY_MODE.PRIVATE);
+    await store.setItem(testnetKey, PRIVACY_MODE.HIDE_AMOUNT);
+    expect(await AsyncStorage.getItem(shieldedKey)).not.toBeNull();
+
+    await store.resetWallet();
+
+    expect(store.getItem(shieldedKey)).toBeNull();
+    expect(store.getItem(testnetKey)).toBeNull();
+    expect(await AsyncStorage.multiGet([shieldedKey, testnetKey]))
+      .toEqual([[shieldedKey, null], [testnetKey, null]]);
   });
 });

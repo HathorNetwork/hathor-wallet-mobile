@@ -44,6 +44,7 @@ import {
   addressModeKey,
   networkSettingsKeyMap,
   AMOUNT_FORMAT_KEY,
+  privacyDefaultModeKey,
 } from '../constants';
 import { STORE } from '../store';
 import { makePasskeyTxSigner } from '../passkey/passkeySigner';
@@ -87,6 +88,7 @@ import {
   setAddressMode,
   tokenImportFetchRequested,
   setAmountFormat,
+  privacyDefaultModeSet,
   startWalletRequested,
   shieldedCapabilityUpdate,
 } from '../actions';
@@ -109,6 +111,7 @@ import {
   normalizeAmountFormat,
 } from '../utils';
 import { isShieldedNetwork, shouldRegisterShieldedProvider } from '../shielded/gating';
+import { normalizePrivacyDefaultMode } from '../utils/privacy';
 import { logger } from '../logger';
 
 const log = logger('wallet');
@@ -223,6 +226,18 @@ export function passkeyRequestPassword() {
   return Promise.reject(new Error('A PIN was requested for a passkey wallet.'));
 }
 
+/**
+ * Loads the default privacy mode saved for the network into the redux state: the mode a send to
+ * a private address starts in. Each network keeps its own, and a wallet reset clears them; a
+ * network with none saved gets DEFAULT_PRIVACY_MODE.
+ *
+ * @param {Object} networkSettings The network settings the wallet starts on
+ */
+export function* loadPrivacyDefaultMode(networkSettings) {
+  const stored = STORE.getItem(privacyDefaultModeKey(networkSettings));
+  yield put(privacyDefaultModeSet(normalizePrivacyDefaultMode(stored)));
+}
+
 export function* startWallet(action) {
   // Default the payload: passkey start paths (onboarding + unlock) dispatch startWalletRequested()
   // with no argument and read everything from the persisted walletMeta below, so action.payload is
@@ -284,6 +299,10 @@ export function* startWallet(action) {
   } else {
     networkSettings = yield select(getNetworkSettings);
   }
+
+  // startWallet re-runs on every unlock and reload, a network change included, so it loads the
+  // default privacy mode of the network it starts on.
+  yield call(loadPrivacyDefaultMode, networkSettings);
 
   // Refresh the unleash client context so feature toggles reflect the current
   // network. Required after wallet reset, since onResetWalletSuccess preserves

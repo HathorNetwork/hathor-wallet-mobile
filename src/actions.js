@@ -109,6 +109,7 @@ export const types = {
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   SET_ADDRESS_MODE: 'SET_ADDRESS_MODE',
   SET_AMOUNT_FORMAT: 'SET_AMOUNT_FORMAT',
+  PRIVACY_DEFAULT_MODE_SET: 'PRIVACY_DEFAULT_MODE_SET',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
   // Feature Toggle actions
@@ -1060,6 +1061,15 @@ export const setAddressMode = (mode) => ({
 export const setAmountFormat = (format) => ({
   type: types.SET_AMOUNT_FORMAT,
   payload: format,
+});
+
+/**
+ * Set the default privacy mode of the network: the mode a send to a private address starts in.
+ * @param {string} mode One of PRIVACY_MODE that a default can take: HIDE_AMOUNT or PRIVATE
+ */
+export const privacyDefaultModeSet = (mode) => ({
+  type: types.PRIVACY_DEFAULT_MODE_SET,
+  payload: mode,
 });
 
 /**

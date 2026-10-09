@@ -161,9 +161,19 @@ export const PRIVACY_MODE = {
 };
 
 /**
- * The privacy mode a send to a private address starts in.
+ * The privacy mode a send to a private address starts in, until the user saves another default
+ * for the network in Settings, under Privacy.
  */
 export const DEFAULT_PRIVACY_MODE = PRIVACY_MODE.HIDE_AMOUNT;
+
+// The default privacy mode is namespaced per network, by the network's full name: the shielded
+// testnet's network is 'testnet', as the public testnet's is. Settings saved before networks had a
+// full name fall back to the network. The 'wallet:' prefix means STORE.clearItems(true) sweeps it
+// on resetWallet.
+const PRIVACY_DEFAULT_MODE_KEY_PREFIX = 'wallet:privacy_default_mode:';
+export const privacyDefaultModeKey = (networkSettings) => (
+  `${PRIVACY_DEFAULT_MODE_KEY_PREFIX}${networkSettings.fullNetwork ?? networkSettings.network}`
+);
 
 /**
  * Amount display format (wallet-wide, network-independent).

@@ -55,6 +55,8 @@ const SendAmountInput = () => {
   const capability = useSelector(selectShieldedCapability);
   const unlock = useSelector(selectShieldedUnlock);
   const networkName = useSelector((state) => state.networkSettings.network);
+  // The default the user saved for the network, which a send to a private address starts in.
+  const privacyDefaultMode = useSelector((state) => state.privacyDefaultMode);
 
   const navigation = useNavigation();
   const params = useParams();
@@ -83,7 +85,7 @@ const SendAmountInput = () => {
   if (privateSendsAvailable) {
     privacyMode = privacyOptions.includes(chosenPrivacyMode)
       ? chosenPrivacyMode
-      : initialPrivacyMode(privacyOptions);
+      : initialPrivacyMode(privacyOptions, privacyDefaultMode);
   }
 
   // The available balance leaves out the private outputs the wallet holds locked. Where a PIN

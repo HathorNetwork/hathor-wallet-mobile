@@ -469,7 +469,7 @@ msgid "Back"
 msgstr "Voltar"
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:140
+#: src/screens/SendAmountInput.js:142
 msgid "Invalid amount"
 msgstr "Quantidade inválida"
 
@@ -498,7 +498,7 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:75
-#: src/screens/SendAmountInput.js:241
+#: src/screens/SendAmountInput.js:243
 msgid "Next"
 msgstr "Próximo"
 
@@ -1154,22 +1154,22 @@ msgstr "ENVIAR"
 msgid "Address to send"
 msgstr "Endereço para enviar"
 
-#: src/screens/SendAmountInput.js:145
+#: src/screens/SendAmountInput.js:147
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:152
+#: src/screens/SendAmountInput.js:154
 #, javascript-format
 msgid "A private send can be at most ${ max } ${ symbol }."
 msgstr "Um envio privado pode ter no máximo ${ max } ${ symbol }."
 
-#: src/screens/SendAmountInput.js:183
+#: src/screens/SendAmountInput.js:185
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:197 src/screens/SendConfirmScreen.js:502
+#: src/screens/SendAmountInput.js:199 src/screens/SendConfirmScreen.js:502
 #, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
@@ -1880,21 +1880,21 @@ msgstr "Transação"
 msgid "Open"
 msgstr "Abrir"
 
-#: src/sagas/wallet.js:1121
+#: src/sagas/wallet.js:1140
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1135
+#: src/sagas/wallet.js:1154
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:1145
+#: src/sagas/wallet.js:1164
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:1161
+#: src/sagas/wallet.js:1180
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."

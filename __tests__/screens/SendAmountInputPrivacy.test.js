@@ -27,6 +27,7 @@ import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { reducer } from '../../src/reducers/reducer';
 import {
   networkSettingsUpdateState,
+  privacyDefaultModeSet,
   setFeatureToggles,
   setFullNodeNetworkName,
   setServerInfo,
@@ -368,5 +369,64 @@ describe('SendAmountInput with a locked private balance', () => {
     });
 
     expect(renderer.root.findAllByType(ActivityIndicator)).toEqual([]);
+  });
+});
+
+describe('SendAmountInput with a default privacy mode', () => {
+  const setDefault = (store, mode) => act(async () => {
+    store.dispatch(privacyDefaultModeSet(mode));
+  });
+
+  test('starts a send to a private address in the default saved for the network', async () => {
+    const { store, selector, enterAmount, next } = await render(SHIELDED);
+
+    await setDefault(store, PRIVACY_MODE.PRIVATE);
+    expect(selector()[0].props.mode).toBe(PRIVACY_MODE.PRIVATE);
+
+    await enterAmount('1.00', 100n);
+    await next();
+    expect(mockNavigation.navigate).toHaveBeenCalledWith(
+      ...confirmParams(SHIELDED, 100n, PRIVACY_MODE.PRIVATE),
+    );
+  });
+
+  test('starts a send to a legacy address in Public, whatever the default', async () => {
+    const { store, selector, enterAmount, next } = await render(P2PKH);
+
+    await setDefault(store, PRIVACY_MODE.PRIVATE);
+    expect(selector()[0].props.mode).toBe(PRIVACY_MODE.PUBLIC);
+
+    await enterAmount('1.00', 100n);
+    await next();
+    expect(mockNavigation.navigate).toHaveBeenCalledWith(
+      ...confirmParams(P2PKH, 100n, PRIVACY_MODE.PUBLIC),
+    );
+  });
+
+  test('keeps the mode picked in the sheet over the default', async () => {
+    const { store, renderer, selector, openSheet } = await render(SHIELDED);
+    await setDefault(store, PRIVACY_MODE.PRIVATE);
+
+    await openSheet();
+    await act(async () => {
+      // Hide amount is the second row.
+      renderer.root.findAllByType(Switch)[1].props.onValueChange(true);
+    });
+    await act(async () => {
+      renderer.root.find((node) => node.props.title === 'Done' && node.props.onPress).props.onPress();
+    });
+
+    expect(selector()[0].props.mode).toBe(PRIVACY_MODE.HIDE_AMOUNT);
+  });
+
+  test('picks no private mode from the default while the shielded UI is off', async () => {
+    const { store, enterAmount, next } = await render(SHIELDED, { flag: false });
+
+    await setDefault(store, PRIVACY_MODE.PRIVATE);
+    await enterAmount('1.00', 100n);
+    await next();
+    expect(mockNavigation.navigate).toHaveBeenCalledWith(
+      ...confirmParams(SHIELDED, 100n, PRIVACY_MODE.PUBLIC),
+    );
   });
 });
