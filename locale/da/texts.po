@@ -141,6 +141,7 @@ msgstr ""
 msgid "Private transfers could not be loaded on this device."
 msgstr ""
 
+#: src/components/Shielded/ShieldedBalanceSplit.js:120
 #: src/shielded/receiveState.js:150
 msgid "Private transfers are not available for this wallet."
 msgstr ""
@@ -769,31 +770,31 @@ msgstr "Nulstil wallet"
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:142
+#: src/screens/MainScreen.js:168
 msgid "No transactions"
 msgstr "Ingen transaktioner"
 
-#: src/screens/MainScreen.js:145
+#: src/screens/MainScreen.js:171
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr "|share:Del din adresse| med venner og begynd at udveksle tokens"
 
-#: src/screens/MainScreen.js:162
+#: src/screens/MainScreen.js:188
 msgid "Loading transactions"
 msgstr "Indlæser dine transaktioner"
 
-#: src/screens/MainScreen.js:171
+#: src/screens/MainScreen.js:197
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:174
+#: src/screens/MainScreen.js:200
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:582 src/screens/MainScreen.js:616
+#: src/screens/MainScreen.js:631 src/screens/MainScreen.js:666
 msgid "Available Balance"
 msgstr "Tilgængelig saldo"
 
-#: src/screens/MainScreen.js:591
+#: src/screens/MainScreen.js:641
 msgid "Locked"
 msgstr "Låst"
 
@@ -1977,10 +1978,12 @@ msgid "New Transaction"
 msgstr ""
 
 #: src/components/ReceiveMyAddress.js:45
+#: src/components/Shielded/ShieldedBalanceSplit.js:107
 msgid "Public"
 msgstr ""
 
 #: src/components/ReceiveMyAddress.js:46
+#: src/components/Shielded/ShieldedBalanceSplit.js:102
 msgid "Private"
 msgstr ""
 
@@ -2014,6 +2017,7 @@ msgstr ""
 
 #: src/components/NanoContract/SelectAddressModal.js:111
 #: src/components/Reown/GetAddressClientRequest.js:129
+#: src/components/Shielded/ShieldedBalanceSplit.js:87
 #: src/components/ShowPushNotificationTxDetails.js:18
 msgid "Retry"
 msgstr ""
@@ -2146,6 +2150,21 @@ msgstr ""
 
 #: src/components/Shielded/PrivateReceiveAddress.js:105
 msgid "Only wallets that support private transfers can pay this address."
+msgstr ""
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:112
+#, javascript-format
+msgid "${ count } private output is locked"
+msgid_plural "${ count } private outputs are locked"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:123
+msgid "Some private funds could not be read."
+msgstr ""
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:126
+msgid "Your private balance may be incomplete."
 msgstr ""
 
 #: src/components/Shielded/ShieldedUnlockAction.js:53

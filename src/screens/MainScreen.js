@@ -33,16 +33,20 @@ import {
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import { IS_MULTI_TOKEN } from '../constants';
-import { fetchMoreHistory, updateTokenHistory } from '../actions';
+import { fetchMoreHistory, tokenFetchBalanceRequested, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
+import ShieldedBalanceSplit from '../components/Shielded/ShieldedBalanceSplit';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
+import { isShieldedAvailable, selectShieldedCapability } from '../shielded/gating';
+import { createPrivateBalanceRequests } from '../shielded/balance';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
 
 /**
  * txList {Array} array with transactions of the selected token
- * balance {Object} object with token balance {'available', 'locked'}
+ * balance {Object} object with token balance {'available', 'locked'}, and its private part
+ *   ('privateAvailable') where the balance split shows
  * selectedToken {string} uid of the selected token
  */
 const mapStateToProps = (state) => ({
@@ -58,6 +62,8 @@ const mapStateToProps = (state) => ({
   tokenMetadata: state.tokenMetadata,
   amountFormat: getDisplayAmountFormat(state),
   decimalPlaces: state.serverInfo?.decimal_places,
+  shieldedAvailable: isShieldedAvailable(state),
+  shieldedCapability: selectShieldedCapability(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -65,7 +71,8 @@ const mapDispatchToProps = (dispatch) => ({
   getHistory: (token) => dispatch({
     type: 'TOKEN_FETCH_HISTORY_REQUESTED',
     tokenId: token.uid,
-  })
+  }),
+  fetchBalance: (tokenUid) => dispatch(tokenFetchBalanceRequested(tokenUid, true)),
 });
 
 class MainScreen extends React.Component {
@@ -88,12 +95,15 @@ class MainScreen extends React.Component {
     },
   });
 
+  privateBalanceRequests = createPrivateBalanceRequests();
+
   closeTxDetails = () => {
     this.setState({ modal: null });
   }
 
   componentDidMount() {
     this.props.getHistory(this.props.selectedToken);
+    this.requestPrivateBalance();
   }
 
   // Refetch when the cached history is invalidated externally (e.g. by handleTx
@@ -104,6 +114,22 @@ class MainScreen extends React.Component {
     const status = get(this.props.tokenHistory, 'status');
     if (status === TOKEN_DOWNLOAD_STATUS.INVALIDATED && prevStatus !== status) {
       this.props.getHistory(this.props.selectedToken);
+    }
+    this.requestPrivateBalance();
+  }
+
+  /**
+   * A balance fetched while the balance split was off has no private part, as after the
+   * shielded UI flag turns on: fetch it again, once per token.
+   */
+  requestPrivateBalance() {
+    const tokenUid = this.props.selectedToken.uid;
+    if (this.privateBalanceRequests.shouldRequest({
+      splitAvailable: this.props.shieldedAvailable,
+      tokenUid,
+      privateAvailable: this.props.balance.privateAvailable,
+    })) {
+      this.props.fetchBalance(tokenUid);
     }
   }
 
@@ -245,6 +271,9 @@ class MainScreen extends React.Component {
           isNFT={this.isNFT()}
           amountFormat={this.props.amountFormat}
           decimalPlaces={this.props.decimalPlaces}
+          shieldedAvailable={this.props.shieldedAvailable}
+          shieldedCapability={this.props.shieldedCapability}
+          navigation={this.props.navigation}
         />
         {renderTxHistory()}
         <OfflineBar />
@@ -554,6 +583,26 @@ class BalanceView extends React.Component {
     this.setState((prevState) => ({ isExpanded: !prevState.isExpanded }));
   }
 
+  /**
+   * The private and public parts of the available balance, where the shielded UI shows them.
+   */
+  renderSplit() {
+    if (!this.props.shieldedAvailable) {
+      return null;
+    }
+    return (
+      <ShieldedBalanceSplit
+        available={this.props.balance.available}
+        privateAvailable={this.props.balance.privateAvailable}
+        capability={this.props.shieldedCapability}
+        isNFT={this.props.isNFT}
+        decimalPlaces={this.props.decimalPlaces}
+        amountFormat={this.props.amountFormat}
+        navigation={this.props.navigation}
+      />
+    );
+  }
+
   renderExpanded() {
     const availableStr = renderHomeValue(
       this.props.balance.available,
@@ -580,6 +629,7 @@ class BalanceView extends React.Component {
           {`${availableStr} ${token.symbol}`}
         </Text>
         <Text style={style.text1}>{t`Available Balance`}</Text>
+        {this.renderSplit()}
         <Text
           style={style.balanceLocked}
           adjustsFontSizeToFit
@@ -614,6 +664,7 @@ class BalanceView extends React.Component {
           {`${availableStr} ${token.symbol}`}
         </Text>
         <Text style={style.text1}>{t`Available Balance`}</Text>
+        {this.renderSplit()}
         <Image style={style.expandButton} source={chevronDown} width={12} height={7} />
       </View>
     );

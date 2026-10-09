@@ -148,6 +148,7 @@ msgid "Private transfers could not be loaded on this device."
 msgstr ""
 "Não foi possível carregar as transferências privadas neste dispositivo."
 
+#: src/components/Shielded/ShieldedBalanceSplit.js:120
 #: src/shielded/receiveState.js:150
 msgid "Private transfers are not available for this wallet."
 msgstr "Transferências privadas não estão disponíveis para esta carteira."
@@ -800,33 +801,33 @@ msgstr "Resetar Wallet"
 msgid "Connect to mainnet"
 msgstr "Conectar à mainnet"
 
-#: src/screens/MainScreen.js:142
+#: src/screens/MainScreen.js:168
 msgid "No transactions"
 msgstr "Nenhuma transação"
 
-#: src/screens/MainScreen.js:145
+#: src/screens/MainScreen.js:171
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 "|share:Compartilhe seu endereço| com seus amigos e comece a trocar seus "
 "tokens"
 
-#: src/screens/MainScreen.js:162
+#: src/screens/MainScreen.js:188
 msgid "Loading transactions"
 msgstr "Carregando transações"
 
-#: src/screens/MainScreen.js:171
+#: src/screens/MainScreen.js:197
 msgid "There was an error loading your transaction history"
 msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 
-#: src/screens/MainScreen.js:174
+#: src/screens/MainScreen.js:200
 msgid "Please |tryAgain:try again|"
 msgstr "Por favor |tryAgain:tente novamente|"
 
-#: src/screens/MainScreen.js:582 src/screens/MainScreen.js:616
+#: src/screens/MainScreen.js:631 src/screens/MainScreen.js:666
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
-#: src/screens/MainScreen.js:591
+#: src/screens/MainScreen.js:641
 msgid "Locked"
 msgstr "Bloqueado"
 
@@ -2048,10 +2049,12 @@ msgid "New Transaction"
 msgstr "Transação"
 
 #: src/components/ReceiveMyAddress.js:45
+#: src/components/Shielded/ShieldedBalanceSplit.js:107
 msgid "Public"
 msgstr "Público"
 
 #: src/components/ReceiveMyAddress.js:46
+#: src/components/Shielded/ShieldedBalanceSplit.js:102
 msgid "Private"
 msgstr "Privado"
 
@@ -2085,6 +2088,7 @@ msgstr "A transação ainda não chegou na sua carteira. Deseja tentar novamente
 
 #: src/components/NanoContract/SelectAddressModal.js:111
 #: src/components/Reown/GetAddressClientRequest.js:129
+#: src/components/Shielded/ShieldedBalanceSplit.js:87
 #: src/components/ShowPushNotificationTxDetails.js:18
 msgid "Retry"
 msgstr "Tentar novamente"
@@ -2224,6 +2228,21 @@ msgid "Only wallets that support private transfers can pay this address."
 msgstr ""
 "Somente carteiras que suportam transferências privadas podem pagar este "
 "endereço."
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:112
+#, javascript-format
+msgid "${ count } private output is locked"
+msgid_plural "${ count } private outputs are locked"
+msgstr[0] "${ count } saída privada está bloqueada"
+msgstr[1] "${ count } saídas privadas estão bloqueadas"
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:123
+msgid "Some private funds could not be read."
+msgstr "Não foi possível ler alguns fundos privados."
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:126
+msgid "Your private balance may be incomplete."
+msgstr "Seu saldo privado pode estar incompleto."
 
 #: src/components/Shielded/ShieldedUnlockAction.js:53
 msgid "Enter your 6-digit pin to unlock your private balance"
