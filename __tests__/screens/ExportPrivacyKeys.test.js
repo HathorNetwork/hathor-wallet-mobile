@@ -28,6 +28,7 @@ import {
   FULL_NETWORK_SHIELDED_TESTNET,
   PRE_SETTINGS_SHIELDED_TESTNET,
   SENSITIVE_CLIPBOARD_CLEAR_MS,
+  SENSITIVE_COPY_FEEDBACK_MS,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   SHIELDED_PROVIDER_STATUS,
 } from '../../src/constants';
@@ -44,6 +45,7 @@ const SCAN_MASKED = 'xprv9zyU…o7nKpx6H';
 
 const READ_FAILED = 'The privacy keys could not be read.';
 const EXPORT = 'I understand, export the keys';
+const COPIED = 'Copied. The clipboard clears in one minute.';
 
 const capability = (level, { cause = 'wrong-pin', reason = 'locked' } = {}) => ({
   level,
@@ -234,10 +236,46 @@ describe('ExportPrivacyKeys', () => {
     await press('Copy', 1);
 
     expect(Clipboard.setString.mock.calls).toEqual([[SCAN_XPRIV]]);
-    expect(texts()).toContain('Copied. The clipboard clears in one minute.');
+    expect(texts()).toContain(COPIED);
 
     await act(async () => { jest.advanceTimersByTime(SENSITIVE_CLIPBOARD_CLEAR_MS); });
     expect(Clipboard.setString.mock.calls).toEqual([[SCAN_XPRIV], ['']]);
+  });
+
+  test('says that the clipboard clears for a few seconds, long before it clears', async () => {
+    const { texts, press, exportWithPin } = await render();
+    await exportWithPin();
+    jest.useFakeTimers();
+
+    await press('Copy', 1);
+    await act(async () => { jest.advanceTimersByTime(SENSITIVE_COPY_FEEDBACK_MS - 1); });
+    expect(texts()).toContain(COPIED);
+
+    await act(async () => { jest.advanceTimersByTime(1); });
+    expect(texts()).not.toContain(COPIED);
+    // The key is still in the clipboard.
+    expect(Clipboard.setString.mock.calls).toEqual([[SCAN_XPRIV]]);
+
+    await act(async () => { jest.advanceTimersByTime(SENSITIVE_CLIPBOARD_CLEAR_MS); });
+    expect(Clipboard.setString.mock.calls).toEqual([[SCAN_XPRIV], ['']]);
+    expect(texts()).not.toContain(COPIED);
+  });
+
+  test('keeps the note for a few seconds from the last copy, on the key copied last', async () => {
+    const { texts, press, exportWithPin } = await render();
+    await exportWithPin();
+    jest.useFakeTimers();
+
+    await press('Copy', 0);
+    await act(async () => { jest.advanceTimersByTime(SENSITIVE_COPY_FEEDBACK_MS - 1); });
+    await press('Copy', 1);
+    await act(async () => { jest.advanceTimersByTime(SENSITIVE_COPY_FEEDBACK_MS - 1); });
+    expect(texts().filter((text) => text === COPIED)).toHaveLength(1);
+    // The scan key's card, the second one, holds the note.
+    expect(texts().indexOf(COPIED)).toBeGreaterThan(texts().indexOf(SCAN_MASKED));
+
+    await act(async () => { jest.advanceTimersByTime(1); });
+    expect(texts()).not.toContain(COPIED);
   });
 
   test('hides the keys while the app is not active', async () => {

@@ -23,6 +23,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import SimpleButton from '../components/SimpleButton';
 import ShieldedUnlockAction from '../components/Shielded/ShieldedUnlockAction';
 import { COLORS } from '../styles/themes';
+import { SENSITIVE_COPY_FEEDBACK_MS } from '../constants';
 import { isShieldedAvailable, selectShieldedCapability } from '../shielded/gating';
 import { closeScreen } from '../utils/navigation';
 import { copySensitive } from '../utils/sensitiveClipboard';
@@ -110,10 +111,11 @@ const KeyCard = ({
  * only, never in redux, a log or the navigation params. The wallet must decode its private outputs
  * right before the scan key is decrypted; a locked wallet is asked to unlock first.
  *
- * The keys show masked, and Copy goes through the clipboard that clears itself. They hide while the
- * app isn't active, out of iOS's app-switcher snapshot (Android takes its recents thumbnail first,
- * where they can show masked), and are dropped on blur, when the lock screen comes up and on
- * unmount. A failure shows a fixed text, never the error's message, and logs nothing.
+ * The keys show masked. Copy goes through the clipboard that clears itself, and a note says so for
+ * a few seconds. The keys hide while the app isn't active, out of iOS's app-switcher snapshot
+ * (Android takes its recents thumbnail first, where they can show masked), and are dropped on
+ * blur, when the lock screen comes up and on unmount. A failure shows a fixed text, never the
+ * error's message, and logs nothing.
  *
  * The privacy settings open it, where the shielded UI is available. When it no longer is, the
  * screen closes with the screens above it, such as its PIN screen, whose callback then never runs.
@@ -130,7 +132,7 @@ export default function ExportPrivacyKeys({ navigation, route }) {
 
   const [stage, setStage] = useState(STAGE.WARNING);
   const [keys, setKeys] = useState(null);
-  // The key the user copied last, which says that the clipboard clears.
+  // The key the user copied last, which says for a few seconds that the clipboard clears.
   const [copied, setCopied] = useState(null);
   // The screen opens from a tap, so the app is active then.
   const [appActive, setAppActive] = useState(true);
@@ -139,9 +141,12 @@ export default function ExportPrivacyKeys({ navigation, route }) {
   // Each read and each drop of the keys starts a generation: a read that ends in another
   // generation than its own is dropped.
   const generation = useRef(0);
+  // The timer that takes the note of the last copy down.
+  const copiedTimer = useRef(null);
 
   const dropKeys = () => {
     generation.current += 1;
+    clearTimeout(copiedTimer.current);
     setKeys(null);
     setCopied(null);
     setStage(STAGE.WARNING);
@@ -150,6 +155,7 @@ export default function ExportPrivacyKeys({ navigation, route }) {
   useEffect(() => () => {
     mounted.current = false;
     generation.current += 1;
+    clearTimeout(copiedTimer.current);
   }, []);
 
   // Opening the PIN screen blurs this one too, before the keys are read: that drops nothing.
@@ -232,6 +238,8 @@ export default function ExportPrivacyKeys({ navigation, route }) {
   const copy = (which, value) => {
     copySensitive(value);
     setCopied(which);
+    clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(null), SENSITIVE_COPY_FEEDBACK_MS);
   };
 
   const renderAction = () => {

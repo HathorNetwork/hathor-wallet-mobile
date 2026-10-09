@@ -177,7 +177,7 @@ With the flag on, on the Shielded Testnet:
 1. In Privacy Settings, under AUDIT, tap "Export privacy keys". The warning shows first, with "I understand, export the keys".
 1. Tap it and cancel the PIN screen: nothing else shows.
 1. Tap it and enter the PIN: "Spend public key (xpub)" and "Scan private key (xpriv)" show with their paths, each masked to its first and last 8 characters. No full key shows, and a long press selects no text.
-1. Tap Copy on the scan key: "Copied. The clipboard clears in one minute." Paste it in another app: it is the whole key. A wallet-lib script with the same seed reads the same keys with `storage.getSpendXPubKey()` and `storage.getScanXPrivKey(pin)`.
+1. Tap Copy on the scan key: "Copied. The clipboard clears in one minute." shows under it for a few seconds, then goes away. Paste it in another app: it is the whole key. A wallet-lib script with the same seed reads the same keys with `storage.getSpendXPubKey()` and `storage.getScanXPrivKey(pin)`.
 1. Wait a minute and paste again: the clipboard is empty. Copy again, send the app to the background at once, and come back after more than a minute: the clipboard is empty.
 1. With the keys shown, open the app switcher. On iOS, its snapshot of the app shows no key. On Android, the recents thumbnail can still show the masked keys, since Android takes it before the screen hides them: note it for the security review. Come back: the keys show again.
 1. With the keys shown, go back and open the export again: the warning shows, and no key. Export again, then leave the app in the background for more than 30 seconds: after the lock screen, no key shows.
@@ -190,6 +190,6 @@ With the flag on, on the Shielded Testnet:
 1. Open the details of a private receive and of a private send: they show no unblinding row, since this wallet-lib build has no encoder of the unblinding values, and they open without an error.
 1. With a QA-only wallet-lib build that exports `shielded.encodeShieldedUnblindingPayload`, open the details of a private receive: "View in Explorer unblinded" and "Copy unblinding values" show under Public Explorer. The details of a tx the wallet sent show neither.
 1. Tap "View in Explorer unblinded": an alert warns that the link stays in the browser's history. Cancel: nothing opens. Tap it again and Open: the explorer shows the tx with the received outputs' amounts and tokens.
-1. Tap "Copy unblinding values": the row says that the clipboard clears in one minute. Paste the values into the explorer's unblinding panel: it shows the same amounts and tokens. A minute later the clipboard is empty.
+1. Tap "Copy unblinding values": for a few seconds, the row says that the clipboard clears in one minute. Paste the values into the explorer's unblinding panel: it shows the same amounts and tokens. A minute later the clipboard is empty.
 1. On a custom network with another explorer, only "Copy unblinding values" shows.
 1. With the private balance locked, or the flag off, no row shows.

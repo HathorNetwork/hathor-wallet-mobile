@@ -514,6 +514,12 @@ export const SHIELDED_UNLOCK_SOURCE = {
 export const SENSITIVE_CLIPBOARD_CLEAR_MS = 60 * 1000;
 
 /**
+ * How long the note of a sensitive copy, which says that the clipboard clears, stays on screen, in
+ * milliseconds: far less than the clipboard keeps the copy, so the note never outlives it.
+ */
+export const SENSITIVE_COPY_FEEDBACK_MS = 3 * 1000;
+
+/**
  * The explorers that read the unblinding values of a tx from the #unblind= fragment of its link:
  * only the shielded testnet's explorer has the parser.
  */

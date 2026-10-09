@@ -15,14 +15,12 @@ import { faCopy } from '@fortawesome/free-solid-svg-icons';
 import { ListButton } from './HathorList';
 import { OpenInNewIcon } from './Icons/OpenInNew.icon';
 import { COLORS } from '../styles/themes';
+import { SENSITIVE_COPY_FEEDBACK_MS } from '../constants';
 import { combineURLs } from '../utils';
 import { isShieldedEnabled } from '../shielded/gating';
 import { isTxPaidByWallet } from '../shielded/fees';
 import { getUnblindingEncoder, supportsUnblindLink } from '../utils/privacy';
 import { copySensitive } from '../utils/sensitiveClipboard';
-
-// How long the copy row says that the clipboard clears.
-const COPIED_FEEDBACK_MS = 3000;
 
 /**
  * The audit rows of a tx's details. They share the unblinding values of the private outputs the
@@ -112,7 +110,7 @@ export default function AuditUnblindingRows({ txId }) {
     copySensitive(encodeValues());
     setCopied(true);
     clearTimeout(copiedTimer.current);
-    copiedTimer.current = setTimeout(() => setCopied(false), COPIED_FEEDBACK_MS);
+    copiedTimer.current = setTimeout(() => setCopied(false), SENSITIVE_COPY_FEEDBACK_MS);
   };
 
   return (
