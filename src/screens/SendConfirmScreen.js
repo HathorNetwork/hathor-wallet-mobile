@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Image } from 'react-native';
 import { useSelector } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
@@ -26,8 +26,18 @@ import { useNavigation, useParams } from '../hooks/navigation';
 import { COLORS } from '../styles/themes';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { CheckIcon } from '../components/Icons/Check.icon';
-import { TOKEN_DEPOSIT_URL, TOKEN_FEES_URL } from '../constants';
+import {
+  PRIVACY_MODE,
+  SHIELDED_PROVIDER_STATUS,
+  TOKEN_DEPOSIT_URL,
+  TOKEN_FEES_URL,
+} from '../constants';
 import { authorizeTransaction } from '../passkey/authorizeTransaction';
+import {
+  buildSendOutput,
+  privacyModeToShieldedMode,
+  waitForWalletReady,
+} from '../utils/shieldedSend';
 import errorIcon from '../assets/images/icErrorBig.png';
 
 const PHASE = Object.freeze({
@@ -76,12 +86,22 @@ const SendConfirmScreen = () => {
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
   const networkName = useSelector((state) => state.networkSettings.network);
+  // A provider is registered only for seed wallets on the fullnode facade, on the shielded
+  // testnet, whether or not the shielded UI shows.
+  const providerReady = useSelector(
+    (state) => state.shielded?.providerStatus === SHIELDED_PROVIDER_STATUS.READY,
+  );
 
   const navigation = useNavigation();
   const params = useParams();
 
   // Parse and store navigation params
-  const { amount, address, token } = params;
+  const {
+    amount,
+    address,
+    token,
+    privacyMode = PRIVACY_MODE.PUBLIC,
+  } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
   const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
 
@@ -94,47 +114,106 @@ const SendConfirmScreen = () => {
   // interactive again, closing the window between the PinScreen dismissal and
   // the feedback modal render where the button would otherwise be tappable.
   const [isSending, setIsSending] = useState(false);
+  // Whether the screen left, for the steps of the build that outlive it.
+  const unmountedRef = useRef(false);
+  // Stops a wait for the wallet to be ready.
+  const cancelWaitRef = useRef(null);
 
   const nativeSymbol = hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
 
-  // Build the transaction on mount (without inputs — let the lib auto-select
-  // FBT and HTR UTXOs). This produces the exact fee the user will pay, which
-  // we then show on the review screen.
-  useEffect(() => {
-    let cancelled = false;
+  const failBuild = (message) => {
+    setBuildError({ message });
+    setPhase(PHASE.ERROR);
+  };
 
-    (async () => {
-      try {
-        // wallet-lib would pay a private address in public, to the address of its spend key.
-        if (isShieldedAddress(address, new hathorLib.Network(networkName))) {
-          setBuildError({ message: t`Payments to a private address are always private.` });
-          setPhase(PHASE.ERROR);
-          return;
-        }
-
-        const outputs = [{ address, value: amount, token: token.uid }];
-        const sendTransaction = useWalletService
-          ? new hathorLib.SendTransactionWalletService(wallet, { outputs })
-          : new hathorLib.SendTransaction({ storage: wallet.storage, outputs });
-
-        await sendTransaction.run('prepare-tx');
-
-        if (cancelled) {
-          try { await sendTransaction.releaseUtxos(); } catch (e) { console.error(e); }
-          return;
-        }
-
-        setSendTx(sendTransaction);
-        setPhase(PHASE.READY);
-      } catch (err) {
-        if (cancelled) return;
-        console.error(err);
-        setBuildError({ message: mapTxError(err) });
-        setPhase(PHASE.ERROR);
+  /**
+   * Builds the send to its single output, without inputs: wallet-lib selects them, and on the
+   * shielded testnet completes a private output and decides the change by its rules. This gives
+   * the exact fee the user pays, shown before the user authorizes the send.
+   *
+   * Where the shielded crypto provider is registered, the send is built with the wallet: it
+   * waits for the wallet to be ready, which a reconnect or a decode walk delays, and once the
+   * send is pushed the wallet decodes its own private change, if any, without waiting for the
+   * node. Elsewhere it is built from the storage, as it always was.
+   */
+  const build = async () => {
+    try {
+      const shieldedMode = privacyModeToShieldedMode(privacyMode);
+      // wallet-lib would pay a private address in public, to the address of its spend key.
+      if (shieldedMode === null && isShieldedAddress(address, new hathorLib.Network(networkName))) {
+        failBuild(t`Payments to a private address are always private.`);
+        return;
       }
-    })();
 
-    return () => { cancelled = true; };
+      let sendTransaction;
+      if (useWalletService) {
+        // The wallet-service facade has no private sends.
+        if (shieldedMode !== null) {
+          failBuild(t`Private transfers are not available for this wallet.`);
+          return;
+        }
+        const outputs = [{ address, value: amount, token: token.uid }];
+        sendTransaction = new hathorLib.SendTransactionWalletService(wallet, { outputs });
+      } else {
+        if (providerReady) {
+          const wait = waitForWalletReady(wallet);
+          cancelWaitRef.current = wait.cancel;
+          const ready = await wait.promise;
+          cancelWaitRef.current = null;
+          if (!ready || unmountedRef.current) {
+            return;
+          }
+        }
+        if (shieldedMode !== null) {
+          // A private send can spend the wallet's private outputs, and must decode its own
+          // private change once it is sent: it needs the wallet at level full.
+          const capability = await wallet.getShieldedCapability();
+          if (unmountedRef.current) {
+            return;
+          }
+          if (capability.level !== 'full') {
+            failBuild(capability.level === 'watch' && capability.cause !== 'corrupt-key'
+              ? t`Your private balance is locked. Unlock it to send privately.`
+              : t`Private transfers are not available for this wallet.`);
+            return;
+          }
+        }
+        const outputs = [buildSendOutput({
+          address,
+          amount,
+          tokenUid: token.uid,
+          shieldedMode,
+        })];
+        sendTransaction = providerReady
+          ? new hathorLib.SendTransaction({ wallet, outputs })
+          : new hathorLib.SendTransaction({ storage: wallet.storage, outputs });
+      }
+
+      await sendTransaction.run('prepare-tx');
+
+      if (unmountedRef.current) {
+        try { await sendTransaction.releaseUtxos(); } catch (e) { console.error(e); }
+        return;
+      }
+
+      setSendTx(sendTransaction);
+      setPhase(PHASE.READY);
+    } catch (err) {
+      if (unmountedRef.current) return;
+      console.error(err);
+      failBuild(mapTxError(err));
+    }
+  };
+
+  // Build the transaction on mount.
+  useEffect(() => {
+    unmountedRef.current = false;
+    build();
+
+    return () => {
+      unmountedRef.current = true;
+      cancelWaitRef.current?.();
+    };
   }, []);
 
   // Release reserved UTXOs on unmount. Safe to call unconditionally:
@@ -314,6 +393,9 @@ const SendConfirmScreen = () => {
         <FeedbackModal
           text={t`Building your transaction`}
           icon={<Spinner />}
+          // The build waits for the wallet where a provider is registered, which can take a
+          // while (a reconnect, a decode walk): the user can leave meanwhile.
+          onDismiss={providerReady ? () => navigation.goBack() : undefined}
         />
       )}
 

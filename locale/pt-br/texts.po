@@ -154,6 +154,7 @@ msgstr "Não foi possível carregar seu endereço privado."
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:101
 #: src/components/Shielded/ShieldedBalanceSplit.js:157
+#: src/screens/SendConfirmScreen.js:152 src/screens/SendConfirmScreen.js:177
 #: src/shielded/receiveState.js:154
 msgid "Private transfers are not available for this wallet."
 msgstr "Transferências privadas não estão disponíveis para esta carteira."
@@ -478,7 +479,7 @@ msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:218
+#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:297
 #: src/screens/TokenSwapReview.js:265
 msgid "Building transaction"
 msgstr "Criando transação"
@@ -1106,24 +1107,24 @@ msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:182 src/screens/SendConfirmScreen.js:309
+#: src/screens/SendAmountInput.js:182 src/screens/SendConfirmScreen.js:388
 #, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:364
+#: src/screens/SendConfirmScreen.js:53 src/screens/TokenSwapReview.js:364
 msgid "No fee"
 msgstr "Sem taxa"
 
-#: src/screens/SendConfirmScreen.js:60
+#: src/screens/SendConfirmScreen.js:70
 msgid "Insufficient HTR to cover the network fee."
 msgstr "Saldo insuficiente de HTR para cobrir a taxa da rede."
 
-#: src/screens/SendConfirmScreen.js:63
+#: src/screens/SendConfirmScreen.js:73
 msgid "Insufficient balance to send this transaction."
 msgstr "Saldo insuficiente para completar a transação."
 
-#: src/screens/SendConfirmScreen.js:66
+#: src/screens/SendConfirmScreen.js:76
 msgid ""
 "This amount needs more inputs than a transaction can hold. Try sending a "
 "smaller amount."
@@ -1131,90 +1132,95 @@ msgstr ""
 "Este valor precisa de mais entradas do que uma transação comporta. Tente "
 "enviar um valor menor."
 
-#: src/screens/SendConfirmScreen.js:68
+#: src/screens/SendConfirmScreen.js:78
 msgid "Failed to process transaction."
 msgstr "Falha ao processar a transação"
 
 #: src/components/TransactionPrivacyModal.js:67
-#: src/screens/SendConfirmScreen.js:110
+#: src/screens/SendConfirmScreen.js:144
 msgid "Payments to a private address are always private."
 msgstr "Pagamentos para um endereço privado são sempre privados."
 
-#: src/screens/SendConfirmScreen.js:197 src/screens/TokenSwapReview.js:220
+#: src/screens/SendConfirmScreen.js:176
+msgid "Your private balance is locked. Unlock it to send privately."
+msgstr ""
+"Seu saldo privado está bloqueado. Desbloqueie-o para enviar de forma privada."
+
+#: src/screens/SendConfirmScreen.js:276 src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:216
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:295
 #: src/screens/TokenSwapReview.js:263
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:217
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:296
 #: src/screens/TokenSwapReview.js:264
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
-#: src/screens/SendConfirmScreen.js:257
+#: src/screens/SendConfirmScreen.js:336
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] "Você tem ${ availablePretty } disponível"
 msgstr[1] "Você tem ${ availablePretty } disponíveis"
 
-#: src/screens/SendConfirmScreen.js:280
+#: src/screens/SendConfirmScreen.js:359
 msgid "Loading fee information..."
 msgstr "Carregando informações da taxa..."
 
-#: src/screens/SendConfirmScreen.js:283
+#: src/screens/SendConfirmScreen.js:362
 msgid "This is the native token, no network fees are charged."
 msgstr "Token nativo, nenhuma taxa aplicada."
 
-#: src/screens/SendConfirmScreen.js:286
+#: src/screens/SendConfirmScreen.js:365
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr "Este token é de Depósito, nenhuma taxa de rede será cobrada."
 
-#: src/screens/SendConfirmScreen.js:288
+#: src/screens/SendConfirmScreen.js:367
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr "Esta taxa é fixa e obrigatória para cada transação deste token."
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:293
+#: src/screens/SendConfirmScreen.js:372
 msgid "Loading..."
 msgstr "Carregando..."
 
-#: src/screens/SendConfirmScreen.js:315
+#: src/screens/SendConfirmScreen.js:394
 msgid "Building your transaction"
 msgstr "Criando sua transação"
 
-#: src/screens/SendConfirmScreen.js:333
+#: src/screens/SendConfirmScreen.js:415
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ amountAndToken }** foi confirmada"
 
-#: src/screens/SendConfirmScreen.js:349
+#: src/screens/SendConfirmScreen.js:431
 msgid "Read more."
 msgstr "Ler mais."
 
-#: src/screens/SendConfirmScreen.js:371
+#: src/screens/SendConfirmScreen.js:453
 msgid "**Transaction summary**"
 msgstr "**Resumo da transação**"
 
-#: src/screens/SendConfirmScreen.js:374
+#: src/screens/SendConfirmScreen.js:456
 msgid "**To**"
 msgstr "**Para**"
 
-#: src/screens/SendConfirmScreen.js:379
+#: src/screens/SendConfirmScreen.js:461
 msgid "**Network Fee**"
 msgstr "**Taxa de Rede**"
 
-#: src/screens/SendConfirmScreen.js:387
+#: src/screens/SendConfirmScreen.js:469
 msgid "**Total**"
 msgstr "**Total**"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:394
+#: src/screens/SendConfirmScreen.js:476
 msgid "Send"
 msgstr "Enviar"
 
