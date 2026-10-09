@@ -390,7 +390,7 @@ msgid "Back"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:92
+#: src/screens/SendAmountInput.js:125
 msgid "Invalid amount"
 msgstr ""
 
@@ -419,7 +419,7 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:69
-#: src/screens/SendAmountInput.js:169
+#: src/screens/SendAmountInput.js:222
 msgid "Next"
 msgstr "Næste"
 
@@ -1055,18 +1055,23 @@ msgstr "SEND"
 msgid "Address to send"
 msgstr "Adresse, der skal sendes til"
 
-#: src/screens/SendAmountInput.js:97
+#: src/screens/SendAmountInput.js:130
 msgid "Insufficient funds"
 msgstr "Utilstrækkelige midler"
 
-#: src/screens/SendAmountInput.js:123
+#: src/screens/SendAmountInput.js:137
 #, javascript-format
+msgid "A private send can be at most ${ max } ${ symbol }."
+msgstr ""
+
+#: src/screens/SendAmountInput.js:168
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:309
+#: src/screens/SendAmountInput.js:182 src/screens/SendConfirmScreen.js:309
+#, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 

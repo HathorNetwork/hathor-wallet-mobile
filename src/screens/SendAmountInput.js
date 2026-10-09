@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -18,18 +18,28 @@ import { useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
+import { Network } from '@hathor/wallet-lib';
 
-import { IS_MULTI_TOKEN } from '../constants';
-import { renderValue, isTokenNFT } from '../utils';
+import { IS_MULTI_TOKEN, PRIVACY_MODE } from '../constants';
+import { renderValue, isTokenNFT, isShieldedAddress } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import TokenBox from '../components/TokenBox';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
+import PrivacyModeSelector from '../components/PrivacyModeSelector';
+import TransactionPrivacyModal from '../components/TransactionPrivacyModal';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { useNavigation, useParams } from '../hooks/navigation';
+import { canSendPrivately } from '../shielded/gating';
+import {
+  MAX_PRIVATE_AMOUNT,
+  getPrivacyModeOptions,
+  initialPrivacyMode,
+  isPrivateAmountAllowed,
+} from '../utils/shieldedSend';
 
 const SendAmountInput = () => {
   const selectedToken = useSelector((state) => state.selectedToken);
@@ -38,6 +48,8 @@ const SendAmountInput = () => {
   const { decimalPlaces } = useSelector((state) => ({
     decimalPlaces: state.serverInfo?.decimal_places
   }));
+  const privateSendsAvailable = useSelector(canSendPrivately);
+  const networkName = useSelector((state) => state.networkSettings.network);
 
   const navigation = useNavigation();
   const params = useParams();
@@ -46,7 +58,28 @@ const SendAmountInput = () => {
   const [amountValue, setAmountValue] = useState(null);
   const [token, setToken] = useState(selectedToken);
   const [error, setError] = useState(null);
+  // The mode the user picked in the privacy sheet, if any.
+  const [chosenPrivacyMode, setChosenPrivacyMode] = useState(null);
+  const [isPrivacyModalShown, setIsPrivacyModalShown] = useState(false);
   const inputRef = useRef(null);
+
+  // The recipient decides the privacy modes. The send address input validated it, so it
+  // parses; should the check fail anyway, the recipient is taken as public, and the send
+  // confirmation, which checks it again, refuses to pay it.
+  const recipientIsShielded = useMemo(() => {
+    try {
+      return isShieldedAddress(params.address, new Network(networkName));
+    } catch (e) {
+      return false;
+    }
+  }, [params.address, networkName]);
+  const privacyOptions = getPrivacyModeOptions(recipientIsShielded);
+  let privacyMode = PRIVACY_MODE.PUBLIC;
+  if (privateSendsAvailable) {
+    privacyMode = privacyOptions.includes(chosenPrivacyMode)
+      ? chosenPrivacyMode
+      : initialPrivacyMode(privacyOptions);
+  }
 
   useEffect(() => {
     const focusEvent = navigation.addListener('focus', () => {
@@ -98,8 +131,20 @@ const SendAmountInput = () => {
       return;
     }
 
+    if (privacyMode !== PRIVACY_MODE.PUBLIC && !isPrivateAmountAllowed(amountValue)) {
+      const max = renderValue(MAX_PRIVATE_AMOUNT, isNFT(), decimalPlaces);
+      const { symbol } = token;
+      setError(t`A private send can be at most ${max} ${symbol}.`);
+      return;
+    }
+
     const { address } = params;
-    navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token });
+    navigation.navigate('SendConfirmScreen', {
+      address,
+      amount: amountValue,
+      token,
+      privacyMode,
+    });
   };
 
   const isButtonDisabled = () => (
@@ -165,15 +210,37 @@ const SendAmountInput = () => {
               </InputLabel>
               <Text style={styles.error}>{error}</Text>
             </View>
-            <NewHathorButton
-              title={t`Next`}
-              disabled={isButtonDisabled()}
-              onPress={onButtonPress}
-            />
+            <View>
+              {privateSendsAvailable && (
+                <PrivacyModeSelector
+                  mode={privacyMode}
+                  disabled={!recipientIsShielded}
+                  onPress={() => setIsPrivacyModalShown(true)}
+                />
+              )}
+              <NewHathorButton
+                title={t`Next`}
+                disabled={isButtonDisabled()}
+                onPress={onButtonPress}
+              />
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
       </Pressable>
+      {privateSendsAvailable && (
+        <TransactionPrivacyModal
+          visible={isPrivacyModalShown}
+          onDismiss={() => setIsPrivacyModalShown(false)}
+          selectedMode={privacyMode}
+          options={privacyOptions}
+          onConfirm={(mode) => {
+            setChosenPrivacyMode(mode);
+            setIsPrivacyModalShown(false);
+            setError(null);
+          }}
+        />
+      )}
     </View>
   );
 };
