@@ -773,32 +773,32 @@ msgstr ""
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:177
+#: src/screens/MainScreen.js:184
 msgid "No transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:180
+#: src/screens/MainScreen.js:187
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 
-#: src/screens/MainScreen.js:197
+#: src/screens/MainScreen.js:204
 msgid "Loading transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:206
+#: src/screens/MainScreen.js:213
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:209
+#: src/screens/MainScreen.js:216
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:640
-#: src/screens/MainScreen.js:675
+#: src/screens/MainScreen.js:647
+#: src/screens/MainScreen.js:682
 msgid "Available Balance"
 msgstr ""
 
-#: src/screens/MainScreen.js:650
+#: src/screens/MainScreen.js:657
 msgid "Locked"
 msgstr ""
 

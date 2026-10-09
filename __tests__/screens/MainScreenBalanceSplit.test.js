@@ -11,14 +11,23 @@ import { TouchableWithoutFeedback } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
+import createSagaMiddleware from 'redux-saga';
+import { constants as hathorLibConstants } from '@hathor/wallet-lib';
 import { reducer } from '../../src/reducers/reducer';
+import { saga as tokensSaga } from '../../src/sagas/tokens';
 import {
   setFeatureToggles,
   setFullNodeNetworkName,
+  setTokens,
+  setUseWalletService,
+  setWallet,
   shieldedCapabilityUpdate,
   shieldedProviderUpdate,
+  startWalletRequested,
+  startWalletSuccess,
   tokenFetchBalanceSuccess,
   types,
+  updateSelectedToken,
 } from '../../src/actions';
 import {
   DEFAULT_TOKEN,
@@ -66,6 +75,8 @@ async function render({ flag = true, balance }) {
   store.dispatch(setFullNodeNetworkName(FULL_NETWORK_SHIELDED_TESTNET));
   store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
   store.dispatch(shieldedCapabilityUpdate(FULL));
+  // The app opens this screen once the wallet's start has loaded its balances.
+  store.dispatch(startWalletSuccess());
   store.dispatch(tokenFetchBalanceSuccess(DEFAULT_TOKEN.uid, balance));
   actions.length = 0;
   const navigation = { navigate: jest.fn(), goBack: jest.fn() };
@@ -154,5 +165,98 @@ describe('the balance split on the token screen', () => {
 
     expect(balanceRequests()).toEqual([]);
     expect(text()).not.toContain('"Private"');
+  });
+});
+
+describe('the balance split while the wallet starts', () => {
+  const HTR = hathorLibConstants.NATIVE_TOKEN_UID;
+  const TOKEN = {
+    uid: '00000943573723a28e3dd980c10e08419d0e00bc647a95f4ca9671ebea7d5669',
+    name: 'Shielded Token',
+    symbol: 'STK',
+  };
+  let task = null;
+  let debug = null;
+
+  afterEach(() => {
+    task?.cancel();
+    task = null;
+    debug?.mockRestore();
+    debug = null;
+  });
+
+  // Lets the sagas run the wallet calls they started.
+  const settle = () => act(async () => {
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+  });
+
+  test('leaves the private part to the loads of the start, which read the synced balance', async () => {
+    debug = jest.spyOn(console, 'debug').mockImplementation(() => {});
+    // The token's funds show once the wallet's history synced.
+    let synced = false;
+    const wallet = {
+      isReady: jest.fn(() => true),
+      getBalance: jest.fn(async () => [{
+        balance: { unlocked: synced ? 500n : 0n, locked: 0n },
+      }]),
+      getTxHistory: jest.fn(async () => []),
+      storage: {
+        selectUtxos: jest.fn(async function* select({ token }) {
+          if (synced && token === TOKEN.uid) {
+            yield { value: 200n };
+          }
+        }),
+      },
+    };
+    const actions = [];
+    const recordActions = () => (next) => (action) => {
+      actions.push(action);
+      return next(action);
+    };
+    const sagaMiddleware = createSagaMiddleware();
+    const store = createStore(reducer, applyMiddleware(recordActions, sagaMiddleware));
+    task = sagaMiddleware.run(tokensSaga);
+
+    // A start on the shielded testnet, with the token's screen open, as after a network change:
+    // the balances were cleared, and the provider is ready before the fullnode reports its
+    // network, which it does once start() resolves, before the history syncs.
+    store.dispatch(startWalletRequested());
+    store.dispatch(setFeatureToggles({
+      ...FEATURE_TOGGLE_DEFAULTS,
+      [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: true,
+    }));
+    store.dispatch(setUseWalletService(false));
+    store.dispatch(setWallet(wallet));
+    store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
+    store.dispatch(updateSelectedToken(TOKEN));
+    await act(async () => {
+      mounted = create(
+        <Provider store={store}>
+          <MainScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} />
+        </Provider>,
+      );
+    });
+    await act(async () => {
+      store.dispatch(setFullNodeNetworkName(FULL_NETWORK_SHIELDED_TESTNET));
+    });
+    await settle();
+
+    // The history synced: the start registers the tokens and loads their balances without
+    // forcing them, as loadTokens and restoreNetworkTokens do, then ends.
+    synced = true;
+    await act(async () => {
+      store.dispatch(setTokens({ [HTR]: DEFAULT_TOKEN, [TOKEN.uid]: TOKEN }));
+      store.dispatch(startWalletSuccess());
+    });
+    await settle();
+
+    expect(store.getState().tokensBalance[TOKEN.uid].data).toEqual({
+      available: 500n,
+      locked: 0n,
+      privateAvailable: 200n,
+    });
+    expect(actions.filter(
+      (action) => action.type === types.TOKEN_FETCH_BALANCE_REQUESTED && action.force,
+    )).toEqual([]);
   });
 });

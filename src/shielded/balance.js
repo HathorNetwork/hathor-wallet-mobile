@@ -50,6 +50,11 @@ export function splitAvailableBalance(available, privateAvailable) {
  * while the split is available, and not again until the split turns off and on. A balance
  * fetched while the split was off has no private part (undefined); one whose private part failed
  * has null, which no fetch is asked for, so a failure can't make it ask again and again.
+ *
+ * Only a balance the wallet's start loaded is fetched again, once the start ended. A start
+ * loads each balance itself, with its private part, after the history synced; a fetch forced
+ * before would read the wallet before it synced, and the start's loads, which aren't forced,
+ * would keep what it read.
  */
 export function createPrivateBalanceRequests() {
   const requested = new Set();
@@ -57,16 +62,23 @@ export function createPrivateBalanceRequests() {
     /**
      * @param {Object} params
      * @param {boolean} params.splitAvailable Whether the balance split is available
+     * @param {boolean} params.balanceLoaded Whether the wallet's start ended and the token's
+     *   balance is loaded
      * @param {string} params.tokenUid
      * @param {bigint|null|undefined} params.privateAvailable The private part the balance has
      * @returns {boolean} Whether to fetch the token's balance again
      */
-    shouldRequest({ splitAvailable, tokenUid, privateAvailable }) {
+    shouldRequest({
+      splitAvailable,
+      balanceLoaded,
+      tokenUid,
+      privateAvailable,
+    }) {
       if (!splitAvailable) {
         requested.clear();
         return false;
       }
-      if (privateAvailable !== undefined || requested.has(tokenUid)) {
+      if (!balanceLoaded || privateAvailable !== undefined || requested.has(tokenUid)) {
         return false;
       }
       requested.add(tokenUid);

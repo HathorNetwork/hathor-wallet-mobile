@@ -121,6 +121,7 @@ describe('createPrivateBalanceRequests', () => {
     const requests = createPrivateBalanceRequests();
     const ask = (tokenUid, privateAvailable) => requests.shouldRequest({
       splitAvailable: true,
+      balanceLoaded: true,
       tokenUid,
       privateAvailable,
     });
@@ -132,17 +133,22 @@ describe('createPrivateBalanceRequests', () => {
 
   test('never asks when the private part is known, or failed', () => {
     const requests = createPrivateBalanceRequests();
+    const ask = (privateAvailable) => requests.shouldRequest({
+      splitAvailable: true,
+      balanceLoaded: true,
+      tokenUid: HTR,
+      privateAvailable,
+    });
 
-    expect(requests.shouldRequest({ splitAvailable: true, tokenUid: HTR, privateAvailable: 5n }))
-      .toBe(false);
-    expect(requests.shouldRequest({ splitAvailable: true, tokenUid: HTR, privateAvailable: null }))
-      .toBe(false);
+    expect(ask(5n)).toBe(false);
+    expect(ask(null)).toBe(false);
   });
 
   test('asks again once the split turns off and on', () => {
     const requests = createPrivateBalanceRequests();
     const ask = (splitAvailable) => requests.shouldRequest({
       splitAvailable,
+      balanceLoaded: true,
       tokenUid: HTR,
       privateAvailable: undefined,
     });
@@ -151,5 +157,37 @@ describe('createPrivateBalanceRequests', () => {
     expect(ask(false)).toBe(false);
     expect(ask(true)).toBe(true);
     expect(ask(true)).toBe(false);
+  });
+
+  test('waits until the wallet\'s start loaded the balance', () => {
+    const requests = createPrivateBalanceRequests();
+    const ask = (balanceLoaded) => requests.shouldRequest({
+      splitAvailable: true,
+      balanceLoaded,
+      tokenUid: HTR,
+      privateAvailable: undefined,
+    });
+
+    expect(ask(false)).toBe(false);
+    expect(ask(false)).toBe(false);
+    expect(ask(true)).toBe(true);
+    expect(ask(true)).toBe(false);
+  });
+
+  test('forgets what it asked for while the split is off, during a start too', () => {
+    const requests = createPrivateBalanceRequests();
+    const ask = (splitAvailable, balanceLoaded) => requests.shouldRequest({
+      splitAvailable,
+      balanceLoaded,
+      tokenUid: HTR,
+      privateAvailable: undefined,
+    });
+
+    expect(ask(true, true)).toBe(true);
+    // A reload: the split is off while the provider is registered again, then the start loads
+    // the balance without its private part, as when the flag was off meanwhile.
+    expect(ask(false, false)).toBe(false);
+    expect(ask(true, false)).toBe(false);
+    expect(ask(true, true)).toBe(true);
   });
 });

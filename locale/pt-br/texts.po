@@ -806,33 +806,33 @@ msgstr "Resetar Wallet"
 msgid "Connect to mainnet"
 msgstr "Conectar à mainnet"
 
-#: src/screens/MainScreen.js:177
+#: src/screens/MainScreen.js:184
 msgid "No transactions"
 msgstr "Nenhuma transação"
 
-#: src/screens/MainScreen.js:180
+#: src/screens/MainScreen.js:187
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 "|share:Compartilhe seu endereço| com seus amigos e comece a trocar seus "
 "tokens"
 
-#: src/screens/MainScreen.js:197
+#: src/screens/MainScreen.js:204
 msgid "Loading transactions"
 msgstr "Carregando transações"
 
-#: src/screens/MainScreen.js:206
+#: src/screens/MainScreen.js:213
 msgid "There was an error loading your transaction history"
 msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 
-#: src/screens/MainScreen.js:209
+#: src/screens/MainScreen.js:216
 msgid "Please |tryAgain:try again|"
 msgstr "Por favor |tryAgain:tente novamente|"
 
-#: src/screens/MainScreen.js:640 src/screens/MainScreen.js:675
+#: src/screens/MainScreen.js:647 src/screens/MainScreen.js:682
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
-#: src/screens/MainScreen.js:650
+#: src/screens/MainScreen.js:657
 msgid "Locked"
 msgstr "Bloqueado"
 

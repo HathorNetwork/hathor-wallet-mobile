@@ -37,6 +37,7 @@ import { fetchMoreHistory, tokenFetchBalanceRequested, updateTokenHistory } from
 import Spinner from '../components/Spinner';
 import ShieldedBalanceSplit from '../components/Shielded/ShieldedBalanceSplit';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
+import { WALLET_STATUS } from '../sagas/wallet';
 import {
   isShieldedAvailable,
   isShieldedEnabled,
@@ -51,6 +52,7 @@ import { ActionDot } from '../components/Icons/ActionDot.icon';
  * txList {Array} array with transactions of the selected token
  * balance {Object} object with token balance {'available', 'locked'}, and its private part
  *   ('privateAvailable') where the balance split shows
+ * balanceLoaded {boolean} whether the wallet's start ended and the balance is loaded
  * selectedToken {string} uid of the selected token
  */
 const mapStateToProps = (state) => ({
@@ -60,6 +62,9 @@ const mapStateToProps = (state) => ({
   // If we are on this screen, we can be sure that the balance is loaded since we don't navigate
   // to it if the status is `failed`
   balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, { available: 0n, locked: 0n }),
+  // The screen stays mounted while a start or a reload clears and loads the balances again.
+  balanceLoaded: state.walletStartState === WALLET_STATUS.READY
+    && get(state.tokensBalance, `${state.selectedToken.uid}.status`) === TOKEN_DOWNLOAD_STATUS.READY,
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
   wallet: state.wallet,
@@ -126,12 +131,14 @@ class MainScreen extends React.Component {
 
   /**
    * A balance fetched while the balance split was off has no private part, as after the
-   * shielded UI flag turns on: fetch it again, once per token.
+   * shielded UI flag turns on: fetch it again, once per token, once the wallet's start loaded
+   * it.
    */
   requestPrivateBalance() {
     const tokenUid = this.props.selectedToken.uid;
     if (this.privateBalanceRequests.shouldRequest({
       splitAvailable: this.props.shieldedAvailable,
+      balanceLoaded: this.props.balanceLoaded,
       tokenUid,
       privateAvailable: this.props.balance.privateAvailable,
     })) {
