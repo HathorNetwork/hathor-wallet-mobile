@@ -134,7 +134,8 @@ const CreateTokenConfirm = () => {
     }
   }, [tokenVersion, amount]);
 
-  // Where the wallet can hold private HTR, a creation may spend it.
+  // Where the wallet can hold private HTR, a creation may spend it. When the wallet's private HTR
+  // can't be read, the creation may still spend some: the warning shows then too.
   useEffect(() => {
     if (!shieldedAvailable) {
       setHoldsPrivateHtr(false);
@@ -149,6 +150,9 @@ const CreateTokenConfirm = () => {
       })
       .catch((e) => {
         log.error('Failed to read the private HTR of the wallet.', e);
+        if (!cancelled) {
+          setHoldsPrivateHtr(true);
+        }
       });
     return () => { cancelled = true; };
   }, [wallet, shieldedAvailable]);

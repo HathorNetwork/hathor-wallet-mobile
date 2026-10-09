@@ -154,6 +154,7 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 ### Token creation
 1. With the flag on and private HTR in the wallet, create a token: the confirmation warns "Creating a token can spend private HTR and make its amount public."
 1. Without private HTR, or with the flag off, there is no warning.
+1. With the flag on, in a debug build, make `getPrivateAvailableBalance` throw: the confirmation warns all the same, and the logs show `[create-token] Failed to read the private HTR of the wallet.`
 
 ### Timings of private sends on a low-end Android device
 On the Shielded Testnet, record the time from Next on the amount screen to the confirmation's summary, for a Hide amount send and for a Private send of a custom token, and compare it with a public send.

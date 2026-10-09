@@ -129,6 +129,26 @@ describe('CreateTokenConfirm with private HTR', () => {
     expect(texts()).not.toContain(WARNING);
   });
 
+  test('warns when it could not read the private HTR', async () => {
+    // The creation can still spend private HTR: when the screen can't tell, it warns.
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const readError = new Error('storage read failed');
+    const wallet = createWallet([PUBLIC_HTR, PRIVATE_HTR]);
+    wallet.storage.selectUtxos = jest.fn(() => ({
+      [Symbol.asyncIterator]: () => ({
+        next: async () => { throw readError; },
+      }),
+    }));
+    const { texts } = await render(wallet);
+
+    expect(wallet.storage.selectUtxos).toHaveBeenCalledTimes(1);
+    expect(texts()).toContain(WARNING);
+    expect(consoleError).toHaveBeenCalledWith(
+      '[create-token] Failed to read the private HTR of the wallet.',
+      readError,
+    );
+  });
+
   test('reads nothing while the shielded UI is off', async () => {
     const wallet = createWallet([PUBLIC_HTR, PRIVATE_HTR]);
     const { texts } = await render(wallet, { flag: false });
