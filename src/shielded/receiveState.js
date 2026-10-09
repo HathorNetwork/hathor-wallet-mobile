@@ -137,8 +137,9 @@ export function receiveStateFromError(error) {
 }
 
 /**
- * Why the wallet can't receive privately, for the user: either the device couldn't load private
- * transfers (the crypto provider failed), or this wallet can't use them.
+ * Why the wallet can't receive privately, for the user: the device couldn't load private
+ * transfers (the crypto provider failed), the address couldn't be read (an error nothing
+ * expects, which a retry may fix), or this wallet can't use them.
  *
  * @param {string|null} reason The reason of an unavailable receive state
  * @returns {string}
@@ -146,6 +147,9 @@ export function receiveStateFromError(error) {
 export function receiveReasonText(reason) {
   if (reason === 'no-provider' || reason === SHIELDED_NO_PROVIDER) {
     return t`Private transfers could not be loaded on this device.`;
+  }
+  if (reason === RECEIVE_REASON_ERROR) {
+    return t`Could not load your private address.`;
   }
   return t`Private transfers are not available for this wallet.`;
 }

@@ -8,6 +8,7 @@
 import { describe, test, expect } from '@jest/globals';
 import { errors } from '@hathor/wallet-lib';
 import {
+  RECEIVE_REASON_ERROR,
   RECEIVE_REASON_NOT_WATCHED,
   SHIELDED_RECEIVE_INITIAL_STATE,
   SHIELDED_RECEIVE_STATUS,
@@ -121,8 +122,12 @@ describe('receiveReasonText', () => {
   });
 
   test.each([
-    'needs-password', 'integrity', 'corrupt-key', RECEIVE_REASON_NOT_WATCHED, 'error', null,
+    'needs-password', 'integrity', 'corrupt-key', RECEIVE_REASON_NOT_WATCHED, null,
   ])('says the wallet cannot use them for the reason %s', (reason) => {
     expect(receiveReasonText(reason)).toBe('Private transfers are not available for this wallet.');
+  });
+
+  test('says the address could not be loaded after an error nothing expects', () => {
+    expect(receiveReasonText(RECEIVE_REASON_ERROR)).toBe('Could not load your private address.');
   });
 });

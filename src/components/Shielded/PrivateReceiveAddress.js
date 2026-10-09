@@ -20,6 +20,7 @@ import ShieldedUnlockAction from './ShieldedUnlockAction';
 import { walletRefreshSharedAddress } from '../../actions';
 import { WALLET_STATUS } from '../../sagas/wallet';
 import {
+  RECEIVE_REASON_ERROR,
   SHIELDED_RECEIVE_STATUS,
   receiveReasonText,
   selectShieldedReceive,
@@ -28,9 +29,10 @@ import { COLORS } from '../../styles/themes';
 
 /**
  * The wallet's private (shielded) receive address, or where it stands: locked, with the action
- * that unlocks it, unavailable, with why, or loading. It never shows the public address in its
- * place. It offers no new address: the wallet gives out its current shielded address, which
- * moves on once an output paid to it is decoded.
+ * that unlocks it, unavailable, with why, or loading. When the address couldn't be read, for an
+ * error nothing expects, a ready wallet also offers to read it again. It never shows the public
+ * address in its place. It offers no new address: the wallet gives out its current shielded
+ * address, which moves on once an output paid to it is decoded.
  *
  * @param {Object} props
  * @param {{ navigate: Function }} props.navigation Opens the PIN screen of the unlock
@@ -64,7 +66,15 @@ export default function PrivateReceiveAddress({ navigation }) {
         <Notice
           title={t`Private receiving is unavailable`}
           body={receiveReasonText(receive.reason)}
-        />
+        >
+          {receive.reason === RECEIVE_REASON_ERROR && walletReady && (
+            <SimpleButton
+              title={t`Retry`}
+              textStyle={styles.action}
+              onPress={() => dispatch(walletRefreshSharedAddress())}
+            />
+          )}
+        </Notice>
       );
     default:
       return (
@@ -195,5 +205,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: 'center',
     color: COLORS.textColorShadow,
+  },
+  action: {
+    fontWeight: 'bold',
   },
 });

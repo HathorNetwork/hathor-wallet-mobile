@@ -35,7 +35,7 @@ import {
   SHIELDED_PROVIDER_STATUS,
   SHIELDED_UNLOCK_SOURCE,
 } from '../../src/constants';
-import { SHIELDED_RECEIVE_STATUS } from '../../src/shielded/receiveState';
+import { RECEIVE_REASON_ERROR, SHIELDED_RECEIVE_STATUS } from '../../src/shielded/receiveState';
 import ReceiveMyAddress from '../../src/components/ReceiveMyAddress';
 /* eslint-enable import/first */
 
@@ -218,7 +218,6 @@ describe('ReceiveMyAddress', () => {
     ['shielded-no-provider', 'Private transfers could not be loaded on this device.'],
     ['needs-password', 'Private transfers are not available for this wallet.'],
     ['corrupt-key', 'Private transfers are not available for this wallet.'],
-    ['error', 'Private transfers are not available for this wallet.'],
   ])('says why it cannot receive privately, for the reason %s', async (reason, explanation) => {
     const { openTab, text, qrValues, buttonTitles } = await render({
       receive: receive(SHIELDED_RECEIVE_STATUS.UNAVAILABLE, { reason }),
@@ -231,6 +230,38 @@ describe('ReceiveMyAddress', () => {
     expect(text()).toContain('Private receiving is unavailable');
     expect(text()).toContain(explanation);
     expect(text()).not.toContain(PUBLIC_ADDRESS);
+  });
+
+  test('offers a retry when the private address could not be read', async () => {
+    const { openTab, text, qrValues, buttonTitles, press, actions } = await render({
+      receive: receive(SHIELDED_RECEIVE_STATUS.UNAVAILABLE, { reason: RECEIVE_REASON_ERROR }),
+    });
+
+    await openTab('Private');
+    // The read when the tab opens.
+    actions.length = 0;
+
+    expect(qrValues()).toEqual([]);
+    expect(text()).toContain('Could not load your private address.');
+    expect(text()).not.toContain('Private transfers are not available for this wallet.');
+    expect(text()).not.toContain(PUBLIC_ADDRESS);
+    expect(buttonTitles()).toEqual(['Retry']);
+
+    await press('Retry');
+
+    expect(actions.map((action) => action.type)).toEqual([types.WALLET_REFRESH_SHARED_ADDRESS]);
+  });
+
+  test('offers no retry while the wallet loads', async () => {
+    const { openTab, text, buttonTitles } = await render({
+      walletReady: false,
+      receive: receive(SHIELDED_RECEIVE_STATUS.UNAVAILABLE, { reason: RECEIVE_REASON_ERROR }),
+    });
+
+    await openTab('Private');
+
+    expect(text()).toContain('Could not load your private address.');
+    expect(buttonTitles()).toEqual([]);
   });
 
   test.each([
