@@ -212,6 +212,12 @@ export const FBT_FEATURE_TOGGLE = 'fee-based-tokens.rollout';
 export const SINGLE_ADDRESS_FEATURE_TOGGLE = 'single-address-mobile.rollout';
 export const PASSKEY_ONBOARDING_FEATURE_TOGGLE = 'passkey-onboarding.rollout';
 export const AMOUNT_FORMAT_FEATURE_TOGGLE = 'amount-format-mobile.rollout';
+/**
+ * Shows the shielded outputs UI. Like the other mobile-only flags, its name ends in
+ * '-mobile.rollout', apart from the flags other wallets share. It doesn't decide where the
+ * shielded crypto provider is registered: on the shielded testnet it is registered either way.
+ */
+export const SHIELDED_OUTPUTS_FEATURE_TOGGLE = 'shielded-outputs-mobile.rollout';
 
 /**
  * Default feature toggle values.
@@ -233,6 +239,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [SINGLE_ADDRESS_FEATURE_TOGGLE]: false,
   [PASSKEY_ONBOARDING_FEATURE_TOGGLE]: false,
   [AMOUNT_FORMAT_FEATURE_TOGGLE]: false,
+  [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false,
 };
 
 /**
@@ -291,6 +298,31 @@ export const PRE_SETTINGS_MAINNET = {
   explorerUrl: EXPLORER_MAINNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_MAINNET_URL,
   txMiningServiceUrl: TX_MINING_SERVICE_MAINNET_URL,
+};
+
+/**
+ * The shielded testnet: a testnet whose nodes report the network name
+ * 'testnet-shielded-outputs'. It shares its genesis with the public testnet, so the network name
+ * is what tells them apart. It has no wallet-service.
+ */
+export const STAGE_SHIELDED_TESTNET = 'testnet';
+export const NETWORK_SHIELDED_TESTNET = 'testnet';
+export const FULL_NETWORK_SHIELDED_TESTNET = 'testnet-shielded-outputs';
+export const NODE_SERVER_SHIELDED_TESTNET_URL = 'https://node1.shielded-outputs.testnet.hathor.network/v1a/';
+export const EXPLORER_SHIELDED_TESTNET_URL = 'https://explorer.shielded-outputs.testnet.hathor.network/';
+export const EXPLORER_SERVICE_SHIELDED_TESTNET_URL = 'https://explorer-service.shielded-outputs.testnet.hathor.network/';
+export const TX_MINING_SERVICE_SHIELDED_TESTNET_URL = 'https://txmining.shielded-outputs.testnet.hathor.network/';
+
+export const PRE_SETTINGS_SHIELDED_TESTNET = {
+  stage: STAGE_SHIELDED_TESTNET,
+  network: NETWORK_SHIELDED_TESTNET,
+  fullNetwork: FULL_NETWORK_SHIELDED_TESTNET,
+  walletServiceUrl: null,
+  walletServiceWsUrl: null,
+  nodeUrl: NODE_SERVER_SHIELDED_TESTNET_URL,
+  explorerUrl: EXPLORER_SHIELDED_TESTNET_URL,
+  explorerServiceUrl: EXPLORER_SERVICE_SHIELDED_TESTNET_URL,
+  txMiningServiceUrl: TX_MINING_SERVICE_SHIELDED_TESTNET_URL,
 };
 
 /**
