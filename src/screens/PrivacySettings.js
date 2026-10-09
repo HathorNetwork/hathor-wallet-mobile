@@ -24,6 +24,7 @@ import { privacyDefaultModeKey } from '../constants';
 import { privacyDefaultModeSet } from '../actions';
 import { getNetworkSettings } from '../sagas/helpers';
 import { isShieldedAvailable } from '../shielded/gating';
+import { closeScreen } from '../utils/navigation';
 import { PRIVACY_DEFAULT_MODE_OPTIONS } from '../utils/privacy';
 
 /**
@@ -35,13 +36,15 @@ import { PRIVACY_DEFAULT_MODE_OPTIONS } from '../utils/privacy';
  * Its audit section opens the export of the privacy keys, with no params: the export asks for the
  * PIN itself. A passkey wallet's record holds no scan key, so it gets no export.
  *
- * Settings opens it where the shielded UI is available. It goes back when it no longer is: the
- * flag turns off, or a reload or a network change starts.
+ * Settings opens it where the shielded UI is available. When it no longer is (the flag turns off,
+ * or a reload or a network change starts), it closes with the screens above it, such as the export
+ * and the export's PIN screen.
  *
  * @param {Object} props
  * @param {Object} props.navigation React Navigation's navigation object
+ * @param {Object} props.route React Navigation's route of the screen
  */
-export default function PrivacySettings({ navigation }) {
+export default function PrivacySettings({ navigation, route }) {
   const dispatch = useDispatch();
   const available = useSelector(isShieldedAvailable);
   const networkSettings = useSelector(getNetworkSettings);
@@ -50,9 +53,9 @@ export default function PrivacySettings({ navigation }) {
 
   useEffect(() => {
     if (!available) {
-      navigation.goBack();
+      closeScreen(navigation, route.key);
     }
-  }, [available, navigation]);
+  }, [available, navigation, route.key]);
 
   const onSelect = (mode) => {
     if (mode === selectedMode) {

@@ -24,6 +24,7 @@ import SimpleButton from '../components/SimpleButton';
 import ShieldedUnlockAction from '../components/Shielded/ShieldedUnlockAction';
 import { COLORS } from '../styles/themes';
 import { isShieldedAvailable, selectShieldedCapability } from '../shielded/gating';
+import { closeScreen } from '../utils/navigation';
 import { copySensitive } from '../utils/sensitiveClipboard';
 
 /**
@@ -114,13 +115,14 @@ const KeyCard = ({
  * where they can show masked), and are dropped on blur, when the lock screen comes up and on
  * unmount. A failure shows a fixed text, never the error's message, and logs nothing.
  *
- * The privacy settings open it, where the shielded UI is available. It goes back when it no longer
- * is.
+ * The privacy settings open it, where the shielded UI is available. When it no longer is, the
+ * screen closes with the screens above it, such as its PIN screen, whose callback then never runs.
  *
  * @param {Object} props
  * @param {Object} props.navigation React Navigation's navigation object
+ * @param {Object} props.route React Navigation's route of the screen
  */
-export default function ExportPrivacyKeys({ navigation }) {
+export default function ExportPrivacyKeys({ navigation, route }) {
   const wallet = useSelector((state) => state.wallet);
   const available = useSelector(isShieldedAvailable);
   const capability = useSelector(selectShieldedCapability);
@@ -168,9 +170,9 @@ export default function ExportPrivacyKeys({ navigation }) {
 
   useEffect(() => {
     if (!available) {
-      navigation.goBack();
+      closeScreen(navigation, route.key);
     }
-  }, [available, navigation]);
+  }, [available, navigation, route.key]);
 
   /**
    * The PIN screen's callback: it reads the keys with the PIN, or the password safe biometry

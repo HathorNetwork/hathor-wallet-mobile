@@ -101,6 +101,7 @@ async function render({ wallet = fakeWallet(), level = capability('full') } = {}
   const navigation = {
     navigate: jest.fn(),
     goBack: jest.fn(),
+    dispatch: jest.fn(),
     addListener: jest.fn((event, handler) => {
       listeners[event] = handler;
       return jest.fn();
@@ -112,7 +113,10 @@ async function render({ wallet = fakeWallet(), level = capability('full') } = {}
     renderer = create(
       <Provider store={store}>
         <PortalProvider>
-          <ExportPrivacyKeys navigation={navigation} />
+          <ExportPrivacyKeys
+            navigation={navigation}
+            route={{ key: 'ExportPrivacyKeys-test', name: 'ExportPrivacyKeys' }}
+          />
         </PortalProvider>
       </Provider>,
     );
@@ -151,6 +155,8 @@ async function render({ wallet = fakeWallet(), level = capability('full') } = {}
   };
 }
 
+// How the screen closes, with its PIN screen, when the shielded UI stops being available is tested
+// in a real stack, in PrivacyScreensStack.test.js.
 describe('ExportPrivacyKeys', () => {
   test('shows the warning first, and reads nothing until it is acknowledged', async () => {
     const wallet = fakeWallet();
@@ -382,15 +388,5 @@ describe('ExportPrivacyKeys', () => {
     expect(texts()).toContain('Private transfers are not available for this wallet.');
     expect(titles()).not.toContain(EXPORT);
     expect(titles()).not.toContain('Unlock private balance');
-  });
-
-  test('goes back when the shielded UI stops being available', async () => {
-    const { store, navigation } = await render();
-
-    await act(async () => {
-      store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.FAILED }));
-    });
-
-    expect(navigation.goBack).toHaveBeenCalledTimes(1);
   });
 });

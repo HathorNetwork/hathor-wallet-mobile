@@ -138,7 +138,7 @@ msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:101
 #: src/components/Shielded/ShieldedBalanceSplit.js:157
-#: src/screens/ExportPrivacyKeys.js:250 src/screens/SendConfirmScreen.js:209
+#: src/screens/ExportPrivacyKeys.js:252 src/screens/SendConfirmScreen.js:209
 #: src/screens/SendConfirmScreen.js:237 src/shielded/receiveState.js:154
 #: src/utils/shieldedSend.js:90
 msgid "Private transfers are not available for this wallet."
@@ -715,39 +715,39 @@ msgid "Nano Contracts"
 msgstr "Nano Contracts"
 
 #: src/components/AuditUnblindingRows.js:129
-#: src/screens/ExportPrivacyKeys.js:94
+#: src/screens/ExportPrivacyKeys.js:95
 msgid "Copied. The clipboard clears in one minute."
 msgstr "Copiado. A área de transferência será limpa em um minuto."
 
-#: src/screens/ExportPrivacyKeys.js:96
+#: src/screens/ExportPrivacyKeys.js:97
 msgid "Copy"
 msgstr "Copiar"
 
-#: src/screens/ExportPrivacyKeys.js:225
+#: src/screens/ExportPrivacyKeys.js:227
 msgid "Enter your 6-digit pin to export the privacy keys"
 msgstr "Digite seu PIN de 6 dígitos para exportar as chaves de privacidade"
 
-#: src/screens/ExportPrivacyKeys.js:226 src/screens/PrivacySettings.js:90
+#: src/screens/ExportPrivacyKeys.js:228 src/screens/PrivacySettings.js:93
 msgid "Export privacy keys"
 msgstr "Exportar chaves de privacidade"
 
-#: src/screens/ExportPrivacyKeys.js:237
+#: src/screens/ExportPrivacyKeys.js:239
 msgid "I understand, export the keys"
 msgstr "Entendi, exportar as chaves"
 
-#: src/screens/ExportPrivacyKeys.js:243
+#: src/screens/ExportPrivacyKeys.js:245
 msgid "Unlock your private balance to export the privacy keys."
 msgstr "Desbloqueie seu saldo privado para exportar as chaves de privacidade."
 
-#: src/screens/ExportPrivacyKeys.js:259
+#: src/screens/ExportPrivacyKeys.js:261
 msgid "EXPORT PRIVACY KEYS"
 msgstr "EXPORTAR CHAVES DE PRIVACIDADE"
 
-#: src/screens/ExportPrivacyKeys.js:264
+#: src/screens/ExportPrivacyKeys.js:266
 msgid "Read this before you export"
 msgstr "Leia isto antes de exportar"
 
-#: src/screens/ExportPrivacyKeys.js:266
+#: src/screens/ExportPrivacyKeys.js:268
 msgid ""
 "These keys give read access to every private output this wallet receives, "
 "its change included: whoever holds them sees the amount and the token of "
@@ -757,19 +757,19 @@ msgstr ""
 "carteira recebe, incluindo o troco: quem as tiver vê o valor e o token de "
 "cada uma."
 
-#: src/screens/ExportPrivacyKeys.js:269
+#: src/screens/ExportPrivacyKeys.js:271
 msgid ""
 "This access can't be revoked. To end it, move your funds to a new wallet."
 msgstr ""
 "Este acesso não pode ser revogado. Para encerrá-lo, mova seus fundos para "
 "uma nova carteira."
 
-#: src/screens/ExportPrivacyKeys.js:272
+#: src/screens/ExportPrivacyKeys.js:274
 msgid "The keys can't spend: they don't move funds or sign transactions."
 msgstr ""
 "As chaves não podem gastar: elas não movem fundos nem assinam transações."
 
-#: src/screens/ExportPrivacyKeys.js:275
+#: src/screens/ExportPrivacyKeys.js:277
 msgid ""
 "Share them only with an auditor you trust, over a secure channel. The "
 "auditor needs a tool that reads Hathor's private outputs."
@@ -777,30 +777,30 @@ msgstr ""
 "Compartilhe-as apenas com um auditor de confiança, por um canal seguro. O "
 "auditor precisa de uma ferramenta que leia as saídas privadas da Hathor."
 
-#: src/screens/ExportPrivacyKeys.js:282
+#: src/screens/ExportPrivacyKeys.js:284
 msgid "Reading the keys…"
 msgstr "Lendo as chaves…"
 
-#: src/screens/ExportPrivacyKeys.js:287
+#: src/screens/ExportPrivacyKeys.js:289
 msgid "The privacy keys could not be read."
 msgstr "Não foi possível ler as chaves de privacidade."
 
-#: src/screens/ExportPrivacyKeys.js:293
+#: src/screens/ExportPrivacyKeys.js:295
 msgid "Spend public key (xpub)"
 msgstr "Chave pública de gasto (xpub)"
 
-#: src/screens/ExportPrivacyKeys.js:294
+#: src/screens/ExportPrivacyKeys.js:296
 msgid ""
 "Path m/44'/280'/2'/0. It finds the private outputs this wallet receives."
 msgstr ""
 "Caminho m/44'/280'/2'/0. Ela encontra as saídas privadas que esta carteira "
 "recebe."
 
-#: src/screens/ExportPrivacyKeys.js:300
+#: src/screens/ExportPrivacyKeys.js:302
 msgid "Scan private key (xpriv)"
 msgstr "Chave privada de varredura (xpriv)"
 
-#: src/screens/ExportPrivacyKeys.js:301
+#: src/screens/ExportPrivacyKeys.js:303
 msgid ""
 "Path m/44'/280'/1'/0. It reads the amount and the token of each private "
 "output this wallet receives. It never signs."
@@ -1060,11 +1060,11 @@ msgstr "Cancelar"
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
-#: src/screens/PrivacySettings.js:69
+#: src/screens/PrivacySettings.js:72
 msgid "PRIVACY SETTINGS"
 msgstr "CONFIGURAÇÕES DE PRIVACIDADE"
 
-#: src/screens/PrivacySettings.js:74
+#: src/screens/PrivacySettings.js:77
 msgid ""
 "The default applies to your sends to private addresses. You can change it "
 "for each send."
@@ -1072,11 +1072,11 @@ msgstr ""
 "O padrão vale para os seus envios para endereços privados. Você pode mudá-lo "
 "em cada envio."
 
-#: src/screens/PrivacySettings.js:77
+#: src/screens/PrivacySettings.js:80
 msgid "DEFAULT FOR SENDS TO PRIVATE ADDRESSES"
 msgstr "PADRÃO PARA ENVIOS A ENDEREÇOS PRIVADOS"
 
-#: src/screens/PrivacySettings.js:87
+#: src/screens/PrivacySettings.js:90
 msgid "AUDIT"
 msgstr "AUDITORIA"
 

@@ -79,13 +79,16 @@ async function render({ flag = true, level = 'full', saved = null } = {}) {
     store.dispatch(privacyDefaultModeSet(saved));
   }
 
-  const navigation = { navigate: jest.fn(), goBack: jest.fn() };
+  const navigation = { navigate: jest.fn(), goBack: jest.fn(), dispatch: jest.fn() };
   let renderer;
   await act(async () => {
     renderer = create(
       <Provider store={store}>
         <PortalProvider>
-          <PrivacySettings navigation={navigation} />
+          <PrivacySettings
+            navigation={navigation}
+            route={{ key: 'PrivacySettings-test', name: 'PrivacySettings' }}
+          />
         </PortalProvider>
       </Provider>,
     );
@@ -172,31 +175,14 @@ describe('PrivacySettings', () => {
     expect(store.getState().privacyDefaultMode).toBe(PRIVACY_MODE.PRIVATE);
   });
 
+  // How the screen closes where the shielded UI is not available is tested in a real stack, in
+  // PrivacyScreensStack.test.js.
   test('stays open while the private balance is locked', async () => {
     const { navigation, switches } = await render({ level: 'watch' });
 
+    expect(navigation.dispatch).not.toHaveBeenCalled();
     expect(navigation.goBack).not.toHaveBeenCalled();
     expect(switches()).toHaveLength(2);
-  });
-
-  test('goes back where the shielded UI is not available', async () => {
-    const { navigation } = await render({ flag: false });
-
-    expect(navigation.goBack).toHaveBeenCalledTimes(1);
-  });
-
-  test('goes back when the shielded UI stops being available', async () => {
-    const { store, navigation } = await render();
-    expect(navigation.goBack).not.toHaveBeenCalled();
-
-    await act(async () => {
-      store.dispatch(shieldedProviderUpdate({
-        status: SHIELDED_PROVIDER_STATUS.FAILED,
-        error: 'self-test failed',
-      }));
-    });
-
-    expect(navigation.goBack).toHaveBeenCalledTimes(1);
   });
 });
 

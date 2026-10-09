@@ -92,6 +92,7 @@ This document describes what happens with the app and the lib during the wallet 
 
 1. The export (`ExportPrivacyKeys`, from Settings, under Privacy) shows its warning first. Its action shows only where `state.shielded.capability` is at level `view` or `full`. At level `watch` with a cause a PIN can fix, it offers `ShieldedUnlockAction` instead, and the export once the wallet is unlocked
 1. The action opens `PinScreen` (`canCancel`) with no PIN or key in the params. Its callback gets the PIN, or the password safe biometry reads from the keychain
+1. If the shielded UI stops being available meanwhile, `PinScreen` closes with the export and the privacy settings under it (`closeScreen`), and the callback never runs
 1. The callback reads `wallet.getShieldedCapability()` again, and stops unless the level is `view` or `full`: the wallet checked its scan key against its shielded xpub when it unlocked it. Then it reads `storage.getSpendXPubKey()` and `storage.getScanXPrivKey(pinCode)`, which decrypts the scan key with the PIN
 1. A PIN change, turning safe biometry on or off, and the biometry migration all go through `storage.changePin`, which re-encrypts the scan key with the rest of the access data, so the password the callback gets decrypts it
 1. The PIN goes from the callback to wallet-lib only, and the keys stay in the screen's state: no action, log or navigation param carries either

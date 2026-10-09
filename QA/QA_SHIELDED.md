@@ -183,6 +183,7 @@ With the flag on, on the Shielded Testnet:
 1. With the keys shown, go back and open the export again: the warning shows, and no key. Export again, then leave the app in the background for more than 30 seconds: after the lock screen, no key shows.
 1. Repeat the export with safe biometry on: the keychain prompt says "Export privacy keys", and the keys are the same.
 1. In a debug build, start the wallet locked: the export says "Unlock your private balance to export the privacy keys." and offers "Unlock private balance". Once unlocked, it offers the export.
+1. Tap "I understand, export the keys" and, with the PIN screen open, turn the flag off: the PIN screen, the export and Privacy Settings close together, back to Settings, which no longer offers Privacy. In a debug build that starts the wallet locked, do the same from the PIN screen of "Unlock private balance".
 1. On Android 13 and later, the system's clipboard overlay previews the start of a copied key: note it for the security review, and whether the keyboard keeps the key in its clipboard history after the clear.
 
 ### Unblinding rows in the tx details
