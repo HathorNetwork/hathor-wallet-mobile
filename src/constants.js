@@ -454,3 +454,16 @@ export const NODE_RATE_LIMIT_CONF = {
  * Accepted slippage (in %) when swapping tokens.
  */
 export const TOKEN_SWAP_SLIPPAGE = 0.5;
+
+/**
+ * Where the shielded crypto provider of the running wallet stands:
+ * - UNREGISTERED: no provider was registered, as on every network but the shielded testnet, on
+ *   the wallet-service facade and for passkey wallets;
+ * - READY: it passed its self-test and was registered before start();
+ * - FAILED: it failed to load or failed its self-test, so the wallet runs transparent-only.
+ */
+export const SHIELDED_PROVIDER_STATUS = {
+  UNREGISTERED: 'unregistered',
+  READY: 'ready',
+  FAILED: 'failed',
+};

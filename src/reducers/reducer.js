@@ -23,10 +23,22 @@ import {
   TOKEN_SWAP_QUOTE_STATUS,
   TOKEN_IMPORT_MODAL_STATE,
   AMOUNT_FORMAT_DEFAULT,
+  SHIELDED_PROVIDER_STATUS,
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
+
+/**
+ * The shielded state of the running wallet: whether its shielded crypto provider was
+ * registered, and why it failed. Every start resets it. It never holds a PIN or key material.
+ */
+export const SHIELDED_INITIAL_STATE = {
+  /** One of SHIELDED_PROVIDER_STATUS. */
+  providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+  /** @type {string|null} Why the provider failed to load or failed its self-test. */
+  providerError: null,
+};
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
@@ -556,6 +568,7 @@ const initialState = {
    * the wallet saga.
    */
   fullNodeNetworkName: null,
+  shielded: SHIELDED_INITIAL_STATE,
   /** @type {TOKEN_SWAP_ALLOWED_TOKEN_STATUS} Status of the allowed tokens request */
   tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
   /** @type {Object|null} Token swap allowed tokens configuration file for all networks. */
@@ -813,6 +826,8 @@ export const reducer = (state = initialState, action) => {
       return onSetForceNavigateToDashboard(state, action);
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
+    case types.SHIELDED_PROVIDER_UPDATE:
+      return onShieldedProviderUpdate(state, action);
 
     case types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS:
       return onTokenSwapFetchAllowedTokens(state);
@@ -1250,6 +1265,7 @@ export const onStartWalletLock = (state) => ({
 export const onStartWalletRequested = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.LOADING,
+  shielded: SHIELDED_INITIAL_STATE,
 });
 
 export const onStartWalletSuccess = (state) => ({
@@ -2255,6 +2271,19 @@ export const onUnregisteredTokensStore = (state, { payload }) => ({
 export const onSetFullNodeNetworkName = (state, { payload }) => ({
   ...state,
   fullNodeNetworkName: payload,
+});
+
+/**
+ * @param {string} action.payload.status One of SHIELDED_PROVIDER_STATUS
+ * @param {string|null} action.payload.error Why the provider failed
+ */
+export const onShieldedProviderUpdate = (state, { payload }) => ({
+  ...state,
+  shielded: {
+    ...state.shielded,
+    providerStatus: payload.status,
+    providerError: payload.error,
+  },
 });
 
 export const onCreateNanoContractCreateTokenTxRetry = (state) => ({

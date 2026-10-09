@@ -17,6 +17,7 @@ import {
   getShieldedFeatureToggle,
   isShieldedNetwork,
   isShieldedNetworkName,
+  shouldRegisterShieldedProvider,
 } from '../../src/shielded/gating';
 
 // A network saved from the Customize form takes its fullNetwork from the node. The public
@@ -101,6 +102,45 @@ describe('getShieldedFeatureToggle', () => {
     })).toBe(true);
     expect(getShieldedFeatureToggle({
       featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false },
+    })).toBe(false);
+  });
+});
+
+describe('shouldRegisterShieldedProvider', () => {
+  const seedWallet = { useWalletService: false, isPasskeyWallet: false };
+
+  test('registers for a seed wallet on the fullnode facade on the shielded testnet', () => {
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      ...seedWallet,
+    })).toBe(true);
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: customNetwork('testnet-shielded-outputs'),
+      ...seedWallet,
+    })).toBe(true);
+  });
+
+  test('never registers on another network', () => {
+    for (const networkSettings of [
+      PRE_SETTINGS_MAINNET,
+      PRE_SETTINGS_TESTNET,
+      customNetwork('testnet-india'),
+      customNetwork('privatenet'),
+    ]) {
+      expect(shouldRegisterShieldedProvider({ networkSettings, ...seedWallet })).toBe(false);
+    }
+  });
+
+  test('never registers on the wallet-service facade or for a passkey wallet', () => {
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      useWalletService: true,
+      isPasskeyWallet: false,
+    })).toBe(false);
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      useWalletService: false,
+      isPasskeyWallet: true,
     })).toBe(false);
   });
 });

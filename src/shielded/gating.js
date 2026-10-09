@@ -47,3 +47,26 @@ export function getShieldedFeatureToggle(state) {
       ?? FEATURE_TOGGLE_DEFAULTS[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
   );
 }
+
+/**
+ * Whether a wallet start registers the shielded crypto provider: a seed wallet on the fullnode
+ * facade, on the shielded testnet. It decides by wallet type, not by keys: a wallet created
+ * before shielded outputs gets its shielded keys during start(), after the provider must be set.
+ *
+ * It ignores the flag, so the private funds a wallet received keep counting in its balance
+ * while the shielded UI is hidden. Elsewhere no provider is registered, so wallet-lib does no
+ * shielded address work.
+ *
+ * @param {Object} params
+ * @param {Object} params.networkSettings The selected network settings
+ * @param {boolean} params.useWalletService Whether the wallet starts on the wallet-service facade
+ * @param {boolean} params.isPasskeyWallet Whether it is a passkey wallet
+ * @returns {boolean}
+ */
+export function shouldRegisterShieldedProvider({
+  networkSettings,
+  useWalletService,
+  isPasskeyWallet,
+}) {
+  return isShieldedNetwork(networkSettings) && !useWalletService && !isPasskeyWallet;
+}

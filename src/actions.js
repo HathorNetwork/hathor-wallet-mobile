@@ -72,6 +72,7 @@ export const types = {
   ON_START_WALLET_LOCK: 'ON_START_WALLET_LOCK',
   RELOAD_WALLET_REQUESTED: 'RELOAD_WALLET_REQUESTED',
   WALLET_PIN_CHANGED: 'WALLET_PIN_CHANGED',
+  SHIELDED_PROVIDER_UPDATE: 'SHIELDED_PROVIDER_UPDATE',
   START_WALLET_REQUESTED: 'START_WALLET_REQUESTED',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
@@ -803,6 +804,19 @@ export const reloadWalletRequested = () => ({
 export const walletPinChanged = (pin) => ({
   type: types.WALLET_PIN_CHANGED,
   payload: pin,
+});
+
+/**
+ * The shielded crypto provider of the starting wallet was registered, or failed to load, in which
+ * case the wallet starts without one.
+ *
+ * @param {Object} payload
+ * @param {string} payload.status One of SHIELDED_PROVIDER_STATUS
+ * @param {string|null} [payload.error] Why the provider failed
+ */
+export const shieldedProviderUpdate = ({ status, error = null }) => ({
+  type: types.SHIELDED_PROVIDER_UPDATE,
+  payload: { status, error },
 });
 
 export const networkChanged = () => ({

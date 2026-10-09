@@ -9,6 +9,7 @@ import {
   Connection,
   HathorWallet,
   HathorWalletServiceWallet,
+  HistorySyncMode,
   Network,
   SCANNING_POLICY,
   constants as hathorLibConstants,
@@ -100,11 +101,13 @@ import {
   progressiveRetryRequest,
 } from './helpers';
 import { monitorFeatureFlags } from './featureToggle';
+import { registerShieldedCryptoProvider } from './shieldedProvider';
 import {
   getAllAddresses,
   getFirstAddress,
   normalizeAmountFormat,
 } from '../utils';
+import { isShieldedNetwork, shouldRegisterShieldedProvider } from '../shielded/gating';
 import { logger } from '../logger';
 
 const log = logger('wallet');
@@ -181,6 +184,13 @@ export function* isWalletServiceEnabled() {
 
   // At this point, the networkSettings have already been set by startWallet.
   const networkSettings = yield select(getNetworkSettings);
+  if (isShieldedNetwork(networkSettings)) {
+    // The shielded testnet runs on the fullnode facade only, even when a custom network gives a
+    // wallet-service URL: the wallet-service facade has no shielded support, so the wallet's
+    // private funds would disappear there.
+    yield put(setUseWalletService(false));
+    return false;
+  }
   if (walletServiceEnabled && isEmpty(networkSettings.walletServiceUrl)) {
     // In case of an empty value for walletServiceUrl, it means the user
     // doesn't intend to use the Wallet Service. Therefore, we need to force
@@ -376,6 +386,16 @@ export function* startWallet(action) {
       // a stored key. wallet-lib re-checks isReadonly() per operation, so ordering relative to
       // start() is not enforced — we do it here, before start(), as a safe convention.
       wallet.setExternalTxSigningMethod(makePasskeyTxSigner());
+    }
+
+    // Only the polling sync watches the addresses shielded outputs are paid to. It is already
+    // wallet-lib's default: set it so that a change of default can't hide private receives.
+    wallet.setHistorySyncMode(HistorySyncMode.POLLING_HTTP_API);
+
+    // The provider must be set before start(), which loads and decodes the shielded history.
+    // On the shielded testnet it is registered whether or not the shielded UI flag is on.
+    if (shouldRegisterShieldedProvider({ networkSettings, useWalletService, isPasskeyWallet })) {
+      yield call(registerShieldedCryptoProvider, wallet);
     }
   }
 
