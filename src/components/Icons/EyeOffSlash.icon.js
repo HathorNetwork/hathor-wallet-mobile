@@ -12,9 +12,7 @@ import { DEFAULT_ICON_SIZE } from './constants';
 
 /**
  * Eye-with-slash icon used to represent the "Hide amount" / AmountShielded
- * privacy mode in the transaction privacy selector. Distinct from the
- * legacy `EyeOff` icon — kept separate so the older asset continues to
- * work for any callers that import it directly.
+ * privacy mode in the transaction privacy selector.
  *
  * @param {object} props
  * @property {number} props.size
