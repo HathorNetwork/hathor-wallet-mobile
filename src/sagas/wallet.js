@@ -768,7 +768,14 @@ export function* handleTx(action) {
   // need a list of tokens and addresses involved in the transaction from both the
   // inputs and outputs.
   const { inputs, outputs } = tx;
-  const data = [...inputs, ...outputs];
+  // Shielded outputs are not in tx.outputs. The wallet's own are the ones it decoded: their value
+  // is set, along with their token and address. Ownership is never decoded.address, which every
+  // shielded output carries. The wallet's shielded inputs are already in tx.inputs with their
+  // token and address.
+  const ownShieldedOutputs = (tx.shielded_outputs ?? []).filter(
+    (shieldedOutput) => shieldedOutput.value !== undefined,
+  );
+  const data = [...inputs, ...outputs, ...ownShieldedOutputs];
 
   // tokenAddressesMap should be an object { [tokenUid]: Set(addresses) }
   // txAddresses should be a Set with all addresses involved in the tx
