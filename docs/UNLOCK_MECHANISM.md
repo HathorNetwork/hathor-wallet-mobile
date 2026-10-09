@@ -72,6 +72,7 @@ This document describes what happens with the app and the lib during the wallet 
 	1. then `idle`; or `failed`, with the `ShieldedKeyError`'s code in `errorCode` when wallet-lib refused. An error nothing expects also opens the error modal
 1. A later PIN entry, at the lock screen for example, replaces a running unlock, which goes back to `idle`
 1. `ShieldedUnlockAction` shows a spinner while the status is `unlocking` or `decoding`, and says when the unlock failed
+1. An unlock that finds the wallet's scan key doesn't match its shielded xpub fails with `shielded-key-mismatch`, and wallet-lib stops using the record's shielded keys: the level drops to `none`, reason `integrity`, and no PIN fixes it. The token screen then shows no unlock: it says that private transfers aren't available for this wallet, with the locked count and the failure
 
 ## Retrying private funds that couldn't be read
 
