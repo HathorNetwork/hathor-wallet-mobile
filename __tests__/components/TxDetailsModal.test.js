@@ -155,7 +155,8 @@ describe('TxDetailsModal', () => {
     let respond;
     wallet.getFullTxById.mockImplementation(() => new Promise((resolve) => { respond = resolve; }));
     const { renderer } = await render({ wallet });
-    const error = jest.spyOn(console, 'error');
+    // React no longer warns about a state update after an unmount: watch the update itself.
+    const setState = jest.spyOn(renderer.root.findByType(TxDetailsModal).instance, 'setState');
 
     await act(async () => { renderer.unmount(); });
     mounted = null;
@@ -163,7 +164,7 @@ describe('TxDetailsModal', () => {
       respond({ success: true, tx: { fees: [{ token_uid: HTR, amount: 3 }] }, meta: {} });
     });
 
-    expect(error).not.toHaveBeenCalled();
-    error.mockRestore();
+    expect(wallet.getFullTxById).toHaveBeenCalledTimes(1);
+    expect(setState).not.toHaveBeenCalled();
   });
 });

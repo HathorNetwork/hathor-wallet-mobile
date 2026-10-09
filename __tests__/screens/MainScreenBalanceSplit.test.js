@@ -16,6 +16,7 @@ import { constants as hathorLibConstants } from '@hathor/wallet-lib';
 import { reducer } from '../../src/reducers/reducer';
 import { saga as tokensSaga } from '../../src/sagas/tokens';
 import {
+  onWalletReload,
   setFeatureToggles,
   setFullNodeNetworkName,
   setTokens,
@@ -101,6 +102,16 @@ async function render({ flag = true, balance }) {
   };
 }
 
+/**
+ * Turns the shielded UI flag on or off, as an Unleash update does.
+ */
+const setFlag = (store, flag) => act(async () => {
+  store.dispatch(setFeatureToggles({
+    ...FEATURE_TOGGLE_DEFAULTS,
+    [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag,
+  }));
+});
+
 describe('the balance split on the token screen', () => {
   test('shows the private and public parts under the available balance', async () => {
     const { text, balanceRequests } = await render({
@@ -165,6 +176,50 @@ describe('the balance split on the token screen', () => {
 
     expect(balanceRequests()).toEqual([]);
     expect(text()).not.toContain('"Private"');
+  });
+
+  test('fetches the balance again once the flag turns on, for its private part', async () => {
+    const { store, text, balanceRequests } = await render({
+      flag: false,
+      balance: { available: 1000n, locked: 50n },
+    });
+
+    await setFlag(store, true);
+
+    expect(balanceRequests()).toEqual([{
+      type: types.TOKEN_FETCH_BALANCE_REQUESTED,
+      tokenId: DEFAULT_TOKEN.uid,
+      force: true,
+    }]);
+
+    await act(async () => {
+      store.dispatch(tokenFetchBalanceSuccess(DEFAULT_TOKEN.uid, {
+        available: 1000n,
+        locked: 50n,
+        privateAvailable: 400n,
+      }));
+    });
+    expect(text()).toContain('"Private"');
+    expect(balanceRequests()).toHaveLength(1);
+  });
+
+  test('hides the split while the flag is off, and shows it again once it is on', async () => {
+    const { store, text, balanceRequests } = await render({
+      balance: { available: 1000n, locked: 50n, privateAvailable: 400n },
+    });
+
+    // The private part stays in the balance until its next fetch.
+    await setFlag(store, false);
+
+    expect(text()).toContain('Available Balance');
+    expect(text()).not.toContain('"Private"');
+    expect(text()).not.toContain('"Public"');
+
+    await setFlag(store, true);
+
+    expect(text()).toContain('"Private"');
+    expect(text()).toContain('"Public"');
+    expect(balanceRequests()).toEqual([]);
   });
 });
 
@@ -258,5 +313,27 @@ describe('the balance split while the wallet starts', () => {
     expect(actions.filter(
       (action) => action.type === types.TOKEN_FETCH_BALANCE_REQUESTED && action.force,
     )).toEqual([]);
+  });
+
+  test('waits for a reload to end before it fetches a loaded balance again', async () => {
+    const { store, balanceRequests } = await render({
+      flag: false,
+      balance: { available: 1000n, locked: 50n },
+    });
+
+    // wallet-lib reloads the wallet's history after a reconnect, and the balances stay. The flag
+    // turns on meanwhile.
+    await act(async () => { store.dispatch(onWalletReload()); });
+    await setFlag(store, true);
+
+    expect(balanceRequests()).toEqual([]);
+
+    await act(async () => { store.dispatch(startWalletSuccess()); });
+
+    expect(balanceRequests()).toEqual([{
+      type: types.TOKEN_FETCH_BALANCE_REQUESTED,
+      tokenId: DEFAULT_TOKEN.uid,
+      force: true,
+    }]);
   });
 });
