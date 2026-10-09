@@ -57,7 +57,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:116 src/utils.js:860
+#: src/models.js:116 src/utils.js:868
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -65,21 +65,21 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "This wallet does not support shielded addresses."
 msgstr ""
 
-#: src/utils.js:297
+#: src/utils.js:305
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
-#: src/utils.js:845
+#: src/utils.js:853
 msgid "CREATE DEPOSIT TOKEN"
 msgstr ""
 
-#: src/utils.js:847
+#: src/utils.js:855
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:90
 #: src/screens/CreateTokenDepositNotice.js:42
-#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:849
+#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:857
 msgid "CREATE TOKEN"
 msgstr "OPRET TOKEN"
 
@@ -418,7 +418,7 @@ msgstr ""
 
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
-#: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:66
+#: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:69
 #: src/screens/SendAmountInput.js:169
 msgid "Next"
 msgstr "Næste"
@@ -454,7 +454,7 @@ msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:210
+#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:218
 #: src/screens/TokenSwapReview.js:265
 msgid "Building transaction"
 msgstr ""
@@ -1047,11 +1047,11 @@ msgstr "Skift pinkode"
 msgid "Lock wallet"
 msgstr "Lås wallet"
 
-#: src/screens/SendAddressInput.js:53 src/screens/SendScanQRCode.js:80
+#: src/screens/SendAddressInput.js:56 src/screens/SendScanQRCode.js:80
 msgid "SEND"
 msgstr "SEND"
 
-#: src/screens/SendAddressInput.js:59
+#: src/screens/SendAddressInput.js:62
 msgid "Address to send"
 msgstr "Adresse, der skal sendes til"
 
@@ -1066,7 +1066,7 @@ msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:301
+#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:309
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
@@ -1092,81 +1092,86 @@ msgstr ""
 msgid "Failed to process transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:189 src/screens/TokenSwapReview.js:220
+#: src/components/TransactionPrivacyModal.js:67
+#: src/screens/SendConfirmScreen.js:110
+msgid "Payments to a private address are always private."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:197 src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:208
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:216
 #: src/screens/TokenSwapReview.js:263
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:209
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:217
 #: src/screens/TokenSwapReview.js:264
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
-#: src/screens/SendConfirmScreen.js:249
+#: src/screens/SendConfirmScreen.js:257
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendConfirmScreen.js:272
+#: src/screens/SendConfirmScreen.js:280
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:275
+#: src/screens/SendConfirmScreen.js:283
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:278
+#: src/screens/SendConfirmScreen.js:286
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:280
+#: src/screens/SendConfirmScreen.js:288
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:285
+#: src/screens/SendConfirmScreen.js:293
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:307
+#: src/screens/SendConfirmScreen.js:315
 msgid "Building your transaction"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:325
+#: src/screens/SendConfirmScreen.js:333
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:341
+#: src/screens/SendConfirmScreen.js:349
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:363
+#: src/screens/SendConfirmScreen.js:371
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:366
+#: src/screens/SendConfirmScreen.js:374
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:371
+#: src/screens/SendConfirmScreen.js:379
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:379
+#: src/screens/SendConfirmScreen.js:387
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:386
+#: src/screens/SendConfirmScreen.js:394
 msgid "Send"
 msgstr "Send"
 
@@ -2118,10 +2123,6 @@ msgstr ""
 
 #: src/components/TransactionPrivacyModal.js:57
 msgid "Choose what this transaction hides."
-msgstr ""
-
-#: src/components/TransactionPrivacyModal.js:67
-msgid "Payments to a private address are always private."
 msgstr ""
 
 #: src/components/TransactionStatusLabel.js:69

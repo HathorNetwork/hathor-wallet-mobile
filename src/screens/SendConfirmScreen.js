@@ -20,7 +20,7 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import TooltipModal from '../components/TooltipModal';
 import FeedbackModal from '../components/FeedbackModal';
 import Spinner from '../components/Spinner';
-import { renderValue, isTokenNFT } from '../utils';
+import { renderValue, isTokenNFT, isShieldedAddress } from '../utils';
 import NavigationService from '../NavigationService';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { COLORS } from '../styles/themes';
@@ -75,6 +75,7 @@ const SendConfirmScreen = () => {
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
+  const networkName = useSelector((state) => state.networkSettings.network);
 
   const navigation = useNavigation();
   const params = useParams();
@@ -104,6 +105,13 @@ const SendConfirmScreen = () => {
 
     (async () => {
       try {
+        // wallet-lib would pay a private address in public, to the address of its spend key.
+        if (isShieldedAddress(address, new hathorLib.Network(networkName))) {
+          setBuildError({ message: t`Payments to a private address are always private.` });
+          setPhase(PHASE.ERROR);
+          return;
+        }
+
         const outputs = [{ address, value: amount, token: token.uid }];
         const sendTransaction = useWalletService
           ? new hathorLib.SendTransactionWalletService(wallet, { outputs })
