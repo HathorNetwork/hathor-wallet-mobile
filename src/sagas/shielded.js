@@ -11,13 +11,15 @@ import {
   delay,
   put,
   select,
+  spawn,
   takeEvery,
   takeLatest,
 } from 'redux-saga/effects';
 import { constants as hathorLibConstants } from '@hathor/wallet-lib';
-import { DEFAULT_TOKEN } from '../constants';
+import { DEFAULT_TOKEN, SHIELDED_PROVIDER_STATUS } from '../constants';
 import {
   types,
+  shieldedCapabilityUpdate,
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   tokenInvalidateHistory,
@@ -26,6 +28,7 @@ import {
 import { getRegisteredTokenUids } from './helpers';
 import { WALLET_STATUS } from './wallet';
 import { selectShieldedCapability } from '../shielded/gating';
+import { SHIELDED_UNLOCK_STATUS, unlockShieldedViewIfLocked } from '../shielded/unlock';
 import { logger } from '../logger';
 
 const log = logger('shielded');
@@ -153,10 +156,70 @@ export function* onWalletBalancesLoaded(loaded) {
   }
 }
 
+/**
+ * Waits for the walk an unlock requested, then refreshes the balances, which the walk changed,
+ * if the wallet still runs. The walk's end changes the capability, but the event that carries
+ * it fires only when the capability differs from the last one it carried.
+ *
+ * @param {ReturnType<createLoadedCapability>} loaded
+ * @param {Object} wallet The unlocked wallet
+ * @param {Promise<Object>} reprocessed Resolves with the capability once the walk ends
+ */
+export function* refreshAfterUnlockWalk(loaded, wallet, reprocessed) {
+  try {
+    const capability = yield call(() => reprocessed);
+    if (yield call(refreshShieldedBalances, wallet)) {
+      loaded.record(wallet, capability);
+    }
+  } catch (e) {
+    log.error('Failed to refresh the balances after a shielded unlock.', e);
+  }
+}
+
+/**
+ * Handles SHIELDED_VIEW_UNLOCK_REQUESTED: unlocks the shielded view key of the running wallet
+ * with the PIN the user entered, when the wallet holds its shielded outputs locked. It runs only
+ * where the crypto provider passed its self-test: without it, nothing can be decoded. The PIN is
+ * never logged, and a refusal shows nothing to the user.
+ *
+ * @param {ReturnType<createLoadedCapability>} loaded
+ * @param {Object} action The SHIELDED_VIEW_UNLOCK_REQUESTED action
+ */
+export function* onShieldedViewUnlockRequested(loaded, action) {
+  try {
+    const { wallet, providerStatus } = yield select((state) => ({
+      wallet: state.wallet,
+      providerStatus: state.shielded?.providerStatus,
+    }));
+    if (!wallet || providerStatus !== SHIELDED_PROVIDER_STATUS.READY) {
+      return;
+    }
+
+    const result = yield call(unlockShieldedViewIfLocked, wallet, action.payload.pinCode);
+    if (result.status === SHIELDED_UNLOCK_STATUS.FAILED) {
+      log.error('The shielded view key was not unlocked at a PIN entry.', {
+        source: action.payload.source,
+        errorCode: result.errorCode,
+      });
+      return;
+    }
+    if (result.status !== SHIELDED_UNLOCK_STATUS.UNLOCKED) {
+      return;
+    }
+
+    yield put(shieldedCapabilityUpdate(result.capability));
+    // Detached, so that the next PIN entry, which replaces this handler, doesn't cancel it.
+    yield spawn(refreshAfterUnlockWalk, loaded, wallet, result.reprocessed);
+  } catch (e) {
+    log.error('Failed to unlock the shielded view key at a PIN entry.', e);
+  }
+}
+
 export function* saga() {
   const loaded = createLoadedCapability();
   yield all([
     takeLatest(types.SHIELDED_CAPABILITY_UPDATE, onShieldedCapabilityUpdate, loaded),
     takeEvery(types.START_WALLET_SUCCESS, onWalletBalancesLoaded, loaded),
+    takeLatest(types.SHIELDED_VIEW_UNLOCK_REQUESTED, onShieldedViewUnlockRequested, loaded),
   ]);
 }

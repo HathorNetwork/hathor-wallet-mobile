@@ -74,6 +74,7 @@ export const types = {
   WALLET_PIN_CHANGED: 'WALLET_PIN_CHANGED',
   SHIELDED_PROVIDER_UPDATE: 'SHIELDED_PROVIDER_UPDATE',
   SHIELDED_CAPABILITY_UPDATE: 'SHIELDED_CAPABILITY_UPDATE',
+  SHIELDED_VIEW_UNLOCK_REQUESTED: 'SHIELDED_VIEW_UNLOCK_REQUESTED',
   START_WALLET_REQUESTED: 'START_WALLET_REQUESTED',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
@@ -829,6 +830,21 @@ export const shieldedProviderUpdate = ({ status, error = null }) => ({
 export const shieldedCapabilityUpdate = (capability) => ({
   type: types.SHIELDED_CAPABILITY_UPDATE,
   payload: capability,
+});
+
+/**
+ * A PIN entry that can unlock the shielded view key of the running wallet, when the wallet holds
+ * its shielded outputs locked: it started with a PIN that no longer decrypts the key, or the
+ * unlock at start failed. No reducer handles it, so the PIN never enters the redux state.
+ *
+ * @param {Object} payload
+ * @param {string} payload.pinCode The PIN, or the safe-biometry password, that decrypts the
+ *   wallet's access data now
+ * @param {string} payload.source One of SHIELDED_UNLOCK_SOURCE
+ */
+export const shieldedViewUnlockRequested = ({ pinCode, source }) => ({
+  type: types.SHIELDED_VIEW_UNLOCK_REQUESTED,
+  payload: { pinCode, source },
 });
 
 export const networkChanged = () => ({

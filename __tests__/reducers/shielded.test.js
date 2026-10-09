@@ -13,9 +13,10 @@ import {
   resetWalletSuccess,
   shieldedCapabilityUpdate,
   shieldedProviderUpdate,
+  shieldedViewUnlockRequested,
   startWalletRequested,
 } from '../../src/actions';
-import { SHIELDED_PROVIDER_STATUS } from '../../src/constants';
+import { SHIELDED_PROVIDER_STATUS, SHIELDED_UNLOCK_SOURCE } from '../../src/constants';
 
 const getInitialState = () => reducer(undefined, { type: '@@INIT' });
 
@@ -86,5 +87,14 @@ describe('shielded reducer', () => {
     const withCapability = reducer(getInitialState(), shieldedCapabilityUpdate(CAPABILITY));
     expect(reducer(withCapability, startWalletRequested({ words: 'words', pin: '111111' })).shielded)
       .toEqual(SHIELDED_INITIAL_STATE);
+  });
+
+  test('keeps no trace of an unlock request, which carries a PIN', () => {
+    const state = reducer(failedState(), shieldedCapabilityUpdate(CAPABILITY));
+    const next = reducer(state, shieldedViewUnlockRequested({
+      pinCode: '123456',
+      source: SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN,
+    }));
+    expect(next).toBe(state);
   });
 });

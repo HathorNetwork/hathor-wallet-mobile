@@ -731,7 +731,7 @@ msgstr "Введите seed-фразу"
 #: src/components/Reown/SendTransactionRequest.js:550
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:176
-#: src/screens/PinScreen.js:289 src/screens/TokenSwapLoadingScreen.js:90
+#: src/screens/PinScreen.js:299 src/screens/TokenSwapLoadingScreen.js:90
 msgid "Try again"
 msgstr ""
 
@@ -754,7 +754,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:199
-#: src/screens/PinScreen.js:324 src/screens/Settings.js:186
+#: src/screens/PinScreen.js:334 src/screens/Settings.js:186
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
 
@@ -830,24 +830,24 @@ msgstr ""
 msgid "Unlock"
 msgstr ""
 
-#: src/screens/PinScreen.js:278
+#: src/screens/PinScreen.js:288
 msgid "Incorrect PIN Code. Try again."
 msgstr "Неверный PIN-код. Попробуйте еще раз."
 
-#: src/screens/PinScreen.js:78
+#: src/screens/PinScreen.js:80
 msgid "Enter your PIN Code "
 msgstr "Введите свой PIN-код "
 
-#: src/screens/PinScreen.js:79
+#: src/screens/PinScreen.js:81
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:315 src/screens/Reown/ReownList.js:176
+#: src/screens/PinScreen.js:325 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/screens/PinScreen.js:355 src/screens/PinScreen.js:359
+#: src/screens/PinScreen.js:365 src/screens/PinScreen.js:369
 msgid "Biometry failed or canceled."
 msgstr "Биометрия не удалась или была отменена."
 

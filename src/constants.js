@@ -467,3 +467,13 @@ export const SHIELDED_PROVIDER_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
 };
+
+/**
+ * What asks to unlock the shielded view key of the running wallet with a PIN entry: the lock
+ * screen, the user from a locked private balance, or a private send.
+ */
+export const SHIELDED_UNLOCK_SOURCE = {
+  LOCK_SCREEN: 'lock-screen',
+  USER: 'user',
+  SEND: 'send',
+};

@@ -17,7 +17,7 @@ jest.mock('../../src/logger', () => {
 
 /* eslint-disable import/first */
 import { runSaga, stdChannel } from 'redux-saga';
-import { constants as hathorLibConstants } from '@hathor/wallet-lib';
+import { constants as hathorLibConstants, errors } from '@hathor/wallet-lib';
 import {
   CAPABILITY_REFRESH_DELAY_MS,
   isBalanceRelevantChange,
@@ -27,6 +27,7 @@ import {
 import { WALLET_STATUS } from '../../src/sagas/wallet';
 import {
   shieldedCapabilityUpdate,
+  shieldedViewUnlockRequested,
   startWalletSuccess,
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
@@ -34,7 +35,7 @@ import {
   types,
   walletRefreshSharedAddress,
 } from '../../src/actions';
-import { SHIELDED_PROVIDER_STATUS } from '../../src/constants';
+import { SHIELDED_PROVIDER_STATUS, SHIELDED_UNLOCK_SOURCE } from '../../src/constants';
 import { logger } from '../../src/logger';
 /* eslint-enable import/first */
 
@@ -277,5 +278,152 @@ describe('the refresh on a shielded capability change', () => {
     deliver(shieldedCapabilityUpdate(capability()));
     await wait(300);
     expect(refreshes()).toBe(1);
+  });
+});
+
+describe('the unlock at the next PIN entry', () => {
+  const PIN = '246810';
+  const UNLOCKED = capability({ undecoded: { txIds: ['tx1', 'tx2'], locked: 2 } });
+  const DECODED = capability();
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  // A wallet that started with a stale PIN: its scan key is locked.
+  function setupLocked() {
+    const context = setup();
+    let finishWalk;
+    const reprocessed = new Promise((resolve) => { finishWalk = resolve; });
+    Object.assign(context.wallet, {
+      getShieldedCapability: jest.fn(async () => context.state.shielded.capability),
+      unlockShieldedView: jest.fn(async () => ({ capability: UNLOCKED, reprocessed })),
+    });
+    return { ...context, finishWalk };
+  }
+
+  const unlockRequest = () => shieldedViewUnlockRequested({
+    pinCode: PIN,
+    source: SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN,
+  });
+
+  test('unlocks a locked wallet, then refreshes the balances once the walk ends', async () => {
+    const { wallet, deliver, dispatched, refreshes, finishWalk } = setupLocked();
+
+    deliver(unlockRequest());
+    await wait(0);
+
+    expect(wallet.unlockShieldedView).toHaveBeenCalledWith({ pinCode: PIN });
+    expect(dispatched).toEqual([shieldedCapabilityUpdate(UNLOCKED)]);
+    finishWalk(DECODED);
+    await wait(0);
+
+    expect(refreshes()).toBe(1);
+    expect(JSON.stringify(dispatched)).not.toContain(PIN);
+  });
+
+  test('records the refresh, so the change at the end of the walk refreshes nothing more', async () => {
+    const { deliver, refreshes, finishWalk } = setupLocked();
+
+    deliver(unlockRequest());
+    await wait(0);
+    finishWalk(DECODED);
+    await wait(0);
+    deliver(shieldedCapabilityUpdate(DECODED));
+    await wait(CAPABILITY_REFRESH_DELAY_MS);
+
+    expect(refreshes()).toBe(1);
+  });
+
+  test('refreshes nothing when another wallet runs once the walk ends', async () => {
+    const { state, deliver, refreshes, finishWalk } = setupLocked();
+
+    deliver(unlockRequest());
+    await wait(0);
+    state.wallet = { isReady: () => true };
+    finishWalk(DECODED);
+    await wait(0);
+
+    expect(refreshes()).toBe(0);
+  });
+
+  test('keeps the refresh after the walk when another PIN entry comes', async () => {
+    const { state, wallet, deliver, refreshes, finishWalk } = setupLocked();
+
+    deliver(unlockRequest());
+    await wait(0);
+    state.shielded = { ...state.shielded, capability: UNLOCKED };
+    deliver(unlockRequest());
+    await wait(0);
+    finishWalk(DECODED);
+    await wait(0);
+
+    expect(wallet.unlockShieldedView).toHaveBeenCalledTimes(1);
+    expect(refreshes()).toBe(1);
+  });
+
+  test.each([
+    ['a wallet at level full', capability()],
+    ['a wallet at level none', capability({ level: 'none' })],
+  ])('leaves %s as it is', async (_label, current) => {
+    const { state, wallet, deliver, dispatched } = setupLocked();
+    state.shielded = { ...state.shielded, capability: current };
+
+    deliver(unlockRequest());
+    await wait(0);
+
+    expect(wallet.getShieldedCapability).toHaveBeenCalledTimes(1);
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    expect(dispatched).toEqual([]);
+  });
+
+  test.each([
+    ['no wallet runs', { wallet: null }, {}],
+    ['no provider was registered', {}, { providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED }],
+    ['the provider failed its self-test', {}, { providerStatus: SHIELDED_PROVIDER_STATUS.FAILED }],
+  ])('does nothing when %s', async (_label, stateChange, shieldedChange) => {
+    const { state, wallet, deliver, dispatched } = setupLocked();
+    Object.assign(state, stateChange);
+    state.shielded = { ...state.shielded, ...shieldedChange };
+
+    deliver(unlockRequest());
+    await wait(0);
+
+    expect(wallet.getShieldedCapability).not.toHaveBeenCalled();
+    expect(dispatched).toEqual([]);
+  });
+
+  test('logs a refusal without the PIN, and keeps the wallet locked', async () => {
+    const { wallet, deliver, dispatched } = setupLocked();
+    wallet.unlockShieldedView.mockRejectedValue(
+      new errors.ShieldedKeyError('shielded-wrong-pin', 'The PIN does not decrypt the key.'),
+    );
+
+    deliver(unlockRequest());
+    await wait(0);
+
+    expect(dispatched).toEqual([]);
+    expect(log.error).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(log.error.mock.calls)).toContain('shielded-wrong-pin');
+    expect(JSON.stringify(log.error.mock.calls)).not.toContain(PIN);
+  });
+
+  test('logs an unexpected error and handles the next PIN entry', async () => {
+    const { wallet, deliver, dispatched } = setupLocked();
+    wallet.getShieldedCapability.mockRejectedValueOnce(new Error('store read failed'));
+
+    deliver(unlockRequest());
+    await wait(0);
+    expect(log.error).toHaveBeenCalledTimes(1);
+    expect(dispatched).toEqual([]);
+
+    deliver(unlockRequest());
+    await wait(0);
+    expect(dispatched).toEqual([shieldedCapabilityUpdate(UNLOCKED)]);
   });
 });
