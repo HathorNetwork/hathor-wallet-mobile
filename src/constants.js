@@ -506,3 +506,9 @@ export const SHIELDED_UNLOCK_SOURCE = {
   USER: 'user',
   SEND: 'send',
 };
+
+/**
+ * How long a sensitive copy, such as a privacy key or the unblinding values of a tx, stays in the
+ * clipboard, in milliseconds.
+ */
+export const SENSITIVE_CLIPBOARD_CLEAR_MS = 60 * 1000;
