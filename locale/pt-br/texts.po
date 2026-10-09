@@ -2179,6 +2179,19 @@ msgstr "Nano Contract"
 msgid "Amount"
 msgstr "Quantidade"
 
+#: src/components/Shielded/ShieldedUnlockAction.js:53
+msgid "Enter your 6-digit pin to unlock your private balance"
+msgstr "Digite seu PIN de 6 dígitos para desbloquear seu saldo privado"
+
+#: src/components/Shielded/ShieldedUnlockAction.js:54
+#: src/components/Shielded/ShieldedUnlockAction.js:64
+msgid "Unlock private balance"
+msgstr "Desbloquear saldo privado"
+
+#: src/components/Shielded/ShieldedUnlockAction.js:61
+msgid "Could not unlock your private balance."
+msgstr "Não foi possível desbloquear seu saldo privado."
+
 #: src/components/Reown/AdvancedErrorOptions.js:41
 msgid "Advanced options"
 msgstr "Opções avançadas"

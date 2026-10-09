@@ -2107,6 +2107,19 @@ msgstr ""
 msgid "Amount"
 msgstr "Antal"
 
+#: src/components/Shielded/ShieldedUnlockAction.js:53
+msgid "Enter your 6-digit pin to unlock your private balance"
+msgstr ""
+
+#: src/components/Shielded/ShieldedUnlockAction.js:54
+#: src/components/Shielded/ShieldedUnlockAction.js:64
+msgid "Unlock private balance"
+msgstr ""
+
+#: src/components/Shielded/ShieldedUnlockAction.js:61
+msgid "Could not unlock your private balance."
+msgstr ""
+
 #: src/components/Reown/AdvancedErrorOptions.js:41
 msgid "Advanced options"
 msgstr ""

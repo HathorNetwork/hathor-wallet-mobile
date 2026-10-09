@@ -287,6 +287,9 @@ export const types = {
 
   // Shielded outputs: the private receive address
   SHIELDED_RECEIVE_ADDRESS_UPDATE: 'SHIELDED_RECEIVE_ADDRESS_UPDATE',
+  // Shielded outputs: the unlock and the retry the user asks for
+  SHIELDED_UNLOCK_STATUS_UPDATE: 'SHIELDED_UNLOCK_STATUS_UPDATE',
+  SHIELDED_REPROCESS_REQUESTED: 'SHIELDED_REPROCESS_REQUESTED',
 };
 
 /**
@@ -1969,4 +1972,26 @@ export const shieldedReceiveAddressUpdate = ({
     index,
     reason,
   },
+});
+
+/**
+ * Where the unlock of a locked private balance, or the retry of private funds that couldn't be
+ * read, stands. It never carries the PIN.
+ *
+ * @param {Object} payload
+ * @param {string} payload.status One of SHIELDED_UNLOCK_PROGRESS
+ * @param {string|null} [payload.errorCode] The code of the ShieldedKeyError that refused the
+ *   unlock
+ */
+export const shieldedUnlockStatusUpdate = ({ status, errorCode = null }) => ({
+  type: types.SHIELDED_UNLOCK_STATUS_UPDATE,
+  payload: { status, errorCode },
+});
+
+/**
+ * The user asks to process the running wallet's history again, to retry the private outputs it
+ * failed to decode.
+ */
+export const shieldedReprocessRequested = () => ({
+  type: types.SHIELDED_REPROCESS_REQUESTED,
 });
