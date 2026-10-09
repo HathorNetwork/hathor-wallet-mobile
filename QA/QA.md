@@ -279,6 +279,9 @@ Tests the Token Swap feature. Follow the [Token Swap QA](QA_TOKEN_SWAP.md)
 ### Address Mode
 Tests the single/multi address mode behavior and network-dependent defaults. Follow the [Address Mode QA](QA_ADDRESS_MODE.md)
 
+### Shielded Outputs
+Tests the shielded crypto provider, the Shielded Testnet preset and private funds in the balance. Follow the [Shielded Outputs QA](QA_SHIELDED.md)
+
 # Development Environment tests
 The following tests are executed only if for the development environment, with access to source code and building.
 
