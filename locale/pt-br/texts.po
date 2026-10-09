@@ -143,6 +143,15 @@ msgid "Could not build the swap transaction. Please try again."
 msgstr ""
 "Não foi possível construir a transação de swap. Por favor, tente novamente."
 
+#: src/shielded/receiveState.js:148
+msgid "Private transfers could not be loaded on this device."
+msgstr ""
+"Não foi possível carregar as transferências privadas neste dispositivo."
+
+#: src/shielded/receiveState.js:150
+msgid "Private transfers are not available for this wallet."
+msgstr "Transferências privadas não estão disponíveis para esta carteira."
+
 #: src/screens/About.js:83
 msgid "ABOUT"
 msgstr "SOBRE"
@@ -2038,16 +2047,26 @@ msgstr "ID"
 msgid "New Transaction"
 msgstr "Transação"
 
-#: src/components/ReceiveMyAddress.js:36
+#: src/components/ReceiveMyAddress.js:45
+msgid "Public"
+msgstr "Público"
+
+#: src/components/ReceiveMyAddress.js:46
+msgid "Private"
+msgstr "Privado"
+
+#: src/components/ReceiveMyAddress.js:76
 #, javascript-format
 msgid "Here is my address: ${ lastSharedAddress }"
 msgstr "Esse é o meu endereço: ${ lastSharedAddress }"
 
-#: src/components/ReceiveMyAddress.js:60
+#: src/components/ReceiveMyAddress.js:100
 msgid "New address"
 msgstr "Novo endereço"
 
-#: src/components/ReceiveMyAddress.js:67 src/components/TokenDetails.js:102
+#: src/components/ReceiveMyAddress.js:107
+#: src/components/Shielded/PrivateReceiveAddress.js:110
+#: src/components/TokenDetails.js:102
 msgid "Share"
 msgstr "Compartilhar"
 
@@ -2178,6 +2197,33 @@ msgstr "Nano Contract"
 #: src/components/TxDetailsModal.js:180
 msgid "Amount"
 msgstr "Quantidade"
+
+#: src/components/Shielded/PrivateReceiveAddress.js:56
+msgid "Private receiving is locked"
+msgstr "O recebimento privado está bloqueado"
+
+#: src/components/Shielded/PrivateReceiveAddress.js:57
+msgid ""
+"Unlock your private balance to receive private payments and see your private "
+"funds."
+msgstr ""
+"Desbloqueie seu saldo privado para receber pagamentos privados e ver seus "
+"fundos privados."
+
+#: src/components/Shielded/PrivateReceiveAddress.js:65
+msgid "Private receiving is unavailable"
+msgstr "O recebimento privado está indisponível"
+
+#: src/components/Shielded/PrivateReceiveAddress.js:87
+#, javascript-format
+msgid "Here is my private address: ${ address }"
+msgstr "Esse é o meu endereço privado: ${ address }"
+
+#: src/components/Shielded/PrivateReceiveAddress.js:105
+msgid "Only wallets that support private transfers can pay this address."
+msgstr ""
+"Somente carteiras que suportam transferências privadas podem pagar este "
+"endereço."
 
 #: src/components/Shielded/ShieldedUnlockAction.js:53
 msgid "Enter your 6-digit pin to unlock your private balance"

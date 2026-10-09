@@ -5,9 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { t } from 'ttag';
 import { ErrorMessages, errors } from '@hathor/wallet-lib';
 
-const { SHIELDED_LOCKED, SHIELDED_NOT_STARTED } = ErrorMessages.ErrorMessages;
+const {
+  SHIELDED_LOCKED,
+  SHIELDED_NOT_STARTED,
+  SHIELDED_NO_PROVIDER,
+} = ErrorMessages.ErrorMessages;
 
 /**
  * Where the private (shielded) receive address of the running wallet stands.
@@ -129,6 +134,20 @@ export function receiveStateFromError(error) {
     return { status: SHIELDED_RECEIVE_STATUS.LOADING, reason: null };
   }
   return null;
+}
+
+/**
+ * Why the wallet can't receive privately, for the user: either the device couldn't load private
+ * transfers (the crypto provider failed), or this wallet can't use them.
+ *
+ * @param {string|null} reason The reason of an unavailable receive state
+ * @returns {string}
+ */
+export function receiveReasonText(reason) {
+  if (reason === 'no-provider' || reason === SHIELDED_NO_PROVIDER) {
+    return t`Private transfers could not be loaded on this device.`;
+  }
+  return t`Private transfers are not available for this wallet.`;
 }
 
 /**

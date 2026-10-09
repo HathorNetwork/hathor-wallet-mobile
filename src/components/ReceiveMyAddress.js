@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dimensions, Share, StyleSheet, View,
 } from 'react-native';
@@ -15,11 +15,51 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
+import { TwoOptionsToggle } from './TwoOptionsToggle';
+import PrivateReceiveAddress from './Shielded/PrivateReceiveAddress';
 import { sharedAddressUpdate } from '../actions';
 import { ADDRESS_MODE } from '../constants';
+import { isShieldedEnvironment } from '../shielded/gating';
 import { COLORS } from '../styles/themes';
 
-export default function ReceiveMyAddress() {
+/**
+ * The wallet's receive address. Where the shielded UI is on, a toggle offers the public address,
+ * shown first, and the private (shielded) one: most wallets can't pay a private address yet.
+ *
+ * @param {Object} props
+ * @param {{ navigate: Function }} props.navigation
+ */
+export default function ReceiveMyAddress({ navigation }) {
+  const shieldedEnvironment = useSelector(isShieldedEnvironment);
+  const [showPrivate, setShowPrivate] = useState(false);
+
+  if (!shieldedEnvironment) {
+    return <PublicReceiveAddress />;
+  }
+
+  return (
+    <View style={styles.tabs}>
+      <View style={styles.toggleWrapper}>
+        <TwoOptionsToggle
+          options={{
+            first: { value: t`Public`, onTap: () => setShowPrivate(false) },
+            second: { value: t`Private`, onTap: () => setShowPrivate(true) },
+          }}
+          defaultOption={showPrivate ? 'second' : 'first'}
+        />
+      </View>
+      {showPrivate
+        ? <PrivateReceiveAddress navigation={navigation} />
+        : <PublicReceiveAddress />}
+    </View>
+  );
+}
+
+/**
+ * The wallet's public receive address, with its QR code, copy, share and, in multi-address mode,
+ * a new address.
+ */
+function PublicReceiveAddress() {
   const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
   const lastSharedAddress = useSelector((state) => state.lastSharedAddress);
@@ -74,6 +114,14 @@ export default function ReceiveMyAddress() {
 }
 
 const styles = StyleSheet.create({
+  tabs: {
+    flex: 1,
+    backgroundColor: COLORS.backgroundColor,
+  },
+  toggleWrapper: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
   wrapper: {
     flex: 1,
     alignItems: 'center',

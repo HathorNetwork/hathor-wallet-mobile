@@ -12,6 +12,7 @@ import {
   SHIELDED_RECEIVE_INITIAL_STATE,
   SHIELDED_RECEIVE_STATUS,
   isSameReceiveState,
+  receiveReasonText,
   receiveStateFromCapability,
   receiveStateFromError,
   selectShieldedReceive,
@@ -111,5 +112,17 @@ describe('isSameReceiveState', () => {
     expect(isSameReceiveState(ready, { ...ready, address: 'other' })).toBe(false);
     expect(isSameReceiveState(ready, { ...ready, index: 3 })).toBe(false);
     expect(isSameReceiveState(ready, { ...ready, reason: 'error' })).toBe(false);
+  });
+});
+
+describe('receiveReasonText', () => {
+  test.each(['no-provider', 'shielded-no-provider'])('blames the device for the reason %s', (reason) => {
+    expect(receiveReasonText(reason)).toBe('Private transfers could not be loaded on this device.');
+  });
+
+  test.each([
+    'needs-password', 'integrity', 'corrupt-key', RECEIVE_REASON_NOT_WATCHED, 'error', null,
+  ])('says the wallet cannot use them for the reason %s', (reason) => {
+    expect(receiveReasonText(reason)).toBe('Private transfers are not available for this wallet.');
   });
 });
