@@ -57,6 +57,7 @@ jest.mock('@hathor/wallet-lib', () => ({
 
 /* eslint-disable import/first */
 import React from 'react';
+import { errors } from '@hathor/wallet-lib';
 import { TouchableOpacity } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
@@ -457,5 +458,156 @@ describe('SendConfirmScreen fees and summary', () => {
     await act(async () => { renderer.unmount(); });
     mounted = null;
     expect(mockSends[0].releaseUtxos).toHaveBeenCalled();
+  });
+});
+
+describe('SendConfirmScreen unlock of a locked private balance', () => {
+  const PRIVATE_SEND = {
+    address: SHIELDED,
+    amount: 100n,
+    token: HTR,
+    privacyMode: PRIVACY_MODE.PRIVATE,
+  };
+  const PIN = '123456';
+
+  /**
+   * A wallet whose private balance is locked, and which unlocks with PIN: its walk ends when
+   * the test calls finishWalk.
+   */
+  const createLockedWallet = () => {
+    const wallet = createWallet();
+    let level = capability('watch', 'wrong-pin');
+    let finishWalk;
+    const reprocessed = new Promise((resolve) => { finishWalk = resolve; });
+    wallet.getShieldedCapability.mockImplementation(async () => level);
+    wallet.unlockShieldedView.mockImplementation(async ({ pinCode }) => {
+      if (pinCode !== PIN) {
+        throw new errors.ShieldedKeyError('shielded-wrong-pin', 'The PIN does not decrypt the scan key.');
+      }
+      level = capability('full');
+      return { capability: level, reprocessed };
+    });
+    return { wallet, finishWalk: () => act(async () => { finishWalk(level); }) };
+  };
+
+  const pressUnlock = async (renderer) => {
+    await act(async () => {
+      renderer.root.find((node) => node.props.title === 'Unlock private balance' && node.props.onPress)
+        .props.onPress();
+    });
+    const [screen, pinParams] = mockNavigation.navigate.mock.calls.at(-1);
+    expect(screen).toBe('PinScreen');
+    return pinParams;
+  };
+  // The send screen gets the focus back when the PIN screen closes.
+  const refocus = () => act(async () => {
+    mockNavigation.addListener.mock.calls
+      .filter(([event]) => event === 'focus')
+      .forEach(([, listener]) => listener());
+  });
+
+  test('asks to unlock instead of building', async () => {
+    const { wallet } = createLockedWallet();
+    const { texts } = await render(PRIVATE_SEND, { wallet });
+
+    expect(mockSends).toEqual([]);
+    expect(texts()).toEqual(expect.arrayContaining([
+      'Your private balance is locked. Unlock it to send privately.',
+      'Unlock private balance',
+    ]));
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+  });
+
+  test('unlocks with the PIN, waits for the walk, then builds the send once', async () => {
+    const { wallet, finishWalk } = createLockedWallet();
+    const { renderer, texts, store } = await render(PRIVATE_SEND, { wallet });
+
+    const pinParams = await pressUnlock(renderer);
+    expect(pinParams).toEqual({
+      cb: expect.any(Function),
+      canCancel: true,
+      screenText: 'Enter your 6-digit pin to unlock your private balance',
+      biometryText: 'Unlock private balance',
+    });
+    // The PIN screen opens over the send screen: the locked modal leaves the way.
+    await settle();
+    expect(texts()).not.toContain('Unlock private balance');
+
+    await act(async () => { pinParams.cb(PIN); });
+    await settle();
+    expect(wallet.unlockShieldedView).toHaveBeenCalledWith({ pinCode: PIN });
+    expect(texts()).toContain('Reading your private balance');
+    expect(mockSends).toEqual([]);
+
+    await finishWalk();
+    await settle();
+    expect(mockSends).toHaveLength(1);
+    expect(mockSends[0].options.outputs[0].shieldedMode).toBe(2);
+    expect(texts()).not.toContain('Reading your private balance');
+    // The PIN never reaches the redux state.
+    expect(JSON.stringify(store.getState(), (_key, value) => (
+      typeof value === 'bigint' ? value.toString() : value
+    ))).not.toContain(PIN);
+  });
+
+  test('says so when the unlock fails, and builds nothing', async () => {
+    const { wallet } = createLockedWallet();
+    const { renderer, texts } = await render(PRIVATE_SEND, { wallet });
+
+    const pinParams = await pressUnlock(renderer);
+    await act(async () => { pinParams.cb('000000'); });
+    await settle();
+
+    expect(texts()).toContain('Could not unlock your private balance.');
+    expect(mockSends).toEqual([]);
+  });
+
+  test('asks again when the PIN screen is cancelled', async () => {
+    const { wallet } = createLockedWallet();
+    const { renderer, texts } = await render(PRIVATE_SEND, { wallet });
+
+    await pressUnlock(renderer);
+    await refocus();
+    await settle();
+
+    expect(texts()).toContain('Unlock private balance');
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+  });
+
+  test('builds once another PIN entry unlocked the wallet first', async () => {
+    const { wallet } = createLockedWallet();
+    const { renderer } = await render(PRIVATE_SEND, { wallet });
+    const pinParams = await pressUnlock(renderer);
+
+    // The lock screen, say, unlocked it meanwhile.
+    wallet.getShieldedCapability.mockResolvedValue(capability('full'));
+    await act(async () => { pinParams.cb(PIN); });
+    await settle();
+
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    expect(mockSends).toHaveLength(1);
+  });
+
+  test('lets the user leave while the wallet decodes', async () => {
+    const { wallet } = createLockedWallet();
+    const { renderer } = await render(PRIVATE_SEND, { wallet });
+    const pinParams = await pressUnlock(renderer);
+    await act(async () => { pinParams.cb(PIN); });
+    await settle();
+
+    const decoding = renderer.root.find((node) => node.props.text === 'Reading your private balance');
+    await act(async () => { decoding.props.onDismiss(); });
+    expect(mockNavigation.goBack).toHaveBeenCalled();
+  });
+
+  test('builds a public send while the private balance is locked', async () => {
+    const { wallet } = createLockedWallet();
+    await render(
+      { address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC },
+      { wallet },
+    );
+
+    expect(mockSends).toHaveLength(1);
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
   });
 });

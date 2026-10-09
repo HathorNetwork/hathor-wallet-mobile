@@ -142,8 +142,8 @@ msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:101
 #: src/components/Shielded/ShieldedBalanceSplit.js:157
-#: src/screens/SendConfirmScreen.js:181
-#: src/screens/SendConfirmScreen.js:206
+#: src/screens/SendConfirmScreen.js:192
+#: src/screens/SendConfirmScreen.js:220
 #: src/shielded/receiveState.js:154
 msgid "Private transfers are not available for this wallet."
 msgstr ""
@@ -457,7 +457,7 @@ msgid "Authorize token creation"
 msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:184
-#: src/screens/SendConfirmScreen.js:329
+#: src/screens/SendConfirmScreen.js:394
 #: src/screens/TokenSwapReview.js:265
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 msgid "Building transaction"
@@ -1079,129 +1079,152 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: src/screens/SendAmountInput.js:182
-#: src/screens/SendConfirmScreen.js:420
+#: src/screens/SendConfirmScreen.js:485
 #, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:67
+#: src/screens/SendConfirmScreen.js:76
 #: src/screens/TokenSwapReview.js:364
 msgid "No fee"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:84
+#: src/screens/SendConfirmScreen.js:93
 msgid "Insufficient HTR to cover the network fee."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:87
+#: src/screens/SendConfirmScreen.js:96
 msgid "Insufficient balance to send this transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:90
+#: src/screens/SendConfirmScreen.js:99
 msgid ""
 "This amount needs more inputs than a transaction can hold. Try sending a "
 "smaller amount."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:92
+#: src/screens/SendConfirmScreen.js:101
 msgid "Failed to process transaction."
 msgstr ""
 
 #: src/components/TransactionPrivacyModal.js:67
-#: src/screens/SendConfirmScreen.js:173
+#: src/screens/SendConfirmScreen.js:184
 msgid "Payments to a private address are always private."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:205
-msgid "Your private balance is locked. Unlock it to send privately."
+#: src/components/Shielded/ShieldedBalanceSplit.js:103
+#: src/components/Shielded/ShieldedUnlockAction.js:61
+#: src/screens/SendConfirmScreen.js:270
+#: src/screens/SendConfirmScreen.js:287
+msgid "Could not unlock your private balance."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:308
+#: src/components/Shielded/ShieldedUnlockAction.js:53
+#: src/screens/SendConfirmScreen.js:297
+msgid "Enter your 6-digit pin to unlock your private balance"
+msgstr ""
+
+#: src/components/Shielded/ShieldedUnlockAction.js:54
+#: src/components/Shielded/ShieldedUnlockAction.js:64
+#: src/screens/SendConfirmScreen.js:298
+#: src/screens/SendConfirmScreen.js:505
+msgid "Unlock private balance"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:373
 #: src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr ""
 
 #: src/sagas/helpers.js:147
-#: src/screens/SendConfirmScreen.js:327
+#: src/screens/SendConfirmScreen.js:392
 #: src/screens/TokenSwapReview.js:263
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
 #: src/sagas/helpers.js:148
-#: src/screens/SendConfirmScreen.js:328
+#: src/screens/SendConfirmScreen.js:393
 #: src/screens/TokenSwapReview.js:264
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 msgid "Authorize operation"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:368
+#: src/screens/SendConfirmScreen.js:433
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendConfirmScreen.js:391
+#: src/screens/SendConfirmScreen.js:456
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:394
+#: src/screens/SendConfirmScreen.js:459
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:397
+#: src/screens/SendConfirmScreen.js:462
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:399
+#: src/screens/SendConfirmScreen.js:464
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:404
+#: src/screens/SendConfirmScreen.js:469
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:426
+#: src/screens/SendConfirmScreen.js:491
 msgid "Building your transaction"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:447
+#: src/screens/SendConfirmScreen.js:501
+msgid "Your private balance is locked. Unlock it to send privately."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:512
+msgid "Reading your private balance"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:532
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:463
+#: src/screens/SendConfirmScreen.js:548
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:485
+#: src/screens/SendConfirmScreen.js:570
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:488
+#: src/screens/SendConfirmScreen.js:573
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:493
+#: src/screens/SendConfirmScreen.js:578
 msgid "Private address"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:502
+#: src/screens/SendConfirmScreen.js:587
 msgid "**Privacy**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:516
+#: src/screens/SendConfirmScreen.js:601
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:525
+#: src/screens/SendConfirmScreen.js:610
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:532
+#: src/screens/SendConfirmScreen.js:617
 msgid "Send"
 msgstr ""
 
@@ -2264,26 +2287,12 @@ msgid_plural "${ count } private outputs are locked"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/components/Shielded/ShieldedBalanceSplit.js:103
-#: src/components/Shielded/ShieldedUnlockAction.js:61
-msgid "Could not unlock your private balance."
-msgstr ""
-
 #: src/components/Shielded/ShieldedBalanceSplit.js:160
 msgid "Some private funds could not be read."
 msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:163
 msgid "Your private balance may be incomplete."
-msgstr ""
-
-#: src/components/Shielded/ShieldedUnlockAction.js:53
-msgid "Enter your 6-digit pin to unlock your private balance"
-msgstr ""
-
-#: src/components/Shielded/ShieldedUnlockAction.js:54
-#: src/components/Shielded/ShieldedUnlockAction.js:64
-msgid "Unlock private balance"
 msgstr ""
 
 #: src/components/Reown/AdvancedErrorOptions.js:41

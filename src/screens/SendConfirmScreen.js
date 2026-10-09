@@ -38,6 +38,7 @@ import { useNavigation, useParams } from '../hooks/navigation';
 import { COLORS } from '../styles/themes';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { CheckIcon } from '../components/Icons/Check.icon';
+import { ShieldPadlockIcon } from '../components/Icons/ShieldPadlock.icon';
 import {
   PRIVACY_MODE,
   SHIELDED_PROVIDER_STATUS,
@@ -52,10 +53,18 @@ import {
   waitForWalletReady,
 } from '../utils/shieldedSend';
 import { canSendPrivately } from '../shielded/gating';
+import { SHIELDED_UNLOCK_STATUS, unlockShieldedViewIfLocked } from '../shielded/unlock';
+import { logger } from '../logger';
 import errorIcon from '../assets/images/icErrorBig.png';
+
+const log = logger('send-confirm');
 
 const PHASE = Object.freeze({
   BUILDING: 'building',
+  // A private send waits for the user to unlock the wallet's private balance with the PIN.
+  LOCKED: 'locked',
+  // The PIN unlocked the scan key, and the wallet decodes its private outputs.
+  UNLOCKING: 'unlocking',
   ERROR: 'error',
   READY: 'ready',
 });
@@ -147,6 +156,8 @@ const SendConfirmScreen = () => {
   const unmountedRef = useRef(false);
   // Stops a wait for the wallet to be ready.
   const cancelWaitRef = useRef(null);
+  // Whether the PIN screen of an unlock is open, which the locked modal would cover.
+  const [isAskingForPin, setIsAskingForPin] = useState(false);
 
   const nativeSymbol = hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
 
@@ -200,10 +211,13 @@ const SendConfirmScreen = () => {
           if (unmountedRef.current) {
             return;
           }
+          if (capability.level === 'watch' && capability.cause !== 'corrupt-key') {
+            // A PIN can unlock it: the user can, and then the send is built.
+            setPhase(PHASE.LOCKED);
+            return;
+          }
           if (capability.level !== 'full') {
-            failBuild(capability.level === 'watch' && capability.cause !== 'corrupt-key'
-              ? t`Your private balance is locked. Unlock it to send privately.`
-              : t`Private transfers are not available for this wallet.`);
+            failBuild(t`Private transfers are not available for this wallet.`);
             return;
           }
         }
@@ -236,6 +250,55 @@ const SendConfirmScreen = () => {
     }
   };
 
+  /**
+   * Unlocks the wallet's private balance with the PIN the user entered, waits until the wallet
+   * decoded the private outputs it held locked, then builds the send. The PIN goes from the PIN
+   * screen's callback to wallet-lib, and nowhere else.
+   *
+   * @param {string} pin The PIN, or the password that safe biometry keeps
+   */
+  const unlockAndBuild = async (pin) => {
+    setIsAskingForPin(false);
+    setPhase(PHASE.UNLOCKING);
+    try {
+      const result = await unlockShieldedViewIfLocked(wallet, pin);
+      if (unmountedRef.current) {
+        return;
+      }
+      if (result.status === SHIELDED_UNLOCK_STATUS.FAILED) {
+        log.error('The private balance was not unlocked for a send.', { errorCode: result.errorCode });
+        failBuild(t`Could not unlock your private balance.`);
+        return;
+      }
+      if (result.status === SHIELDED_UNLOCK_STATUS.UNLOCKED) {
+        // The walk that decodes the private outputs the wallet held locked; it never rejects.
+        await result.reprocessed;
+        if (unmountedRef.current) {
+          return;
+        }
+      }
+      setPhase(PHASE.BUILDING);
+      await build();
+    } catch (e) {
+      if (unmountedRef.current) {
+        return;
+      }
+      log.error('Failed to unlock the private balance for a send.', e);
+      failBuild(t`Could not unlock your private balance.`);
+    }
+  };
+
+  const askForUnlockPin = () => {
+    // The PIN screen opens over this screen, whose modals would cover it.
+    setIsAskingForPin(true);
+    navigation.navigate('PinScreen', {
+      cb: unlockAndBuild,
+      canCancel: true,
+      screenText: t`Enter your 6-digit pin to unlock your private balance`,
+      biometryText: t`Unlock private balance`,
+    });
+  };
+
   // Build the transaction on mount.
   useEffect(() => {
     unmountedRef.current = false;
@@ -262,6 +325,8 @@ const SendConfirmScreen = () => {
   useEffect(() => {
     const focusListener = navigation.addListener('focus', () => {
       setIsSending(false);
+      // The PIN screen of an unlock closed: if it was cancelled, the locked modal shows again.
+      setIsAskingForPin(false);
     });
 
     return focusListener;
@@ -428,6 +493,26 @@ const SendConfirmScreen = () => {
           // The build waits for the wallet where a provider is registered, which can take a
           // while (a reconnect, a decode walk): the user can leave meanwhile.
           onDismiss={providerReady ? () => navigation.goBack() : undefined}
+        />
+      )}
+
+      {phase === PHASE.LOCKED && !isAskingForPin && (
+        <FeedbackModal
+          text={t`Your private balance is locked. Unlock it to send privately.`}
+          icon={<ShieldPadlockIcon size={64} color={COLORS.textColor} />}
+          onDismiss={dismissBuildError}
+          action={(
+            <NewHathorButton title={t`Unlock private balance`} onPress={askForUnlockPin} />
+          )}
+        />
+      )}
+
+      {phase === PHASE.UNLOCKING && (
+        <FeedbackModal
+          text={t`Reading your private balance`}
+          icon={<Spinner />}
+          // Decoding the whole history can take a while: the user can leave meanwhile.
+          onDismiss={dismissBuildError}
         />
       )}
 
