@@ -17,7 +17,7 @@ Run these tests on iOS and Android release builds. The shielded UI stays behind 
 1. Repeat with the flag on.
 
 ### The Shielded Testnet preset
-1. With the flag off, go to Settings -> Developer Settings -> Network Settings and accept the risk disclaimer. Only Mainnet and Testnet are offered.
+1. With the flag off, go to Settings -> Advanced Settings -> Network Settings and accept the risk disclaimer. Only Mainnet and Testnet are offered.
 1. Turn the flag on and reopen the screen. A third card, Shielded Testnet, shows `https://node1.shielded-outputs.testnet.hathor.network/v1a/`.
 1. Tap it. The wallet reloads on the shielded testnet and the success modal shows.
 1. Change network to Testnet and back to the Shielded Testnet: both reloads succeed.
@@ -112,6 +112,11 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 1. Open a send of a fee-based token: Fees shows its network fee.
 1. With the private balance locked, Fees still shows. With the flag off, and on Mainnet and Testnet, there's no Fees row.
 
+### Settings and the other lists
+1. On any network, open Settings. Each card has a thin ring around it, and its top and bottom corners are round, whichever rows the flags show. The section titles line up with the cards' left edge, and the last row of a card has no line under it.
+1. On Mainnet, with Reown and push notifications available, General Settings lists Reown right after Security, and Push Notification last.
+1. Security, Push Notification, the Reown sessions, and the history of a token without transactions show their cards with the same ring.
+
 ### Single-address mode on the Shielded Testnet
 1. With the single-address flag on and Single Address chosen on the Testnet, switch to the Shielded Testnet. The wallet starts in multi-address mode.
 1. Open Settings -> Address Mode: Single Address is disabled, with "Single address mode is not available on this network."
@@ -189,15 +194,17 @@ With the flag on, on the Shielded Testnet:
 With the flag on, on the Shielded Testnet:
 1. In Privacy Settings, under AUDIT, tap "Export privacy keys": the export opens, and its PIN screen comes up over it at once, saying "Enter your 6-digit PIN to export the audit keys".
 1. Cancel the PIN screen: the export closes too, back to Privacy Settings. On Android, do the same with the back button.
-1. Open the export again and enter the PIN: "Read this before sharing" shows with its three paragraphs, then "Spend public key (xpub)" and "Scan private key (xpriv)" with their paths and what they let the auditor do, each masked to its first 12 and last 8 characters. A long press selects no text.
+1. Open the export again and enter the PIN: "Read this before sharing" shows with its three paragraphs, then "Spend public key (xpub)" and "Scan private key (xpriv)" with their paths and what they let the auditor do, each masked to its first 12 and last 8 characters. A long press on a key selects its text as it shows, masked.
 1. Tap "Show full key" on the scan key: the whole key shows, and the button says Hide. Tap Hide: the key is masked again.
 1. Tap Copy on the scan key: it says "Copied" for a second and a half. Paste it in another app: it is the whole key, masked or not. A wallet-lib script with the same seed reads the same keys with `storage.getSpendXPubKey()` and `storage.getScanXPrivKey(pin)`.
 1. Wait a minute and paste again: the clipboard is empty. Copy again, send the app to the background at once, and come back after more than a minute: the clipboard is empty.
+1. Without tapping Copy, show the scan key in full, long-press it and copy it with the system's menu: the clipboard has the whole key, and it is still there a minute later, since only Copy clears the clipboard after it. Note it for the security review.
 1. With the keys shown, one of them in full, open the app switcher. On iOS, its snapshot of the app shows no key. On Android, the recents thumbnail can still show the keys, the full one included, since Android takes it before the screen hides them: note it for the security review. Come back: the keys show again, masked.
 1. With the keys shown, leave the app in the background for more than 30 seconds, then unlock it: the keys still show.
 1. Repeat the export with safe biometry on: the keychain prompt comes up instead of the PIN, and the keys are the same.
 1. In a debug build, start the wallet locked: the export opens without its PIN screen, says "Unlock your private balance to export the privacy keys." and offers "Unlock private balance". Once the balance is unlocked, the export's PIN screen comes up.
 1. With a wallet whose record has no shielded keys, the export says "This wallet has no shielded keys. They are only present on wallets created after the shielded outputs feature was enabled." and asks for no PIN.
+1. In a debug build, make wallet-lib's `storage.getScanXPrivKey` throw an `Error` with a message, then export the keys: after the PIN, the export shows that message, and no key.
 1. With the export's PIN screen open, turn the flag off: the PIN screen, the export and Privacy Settings close together, back to Settings, which no longer offers Privacy. In a debug build that starts the wallet locked, do the same from the PIN screen of "Unlock private balance".
 1. On Android 13 and later, the system's clipboard overlay previews the start of a copied key: note it for the security review, and whether the keyboard keeps the key in its clipboard history after the clear.
 
