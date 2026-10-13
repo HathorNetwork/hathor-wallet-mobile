@@ -189,24 +189,139 @@ const ERROR_CODES = {
 };
 
 /**
+ * How many levels deep the arguments of a nano contract method may nest: `args` is one level, and
+ * each list, tuple, dict or SignedData value in it is one more. The argument types of nano
+ * contract methods nest only a few levels.
+ */
+const MAX_NANO_ARGUMENT_DEPTH = 32;
+
+/**
+ * The arguments of a nano contract request nest deeper than MAX_NANO_ARGUMENT_DEPTH levels.
+ */
+class NanoArgumentsTooDeepError extends Error {
+  constructor() {
+    super(`Nano contract arguments nest deeper than ${MAX_NANO_ARGUMENT_DEPTH} levels.`);
+    this.name = 'NanoArgumentsTooDeepError';
+  }
+}
+
+/**
+ * The length of the longest shielded address: it is 71 bytes, at most 97 base58 characters, and
+ * any longer string decodes to 72 bytes or more.
+ */
+const MAX_SHIELDED_ADDRESS_LENGTH = 97;
+
+/**
+ * An address field of a dApp request holds a string longer than any address: a shielded address
+ * is the longest kind, at MAX_SHIELDED_ADDRESS_LENGTH characters.
+ */
+class AddressTooLongError extends Error {
+  constructor() {
+    super(`An address of the request is longer than ${MAX_SHIELDED_ADDRESS_LENGTH} characters.`);
+    this.name = 'AddressTooLongError';
+  }
+}
+
+/**
  * Lists the strings in the arguments of a nano contract method, the keys of objects included.
  * An argument of type Address is one of them, alone or inside a list, tuple, dict or SignedData
  * argument.
  *
+ * The dApp decides how deep the arguments nest, so they are read from a worklist instead of by
+ * recursion, and only MAX_NANO_ARGUMENT_DEPTH levels deep.
+ *
  * @param {unknown} args The `args` of a nano contract request, as the dApp sent them
  * @returns {string[]}
+ * @throws {NanoArgumentsTooDeepError} When the arguments nest deeper than MAX_NANO_ARGUMENT_DEPTH
+ *   levels
  */
 function getNanoArgumentStrings(args) {
-  if (typeof args === 'string') {
-    return [args];
+  const strings = [];
+  // Each item is a value and the number of arrays and objects it is in.
+  const worklist = [[args, 0]];
+  while (worklist.length > 0) {
+    const [value, depth] = worklist.pop();
+    if (typeof value === 'string') {
+      strings.push(value);
+    } else if (value !== null && typeof value === 'object') {
+      if (depth >= MAX_NANO_ARGUMENT_DEPTH) {
+        throw new NanoArgumentsTooDeepError();
+      }
+      // The items of a list, or the keys and values of an object.
+      const items = Array.isArray(value) ? value : Object.entries(value).flat();
+      // Pushed in reverse, so the strings are listed in the order they appear in.
+      for (let i = items.length - 1; i >= 0; i -= 1) {
+        worklist.push([items[i], depth + 1]);
+      }
+    }
   }
-  if (Array.isArray(args)) {
-    return args.flatMap(getNanoArgumentStrings);
+  return strings;
+}
+
+const isNonEmptyString = (value) => typeof value === 'string' && value !== '';
+
+/**
+ * Lists the strings of a dApp request that can carry an address, read from its raw params, in
+ * two groups:
+ * - `fields`: the addresses it pays, mints or sends change and authorities to, and the addresses
+ *   of its nano contract actions. These must be addresses.
+ * - `others`: the strings of its nano contract method arguments, the oracle, and the address that
+ *   filters UTXOs. These can also hold other data.
+ *
+ * @param {Object} request The JSON-RPC request from the dApp, with `method` and `params`
+ * @returns {{ fields: string[], others: string[] }} The non-empty strings of each group
+ * @throws {NanoArgumentsTooDeepError} When its nano contract arguments nest deeper than
+ *   MAX_NANO_ARGUMENT_DEPTH levels
+ */
+function getRequestAddressStrings(request) {
+  const params = request?.params ?? {};
+  const actionAddresses = (actions) => (Array.isArray(actions) ? actions : [])
+    .flatMap((action) => [action?.address, action?.changeAddress, action?.authorityAddress]);
+
+  let fields = [];
+  let others = [];
+  switch (request?.method) {
+    case AVAILABLE_METHODS.HATHOR_SEND_TRANSACTION:
+      fields = [
+        ...(Array.isArray(params.outputs) ? params.outputs : []).map((output) => output?.address),
+        params.changeAddress,
+      ];
+      break;
+    case AVAILABLE_METHODS.HATHOR_CREATE_TOKEN:
+      fields = [
+        params.address,
+        params.change_address,
+        params.mint_authority_address,
+        params.melt_authority_address,
+      ];
+      break;
+    case AVAILABLE_METHODS.HATHOR_SEND_NANO_TX:
+      fields = actionAddresses(params.actions);
+      others = getNanoArgumentStrings(params.args);
+      break;
+    case AVAILABLE_METHODS.HATHOR_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: {
+      const createTokenOptions = params.createTokenOptions ?? {};
+      fields = [
+        params.address,
+        createTokenOptions.mintAddress,
+        createTokenOptions.changeAddress,
+        createTokenOptions.mintAuthorityAddress,
+        createTokenOptions.meltAuthorityAddress,
+        ...actionAddresses(params.data?.actions),
+      ];
+      others = getNanoArgumentStrings(params.data?.args);
+      break;
+    }
+    case AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA:
+      others = [params.oracle];
+      break;
+    case AVAILABLE_METHODS.HATHOR_GET_UTXOS:
+      others = [params.filterAddress];
+      break;
+    default:
+      break;
   }
-  if (args !== null && typeof args === 'object') {
-    return Object.entries(args).flatMap(([key, value]) => [key, ...getNanoArgumentStrings(value)]);
-  }
-  return [];
+  return { fields: fields.filter(isNonEmptyString), others: others.filter(isNonEmptyString) };
 }
 
 /**
@@ -216,57 +331,12 @@ function getNanoArgumentStrings(args) {
  *
  * @param {Object} request The JSON-RPC request from the dApp, with `method` and `params`
  * @returns {string[]} The non-empty strings found where the request can carry an address
+ * @throws {NanoArgumentsTooDeepError} When its nano contract arguments nest deeper than
+ *   MAX_NANO_ARGUMENT_DEPTH levels
  */
 export function getRequestAddresses(request) {
-  const params = request?.params ?? {};
-  const actionAddresses = (actions) => (Array.isArray(actions) ? actions : [])
-    .flatMap((action) => [action?.address, action?.changeAddress, action?.authorityAddress]);
-
-  let addresses;
-  switch (request?.method) {
-    case AVAILABLE_METHODS.HATHOR_SEND_TRANSACTION:
-      addresses = [
-        ...(Array.isArray(params.outputs) ? params.outputs : []).map((output) => output?.address),
-        params.changeAddress,
-      ];
-      break;
-    case AVAILABLE_METHODS.HATHOR_CREATE_TOKEN:
-      addresses = [
-        params.address,
-        params.change_address,
-        params.mint_authority_address,
-        params.melt_authority_address,
-      ];
-      break;
-    case AVAILABLE_METHODS.HATHOR_SEND_NANO_TX:
-      addresses = [
-        ...actionAddresses(params.actions),
-        ...getNanoArgumentStrings(params.args),
-      ];
-      break;
-    case AVAILABLE_METHODS.HATHOR_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: {
-      const createTokenOptions = params.createTokenOptions ?? {};
-      addresses = [
-        params.address,
-        createTokenOptions.mintAddress,
-        createTokenOptions.changeAddress,
-        createTokenOptions.mintAuthorityAddress,
-        createTokenOptions.meltAuthorityAddress,
-        ...actionAddresses(params.data?.actions),
-        ...getNanoArgumentStrings(params.data?.args),
-      ];
-      break;
-    }
-    case AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA:
-      addresses = [params.oracle];
-      break;
-    case AVAILABLE_METHODS.HATHOR_GET_UTXOS:
-      addresses = [params.filterAddress];
-      break;
-    default:
-      addresses = [];
-  }
-  return addresses.filter((address) => typeof address === 'string' && address !== '');
+  const { fields, others } = getRequestAddressStrings(request);
+  return [...fields, ...others];
 }
 
 /**
@@ -723,32 +793,80 @@ export function* processRequest(action) {
     // wallet-lib validates shielded addresses, but this wallet cannot pay, mint to or otherwise
     // use them. Reject the request before the rpc handler builds a transaction for it, checking
     // the addresses on the network of the wallet that would build it.
-    const requestAddresses = getRequestAddresses(params.request);
-    if (requestAddresses.length > 0) {
-      const network = wallet.getNetworkObject();
-      if (requestAddresses.some((address) => isShieldedAddress(address, network))) {
-        log.debug(`Rejecting ${params.request.method}: it has a shielded address.`);
-        yield put(setReownError());
-        yield put(setReownModal({
-          show: true,
-          type: ReownModalTypes.REQUEST_ERROR,
-          data: {
-            errorMessage: shieldedAddressNotSupportedText,
-          },
-        }));
-        yield call(() => walletKit.respondSessionRequest({
-          topic: payload.topic,
-          response: {
-            id: payload.id,
-            jsonrpc: '2.0',
-            error: {
-              code: ERROR_CODES.INVALID_PAYLOAD,
-              message: 'Shielded addresses are not supported.',
-            },
-          },
-        }));
-        return false;
+    let hasShieldedAddress = false;
+    try {
+      const { fields, others } = getRequestAddressStrings(params.request);
+      // No address is longer than a shielded one. A longer string in an address field is
+      // rejected here: the rpc handler would base58-decode it while preparing the transaction,
+      // before any prompt, in time quadratic in its length.
+      if (fields.some((address) => address.length > MAX_SHIELDED_ADDRESS_LENGTH)) {
+        throw new AddressTooLongError();
       }
+      const requestAddresses = [...fields, ...others];
+      if (requestAddresses.length > 0) {
+        const network = wallet.getNetworkObject();
+        // Decoding base58 takes time quadratic in the length of the string, and the dApp decides
+        // how long its strings are. A string longer than a shielded address is not decoded.
+        hasShieldedAddress = requestAddresses.some(
+          (address) => address.length <= MAX_SHIELDED_ADDRESS_LENGTH
+            && isShieldedAddress(address, network),
+        );
+      }
+    } catch (e) {
+      // The error handling around the rpc handler below doesn't cover this check, and
+      // WalletConnect holds back the later requests of every dApp until this one is answered.
+      log.error(`Rejecting ${params.request.method}: its addresses could not be checked.`, e);
+      // Arguments nested too deep and an address longer than any address are errors of the
+      // request. Any other failure is the wallet's: it is answered with INTERNAL_ERROR, as the
+      // unexpected errors of the rpc handler are, and reported.
+      const isInvalidPayload = e instanceof NanoArgumentsTooDeepError
+        || e instanceof AddressTooLongError;
+      if (!isInvalidPayload) {
+        yield put(onExceptionCaptured(e));
+      }
+      const errorDetails = extractErrorDetails(e);
+      yield put(setReownError(errorDetails));
+      // The modal shows its generic message, and the error details have the reason.
+      yield put(setReownModal({
+        show: true,
+        type: ReownModalTypes.REQUEST_ERROR,
+      }));
+      yield call(() => walletKit.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: isInvalidPayload ? ERROR_CODES.INVALID_PAYLOAD : ERROR_CODES.INTERNAL_ERROR,
+            message: errorDetails.message,
+          },
+        },
+      }));
+      return false;
+    }
+
+    if (hasShieldedAddress) {
+      log.debug(`Rejecting ${params.request.method}: it has a shielded address.`);
+      yield put(setReownError());
+      yield put(setReownModal({
+        show: true,
+        type: ReownModalTypes.REQUEST_ERROR,
+        data: {
+          errorMessage: shieldedAddressNotSupportedText,
+        },
+      }));
+      yield call(() => walletKit.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: ERROR_CODES.INVALID_PAYLOAD,
+            message: 'Shielded addresses are not supported.',
+          },
+        },
+      }));
+      return false;
     }
 
     // Track whether this flow shows a success screen that will dispatch the ready signal
