@@ -189,24 +189,47 @@ const ERROR_CODES = {
 };
 
 /**
+ * How many levels deep the arguments of a nano contract method may nest: `args` is one level, and
+ * each list, tuple, dict or SignedData value in it is one more. The argument types of nano
+ * contract methods nest only a few levels.
+ */
+const MAX_NANO_ARGUMENT_DEPTH = 32;
+
+/**
  * Lists the strings in the arguments of a nano contract method, the keys of objects included.
  * An argument of type Address is one of them, alone or inside a list, tuple, dict or SignedData
  * argument.
  *
+ * The dApp decides how deep the arguments nest, so they are read from a worklist instead of by
+ * recursion, and only MAX_NANO_ARGUMENT_DEPTH levels deep.
+ *
  * @param {unknown} args The `args` of a nano contract request, as the dApp sent them
  * @returns {string[]}
+ * @throws {Error} When the arguments nest deeper than MAX_NANO_ARGUMENT_DEPTH levels
  */
 function getNanoArgumentStrings(args) {
-  if (typeof args === 'string') {
-    return [args];
+  const strings = [];
+  // Each item is a value and the number of arrays and objects it is in.
+  const worklist = [[args, 0]];
+  while (worklist.length > 0) {
+    const [value, depth] = worklist.pop();
+    if (typeof value === 'string') {
+      strings.push(value);
+    } else if (value !== null && typeof value === 'object') {
+      if (depth >= MAX_NANO_ARGUMENT_DEPTH) {
+        throw new Error(
+          `Nano contract arguments nest deeper than ${MAX_NANO_ARGUMENT_DEPTH} levels.`,
+        );
+      }
+      // The items of a list, or the keys and values of an object.
+      const items = Array.isArray(value) ? value : Object.entries(value).flat();
+      // Pushed in reverse, so the strings are listed in the order they appear in.
+      for (let i = items.length - 1; i >= 0; i -= 1) {
+        worklist.push([items[i], depth + 1]);
+      }
+    }
   }
-  if (Array.isArray(args)) {
-    return args.flatMap(getNanoArgumentStrings);
-  }
-  if (args !== null && typeof args === 'object') {
-    return Object.entries(args).flatMap(([key, value]) => [key, ...getNanoArgumentStrings(value)]);
-  }
-  return [];
+  return strings;
 }
 
 /**
@@ -216,6 +239,7 @@ function getNanoArgumentStrings(args) {
  *
  * @param {Object} request The JSON-RPC request from the dApp, with `method` and `params`
  * @returns {string[]} The non-empty strings found where the request can carry an address
+ * @throws {Error} When its nano contract arguments nest deeper than MAX_NANO_ARGUMENT_DEPTH levels
  */
 export function getRequestAddresses(request) {
   const params = request?.params ?? {};
@@ -723,32 +747,62 @@ export function* processRequest(action) {
     // wallet-lib validates shielded addresses, but this wallet cannot pay, mint to or otherwise
     // use them. Reject the request before the rpc handler builds a transaction for it, checking
     // the addresses on the network of the wallet that would build it.
-    const requestAddresses = getRequestAddresses(params.request);
-    if (requestAddresses.length > 0) {
-      const network = wallet.getNetworkObject();
-      if (requestAddresses.some((address) => isShieldedAddress(address, network))) {
-        log.debug(`Rejecting ${params.request.method}: it has a shielded address.`);
-        yield put(setReownError());
-        yield put(setReownModal({
-          show: true,
-          type: ReownModalTypes.REQUEST_ERROR,
-          data: {
-            errorMessage: shieldedAddressNotSupportedText,
-          },
-        }));
-        yield call(() => walletKit.respondSessionRequest({
-          topic: payload.topic,
-          response: {
-            id: payload.id,
-            jsonrpc: '2.0',
-            error: {
-              code: ERROR_CODES.INVALID_PAYLOAD,
-              message: 'Shielded addresses are not supported.',
-            },
-          },
-        }));
-        return false;
+    let hasShieldedAddress = false;
+    try {
+      const requestAddresses = getRequestAddresses(params.request);
+      if (requestAddresses.length > 0) {
+        const network = wallet.getNetworkObject();
+        hasShieldedAddress = requestAddresses.some(
+          (address) => isShieldedAddress(address, network),
+        );
       }
+    } catch (e) {
+      // The error handling around the rpc handler below doesn't cover this check, and
+      // WalletConnect holds back the later requests of every dApp until this one is answered.
+      log.error(`Rejecting ${params.request.method}: its addresses could not be checked.`, e);
+      const errorDetails = extractErrorDetails(e);
+      yield put(setReownError(errorDetails));
+      // The modal shows its generic message, and the error details have the reason.
+      yield put(setReownModal({
+        show: true,
+        type: ReownModalTypes.REQUEST_ERROR,
+      }));
+      yield call(() => walletKit.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: ERROR_CODES.INVALID_PAYLOAD,
+            message: errorDetails.message,
+          },
+        },
+      }));
+      return false;
+    }
+
+    if (hasShieldedAddress) {
+      log.debug(`Rejecting ${params.request.method}: it has a shielded address.`);
+      yield put(setReownError());
+      yield put(setReownModal({
+        show: true,
+        type: ReownModalTypes.REQUEST_ERROR,
+        data: {
+          errorMessage: shieldedAddressNotSupportedText,
+        },
+      }));
+      yield call(() => walletKit.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: ERROR_CODES.INVALID_PAYLOAD,
+            message: 'Shielded addresses are not supported.',
+          },
+        },
+      }));
+      return false;
     }
 
     // Track whether this flow shows a success screen that will dispatch the ready signal
