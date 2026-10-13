@@ -127,7 +127,7 @@ msgstr ""
 msgid "New transaction received"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:510 src/utils/shieldedSend.js:207
+#: src/screens/SendConfirmScreen.js:506 src/utils/shieldedSend.js:207
 msgid "Your private balance is locked. Unlock it to send privately."
 msgstr ""
 
@@ -191,7 +191,7 @@ msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:101
 #: src/components/Shielded/ShieldedBalanceSplit.js:157
-#: src/screens/SendConfirmScreen.js:206 src/screens/SendConfirmScreen.js:238
+#: src/screens/SendConfirmScreen.js:198 src/screens/SendConfirmScreen.js:230
 #: src/shielded/receiveState.js:154
 msgid "Private transfers are not available for this wallet."
 msgstr ""
@@ -502,7 +502,7 @@ msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:233 src/screens/SendConfirmScreen.js:412
+#: src/screens/CreateTokenConfirm.js:233 src/screens/SendConfirmScreen.js:408
 #: src/screens/TokenSwapReview.js:265
 msgid "Building transaction"
 msgstr ""
@@ -531,7 +531,7 @@ msgid "Deposit"
 msgstr "Депозит"
 
 #: src/components/Shielded/FeeBreakdown.js:96
-#: src/screens/CreateTokenConfirm.js:326
+#: src/screens/CreateTokenConfirm.js:326 src/screens/SendConfirmScreen.js:635
 msgid "Network fee"
 msgstr ""
 
@@ -1133,72 +1133,72 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:198 src/screens/SendConfirmScreen.js:494
+#: src/screens/SendAmountInput.js:198 src/screens/SendConfirmScreen.js:490
 #, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:78 src/screens/TokenSwapReview.js:364
+#: src/screens/SendConfirmScreen.js:77 src/screens/TokenSwapReview.js:364
 msgid "No fee"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:104
+#: src/screens/SendConfirmScreen.js:103
 msgid "Insufficient HTR to cover the network fee."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:107 src/screens/SendConfirmScreen.js:114
+#: src/screens/SendConfirmScreen.js:106 src/screens/SendConfirmScreen.js:113
 msgid "Insufficient balance to send this transaction."
 msgstr ""
 
 #.  HTR pays the fees: for HTR, they count with the amount.
-#: src/screens/SendConfirmScreen.js:113
+#: src/screens/SendConfirmScreen.js:112
 msgid "Insufficient HTR to cover this transaction and its fees."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:117
+#: src/screens/SendConfirmScreen.js:116
 msgid ""
 "This amount needs more inputs than a transaction can hold. Try sending a "
 "smaller amount."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:119
+#: src/screens/SendConfirmScreen.js:118
 msgid "Failed to process transaction."
 msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:103
 #: src/components/Shielded/ShieldedUnlockAction.js:61
-#: src/screens/SendConfirmScreen.js:288 src/screens/SendConfirmScreen.js:305
+#: src/screens/SendConfirmScreen.js:280 src/screens/SendConfirmScreen.js:297
 msgid "Could not unlock your private balance."
 msgstr ""
 
 #: src/components/Shielded/ShieldedUnlockAction.js:53
-#: src/screens/SendConfirmScreen.js:315
+#: src/screens/SendConfirmScreen.js:307
 msgid "Enter your 6-digit pin to unlock your private balance"
 msgstr ""
 
 #: src/components/Shielded/ShieldedUnlockAction.js:54
 #: src/components/Shielded/ShieldedUnlockAction.js:64
-#: src/screens/SendConfirmScreen.js:316 src/screens/SendConfirmScreen.js:514
+#: src/screens/SendConfirmScreen.js:308 src/screens/SendConfirmScreen.js:510
 msgid "Unlock private balance"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:391 src/screens/TokenSwapReview.js:220
+#: src/screens/SendConfirmScreen.js:387 src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:410
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:406
 #: src/screens/TokenSwapReview.js:263
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:411
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:407
 #: src/screens/TokenSwapReview.js:264
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
-#: src/screens/SendConfirmScreen.js:442
+#: src/screens/SendConfirmScreen.js:438
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
@@ -1206,70 +1206,87 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendConfirmScreen.js:465
+#: src/screens/SendConfirmScreen.js:461
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:468
+#: src/screens/SendConfirmScreen.js:464
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:471
+#: src/screens/SendConfirmScreen.js:467
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:473
+#: src/screens/SendConfirmScreen.js:469
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:478
+#: src/screens/SendConfirmScreen.js:474
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:500
+#: src/screens/SendConfirmScreen.js:496
 msgid "Building your transaction"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:521
+#: src/screens/SendConfirmScreen.js:517
 msgid "Reading your private balance"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:541
+#: src/screens/SendConfirmScreen.js:537
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ amountAndToken }** был подтвержден"
 
-#: src/screens/SendConfirmScreen.js:557
+#: src/screens/SendConfirmScreen.js:553
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:579
-msgid "**Transaction summary**"
+#: src/screens/SendConfirmScreen.js:565
+msgid "Transaction fees"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:582
-msgid "**To**"
+#: src/screens/SendConfirmScreen.js:567
+msgid ""
+"This transaction includes a network fee and additional privacy fees. Each "
+"shielded output incurs a separate privacy fee. Tap to see the breakdown."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:587
-msgid "Private address"
+#: src/screens/SendConfirmScreen.js:590
+msgid "Transaction summary"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:596
-msgid "**Privacy**"
+#: src/screens/SendConfirmScreen.js:594
+msgid "To"
 msgstr ""
 
+#: src/components/Shielded/FeeBreakdown.js:62
 #: src/screens/SendConfirmScreen.js:610
-msgid "**Network Fee**"
+msgid "Fees"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:619
-msgid "**Total**"
+#: src/screens/SendConfirmScreen.js:644
+#, javascript-format
+msgid "Privacy fee (${ shieldedCount } output)"
+msgid_plural "Privacy fee (${ shieldedCount } outputs)"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: src/components/Reown/CreateTokenRequest.js:130
+#: src/components/Reown/TransactionFees.js:55
+#: src/screens/SendConfirmScreen.js:661 src/screens/TokenSwapReview.js:360
+msgid "Network Fee"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:671
+msgid "Total"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:626
+#: src/screens/SendConfirmScreen.js:680
 msgid "Send"
 msgstr "Отправить"
 
@@ -1374,12 +1391,6 @@ msgstr ""
 
 #: src/screens/TokenSwapReview.js:299
 msgid "Your swap was successful"
-msgstr ""
-
-#: src/components/Reown/CreateTokenRequest.js:130
-#: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:360
-msgid "Network Fee"
 msgstr ""
 
 #: src/screens/TokenSwapReview.js:372
@@ -2132,18 +2143,6 @@ msgstr "Новый адрес"
 msgid "Share"
 msgstr "Поделиться"
 
-#: src/components/SendFeeSummary.js:59
-msgid "Transaction fees"
-msgstr ""
-
-#: src/components/SendFeeSummary.js:61
-msgid ""
-"A transaction pays a network fee, and a privacy fee for each private output "
-"it creates, the wallet's private change included. A send that spends private "
-"funds keeps its change private, so it can pay a privacy fee even when the "
-"payment is public."
-msgstr ""
-
 #: src/components/SendTransactionFeedbackModal.js:215
 msgid "Propagating transaction to the network."
 msgstr ""
@@ -2286,10 +2285,6 @@ msgstr ""
 #: src/components/TxDetailsModal.js:229
 msgid "Amount"
 msgstr "Количество"
-
-#: src/components/Shielded/FeeBreakdown.js:62
-msgid "Fees"
-msgstr ""
 
 #: src/components/Shielded/FeeBreakdown.js:63
 msgid "Privacy fee"

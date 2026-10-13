@@ -7,7 +7,6 @@
 
 import React, {
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -21,14 +20,12 @@ import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
+import BackdropModal from '../components/BackdropModal';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
-import SendFeeSummary from '../components/SendFeeSummary';
-import { getPrivacyModeDetail } from '../components/PrivacyModeCard';
 import TooltipModal from '../components/TooltipModal';
 import FeedbackModal from '../components/FeedbackModal';
 import Spinner from '../components/Spinner';
 import {
-  getDisplayAmountFormat,
   isShieldedAddress,
   isTokenNFT,
   renderValue,
@@ -39,6 +36,8 @@ import { useNavigation, useParams } from '../hooks/navigation';
 import { COLORS } from '../styles/themes';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { CheckIcon } from '../components/Icons/Check.icon';
+import { ChevronDownIcon } from '../components/Icons/ChevronDown.icon';
+import { ChevronUpIcon } from '../components/Icons/ChevronUp.icon';
 import { ShieldPadlockIcon } from '../components/Icons/ShieldPadlock.icon';
 import {
   PRIVACY_MODE,
@@ -54,7 +53,7 @@ import {
   privacyModeToShieldedMode,
   waitForWalletReady,
 } from '../utils/shieldedSend';
-import { canSendPrivately } from '../shielded/gating';
+import { isShieldedEnvironment } from '../shielded/gating';
 import { SHIELDED_UNLOCK_STATUS, unlockShieldedViewIfLocked } from '../shielded/unlock';
 import { logger } from '../logger';
 import errorIcon from '../assets/images/icErrorBig.png';
@@ -131,9 +130,8 @@ const SendConfirmScreen = () => {
   const providerReady = useSelector(
     (state) => state.shielded?.providerStatus === SHIELDED_PROVIDER_STATUS.READY,
   );
-  const privateSendsAvailable = useSelector(canSendPrivately);
-  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
-  const amountFormat = useSelector(getDisplayAmountFormat);
+  // Whether the shielded UI shows: elsewhere the fees break down into the network fee alone.
+  const showsPrivacyFee = useSelector(isShieldedEnvironment);
 
   const navigation = useNavigation();
   const params = useParams();
@@ -147,16 +145,6 @@ const SendConfirmScreen = () => {
   } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
   const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
-  // The build checks the recipient again, and refuses what it can't pay.
-  const recipientIsShielded = useMemo(() => {
-    try {
-      return isShieldedAddress(address, new hathorLib.Network(networkName));
-    } catch (e) {
-      return false;
-    }
-  }, [address, networkName]);
-  // The send's privacy shows where the user could pick it, and for every private send.
-  const showsPrivacy = privateSendsAvailable || privacyMode !== PRIVACY_MODE.PUBLIC;
 
   const [phase, setPhase] = useState(PHASE.BUILDING);
   const [sendTx, setSendTx] = useState(null);
@@ -165,6 +153,10 @@ const SendConfirmScreen = () => {
   const [buildError, setBuildError] = useState(null);
   const [modal, setModal] = useState(null);
   const [isTooltipShown, setIsTooltipShown] = useState(false);
+  // Whether the Fees row shows the network fee and the privacy fee it adds up.
+  const [isFeesExpanded, setIsFeesExpanded] = useState(false);
+  // Whether the sheet that explains the fees shows.
+  const [isFeesInfoShown, setIsFeesInfoShown] = useState(false);
   // Disables the Send button from the moment it's tapped until the screen is
   // interactive again, closing the window between the PinScreen dismissal and
   // the feedback modal render where the button would otherwise be tappable.
@@ -350,10 +342,14 @@ const SendConfirmScreen = () => {
     return focusListener;
   }, [navigation]);
 
-  // The whole fee of the send. The Network Fee row shows it when no part of it is a privacy fee;
-  // otherwise SendFeeSummary breaks it down.
+  // The whole fee of the send, once it is built. Over zero, the Fees row shows it and expands
+  // into the network fee and the privacy fee; at zero, the Network Fee row says there is none.
   const networkFee = phase === PHASE.READY && fees ? fees.total : null;
-  const paysPrivacyFee = fees !== null && fees.privacy > 0n;
+  // How many shielded outputs the send has, each paying a privacy fee.
+  const shieldedCount = fees?.privateOutputs ?? 0;
+  // Where the shielded UI doesn't show, the privacy fee counts in the network fee.
+  const privacyFee = showsPrivacyFee && fees ? fees.privacy : 0n;
+  const networkOnlyFee = privacyFee > 0n ? fees.network : networkFee;
 
   /**
    * Sign and mine the pre-built transaction.
@@ -558,6 +554,21 @@ const SendConfirmScreen = () => {
         onLinkPress={handleTooltipLinkPress}
       />
 
+      {/* The sheet of the Fees row's info icon, which explains the network and privacy fees. */}
+      <BackdropModal
+        visible={isFeesInfoShown}
+        onDismiss={() => setIsFeesInfoShown(false)}
+        animationType='slide'
+        position='bottom'
+      >
+        <View style={styles.feeInfoSheet}>
+          <Text style={styles.feeInfoTitle}>{t`Transaction fees`}</Text>
+          <Text style={styles.feeInfoBody}>
+            {t`This transaction includes a network fee and additional privacy fees. Each shielded output incurs a separate privacy fee. Tap to see the breakdown.`}
+          </Text>
+        </View>
+      </BackdropModal>
+
       {phase === PHASE.READY && (
         <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
           <View style={{ gap: 30 }}>
@@ -576,38 +587,78 @@ const SendConfirmScreen = () => {
               </InputLabel>
             </View>
             <View>
-              <TextFmt style={{ marginBottom: 10 }}>{t`**Transaction summary**`}</TextFmt>
+              <Text style={styles.summaryHeading}>{t`Transaction summary`}</Text>
               <View style={styles.summaryContainer}>
-                <View style={styles.summaryItem}>
-                  <TextFmt>{t`**To**`}</TextFmt>
-                  {recipientIsShielded ? (
-                    <View style={styles.recipient}>
-                      <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
-                      <View style={styles.privateBadge}>
-                        <Text style={styles.privateBadgeText}>{t`Private address`}</Text>
-                      </View>
-                    </View>
-                  ) : (
-                    <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
-                  )}
+                {/* A hairline divides the recipient from the fees. */}
+                <View style={[styles.summaryItem, styles.summaryItemDivider]}>
+                  <Text style={styles.summaryLabel}>{t`To`}</Text>
+                  <Text style={styles.summaryValue}>
+                    {address.substr(0, 7)}...{address.substr(-7)}
+                  </Text>
                 </View>
-                {showsPrivacy && (
-                  <View style={styles.summaryItem}>
-                    <TextFmt>{t`**Privacy**`}</TextFmt>
-                    <Text>{getPrivacyModeDetail(privacyMode)?.title}</Text>
-                  </View>
-                )}
-                {paysPrivacyFee ? (
-                  <SendFeeSummary
-                    fees={fees}
-                    symbol={nativeSymbol}
-                    decimalPlaces={decimalPlaces}
-                    amountFormat={amountFormat}
-                  />
+
+                {/* A send with fees has a Fees row: a tap anywhere on it expands it into the
+                    network fee and the privacy fee. A send without fees has a Network Fee row. */}
+                {networkFee > 0n ? (
+                  <>
+                    <TouchableOpacity
+                      style={styles.summaryItem}
+                      onPress={() => setIsFeesExpanded((expanded) => !expanded)}
+                      activeOpacity={0.6}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={styles.summaryLabel}>{t`Fees`}</Text>
+                        <TouchableOpacity
+                          onPress={() => setIsFeesInfoShown(true)}
+                          style={{ marginLeft: 6 }}
+                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        >
+                          <InfoCircleIcon size={16} />
+                        </TouchableOpacity>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={styles.summaryValue}>
+                          {renderValue(networkFee, false)} {nativeSymbol}
+                        </Text>
+                        <View style={{ marginLeft: 6 }}>
+                          {isFeesExpanded
+                            ? <ChevronUpIcon size={16} color={COLORS.textColor} />
+                            : <ChevronDownIcon size={16} color={COLORS.textColor} />}
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+
+                    {isFeesExpanded && (
+                      <>
+                        {networkOnlyFee > 0n && (
+                          <View style={styles.summarySubItem}>
+                            <Text style={styles.summarySubLabel}>{t`Network fee`}</Text>
+                            <Text style={styles.summarySubValue}>
+                              {renderValue(networkOnlyFee, false)} {nativeSymbol}
+                            </Text>
+                          </View>
+                        )}
+                        {privacyFee > 0n && (
+                          <View style={styles.summarySubItem}>
+                            <Text style={styles.summarySubLabel}>
+                              {ngettext(
+                                msgid`Privacy fee (${shieldedCount} output)`,
+                                `Privacy fee (${shieldedCount} outputs)`,
+                                shieldedCount,
+                              )}
+                            </Text>
+                            <Text style={styles.summarySubValue}>
+                              {renderValue(privacyFee, false)} {nativeSymbol}
+                            </Text>
+                          </View>
+                        )}
+                      </>
+                    )}
+                  </>
                 ) : (
                   <View style={styles.summaryItem}>
-                    <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
-                      <TextFmt>{t`**Network Fee**`}</TextFmt>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={styles.summaryLabel}>{t`Network Fee`}</Text>
                       <TouchableOpacity onPress={handleFeeInfoPress} style={{ marginLeft: 4 }}>
                         <InfoCircleIcon size={16} />
                       </TouchableOpacity>
@@ -615,9 +666,12 @@ const SendConfirmScreen = () => {
                     {renderNetworkFeeValue()}
                   </View>
                 )}
-                <View style={styles.summaryItem}>
-                  <TextFmt>{t`**Total**`}</TextFmt>
-                  <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} ${nativeSymbol}` : ''}`}</Text>
+
+                <View style={[styles.summaryItem, styles.totalRow]}>
+                  <Text style={styles.totalLabel}>{t`Total`}</Text>
+                  <Text style={styles.totalValue}>
+                    {`${amountAndToken}${networkFee > 0n ? ` + ${renderValue(networkFee, false)} ${nativeSymbol}` : ''}`}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -637,6 +691,13 @@ const SendConfirmScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  // The heading of the summary, on the page above its card.
+  summaryHeading: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.textColor,
+    marginBottom: 10,
+  },
   summaryContainer: {
     zIndex: 1,
     borderRadius: 20,
@@ -650,19 +711,51 @@ const styles = StyleSheet.create({
     padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  recipient: {
-    alignItems: 'flex-end',
-    gap: 4,
+  // The rows of the card have a muted label and a regular value; only the total is bold.
+  summaryLabel: {
+    fontSize: 14,
+    color: COLORS.textColorShadow,
   },
-  privateBadge: {
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    backgroundColor: COLORS.lowContrastDetail,
+  summaryValue: {
+    fontSize: 14,
+    color: COLORS.textColor,
   },
-  privateBadgeText: {
-    fontSize: 12,
+  summaryItemDivider: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: COLORS.borderColor,
+  },
+  // The fees the Fees row expands into: smaller, and muted on both sides.
+  summarySubItem: {
+    width: '100%',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  summarySubLabel: {
+    fontSize: 13,
+    color: COLORS.textColorShadow,
+  },
+  summarySubValue: {
+    fontSize: 13,
+    color: COLORS.textColorShadow,
+  },
+  totalRow: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: COLORS.borderColor,
+    marginTop: 4,
+  },
+  totalLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.textColor,
+  },
+  totalValue: {
+    fontSize: 14,
+    fontWeight: '700',
     color: COLORS.textColor,
   },
   nofee: {
@@ -672,6 +765,24 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     backgroundColor: '#EEFBEB',
     alignItems: 'center',
+  },
+  feeInfoSheet: {
+    padding: 24,
+    paddingBottom: 32,
+    backgroundColor: COLORS.backgroundColor,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  feeInfoTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textColor,
+    marginBottom: 8,
+  },
+  feeInfoBody: {
+    fontSize: 14,
+    color: COLORS.textColor,
+    lineHeight: 20,
   },
 });
 

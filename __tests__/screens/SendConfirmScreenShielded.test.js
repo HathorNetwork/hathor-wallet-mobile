@@ -71,7 +71,7 @@ jest.mock('@hathor/wallet-lib', () => ({
 /* eslint-disable import/first */
 import React from 'react';
 import { errors } from '@hathor/wallet-lib';
-import { TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
@@ -98,6 +98,8 @@ import {
 import { STORE } from '../../src/store';
 import NavigationService from '../../src/NavigationService';
 import { PortalProvider } from '../../src/components/Portal';
+import TextFmt from '../../src/components/TextFmt';
+import { COLORS } from '../../src/styles/themes';
 import SendConfirmScreen from '../../src/screens/SendConfirmScreen';
 /* eslint-enable import/first */
 
@@ -474,31 +476,70 @@ describe('SendConfirmScreen fees and summary', () => {
     token: HTR,
     privacyMode: PRIVACY_MODE.HIDE_AMOUNT,
   };
-  const expandFees = (renderer) => act(async () => {
-    renderer.root.find((node) => node.props.privateOutputs !== undefined && node.props.total)
-      .findAllByType(TouchableOpacity)[0].props.onPress();
-  });
+  const PUBLIC_SEND = {
+    address: P2PKH,
+    amount: 100n,
+    token: HTR,
+    privacyMode: PRIVACY_MODE.PUBLIC,
+  };
+  const FEES_INFO = 'This transaction includes a network fee and additional privacy fees. Each shielded output incurs a separate privacy fee. Tap to see the breakdown.';
 
-  test('breaks the fee of a send that pays a privacy fee down', async () => {
-    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 3n }] };
+  const textNode = (renderer, text) => renderer.root.find(
+    (node) => node.type === 'Text' && node.props.children === text,
+  );
+  const styleOf = (node) => StyleSheet.flatten(node.props.style);
+  // The Fees row, which expands into the fees it adds up.
+  const feesRow = (renderer) => renderer.root.findAllByType(TouchableOpacity).find(
+    (node) => node.findAll((child) => child.type === 'Text' && child.props.children === 'Fees')
+      .length > 0,
+  );
+  const expandFees = (renderer) => act(async () => { feesRow(renderer).props.onPress(); });
+
+  test('breaks the fees of a send that pays a privacy fee down', async () => {
+    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 4n }] };
     mockSendSetup.fullTxData = { shieldedOutputs: [{ shieldedMode: 1 }, { shieldedMode: 2 }] };
     const { renderer, texts } = await render(PRIVATE_SEND);
 
-    expect(texts()).toEqual(expect.arrayContaining(['Fees', '0.03 HTR', '1.00 HTR + 0.03 HTR']));
+    expect(texts()).toEqual(expect.arrayContaining(['Fees', '0.04 HTR', '1.00 HTR + 0.04 HTR']));
     expect(texts()).not.toContain('Network Fee');
+    expect(texts()).not.toContain('Network fee');
 
     await expandFees(renderer);
-    expect(texts()).toEqual(expect.arrayContaining(['Privacy fee', '2 private outputs']));
+    expect(texts()).toEqual(expect.arrayContaining([
+      'Network fee', '0.01 HTR', 'Privacy fee (2 outputs)', '0.03 HTR',
+    ]));
+
+    await expandFees(renderer);
     expect(texts()).not.toContain('Network fee');
   });
 
-  test('keeps the network fee row of a send that pays no privacy fee', async () => {
-    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 1n }] };
-    const { texts } = await render({
-      address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC,
-    });
+  test('says the count of a single private output', async () => {
+    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 2n }] };
+    mockSendSetup.fullTxData = { shieldedOutputs: [{ shieldedMode: 2 }] };
+    const { renderer, texts } = await render(PRIVATE_SEND);
 
-    expect(texts()).toEqual(expect.arrayContaining(['Network Fee', '1.00 HTR + 0.01 HTR']));
+    await expandFees(renderer);
+    expect(texts()).toContain('Privacy fee (1 output)');
+    // The whole fee is the privacy fee.
+    expect(texts()).not.toContain('Network fee');
+  });
+
+  test('shows the Fees row of a send that pays only a network fee', async () => {
+    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 1n }] };
+    const { renderer, texts } = await render(PUBLIC_SEND);
+
+    expect(texts()).toEqual(expect.arrayContaining(['Fees', '0.01 HTR', '1.00 HTR + 0.01 HTR']));
+    expect(texts()).not.toContain('Network Fee');
+
+    await expandFees(renderer);
+    expect(texts()).toContain('Network fee');
+    expect(texts().some((text) => text.startsWith('Privacy fee'))).toBe(false);
+  });
+
+  test('says there is no fee for a send without fees', async () => {
+    const { texts } = await render(PUBLIC_SEND);
+
+    expect(texts()).toEqual(expect.arrayContaining(['Network Fee', 'No fee', '1.00 HTR']));
     expect(texts()).not.toContain('Fees');
   });
 
@@ -506,35 +547,69 @@ describe('SendConfirmScreen fees and summary', () => {
     // Its change is private, so it pays a privacy fee for it, and the split it needs.
     mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 2n }] };
     mockSendSetup.fullTxData = { shieldedOutputs: [{ shieldedMode: 1 }, { shieldedMode: 1 }] };
-    const { texts } = await render({
-      address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC,
-    }, { flag: false });
+    const { renderer, texts } = await render(PUBLIC_SEND);
 
     expect(texts()).toEqual(expect.arrayContaining(['Fees', '0.02 HTR']));
+    await expandFees(renderer);
+    expect(texts()).toContain('Privacy fee (2 outputs)');
   });
 
-  test('shows the privacy mode, and that the recipient is a private address', async () => {
+  test('shows no privacy fee while the shielded UI is off: the network fee is the whole fee', async () => {
+    // The provider is registered on the shielded testnet whether or not the flag is on, so a
+    // public send can spend private funds and pay a privacy fee for its private change.
+    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 3n }] };
+    mockSendSetup.fullTxData = { shieldedOutputs: [{ shieldedMode: 1 }, { shieldedMode: 1 }] };
+    const { renderer, texts } = await render(PUBLIC_SEND, { flag: false });
+
+    expect(texts()).toEqual(expect.arrayContaining(['Fees', '0.03 HTR', '1.00 HTR + 0.03 HTR']));
+    await expandFees(renderer);
+    expect(texts()).toEqual(expect.arrayContaining(['Network fee', '0.03 HTR']));
+    expect(texts().some((text) => text.startsWith('Privacy fee'))).toBe(false);
+  });
+
+  test('explains the fees in a sheet from the info icon of the Fees row', async () => {
+    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 3n }] };
+    mockSendSetup.fullTxData = { shieldedOutputs: [{ shieldedMode: 1 }, { shieldedMode: 2 }] };
+    const { renderer, texts } = await render(PRIVATE_SEND);
+    expect(texts()).not.toContain(FEES_INFO);
+
+    const info = feesRow(renderer).find((node) => node.props.hitSlop && node.props.onPress);
+    await act(async () => { info.props.onPress(); });
+    await settle();
+
+    expect(texts()).toEqual(expect.arrayContaining(['Transaction fees', FEES_INFO]));
+  });
+
+  test('heads the summary card, with muted labels and a bold total', async () => {
+    const { renderer, texts } = await render(PUBLIC_SEND);
+
+    expect(texts()).toContain('Transaction summary');
+    expect(styleOf(textNode(renderer, 'Transaction summary')).fontWeight).toBe('700');
+    expect(renderer.root.findAllByType(TextFmt).map((node) => node.props.children))
+      .not.toContain('**Transaction summary**');
+
+    expect(styleOf(textNode(renderer, 'To')).color).toBe(COLORS.textColorShadow);
+    expect(styleOf(textNode(renderer, 'Network Fee')).color).toBe(COLORS.textColorShadow);
+    expect(styleOf(textNode(renderer, 'Total')).fontWeight).toBe('700');
+    expect(styleOf(textNode(renderer, '1.00 HTR')).fontWeight).toBe('700');
+  });
+
+  test('shows neither the privacy mode nor a private address badge', async () => {
+    mockSendSetup.feeHeader = { entries: [{ tokenIndex: 0, amount: 1n }] };
+    mockSendSetup.fullTxData = { shieldedOutputs: [{ shieldedMode: 1 }] };
     const { texts } = await render(PRIVATE_SEND);
 
-    expect(texts()).toEqual(expect.arrayContaining(['Privacy', 'Hide amount', 'Private address']));
-  });
-
-  test('shows Public for a send to a legacy address where private sends are available', async () => {
-    const { texts } = await render({
-      address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC,
-    });
-
-    expect(texts()).toEqual(expect.arrayContaining(['Privacy', 'Public']));
+    expect(texts()).toContain(`${SHIELDED.substr(0, 7)}...${SHIELDED.substr(-7)}`);
+    expect(texts()).not.toContain('Privacy');
+    expect(texts()).not.toContain('Hide amount');
     expect(texts()).not.toContain('Private address');
   });
 
-  test('shows no privacy while the shielded UI is off', async () => {
-    const { texts } = await render({
-      address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC,
-    }, { flag: false });
+  test('shows no privacy mode for a public send either', async () => {
+    const { texts } = await render(PUBLIC_SEND);
 
     expect(texts()).not.toContain('Privacy');
-    expect(texts()).not.toContain('Private address');
+    expect(texts()).not.toContain('Public');
   });
 
   test('fails a send whose fee is in another token, and releases its UTXOs', async () => {
