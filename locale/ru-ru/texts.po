@@ -1721,21 +1721,21 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-#: src/sagas/wallet.js:1137
+#: src/sagas/wallet.js:1160
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1151
+#: src/sagas/wallet.js:1174
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1161
+#: src/sagas/wallet.js:1184
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:1177
+#: src/sagas/wallet.js:1200
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 

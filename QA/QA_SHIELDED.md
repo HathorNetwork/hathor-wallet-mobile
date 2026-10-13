@@ -7,7 +7,7 @@ Run these tests on iOS and Android release builds. The shielded UI stays behind 
 ### Before you start
 1. Set up a wallet that can send shielded outputs on the Shielded Testnet, for example a wallet-lib script with `@hathor/ct-crypto-node`, and fund it from the faucet.
 1. With the flag on, Receive shows the wallet's new (shielded) address. With the flag off, the app shows none: to pay the mobile wallet privately, restore its seed in a wallet-lib script with a crypto provider and read its shielded address, for example with `getCurrentAddress({}, { legacy: false })`.
-1. On Unleash, the flag targets the network the wallet reports as `network`: `testnet` for the Testnet preset and `testnet-shielded-outputs` for the Shielded Testnet preset. Enable it for both to see the preset from the Testnet.
+1. On Unleash, the flag targets the network the wallet reports as `network`: `testnet-shielded-outputs` for the Shielded Testnet. With the flag on only there, the Shielded Testnet preset doesn't show on Mainnet or Testnet. Reach the Shielded Testnet through a custom network with `https://node1.shielded-outputs.testnet.hathor.network/v1a/`, whose node reports `testnet-shielded-outputs`. To check the preset itself, also turn the flag on for your device on Testnet.
 1. Read the app's logs: on iOS with `log stream --predicate 'process == "HathorMobile"'` on the simulator, or Console.app for a device; on Android with `adb logcat ReactNativeJS:V`. Release builds on iOS only log errors.
 
 ### Mainnet and Testnet have no shielded features
