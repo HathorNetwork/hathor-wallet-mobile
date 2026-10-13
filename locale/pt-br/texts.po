@@ -1993,7 +1993,6 @@ msgid "Max"
 msgstr "Máx"
 
 #: src/components/AmountInputAccessory.js:105
-#: src/components/TransactionPrivacyModal.js:62
 msgid "Done"
 msgstr "Ok"
 
@@ -2170,41 +2169,35 @@ msgstr "Criar"
 msgid "Private"
 msgstr "Privado"
 
-#.  A fully shielded output hides its token only among the tokens the tx spends, and the
-#.  fee always spends HTR: an HTR output stays known as HTR.
-#: src/components/PrivacyModeCard.js:41
-msgid ""
-"Amount hidden. The token is hidden among the tokens this send spends, but "
-"never when it is HTR."
-msgstr ""
-"Valor oculto. O token fica oculto entre os tokens que este envio gasta, mas "
-"nunca quando é HTR."
+#: src/components/PrivacyModeCard.js:39
+msgid "Token and amount hidden"
+msgstr "Token e valor ocultos"
 
-#: src/components/PrivacyModeCard.js:47
+#: src/components/PrivacyModeCard.js:45
 msgid "Hide amount"
 msgstr "Ocultar valor"
 
-#: src/components/PrivacyModeCard.js:48
+#: src/components/PrivacyModeCard.js:46
 msgid "Token visible, amount hidden"
 msgstr "Token visível, valor oculto"
 
-#: src/components/PrivacyModeCard.js:54 src/components/ReceiveMyAddress.js:45
+#: src/components/PrivacyModeCard.js:52 src/components/ReceiveMyAddress.js:45
 #: src/components/Shielded/ShieldedBalanceSplit.js:150
 msgid "Public"
 msgstr "Público"
 
-#: src/components/PrivacyModeCard.js:55
+#: src/components/PrivacyModeCard.js:53
 msgid "Token and amount visible"
 msgstr "Token e valor visíveis"
 
-#: src/components/PrivacyModeCard.js:89
-msgid "No privacy fee unless the send spends private funds"
-msgstr "Sem taxa de privacidade, a menos que o envio gaste fundos privados"
+#: src/components/PrivacyModeCard.js:83
+msgid "No privacy fees"
+msgstr "Sem taxas de privacidade"
 
-#: src/components/PrivacyModeCard.js:92
+#: src/components/PrivacyModeCard.js:86
 #, javascript-format
-msgid "Fee: ${ fee } ${ symbol } per private output"
-msgstr "Taxa: ${ fee } ${ symbol } por saída privada"
+msgid "Fee: ${ fee } HTR per output"
+msgstr "Taxa: ${ fee } HTR por saída"
 
 #: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"
@@ -2321,13 +2314,21 @@ msgstr ""
 "Encontramos tokens vinculados aos seus endereços que não estão em sua "
 "carteira ainda."
 
-#: src/components/TransactionPrivacyModal.js:53
+#: src/components/TransactionPrivacyModal.js:55
 msgid "Transaction privacy"
 msgstr "Privacidade da transação"
 
-#: src/components/TransactionPrivacyModal.js:54
-msgid "Choose what this transaction hides."
-msgstr "Escolha o que esta transação oculta."
+#: src/components/TransactionPrivacyModal.js:57
+msgid "Choose what's hidden **only for this transaction**"
+msgstr "Escolha o que fica oculto **somente nesta transação**"
+
+#: src/components/TransactionPrivacyModal.js:66
+msgid "You can change your default on advanced settings"
+msgstr "Você pode alterar o seu padrão nas configurações avançadas"
+
+#: src/components/TransactionPrivacyModal.js:70
+msgid "DONE"
+msgstr "OK"
 
 #: src/components/TransactionStatusLabel.js:69
 msgid "Executed"
@@ -3295,6 +3296,16 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid ""
+#~ "Amount hidden. The token is hidden among the tokens this send spends, but "
+#~ "never when it is HTR."
+#~ msgstr ""
+#~ "Valor oculto. O token fica oculto entre os tokens que este envio gasta, "
+#~ "mas nunca quando é HTR."
+
+#~ msgid "No privacy fee unless the send spends private funds"
+#~ msgstr "Sem taxa de privacidade, a menos que o envio gaste fundos privados"
 
 #~ msgid "Payments to a private address are always private."
 #~ msgstr "Pagamentos para um endereço privado são sempre privados."

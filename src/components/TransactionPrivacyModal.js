@@ -11,18 +11,20 @@ import { t } from 'ttag';
 
 import BackdropModal from './BackdropModal';
 import NewHathorButton from './NewHathorButton';
+import TextFmt from './TextFmt';
 import PrivacyModeCard from './PrivacyModeCard';
 import { COLORS } from '../styles/themes';
 
 /**
- * Bottom sheet that picks the privacy mode of one send. The choice applies when the user taps
- * Done; until then it stays in the sheet.
+ * Bottom sheet that picks the privacy mode of one send, and says the default can be changed in
+ * the advanced settings. The choice applies when the user taps DONE; until then it stays in the
+ * sheet.
  *
  * @param {Object} props
  * @param {boolean} props.visible Whether the sheet shows
  * @param {function(): void} props.onDismiss Called when the user dismisses it
  * @param {string} props.selectedMode The send's mode, one of PRIVACY_MODE
- * @param {function(string): void} props.onConfirm Called with the chosen mode on Done
+ * @param {function(string): void} props.onConfirm Called with the chosen mode on DONE
  */
 const TransactionPrivacyModal = ({
   visible,
@@ -51,17 +53,22 @@ const TransactionPrivacyModal = ({
     >
       <View style={styles.container}>
         <Text style={styles.title}>{t`Transaction privacy`}</Text>
-        <Text style={styles.subtitle}>{t`Choose what this transaction hides.`}</Text>
+        <TextFmt style={styles.subtitle}>
+          {t`Choose what's hidden **only for this transaction**`}
+        </TextFmt>
 
         <PrivacyModeCard
           selectedMode={localMode}
           onSelect={setLocalMode}
         />
 
+        <Text style={styles.footerText}>
+          {t`You can change your default on advanced settings`}
+        </Text>
+
         <NewHathorButton
-          title={t`Done`}
+          title={t`DONE`}
           onPress={() => onConfirm(localMode)}
-          style={styles.done}
         />
       </View>
     </BackdropModal>
@@ -96,8 +103,13 @@ const styles = StyleSheet.create({
     color: COLORS.textColorShadow,
     marginBottom: 24,
   },
-  done: {
-    marginTop: 20,
+  footerText: {
+    fontSize: 12,
+    color: COLORS.textColorShadow,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 20,
   },
 });
 

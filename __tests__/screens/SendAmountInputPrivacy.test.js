@@ -157,7 +157,7 @@ async function render(address, {
     await act(async () => {
       renderer.root.findAllByType(Switch)[row].props.onValueChange(true);
     });
-    await press('Done');
+    await press('DONE');
   };
   return {
     renderer,

@@ -1909,7 +1909,6 @@ msgid "Max"
 msgstr ""
 
 #: src/components/AmountInputAccessory.js:105
-#: src/components/TransactionPrivacyModal.js:62
 msgid "Done"
 msgstr ""
 
@@ -2081,38 +2080,34 @@ msgstr ""
 msgid "Private"
 msgstr ""
 
-#.  A fully shielded output hides its token only among the tokens the tx spends, and the
-#.  fee always spends HTR: an HTR output stays known as HTR.
-#: src/components/PrivacyModeCard.js:41
-msgid ""
-"Amount hidden. The token is hidden among the tokens this send spends, but "
-"never when it is HTR."
+#: src/components/PrivacyModeCard.js:39
+msgid "Token and amount hidden"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:47
+#: src/components/PrivacyModeCard.js:45
 msgid "Hide amount"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:48
+#: src/components/PrivacyModeCard.js:46
 msgid "Token visible, amount hidden"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:54 src/components/ReceiveMyAddress.js:45
+#: src/components/PrivacyModeCard.js:52 src/components/ReceiveMyAddress.js:45
 #: src/components/Shielded/ShieldedBalanceSplit.js:150
 msgid "Public"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:55
+#: src/components/PrivacyModeCard.js:53
 msgid "Token and amount visible"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:89
-msgid "No privacy fee unless the send spends private funds"
+#: src/components/PrivacyModeCard.js:83
+msgid "No privacy fees"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:92
+#: src/components/PrivacyModeCard.js:86
 #, javascript-format
-msgid "Fee: ${ fee } ${ symbol } per private output"
+msgid "Fee: ${ fee } HTR per output"
 msgstr ""
 
 #: src/components/PublicExplorerListButton.js:17
@@ -2224,12 +2219,20 @@ msgstr ""
 msgid "We found tokens linked to your address that are not yet in your wallet."
 msgstr ""
 
-#: src/components/TransactionPrivacyModal.js:53
+#: src/components/TransactionPrivacyModal.js:55
 msgid "Transaction privacy"
 msgstr ""
 
-#: src/components/TransactionPrivacyModal.js:54
-msgid "Choose what this transaction hides."
+#: src/components/TransactionPrivacyModal.js:57
+msgid "Choose what's hidden **only for this transaction**"
+msgstr ""
+
+#: src/components/TransactionPrivacyModal.js:66
+msgid "You can change your default on advanced settings"
+msgstr ""
+
+#: src/components/TransactionPrivacyModal.js:70
+msgid "DONE"
 msgstr ""
 
 #: src/components/TransactionStatusLabel.js:69

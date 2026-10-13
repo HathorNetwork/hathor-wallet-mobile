@@ -16,7 +16,7 @@ import { EyeOffSlashIcon } from './Icons/EyeOffSlash.icon';
 import { EyeIcon } from './Icons/Eye.icon';
 import { COLORS } from '../styles/themes';
 import { getDisplayAmountFormat, renderValue } from '../utils';
-import { DEFAULT_TOKEN, PRIVACY_MODE } from '../constants';
+import { PRIVACY_MODE } from '../constants';
 
 const {
   FEE_PER_AMOUNT_SHIELDED_OUTPUT,
@@ -36,9 +36,7 @@ export function getPrivacyModeDetails() {
       mode: PRIVACY_MODE.PRIVATE,
       Icon: ShieldPadlockIcon,
       title: t`Private`,
-      // A fully shielded output hides its token only among the tokens the tx spends, and the
-      // fee always spends HTR: an HTR output stays known as HTR.
-      description: t`Amount hidden. The token is hidden among the tokens this send spends, but never when it is HTR.`,
+      description: t`Token and amount hidden`,
       feePerOutput: FEE_PER_FULL_SHIELDED_OUTPUT,
     },
     {
@@ -70,8 +68,7 @@ export function getPrivacyModeDetail(mode) {
 
 /**
  * The privacy modes a send can pick, one row each, with a switch for the selected one. Each row
- * shows the privacy fee of the mode's outputs in the network's native token. A send that spends
- * private funds keeps its change private, so even a Public send can pay a privacy fee.
+ * shows the privacy fee, in HTR, that each output of the mode pays.
  *
  * @param {Object} props
  * @param {string} props.selectedMode One of PRIVACY_MODE
@@ -80,16 +77,13 @@ export function getPrivacyModeDetail(mode) {
 const PrivacyModeCard = ({ selectedMode, onSelect }) => {
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
   const amountFormat = useSelector(getDisplayAmountFormat);
-  const symbol = useSelector(
-    (state) => state.serverInfo?.native_token?.symbol ?? DEFAULT_TOKEN.symbol,
-  );
 
   const feeLabel = (feePerOutput) => {
     if (feePerOutput === null) {
-      return t`No privacy fee unless the send spends private funds`;
+      return t`No privacy fees`;
     }
     const fee = renderValue(feePerOutput, false, decimalPlaces, amountFormat);
-    return t`Fee: ${fee} ${symbol} per private output`;
+    return t`Fee: ${fee} HTR per output`;
   };
 
   const rows = getPrivacyModeDetails();
