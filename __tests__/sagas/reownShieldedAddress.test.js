@@ -18,7 +18,7 @@ jest.mock('@hathor/hathor-rpc-handler', () => ({
 
 /* eslint-disable import/first */
 import { runSaga } from 'redux-saga';
-import { Network } from '@hathor/wallet-lib';
+import { Address, Network } from '@hathor/wallet-lib';
 import { handleRpcRequest } from '@hathor/hathor-rpc-handler';
 import { processRequest } from '../../src/sagas/reown';
 import { types } from '../../src/actions';
@@ -277,5 +277,69 @@ describe('processRequest with shielded addresses', () => {
         error: { code: INVALID_PAYLOAD, message: expect.any(String) },
       }),
     }));
+  });
+});
+
+describe('processRequest with strings too long to be addresses', () => {
+  // Decoding base58 takes time quadratic in the length of the string, and the dApp decides how
+  // long its strings are.
+  const LONG_STRING = 'z'.repeat(40000);
+
+  // The lengths of the strings that wallet-lib decoded from base58.
+  const decodedLengths = (decode) => decode.mock.contexts.map((address) => address.base58.length);
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test.each([
+    ['an output address', (string) => ({
+      method: 'htr_sendTransaction',
+      params: { network: 'testnet', outputs: [{ address: string, value: '5' }] },
+    })],
+    ['a nano contract argument', (string) => ({
+      method: 'htr_sendNanoContractTx', params: { ...nanoParams, args: [string] },
+    })],
+  ])('passes a 40,000-character string as %s to the rpc handler without decoding it', async (_field, buildRequest) => {
+    handleRpcRequest.mockResolvedValue({ type: 'test-response' });
+    const decode = jest.spyOn(Address.prototype, 'decode');
+
+    await runProcessRequest(buildRequest(LONG_STRING));
+
+    expect(decodedLengths(decode)).not.toContain(LONG_STRING.length);
+    expect(handleRpcRequest).toHaveBeenCalledTimes(1);
+    expect(walletKit.respondSessionRequest).toHaveBeenCalledWith(expect.objectContaining({
+      response: expect.objectContaining({ result: { type: 'test-response' } }),
+    }));
+  });
+
+  test('rejects a shielded address that comes after a 40,000-character string', async () => {
+    const decode = jest.spyOn(Address.prototype, 'decode');
+    const request = {
+      method: 'htr_sendNanoContractTx',
+      params: { ...nanoParams, args: [LONG_STRING, SHIELDED] },
+    };
+
+    const dispatched = await runProcessRequest(request);
+
+    expect(decodedLengths(decode)).not.toContain(LONG_STRING.length);
+    expect(handleRpcRequest).not.toHaveBeenCalled();
+    expect(walletKit.respondSessionRequest).toHaveBeenCalledTimes(1);
+    expect(walletKit.respondSessionRequest).toHaveBeenCalledWith({
+      topic: TOPIC,
+      response: {
+        id: REQUEST_ID,
+        jsonrpc: '2.0',
+        error: { code: INVALID_PAYLOAD, message: expect.any(String) },
+      },
+    });
+    expect(dispatched).toContainEqual({
+      type: types.SET_REOWN_MODAL,
+      payload: {
+        show: true,
+        type: 'RequestError',
+        data: { errorMessage: shieldedAddressNotSupportedText },
+      },
+    });
   });
 });

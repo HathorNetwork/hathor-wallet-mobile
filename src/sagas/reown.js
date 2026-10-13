@@ -196,6 +196,12 @@ const ERROR_CODES = {
 const MAX_NANO_ARGUMENT_DEPTH = 32;
 
 /**
+ * The length of the longest shielded address: it is 71 bytes, at most 97 base58 characters, and
+ * any longer string decodes to 72 bytes or more.
+ */
+const MAX_SHIELDED_ADDRESS_LENGTH = 97;
+
+/**
  * Lists the strings in the arguments of a nano contract method, the keys of objects included.
  * An argument of type Address is one of them, alone or inside a list, tuple, dict or SignedData
  * argument.
@@ -752,8 +758,11 @@ export function* processRequest(action) {
       const requestAddresses = getRequestAddresses(params.request);
       if (requestAddresses.length > 0) {
         const network = wallet.getNetworkObject();
+        // Decoding base58 takes time quadratic in the length of the string, and the dApp decides
+        // how long its strings are. A string longer than a shielded address is not decoded.
         hasShieldedAddress = requestAddresses.some(
-          (address) => isShieldedAddress(address, network),
+          (address) => address.length <= MAX_SHIELDED_ADDRESS_LENGTH
+            && isShieldedAddress(address, network),
         );
       }
     } catch (e) {
