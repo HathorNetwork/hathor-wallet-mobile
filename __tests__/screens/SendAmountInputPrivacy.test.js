@@ -32,6 +32,7 @@ import {
   setFeatureToggles,
   setFullNodeNetworkName,
   setServerInfo,
+  setUseWalletService,
   shieldedCapabilityUpdate,
   shieldedProviderUpdate,
   shieldedUnlockStatusUpdate,
@@ -90,13 +91,16 @@ afterEach(async () => {
 
 /**
  * Renders the amount screen of an HTR send to the address, for a seed wallet on the shielded
- * testnet with a ready provider, and a balance of 2^41 base units. `progress` is where the
- * unlock of the private balance stands, if one runs.
+ * testnet with a ready provider, and a balance of 2^41 base units, unless the options say
+ * otherwise. `progress` is where the unlock of the private balance stands, if one runs.
  */
 async function render(address, {
   flag = true,
   level = capability('full'),
   progress = null,
+  providerStatus = SHIELDED_PROVIDER_STATUS.READY,
+  fullNodeNetworkName = FULL_NETWORK_SHIELDED_TESTNET,
+  useWalletService = false,
 } = {}) {
   mockParams = { address };
   const actions = [];
@@ -111,8 +115,9 @@ async function render(address, {
     ...FEATURE_TOGGLE_DEFAULTS,
     [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag,
   }));
-  store.dispatch(setFullNodeNetworkName(FULL_NETWORK_SHIELDED_TESTNET));
-  store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
+  store.dispatch(setUseWalletService(useWalletService));
+  store.dispatch(setFullNodeNetworkName(fullNodeNetworkName));
+  store.dispatch(shieldedProviderUpdate({ status: providerStatus }));
   store.dispatch(shieldedCapabilityUpdate(level));
   store.dispatch(tokenFetchBalanceSuccess(DEFAULT_TOKEN.uid, { available: 2n ** 41n, locked: 0n }));
   if (progress) {
@@ -193,6 +198,35 @@ describe('SendAmountInput layout', () => {
 describe('SendAmountInput with private sends', () => {
   test('shows no privacy mode while the shielded UI is off, and sends in public', async () => {
     const { selector, renderer, enterAmount, next } = await render(P2PKH, { flag: false });
+
+    expect(selector()).toEqual([]);
+    expect(renderer.root.findAllByType(TransactionPrivacyModal)).toEqual([]);
+
+    await enterAmount('1.00', 100n);
+    await next();
+    expect(mockNavigation.navigate).toHaveBeenCalledWith(
+      ...confirmParams(P2PKH, 100n, PRIVACY_MODE.PUBLIC),
+    );
+  });
+
+  test.each([
+    ['on the testnet', {
+      fullNodeNetworkName: 'testnet',
+      providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+      level: capability('none', { cause: null }),
+    }],
+    ['on the wallet-service facade', {
+      useWalletService: true,
+      providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+      level: capability('none', { cause: null }),
+    }],
+    ['where the crypto provider failed', {
+      providerStatus: SHIELDED_PROVIDER_STATUS.FAILED,
+      level: capability('none', { cause: null }),
+    }],
+    ['for a scan key no PIN can unlock', { level: capability('watch', { cause: 'corrupt-key' }) }],
+  ])('shows no privacy mode %s, and sends in public', async (_label, options) => {
+    const { selector, renderer, enterAmount, next } = await render(P2PKH, options);
 
     expect(selector()).toEqual([]);
     expect(renderer.root.findAllByType(TransactionPrivacyModal)).toEqual([]);
