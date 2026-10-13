@@ -156,7 +156,7 @@ class MainScreen extends React.Component {
         amountFormat={this.props.amountFormat}
         decimalPlaces={this.props.decimalPlaces}
         wallet={this.props.wallet}
-        showFees={this.props.shieldedEnvironment}
+        showPrivacyFee={this.props.shieldedEnvironment}
         nativeSymbol={this.props.nativeSymbol}
       />
     );

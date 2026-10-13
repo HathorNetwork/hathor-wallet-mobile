@@ -110,7 +110,9 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 1. Open that send's details: Fees shows between Date & Time and Transaction ID. Tap it: it expands into Network fee and Privacy fee, which add up to the explorer's fee for the tx.
 1. Open a received tx with shielded outputs: Fees shows the fees its sender paid.
 1. Open a send of a fee-based token: Fees shows its network fee.
-1. With the private balance locked, Fees still shows. With the flag off, and on Mainnet and Testnet, there's no Fees row.
+1. With the private balance locked, open the send that spent private funds: Fees still expands into Network fee and Privacy fee.
+1. With the flag off, open the same txs: Fees shows the whole fee, and expands into Network fee alone.
+1. On Mainnet and Testnet, with the wallet on the fullnode facade, open a send of a fee-based token: Fees shows its fee, and expands into Network fee alone. On the wallet-service facade there's no Fees row: the tx that wallet-lib reads there has no fees.
 
 ### Single-address mode on the Shielded Testnet
 1. With the single-address flag on and Single Address chosen on the Testnet, switch to the Shielded Testnet. The wallet starts in multi-address mode.

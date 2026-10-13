@@ -77,7 +77,8 @@ function nativeFeesTotal(fees) {
  * them, so this asks the fullnode. It is null for a tx with no HTR fee above zero, and when the
  * request fails, which is logged.
  *
- * @param {HathorWallet} wallet A fullnode-facade wallet
+ * @param {HathorWallet|HathorWalletServiceWallet} wallet On the wallet-service facade, the tx
+ *   that wallet-lib reads from the fullnode leaves the fees out, so they are null there.
  * @param {string} txId
  * @param {bigint} privacyFee The privacy fee of the tx's shielded outputs
  * @returns {Promise<{ total: bigint, network: bigint, privacy: bigint }|null>}
