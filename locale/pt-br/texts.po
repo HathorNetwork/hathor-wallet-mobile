@@ -77,7 +77,7 @@ msgstr "CRIAR TOKEN DE DEPÓSITO"
 msgid "CREATE FEE TOKEN"
 msgstr "CRIAR TOKEN DE TAXA"
 
-#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:90
+#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:95
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:857
 msgid "CREATE TOKEN"
@@ -506,7 +506,7 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 msgid "Next"
 msgstr "Próximo"
 
-#: src/screens/CreateTokenConfirm.js:32
+#: src/screens/CreateTokenConfirm.js:34
 msgid ""
 "You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
 "deposit."
@@ -514,7 +514,7 @@ msgstr ""
 "Você escolheu criar um **Token Baseado em Depósito**, que requer um depósito "
 "de 1% em HTR."
 
-#: src/screens/CreateTokenConfirm.js:34
+#: src/screens/CreateTokenConfirm.js:36
 msgid ""
 "You chose to create a **Fee-Based Token**, so a small fee will be applied to "
 "each future transaction of this token."
@@ -522,59 +522,59 @@ msgstr ""
 "Você escolheu criar um **Token com Taxa**, então uma pequena taxa será "
 "aplicada a cada transação futura deste token."
 
-#: src/screens/CreateTokenConfirm.js:157
+#: src/screens/CreateTokenConfirm.js:173
 msgid "Creating token"
 msgstr "Criando um token"
 
-#: src/screens/CreateTokenConfirm.js:163
+#: src/screens/CreateTokenConfirm.js:179
 msgid "Building the transaction"
 msgstr "Criando a transação"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:181
+#: src/screens/CreateTokenConfirm.js:197
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:182
+#: src/screens/CreateTokenConfirm.js:198
 msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:408
-#: src/screens/TokenSwapReview.js:265
+#: src/screens/CreateTokenConfirm.js:200 src/screens/SendConfirmScreen.js:408
+#: src/screens/TokenSwapReview.js:271
 msgid "Building transaction"
 msgstr "Criando transação"
 
-#: src/screens/CreateTokenConfirm.js:225
+#: src/screens/CreateTokenConfirm.js:241
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr "**${ name }** criado com sucesso"
 
-#: src/screens/CreateTokenConfirm.js:242
+#: src/screens/CreateTokenConfirm.js:258
 msgid "Amount of ${ name }"
 msgstr "Quantidade de ${ name }"
 
-#: src/screens/CreateTokenConfirm.js:256
+#: src/screens/CreateTokenConfirm.js:272
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:262 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:278 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:269
+#: src/screens/CreateTokenConfirm.js:285
 msgid "Deposit"
 msgstr "Depósito"
 
 #: src/components/Shielded/FeeBreakdown.js:96
-#: src/screens/CreateTokenConfirm.js:277 src/screens/SendConfirmScreen.js:635
+#: src/screens/CreateTokenConfirm.js:293 src/screens/SendConfirmScreen.js:635
 msgid "Network fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/CreateTokenConfirm.js:286
+#: src/screens/CreateTokenConfirm.js:302
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -1191,7 +1191,7 @@ msgstr[1] "${ amountAndToken } disponíveis"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:77 src/screens/TokenSwapReview.js:364
+#: src/screens/SendConfirmScreen.js:77 src/screens/TokenSwapReview.js:370
 msgid "No fee"
 msgstr "Sem taxa"
 
@@ -1237,19 +1237,19 @@ msgstr "Digite seu PIN de 6 dígitos para desbloquear seu saldo privado"
 msgid "Unlock private balance"
 msgstr "Desbloquear saldo privado"
 
-#: src/screens/SendConfirmScreen.js:387 src/screens/TokenSwapReview.js:220
+#: src/screens/SendConfirmScreen.js:387 src/screens/TokenSwapReview.js:226
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:406
-#: src/screens/TokenSwapReview.js:263
+#: src/screens/TokenSwapReview.js:269
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:407
-#: src/screens/TokenSwapReview.js:264
+#: src/screens/TokenSwapReview.js:270
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -1333,7 +1333,7 @@ msgstr[1] "Taxa de Privacidade (${ shieldedCount } saídas)"
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/SendConfirmScreen.js:661 src/screens/TokenSwapReview.js:360
+#: src/screens/SendConfirmScreen.js:661 src/screens/TokenSwapReview.js:366
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
@@ -1437,19 +1437,19 @@ msgstr "Ocorreu um erro ao carregar o protocolo de troca de tokens."
 msgid "Loading Token Swap"
 msgstr "Carregando troca de tokens"
 
-#: src/screens/TokenSwapReview.js:275
+#: src/screens/TokenSwapReview.js:281
 msgid "REVIEW TOKEN SWAP"
 msgstr "REVISAR TROCA DE TOKENS"
 
-#: src/screens/TokenSwapReview.js:281
+#: src/screens/TokenSwapReview.js:287
 msgid "Building the swap transaction for your review"
 msgstr "Criando transação de swap para ser revisada"
 
-#: src/screens/TokenSwapReview.js:299
+#: src/screens/TokenSwapReview.js:305
 msgid "Your swap was successful"
 msgstr "Sua troca foi bem-sucedida"
 
-#: src/screens/TokenSwapReview.js:372
+#: src/screens/TokenSwapReview.js:378
 msgid "SWAP"
 msgstr "TROCAR"
 

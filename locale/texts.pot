@@ -71,7 +71,7 @@ msgid "CREATE FEE TOKEN"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:36
-#: src/screens/CreateTokenConfirm.js:90
+#: src/screens/CreateTokenConfirm.js:95
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94
 #: src/utils.js:857
@@ -475,74 +475,74 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:32
+#: src/screens/CreateTokenConfirm.js:34
 msgid ""
 "You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
 "deposit."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:34
+#: src/screens/CreateTokenConfirm.js:36
 msgid ""
 "You chose to create a **Fee-Based Token**, so a small fee will be applied "
 "to each future transaction of this token."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:157
+#: src/screens/CreateTokenConfirm.js:173
 msgid "Creating token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:163
+#: src/screens/CreateTokenConfirm.js:179
 msgid "Building the transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:181
+#: src/screens/CreateTokenConfirm.js:197
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 msgid "Enter your 6-digit pin to create your token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:182
+#: src/screens/CreateTokenConfirm.js:198
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 msgid "Authorize token creation"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:184
+#: src/screens/CreateTokenConfirm.js:200
 #: src/screens/SendConfirmScreen.js:408
-#: src/screens/TokenSwapReview.js:265
+#: src/screens/TokenSwapReview.js:271
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:225
+#: src/screens/CreateTokenConfirm.js:241
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:242
+#: src/screens/CreateTokenConfirm.js:258
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:256
+#: src/screens/CreateTokenConfirm.js:272
 msgid "Token name"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:262
+#: src/screens/CreateTokenConfirm.js:278
 #: src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:269
+#: src/screens/CreateTokenConfirm.js:285
 msgid "Deposit"
 msgstr ""
 
 #: src/components/Shielded/FeeBreakdown.js:96
-#: src/screens/CreateTokenConfirm.js:277
+#: src/screens/CreateTokenConfirm.js:293
 #: src/screens/SendConfirmScreen.js:635
 msgid "Network fee"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:286
+#: src/screens/CreateTokenConfirm.js:302
 msgid "Create token"
 msgstr ""
 
@@ -1148,7 +1148,7 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
 #: src/screens/SendConfirmScreen.js:77
-#: src/screens/TokenSwapReview.js:364
+#: src/screens/TokenSwapReview.js:370
 msgid "No fee"
 msgstr ""
 
@@ -1196,20 +1196,20 @@ msgid "Unlock private balance"
 msgstr ""
 
 #: src/screens/SendConfirmScreen.js:387
-#: src/screens/TokenSwapReview.js:220
+#: src/screens/TokenSwapReview.js:226
 msgid "Your transfer is being processed"
 msgstr ""
 
 #: src/sagas/helpers.js:147
 #: src/screens/SendConfirmScreen.js:406
-#: src/screens/TokenSwapReview.js:263
+#: src/screens/TokenSwapReview.js:269
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
 #: src/sagas/helpers.js:148
 #: src/screens/SendConfirmScreen.js:407
-#: src/screens/TokenSwapReview.js:264
+#: src/screens/TokenSwapReview.js:270
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 msgid "Authorize operation"
 msgstr ""
@@ -1292,7 +1292,7 @@ msgstr[1] ""
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
 #: src/screens/SendConfirmScreen.js:661
-#: src/screens/TokenSwapReview.js:360
+#: src/screens/TokenSwapReview.js:366
 msgid "Network Fee"
 msgstr ""
 
@@ -1397,19 +1397,19 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:275
+#: src/screens/TokenSwapReview.js:281
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:281
+#: src/screens/TokenSwapReview.js:287
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:299
+#: src/screens/TokenSwapReview.js:305
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:372
+#: src/screens/TokenSwapReview.js:378
 msgid "SWAP"
 msgstr ""
 
