@@ -691,7 +691,7 @@ msgid "Enter your 6-digit pin to export the privacy keys"
 msgstr ""
 
 #: src/screens/ExportPrivacyKeys.js:234
-#: src/screens/PrivacySettings.js:87
+#: src/screens/PrivacySettings.js:94
 msgid "Export privacy keys"
 msgstr ""
 
@@ -1000,21 +1000,19 @@ msgstr ""
 msgid "Biometry failed or canceled."
 msgstr ""
 
-#: src/screens/PrivacySettings.js:67
+#: src/screens/PrivacySettings.js:69
 msgid "PRIVACY SETTINGS"
 msgstr ""
 
-#: src/screens/PrivacySettings.js:72
-msgid ""
-"The default applies to your sends to private addresses. You can change it "
-"for each send."
+#: src/screens/PrivacySettings.js:77
+msgid "You can change your default anytime, or switch per transaction when sending."
 msgstr ""
 
-#: src/screens/PrivacySettings.js:75
-msgid "DEFAULT FOR SENDS TO PRIVATE ADDRESSES"
+#: src/screens/PrivacySettings.js:80
+msgid "TRANSACTION DEFAULTS"
 msgstr ""
 
-#: src/screens/PrivacySettings.js:84
+#: src/screens/PrivacySettings.js:89
 msgid "AUDIT"
 msgstr ""
 
@@ -2213,49 +2211,47 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:51
+#: src/components/PrivacyModeCard.js:50
 msgid "Private"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:55
-#.  A fully shielded output hides its token only among the tokens the tx spends, and the
-#.  fee always spends HTR: an HTR output stays known as HTR.
-msgid ""
-"Amount hidden on new sends to private addresses. The token is hidden among "
-"the tokens each send spends, but never when it is HTR."
+#: src/components/PrivacyModeCard.js:52
+msgid "Token and amount hidden on all new transactions"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:56
-#.  A fully shielded output hides its token only among the tokens the tx spends, and the
-#.  fee always spends HTR: an HTR output stays known as HTR.
+#: src/components/PrivacyModeCard.js:53
 msgid "Token and amount hidden"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:62
+#: src/components/PrivacyModeCard.js:59
 msgid "Hide amount"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:64
-msgid "Token visible, amount hidden on new sends to private addresses"
+#: src/components/PrivacyModeCard.js:61
+msgid "Token visible, amount hidden on all new transactions"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:65
+#: src/components/PrivacyModeCard.js:62
 msgid "Token visible, amount hidden"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:71
+#: src/components/PrivacyModeCard.js:68
 msgid "Public"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:72
+#: src/components/PrivacyModeCard.js:70
+msgid "Token and amount visible on all new transactions"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:71
 msgid "Token and amount visible"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:108
+#: src/components/PrivacyModeCard.js:107
 msgid "No privacy fees"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:111
+#: src/components/PrivacyModeCard.js:110
 #, javascript-format
 msgid "Fee: ${ fee } HTR per output"
 msgstr ""

@@ -37,8 +37,7 @@ export const PRIVACY_MODE_CARD_VARIANT = {
  * privacy fee each of its outputs pays (null for Public, whose outputs pay none).
  *
  * @param {string} [variant] One of PRIVACY_MODE_CARD_VARIANT, PER_SEND by default. The DEFAULT
- *   descriptions of Private and Hide amount say that the mode applies to new sends to private
- *   addresses; Public has none of its own.
+ *   descriptions say that the mode applies to all new transactions.
  * @returns {{ mode: string, Icon: Function, title: string, description: string,
  *   feePerOutput: bigint|null }[]}
  */
@@ -49,10 +48,8 @@ export function getPrivacyModeDetails(variant = PRIVACY_MODE_CARD_VARIANT.PER_SE
       mode: PRIVACY_MODE.PRIVATE,
       Icon: ShieldPadlockIcon,
       title: t`Private`,
-      // A fully shielded output hides its token only among the tokens the tx spends, and the
-      // fee always spends HTR: an HTR output stays known as HTR.
       description: isDefault
-        ? t`Amount hidden on new sends to private addresses. The token is hidden among the tokens each send spends, but never when it is HTR.`
+        ? t`Token and amount hidden on all new transactions`
         : t`Token and amount hidden`,
       feePerOutput: FEE_PER_FULL_SHIELDED_OUTPUT,
     },
@@ -61,7 +58,7 @@ export function getPrivacyModeDetails(variant = PRIVACY_MODE_CARD_VARIANT.PER_SE
       Icon: EyeOffSlashIcon,
       title: t`Hide amount`,
       description: isDefault
-        ? t`Token visible, amount hidden on new sends to private addresses`
+        ? t`Token visible, amount hidden on all new transactions`
         : t`Token visible, amount hidden`,
       feePerOutput: FEE_PER_AMOUNT_SHIELDED_OUTPUT,
     },
@@ -69,7 +66,9 @@ export function getPrivacyModeDetails(variant = PRIVACY_MODE_CARD_VARIANT.PER_SE
       mode: PRIVACY_MODE.PUBLIC,
       Icon: EyeIcon,
       title: t`Public`,
-      description: t`Token and amount visible`,
+      description: isDefault
+        ? t`Token and amount visible on all new transactions`
+        : t`Token and amount visible`,
       feePerOutput: null,
     },
   ];

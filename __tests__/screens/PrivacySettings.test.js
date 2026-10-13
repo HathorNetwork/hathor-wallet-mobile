@@ -7,7 +7,7 @@
 
 import { jest, describe, test, expect, afterEach } from '@jest/globals';
 import React from 'react';
-import { Switch } from 'react-native';
+import { Image, Switch, TouchableOpacity } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
@@ -112,23 +112,25 @@ async function render({ flag = true, level = 'full', saved = null } = {}) {
 }
 
 describe('PrivacySettings', () => {
-  test('offers the three modes as the default of sends', async () => {
+  test('offers the three modes as the default of all new transactions', async () => {
     const { texts, switches } = await render();
 
-    expect(texts()).toEqual(expect.arrayContaining([
+    expect(texts()).toEqual([
       'PRIVACY SETTINGS',
-      'The default applies to your sends to private addresses. You can change it for each send.',
-      'DEFAULT FOR SENDS TO PRIVATE ADDRESSES',
+      'You can change your default anytime, or switch per transaction when sending.',
+      'TRANSACTION DEFAULTS',
       'Private',
-      'Amount hidden on new sends to private addresses. The token is hidden among the tokens each send spends, but never when it is HTR.',
+      'Token and amount hidden on all new transactions',
       'Fee: 0.02 HTR per output',
       'Hide amount',
-      'Token visible, amount hidden on new sends to private addresses',
+      'Token visible, amount hidden on all new transactions',
       'Fee: 0.01 HTR per output',
       'Public',
-      'Token and amount visible',
+      'Token and amount visible on all new transactions',
       'No privacy fees',
-    ]));
+      'AUDIT',
+      'Export privacy keys',
+    ]);
     // Private, Hide amount, then Public, the default when none is saved.
     expect(DEFAULT_PRIVACY_MODE).toBe(PRIVACY_MODE.PUBLIC);
     expect(switches().map((node) => node.props.value)).toEqual([false, false, true]);
@@ -187,9 +189,19 @@ describe('PrivacySettings', () => {
 });
 
 describe('PrivacySettings and the key export', () => {
-  const exportRows = (renderer) => renderer.root.findAll(
-    (node) => node.props.title === 'Export privacy keys' && typeof node.props.onPress === 'function',
+  // The export's row: a pressable row with its title and a chevron.
+  const exportRows = (renderer) => renderer.root.findAllByType(TouchableOpacity).filter(
+    (row) => row.findAll(
+      (node) => node.type === 'Text' && node.props.children === 'Export privacy keys',
+    ).length > 0,
   );
+
+  test('shows the export as a row with a chevron, under AUDIT', async () => {
+    const { renderer } = await render();
+
+    const [row] = exportRows(renderer);
+    expect(row.findAllByType(Image)).toHaveLength(1);
+  });
 
   test('opens the export of the privacy keys, with no params', async () => {
     const { renderer, texts, navigation } = await render();

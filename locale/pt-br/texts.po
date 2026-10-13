@@ -727,7 +727,7 @@ msgstr "Copiar"
 msgid "Enter your 6-digit pin to export the privacy keys"
 msgstr "Digite seu PIN de 6 dígitos para exportar as chaves de privacidade"
 
-#: src/screens/ExportPrivacyKeys.js:234 src/screens/PrivacySettings.js:87
+#: src/screens/ExportPrivacyKeys.js:234 src/screens/PrivacySettings.js:94
 msgid "Export privacy keys"
 msgstr "Exportar chaves de privacidade"
 
@@ -1056,23 +1056,22 @@ msgstr "Cancelar"
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
-#: src/screens/PrivacySettings.js:67
+#: src/screens/PrivacySettings.js:69
 msgid "PRIVACY SETTINGS"
 msgstr "CONFIGURAÇÕES DE PRIVACIDADE"
 
-#: src/screens/PrivacySettings.js:72
+#: src/screens/PrivacySettings.js:77
 msgid ""
-"The default applies to your sends to private addresses. You can change it "
-"for each send."
+"You can change your default anytime, or switch per transaction when sending."
 msgstr ""
-"O padrão vale para os seus envios para endereços privados. Você pode mudá-lo "
-"em cada envio."
+"Você pode alterar o seu padrão a qualquer momento, ou trocar por transação "
+"ao enviar."
 
-#: src/screens/PrivacySettings.js:75
-msgid "DEFAULT FOR SENDS TO PRIVATE ADDRESSES"
-msgstr "PADRÃO PARA ENVIOS A ENDEREÇOS PRIVADOS"
+#: src/screens/PrivacySettings.js:80
+msgid "TRANSACTION DEFAULTS"
+msgstr "PADRÕES DAS TRANSAÇÕES"
 
-#: src/screens/PrivacySettings.js:84
+#: src/screens/PrivacySettings.js:89
 msgid "AUDIT"
 msgstr "AUDITORIA"
 
@@ -2316,51 +2315,47 @@ msgstr "e.g. Poupança"
 msgid "Create"
 msgstr "Criar"
 
-#: src/components/PrivacyModeCard.js:51
+#: src/components/PrivacyModeCard.js:50
 msgid "Private"
 msgstr "Privado"
 
-#.  A fully shielded output hides its token only among the tokens the tx spends, and the
-#.  fee always spends HTR: an HTR output stays known as HTR.
-#: src/components/PrivacyModeCard.js:55
-msgid ""
-"Amount hidden on new sends to private addresses. The token is hidden among "
-"the tokens each send spends, but never when it is HTR."
-msgstr ""
-"Valor oculto nos novos envios para endereços privados. O token fica oculto "
-"entre os tokens que cada envio gasta, mas nunca quando é HTR."
+#: src/components/PrivacyModeCard.js:52
+msgid "Token and amount hidden on all new transactions"
+msgstr "Token e valor ocultos em todas as novas transações"
 
-#.  A fully shielded output hides its token only among the tokens the tx spends, and the
-#.  fee always spends HTR: an HTR output stays known as HTR.
-#: src/components/PrivacyModeCard.js:56
+#: src/components/PrivacyModeCard.js:53
 msgid "Token and amount hidden"
 msgstr "Token e valor ocultos"
 
-#: src/components/PrivacyModeCard.js:62
+#: src/components/PrivacyModeCard.js:59
 msgid "Hide amount"
 msgstr "Ocultar valor"
 
-#: src/components/PrivacyModeCard.js:64
-msgid "Token visible, amount hidden on new sends to private addresses"
-msgstr "Token visível, valor oculto nos novos envios para endereços privados"
+#: src/components/PrivacyModeCard.js:61
+msgid "Token visible, amount hidden on all new transactions"
+msgstr "Token visível, valor oculto em todas as novas transações"
 
-#: src/components/PrivacyModeCard.js:65
+#: src/components/PrivacyModeCard.js:62
 msgid "Token visible, amount hidden"
 msgstr "Token visível, valor oculto"
 
-#: src/components/PrivacyModeCard.js:71
+#: src/components/PrivacyModeCard.js:68
 msgid "Public"
 msgstr "Público"
 
-#: src/components/PrivacyModeCard.js:72
+#: src/components/PrivacyModeCard.js:70
+msgid "Token and amount visible on all new transactions"
+msgstr "Token e valor visíveis em todas as novas transações"
+
+#: src/components/PrivacyModeCard.js:71
 msgid "Token and amount visible"
 msgstr "Token e valor visíveis"
 
-#: src/components/PrivacyModeCard.js:108
+#: src/components/PrivacyModeCard.js:107
 msgid "No privacy fees"
 msgstr "Sem taxas de privacidade"
 
-#: src/components/PrivacyModeCard.js:111
+#: src/components/PrivacyModeCard.js:110
 #, javascript-format
 msgid "Fee: ${ fee } HTR per output"
 msgstr "Taxa: ${ fee } HTR por saída"
@@ -3406,6 +3401,23 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid ""
+#~ "The default applies to your sends to private addresses. You can change it "
+#~ "for each send."
+#~ msgstr ""
+#~ "O padrão vale para os seus envios para endereços privados. Você pode mudá-"
+#~ "lo em cada envio."
+
+#~ msgid "DEFAULT FOR SENDS TO PRIVATE ADDRESSES"
+#~ msgstr "PADRÃO PARA ENVIOS A ENDEREÇOS PRIVADOS"
+
+#~ msgid ""
+#~ "Amount hidden on new sends to private addresses. The token is hidden "
+#~ "among the tokens each send spends, but never when it is HTR."
+#~ msgstr ""
+#~ "Valor oculto nos novos envios para endereços privados. O token fica "
+#~ "oculto entre os tokens que cada envio gasta, mas nunca quando é HTR."
 
 #~ msgid "Creating a token can spend private HTR and make its amount public."
 #~ msgstr ""

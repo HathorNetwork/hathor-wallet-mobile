@@ -7,17 +7,19 @@
 
 import React, { useEffect } from 'react';
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
-import { ListMenu } from '../components/HathorList';
 import PrivacyModeCard, { PRIVACY_MODE_CARD_VARIANT } from '../components/PrivacyModeCard';
+import chevronRight from '../assets/icons/chevron-right.png';
 import { COLORS } from '../styles/themes';
 import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../store';
 import { privacyDefaultModeSet } from '../actions';
@@ -67,12 +69,15 @@ export default function PrivacySettings({ navigation, route }) {
         title={t`PRIVACY SETTINGS`}
         onBackPress={() => navigation.goBack()}
       />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps='handled'
+      >
         <Text style={styles.intro}>
-          {t`The default applies to your sends to private addresses. You can change it for each send.`}
+          {t`You can change your default anytime, or switch per transaction when sending.`}
         </Text>
 
-        <Text style={styles.sectionLabel}>{t`DEFAULT FOR SENDS TO PRIVATE ADDRESSES`}</Text>
+        <Text style={styles.sectionLabel}>{t`TRANSACTION DEFAULTS`}</Text>
         <PrivacyModeCard
           selectedMode={selectedMode}
           onSelect={onSelect}
@@ -82,14 +87,13 @@ export default function PrivacySettings({ navigation, route }) {
         {canExportKeys && (
           <>
             <Text style={[styles.sectionLabel, styles.sectionSpaced]}>{t`AUDIT`}</Text>
-            <View style={styles.menu}>
-              <ListMenu
-                title={t`Export privacy keys`}
-                onPress={() => navigation.navigate('ExportPrivacyKeys')}
-                isFirst
-                isLast
-              />
-            </View>
+            <TouchableOpacity
+              style={styles.exportRow}
+              onPress={() => navigation.navigate('ExportPrivacyKeys')}
+            >
+              <Text style={styles.exportRowLabel}>{t`Export privacy keys`}</Text>
+              <Image source={chevronRight} style={styles.exportRowChevron} />
+            </TouchableOpacity>
           </>
         )}
       </ScrollView>
@@ -109,7 +113,6 @@ const styles = StyleSheet.create({
   },
   intro: {
     fontSize: 14,
-    lineHeight: 20,
     color: COLORS.textColor,
     marginBottom: 24,
   },
@@ -123,10 +126,25 @@ const styles = StyleSheet.create({
   sectionSpaced: {
     marginTop: 32,
   },
-  menu: {
-    borderRadius: 16,
+  exportRow: {
+    backgroundColor: COLORS.backgroundColor,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: COLORS.borderColor,
-    overflow: 'hidden',
+    borderColor: '#E5E7EB',
+  },
+  exportRowLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textColor,
+  },
+  exportRowChevron: {
+    width: 18,
+    height: 18,
+    tintColor: COLORS.textColorShadow,
   },
 });

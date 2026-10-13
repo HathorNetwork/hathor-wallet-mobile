@@ -198,7 +198,7 @@ describe('PrivacyModeSelector', () => {
 });
 
 describe('PrivacyModeCard for the default privacy mode', () => {
-  test('says the default applies to new sends to private addresses, with each fee', async () => {
+  test('says the default applies to all new transactions, with each fee', async () => {
     const { texts } = await render(
       <PrivacyModeCard
         selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
@@ -210,13 +210,13 @@ describe('PrivacyModeCard for the default privacy mode', () => {
 
     expect(texts()).toEqual([
       'Private',
-      'Amount hidden on new sends to private addresses. The token is hidden among the tokens each send spends, but never when it is HTR.',
+      'Token and amount hidden on all new transactions',
       'Fee: 0.0002 HTR per output',
       'Hide amount',
-      'Token visible, amount hidden on new sends to private addresses',
+      'Token visible, amount hidden on all new transactions',
       'Fee: 0.0001 HTR per output',
       'Public',
-      'Token and amount visible',
+      'Token and amount visible on all new transactions',
       'No privacy fees',
     ]);
   });
@@ -231,6 +231,6 @@ describe('PrivacyModeCard for the default privacy mode', () => {
     );
 
     expect(texts()).toContain('Token visible, amount hidden');
-    expect(texts().join('\n')).not.toContain('new sends');
+    expect(texts().join('\n')).not.toContain('new transactions');
   });
 });
