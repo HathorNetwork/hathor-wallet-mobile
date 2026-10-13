@@ -157,7 +157,8 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 
 ### dApps and the new address
 1. With the flag on, connect a dApp through Reown: the session's account is `hathor:testnet:` and the wallet's new address at index 0.
-1. Have the dApp send with `htr_sendTransaction` to a private address: the request reaches the confirmation and is sent, as a public output to the address of the private address's spend key.
+1. Have the dApp send with `htr_sendTransaction` to a private address: the request reaches the confirmation and is sent, as a public output to the address of the private address's spend key. On the request screen, the output's address and a private change address each show on one line, by their start and their end; a tap copies the whole address.
+1. Have the dApp request `htr_createToken` with private mint, change and authority addresses, and `htr_signOracleData` and `htr_getUtxos` with a private oracle and filter address: each address shows whole, wrapped within its card, with no text running past the screen.
 1. Repeat with the flag off, and on Testnet: the request error modal says "This wallet does not support shielded addresses." and the dApp gets an error. The session's account is the legacy address at index 0.
 1. With the flag on, open a nano contract request, and register a nano contract: the caller they start from is the wallet's legacy address at index 0, as on Testnet, and the address list offers legacy addresses only. Send the request: it goes through.
 1. In a debug build, make the provider's self-test fail, then connect a dApp: the request error modal says "Private transfers could not be loaded on this device.", and the dApp's proposal is rejected. Registering a nano contract still works, with the legacy address.
