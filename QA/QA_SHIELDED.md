@@ -104,12 +104,13 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 1. In a debug build, make a decode fail with an error a retry can fix (counted in the capability's `undecoded.error`). The token screen says "Some private funds could not be read." and offers Retry.
 1. Tap Retry: a spinner shows while the history is processed again, then the funds show in the balance.
 
-### Fees in the tx details
+### The tx details and their fees
+1. On any network, open a tx's details. Under the amount, they say what the tx did with the token, as "Sent HTR", "Received HTR" or "You sent HTR to yourself", and list Date & Time, Transaction ID and Public Explorer. There are no Token, Description or Fee Model rows, and a nano contract tx has no nano contract rows.
 1. With the flag on, have a dApp connected through Reown send with `htr_sendTransaction` an amount the public funds can't cover, so the send spends private funds. Its private change shows in the balance without a reload.
-1. Open that send's details: Fees shows between Fee Model and Transaction ID. Tap it: it expands into Network fee and Privacy fee, which add up to the explorer's fee for the tx.
+1. Open that send's details: Fees shows between Date & Time and Transaction ID. Tap it: it expands into Network fee and Privacy fee, which add up to the explorer's fee for the tx.
+1. Open a received tx with shielded outputs: Fees shows the fees its sender paid.
 1. Open a send of a fee-based token: Fees shows its network fee.
-1. Open a received tx: there's no Fees row.
-1. With the private balance locked, or the flag off, there's no Fees row.
+1. With the private balance locked, Fees still shows. With the flag off, and on Mainnet and Testnet, there's no Fees row.
 
 ### Single-address mode on the Shielded Testnet
 1. With the single-address flag on and Single Address chosen on the Testnet, switch to the Shielded Testnet. The wallet starts in multi-address mode.

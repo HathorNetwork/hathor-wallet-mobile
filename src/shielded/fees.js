@@ -54,29 +54,6 @@ export function shieldedOutputsFee(shieldedOutputs) {
 }
 
 /**
- * Whether the wallet paid a tx: one of the tx's inputs, in the wallet's history, spends an output
- * of the wallet. The wallet's shielded inputs carry their address there too; an input of another
- * wallet's shielded output has none.
- *
- * @param {HathorWallet} wallet A fullnode-facade wallet
- * @param {string} txId
- * @returns {Promise<boolean>}
- */
-export async function isTxPaidByWallet(wallet, txId) {
-  const tx = await wallet.getTx(txId);
-  const addresses = [...new Set(
-    (tx?.inputs ?? [])
-      .map((input) => input.decoded?.address)
-      .filter((address) => typeof address === 'string'),
-  )];
-  if (addresses.length === 0) {
-    return false;
-  }
-  const mine = await wallet.checkAddressesMine(addresses);
-  return addresses.some((address) => mine[address] === true);
-}
-
-/**
  * The total of a tx's HTR fees, from the fees the fullnode lists for its fee header, or null
  * when it lists none in HTR. Amounts come as numbers, or strings, or bigints.
  *
@@ -95,24 +72,21 @@ function nativeFeesTotal(fees) {
 }
 
 /**
- * The fees of a tx the wallet paid: its total HTR fee, the privacy fee of its shielded outputs,
- * and the network fee, the rest. The history has no fees: the fullnode's tx API lists them, so
- * this asks the fullnode, and only for a tx the wallet paid. It is null for a tx the wallet
- * didn't pay, for a tx with no HTR fee, and when a request fails, which is logged.
+ * The fees of a tx, whoever paid them: its total HTR fee, the privacy fee of its shielded
+ * outputs, and the network fee, the rest. The history has no fees: the fullnode's tx API lists
+ * them, so this asks the fullnode. It is null for a tx with no HTR fee above zero, and when the
+ * request fails, which is logged.
  *
  * @param {HathorWallet} wallet A fullnode-facade wallet
  * @param {string} txId
  * @param {bigint} privacyFee The privacy fee of the tx's shielded outputs
  * @returns {Promise<{ total: bigint, network: bigint, privacy: bigint }|null>}
  */
-export async function getWalletPaidFees(wallet, txId, privacyFee = 0n) {
+export async function getTxFees(wallet, txId, privacyFee = 0n) {
   try {
-    if (!(await isTxPaidByWallet(wallet, txId))) {
-      return null;
-    }
     const response = await wallet.getFullTxById(txId);
     const total = nativeFeesTotal(response?.tx?.fees);
-    if (total === null) {
+    if (total === null || total <= 0n) {
       return null;
     }
     return {

@@ -14,21 +14,19 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 
-import { TokenVersion } from '@hathor/wallet-lib';
-import { getShortContent, getShortHash, getTokenLabel, renderValue } from '../utils';
+import { getShortHash, renderValue } from '../utils';
 import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import CopyClipboard from './CopyClipboard';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
-import { TransactionStatusLabel } from './TransactionStatusLabel';
 import BackdropModal from './BackdropModal';
 import TxFeesRow from './TxFeesRow';
-import { getWalletPaidFees } from '../shielded/fees';
+import { getTxFees } from '../shielded/fees';
 
 class TxDetailsModal extends Component {
   /**
-   * fees {Object|null} The fees the wallet paid for the tx, once loaded
+   * fees {Object|null} The fees of the tx, once loaded
    */
   state = {
     fees: null,
@@ -70,32 +68,19 @@ class TxDetailsModal extends Component {
   }
 
   /**
-   * Loads the fees of a tx the wallet paid, where the shielded UI decodes private outputs
-   * (props.showFees). The history has no fees: the fullnode lists them.
+   * Loads the fees of the tx, whoever paid them, where the shielded UI shows (props.showFees).
+   * The history has no fees: the fullnode lists them.
    */
   async loadFees() {
     const { showFees, wallet, tx } = this.props;
     if (!showFees || !wallet) {
       return;
     }
-    const fees = await getWalletPaidFees(wallet, tx.txId, tx.privacyFee);
+    const fees = await getTxFees(wallet, tx.txId, tx.privacyFee);
     if (this.isOpen && fees) {
       this.setState({ fees });
     }
   }
-
-  getFeeModelText = (version) => {
-    if (version === TokenVersion.NATIVE) {
-      return t`Native Token`;
-    }
-    if (version === TokenVersion.DEPOSIT) {
-      return t`Deposit Based`;
-    }
-    if (version === TokenVersion.FEE) {
-      return t`Fee Based`;
-    }
-    return null;
-  };
 
   render() {
     /**
@@ -109,30 +94,15 @@ class TxDetailsModal extends Component {
      * }} TxDetailsModal properties
      */
     const { token, tx, isNFT } = this.props;
-    const { txId, ncId, ncMethod, ncCaller, isVoided } = tx;
-    const ncCallerAddr = ncCaller && ncCaller.base58;
+    const { txId } = tx;
 
-    const fullTokenStr = getTokenLabel(token);
     const description = tx.getDescription(token);
     const timestampStr = tx.getTimestampFormat();
     const shortTxId = getShortHash(txId, 7);
-    const shortNcId = ncId && getShortHash(ncId, 7);
-    const shortNcCallerAddr = ncCallerAddr && getShortContent(ncCallerAddr, 7);
     const txIdComponent = this.getCopyClipboard({
       text: shortTxId,
-      copyText: txId
+      copyText: txId,
     });
-    const ncIdComponent = ncId && this.getCopyClipboard({
-      text: shortNcId,
-      copyText: ncId
-    });
-    const ncCallerAddrComponent = ncCaller && this.getCopyClipboard({
-      text: shortNcCallerAddr,
-      copyText: ncCallerAddr
-    });
-    const isNc = tx.isNanoContract();
-    const hasFirstBlock = tx.hasFirstBlock();
-    const feeModelText = this.getFeeModelText(token?.version);
 
     return (
       <BackdropModal
@@ -147,19 +117,18 @@ class TxDetailsModal extends Component {
         swipeThreshold={100}
       >
         <SlideIndicatorBar />
+        {/* The amount, and under it whether the tx sent or received it. */}
         <BalanceView
           tx={tx}
           token={token}
           isNFT={isNFT}
+          description={description}
           amountFormat={this.props.amountFormat}
           decimalPlaces={this.props.decimalPlaces}
         />
         <ScrollView>
           <View>
-            <ListItem title={t`Token`} text={fullTokenStr} />
-            <ListItem title={t`Description`} text={description} />
             <ListItem title={t`Date & Time`} text={timestampStr} />
-            {feeModelText && <ListItem title={t`Fee Model`} text={feeModelText} />}
             {this.state.fees && (
               <TxFeesRow
                 fees={this.state.fees}
@@ -169,21 +138,6 @@ class TxDetailsModal extends Component {
               />
             )}
             <ListItem title={t`Transaction ID`} text={txIdComponent} />
-            {isNc && (
-              <ListItem
-                title={t`Nano Contract Status`}
-                text={(
-                  <TransactionStatusLabel
-                    isVoided={isVoided}
-                    hasFirstBlock={hasFirstBlock}
-                  />
-                )}
-              />
-            )}
-            {isNc && <ListItem title={t`Blueprint Method`} text={ncMethod} />}
-            {isNc && <ListItem title={t`Nano Contract ID`} text={ncIdComponent} />}
-            {isNc && <ListItem title={t`Nano Contract Caller`} text={ncCallerAddrComponent} />}
-            {isNc && <PublicExplorerListButton txId={shortNcId} title={t`Nano Contract`} />}
             <PublicExplorerListButton txId={tx.txId} />
           </View>
         </ScrollView>
@@ -205,7 +159,7 @@ class BalanceView extends Component {
       fontSize: 32,
       fontWeight: 'bold',
     },
-    text1: {
+    description: {
       paddingTop: 8,
       fontSize: 12,
       fontWeight: 'bold',
@@ -214,7 +168,7 @@ class BalanceView extends Component {
   });
 
   render() {
-    const { tx, isNFT, amountFormat, decimalPlaces } = this.props;
+    const { tx, isNFT, description, amountFormat, decimalPlaces } = this.props;
     const balanceStr = renderValue(tx.balance, isNFT, decimalPlaces, amountFormat);
     return (
       <View style={this.style.view}>
@@ -226,7 +180,7 @@ class BalanceView extends Component {
         >
           {`${balanceStr} ${this.props.token.symbol}`}
         </Text>
-        <Text style={this.style.text1}>{t`Amount`}</Text>
+        <Text style={this.style.description}>{description}</Text>
       </View>
     );
   }

@@ -12,11 +12,11 @@ import FeeBreakdown from './Shielded/FeeBreakdown';
 import { COLORS } from '../styles/themes';
 
 /**
- * The fees row of the tx details: the fees the wallet paid, between the rows of the details
- * list, which a border separates.
+ * The fees row of the tx details: the fees of the tx, between the rows of the details list,
+ * which a border separates.
  *
  * @param {Object} props
- * @param {{ total: bigint, network: bigint, privacy: bigint }} props.fees From getWalletPaidFees
+ * @param {{ total: bigint, network: bigint, privacy: bigint }} props.fees From getTxFees
  * @param {string} props.symbol The network's native token symbol
  * @param {number} props.decimalPlaces
  * @param {string} props.amountFormat
@@ -36,6 +36,7 @@ export default function TxFeesRow({
       decimalPlaces={decimalPlaces}
       amountFormat={amountFormat}
       style={styles.row}
+      breakdownStyle={styles.breakdown}
     />
   );
 }
@@ -44,5 +45,9 @@ const styles = StyleSheet.create({
   row: {
     borderColor: COLORS.borderColor,
     borderBottomWidth: 1,
+  },
+  // The expanded fees get as much room above as below them.
+  breakdown: {
+    paddingTop: 8,
   },
 });

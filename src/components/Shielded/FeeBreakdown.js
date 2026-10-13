@@ -30,6 +30,7 @@ import { COLORS } from '../../styles/themes';
  * @param {string} props.amountFormat
  * @param {Object} [props.style] The container's style
  * @param {Object} [props.rowStyle] The style of the row of the total
+ * @param {Object} [props.breakdownStyle] The style of the expanded network and privacy fees
  */
 export default function FeeBreakdown({
   total,
@@ -40,6 +41,7 @@ export default function FeeBreakdown({
   amountFormat,
   style,
   rowStyle,
+  breakdownStyle,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const formatFee = (amount) => (
@@ -62,7 +64,7 @@ export default function FeeBreakdown({
         </View>
       </TouchableOpacity>
       {isExpanded && (
-        <View style={styles.feeBreakdown}>
+        <View style={[styles.feeBreakdown, breakdownStyle]}>
           {network > 0n && (
             <View style={styles.feeBreakdownRow}>
               <Text style={styles.feeBreakdownLabel}>{t`Network fee`}</Text>

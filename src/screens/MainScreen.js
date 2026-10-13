@@ -36,7 +36,7 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
 import {
   isShieldedAvailable,
-  isShieldedEnabled,
+  isShieldedEnvironment,
   selectShieldedCapability,
 } from '../shielded/gating';
 import { createPrivateBalanceRequests } from '../shielded/balance';
@@ -69,7 +69,7 @@ const mapStateToProps = (state) => ({
   decimalPlaces: state.serverInfo?.decimal_places,
   shieldedAvailable: isShieldedAvailable(state),
   shieldedCapability: selectShieldedCapability(state),
-  shieldedEnabled: isShieldedEnabled(state),
+  shieldedEnvironment: isShieldedEnvironment(state),
   nativeSymbol: state.serverInfo?.native_token?.symbol ?? DEFAULT_TOKEN.symbol,
 });
 
@@ -156,7 +156,7 @@ class MainScreen extends React.Component {
         amountFormat={this.props.amountFormat}
         decimalPlaces={this.props.decimalPlaces}
         wallet={this.props.wallet}
-        showFees={this.props.shieldedEnabled}
+        showFees={this.props.shieldedEnvironment}
         nativeSymbol={this.props.nativeSymbol}
       />
     );
