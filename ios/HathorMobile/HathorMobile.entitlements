@@ -4,5 +4,12 @@
 <dict>
 	<key>aps-environment</key>
 	<string>production</string>
+	<!-- Passkey (PRF) wallets: passkeys are bound to PASSKEY_RP_ID (src/constants.js). That domain
+	     must serve /.well-known/apple-app-site-association with a "webcredentials" entry for this
+	     app's Team ID + bundle ID. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>webcredentials:wallet.hathor.network</string>
+	</array>
 </dict>
 </plist>
