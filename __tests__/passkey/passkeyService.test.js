@@ -5,6 +5,7 @@ const mockPasskey = {
   create: jest.fn(),
   createPlatformKey: jest.fn(),
   get: jest.fn(),
+  getImmediate: jest.fn(),
   isSupported: jest.fn(() => true),
 };
 jest.mock('react-native-passkey', () => ({ Passkey: mockPasskey }));
@@ -225,10 +226,24 @@ describe('createWalletWordsFromPasskey', () => {
     expect(mockPasskey.create).not.toHaveBeenCalled();
   });
 
+  // The silent retry is Android-only: iOS lists a new passkey at once, and getImmediate there
+  // would only add a different code path.
+  test('asks for the PRF with a single regular assertion on iOS', async () => {
+    const created = { id: 'cred-new', clientExtensionResults: { prf: { enabled: true } } };
+    mockPasskey.createPlatformKey.mockResolvedValue(created);
+    mockPasskey.get.mockResolvedValue(assertion({ id: 'cred-new' }));
+
+    await withPlatformOS('ios', () => createWalletWordsFromPasskey('Savings'));
+
+    expect(mockPasskey.get).toHaveBeenCalledTimes(1);
+    expect(mockPasskey.getImmediate).not.toHaveBeenCalled();
+  });
+
   test('uses the regular create call on Android', async () => {
     const created = { id: 'cred-new', clientExtensionResults: { prf: { enabled: true } } };
     mockPasskey.create.mockResolvedValue(created);
-    mockPasskey.get.mockResolvedValue(assertion({ id: 'cred-new' }));
+    // On Android the PRF assertion after creation goes through getImmediate (see below).
+    mockPasskey.getImmediate.mockResolvedValue(assertion({ id: 'cred-new' }));
 
     await withPlatformOS('android', () => createWalletWordsFromPasskey('Savings'));
 
@@ -248,6 +263,83 @@ describe('createWalletWordsFromPasskey', () => {
     expect(result.credentialId).toBe('cred-new');
     // The assertion is pinned to the credential just created.
     expect(mockPasskey.get.mock.calls[0][0].allowCredentials).toEqual([{ type: 'public-key', id: 'cred-new' }]);
+  });
+});
+
+// Google Password Manager can't list a passkey for a moment after creating it, so on Android the
+// PRF assertion that follows creation retries silently instead of opening Android's chooser.
+describe('createWalletWordsFromPasskey on Android, right after creating the passkey', () => {
+  const created = { id: 'cred-new', clientExtensionResults: { prf: { enabled: true } } };
+  const notReady = { error: 'NoCredentials', message: 'No credentials available.' };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    mockPasskey.create.mockResolvedValue(created);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  // Runs the Android creation flow to completion, firing the retry delays as they come due.
+  async function createOnAndroid() {
+    return withPlatformOS('android', async () => {
+      const pending = createWalletWordsFromPasskey('Savings');
+      // Attach a handler now so a rejection isn't reported as unhandled while timers run.
+      pending.catch(() => {});
+      await jest.runAllTimersAsync();
+      return pending;
+    });
+  }
+
+  test('retries until the new passkey is available, without opening the chooser', async () => {
+    mockPasskey.getImmediate
+      .mockRejectedValueOnce(notReady)
+      .mockResolvedValueOnce(assertion({ id: 'cred-new' }));
+
+    const result = await createOnAndroid();
+
+    expect(result.words.split(' ')).toHaveLength(24);
+    expect(result.credentialId).toBe('cred-new');
+    expect(mockPasskey.getImmediate).toHaveBeenCalledTimes(2);
+    expect(mockPasskey.get).not.toHaveBeenCalled();
+    // Every attempt is pinned to the credential just created.
+    mockPasskey.getImmediate.mock.calls.forEach(([request]) => {
+      expect(request.allowCredentials).toEqual([{ type: 'public-key', id: 'cred-new' }]);
+    });
+  });
+
+  test('falls back to the regular assertion when the passkey never becomes available', async () => {
+    mockPasskey.getImmediate.mockRejectedValue(notReady);
+    mockPasskey.get.mockResolvedValue(assertion({ id: 'cred-new' }));
+
+    const result = await createOnAndroid();
+
+    expect(result.words.split(' ')).toHaveLength(24);
+    // Four silent attempts, one per retry delay, then the regular prompt, which can still offer a
+    // security key or another device.
+    expect(mockPasskey.getImmediate).toHaveBeenCalledTimes(4);
+    expect(mockPasskey.get).toHaveBeenCalledTimes(1);
+    expect(mockPasskey.get.mock.calls[0][0].allowCredentials).toEqual([{ type: 'public-key', id: 'cred-new' }]);
+  });
+
+  // Once the passkey is found, Android shows the biometric prompt. Any answer other than "not
+  // listed yet" is final: retrying would prompt the user again after they cancelled.
+  test('passes a user cancel straight through without retrying', async () => {
+    const cancel = { error: 'UserCancelled', message: 'The user cancelled the request.' };
+    mockPasskey.getImmediate.mockRejectedValue(cancel);
+
+    await expect(createOnAndroid()).rejects.toBe(cancel);
+    expect(mockPasskey.getImmediate).toHaveBeenCalledTimes(1);
+    expect(mockPasskey.get).not.toHaveBeenCalled();
+  });
+
+  test('passes any other native failure straight through without retrying', async () => {
+    mockPasskey.getImmediate.mockRejectedValue({ error: 'TimedOut', message: 'The request timed out.' });
+
+    await expect(createOnAndroid()).rejects.toMatchObject({ name: 'PasskeyNativeError', code: 'TimedOut' });
+    expect(mockPasskey.getImmediate).toHaveBeenCalledTimes(1);
+    expect(mockPasskey.get).not.toHaveBeenCalled();
   });
 });
 
