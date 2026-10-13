@@ -79,12 +79,12 @@ With the flag on, on the Shielded Testnet:
 1. With Receive open, turn the flag off: Receive shows the legacy address, with its New address, as before, and `lastSharedAddress` is that address. Turn the flag on again: the new address shows again.
 
 ### The private part of the balance
-1. With the flag on, open HTR. Under "Available Balance", the private part (a shield) and the public part (an eye) add up to it. Tap to expand: Locked shows as before, with the parts under "Available Balance".
+1. With the flag on, open HTR. Under "Available Balance", the private part (a shield, "X private") and the public part (an eye, "Y public") add up to it. A tap on the balance expands nothing: the screen has no Locked balance.
 1. Receive a private output: the private part grows without a reload.
 1. Start a send of public funds and check that the parts still add up while it is pending and once it is confirmed.
 1. With the token screen open, turn the flag off, then on: the parts disappear, then show again.
 1. Open a custom token that holds funds on the Shielded Testnet. With its screen open, change the network in Settings to Testnet, then back to the Shielded Testnet. Once the wallet loads, the token's balance is right on its screen and on the Dashboard, and its parts add up to it.
-1. With the flag off, the screen is as before, and the private funds still count in the available balance.
+1. With the flag off, the screen shows the available balance alone, which the private funds still count in, with no Locked balance to expand. Mainnet and Testnet show it the same way.
 
 ### Unlocking a locked private balance
 This needs a start with a PIN that doesn't decrypt the scan key, as in "A start that leaves the private funds locked" above.

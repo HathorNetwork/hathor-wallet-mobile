@@ -96,10 +96,10 @@ async function render(props, { progress } = {}) {
 }
 
 describe('ShieldedBalanceSplit', () => {
-  test('splits the available balance into private and public parts that add up', async () => {
+  test('splits the available balance into "X private" and "Y public", which add up to it', async () => {
     const { texts, buttonTitles } = await render();
 
-    expect(texts()).toEqual(['2.50', 'Private', '8.00', 'Public']);
+    expect(texts()).toEqual(['2.50', 'private', '8.00', 'public']);
     expect(buttonTitles()).toEqual([]);
   });
 
@@ -114,9 +114,9 @@ describe('ShieldedBalanceSplit', () => {
 
     expect(texts()).toEqual([
       homeValue(5n, AMOUNT_FORMAT.COMPRESSED),
-      'Private',
+      'private',
       homeValue(99999995n, AMOUNT_FORMAT.COMPRESSED),
-      'Public',
+      'public',
     ]);
     expect(texts()[0]).not.toBe(homeValue(5n, AMOUNT_FORMAT.EXPANDED));
   });

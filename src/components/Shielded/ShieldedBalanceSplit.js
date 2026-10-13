@@ -142,12 +142,12 @@ export default function ShieldedBalanceSplit({
         <View style={styles.splitItem}>
           <ShieldPadlockIcon size={24} color={COLORS.textColor} />
           <Text style={styles.splitValue}>{privateStr}</Text>
-          <Text style={styles.splitLabel}>{t`Private`}</Text>
+          <Text style={styles.splitLabel}>{t`private`}</Text>
         </View>
         <View style={styles.splitItem}>
           <EyeIcon size={24} color={COLORS.textColor} />
           <Text style={styles.splitValue}>{publicStr}</Text>
-          <Text style={styles.splitLabel}>{t`Public`}</Text>
+          <Text style={styles.splitLabel}>{t`public`}</Text>
         </View>
       </View>
       {count > 0 && (

@@ -780,33 +780,29 @@ msgstr "Nulstil wallet"
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:184
+#: src/screens/MainScreen.js:180
 msgid "No transactions"
 msgstr "Ingen transaktioner"
 
-#: src/screens/MainScreen.js:187
+#: src/screens/MainScreen.js:183
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr "|share:Del din adresse| med venner og begynd at udveksle tokens"
 
-#: src/screens/MainScreen.js:204
+#: src/screens/MainScreen.js:200
 msgid "Loading transactions"
 msgstr "Indlæser dine transaktioner"
 
-#: src/screens/MainScreen.js:213
+#: src/screens/MainScreen.js:209
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:216
+#: src/screens/MainScreen.js:212
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:647 src/screens/MainScreen.js:682
+#: src/screens/MainScreen.js:622
 msgid "Available Balance"
 msgstr "Tilgængelig saldo"
-
-#: src/screens/MainScreen.js:657
-msgid "Locked"
-msgstr "Låst"
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
@@ -2163,11 +2159,11 @@ msgid "Could not unlock your private balance."
 msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:145
-msgid "Private"
+msgid "private"
 msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:150
-msgid "Public"
+msgid "public"
 msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:160
@@ -2992,6 +2988,9 @@ msgstr ""
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr ""
+
+#~ msgid "Locked"
+#~ msgstr "Låst"
 
 #, javascript-format
 #~ msgid "You've just received **${ amount } ${ symbol }**"
