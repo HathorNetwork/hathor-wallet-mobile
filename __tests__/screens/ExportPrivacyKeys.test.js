@@ -7,10 +7,11 @@
 
 import { jest, describe, test, expect, afterEach } from '@jest/globals';
 import React from 'react';
-import { AppState, Clipboard } from 'react-native';
+import { AppState, Clipboard, TouchableOpacity } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
+import { StackActions } from '@react-navigation/native';
 import { errors } from '@hathor/wallet-lib';
 import { reducer } from '../../src/reducers/reducer';
 import {
@@ -39,13 +40,14 @@ const PIN = '135790';
 // Stand-ins for the spend xpub and the scan xpriv: the screen only shows and copies them.
 const SPEND_XPUB = 'xpub6EkS2eyWfDNiXk4zM7bq4dBRWgs1kqGJBDWSxRu2W7vd2Ugtc3nM7XQ8wKdo9aTZcqgjNNiEDVUSxomvLHCpxKqqA9HqmXrxBjDRPVTnmE1';
 const SCAN_XPRIV = 'xprv9zyUunmbsdp4RhWSTQD3Dub6p2wBJHqbFXuW9HbPMyGgM3iUWh5PpuFWFp3b2ybA2T61D9aw6xA2EoN7BVq6oG6wkxzURSGVNvqo7nKpx6H';
-// The first and the last 8 characters.
-const SPEND_MASKED = 'xpub6EkS…RPVTnmE1';
-const SCAN_MASKED = 'xprv9zyU…o7nKpx6H';
+// The first 12 and the last 8 characters.
+const SPEND_MASKED = 'xpub6EkS2eyW…RPVTnmE1';
+const SCAN_MASKED = 'xprv9zyUunmb…o7nKpx6H';
 
+const ROUTE_KEY = 'ExportPrivacyKeys-test';
 const READ_FAILED = 'The privacy keys could not be read.';
-const EXPORT = 'I understand, export the keys';
-const COPIED = 'Copied. The clipboard clears in one minute.';
+const NO_SHIELDED_KEYS = 'This wallet has no shielded keys. They are only present on wallets created after the shielded outputs feature was enabled.';
+const UNLOCK_FIRST = 'Unlock your private balance to export the privacy keys.';
 
 const capability = (level, { cause = 'wrong-pin', reason = 'locked' } = {}) => ({
   level,
@@ -99,16 +101,29 @@ async function render({ wallet = fakeWallet(), level = capability('full') } = {}
   store.dispatch(setWallet(wallet));
   store.dispatch(unlockScreen());
 
-  const listeners = {};
+  const listeners = { focus: [], blur: [] };
+  // The route on top of the stack: the export's, unless a test puts the PIN screen's there.
+  let topKey = ROUTE_KEY;
   const navigation = {
     navigate: jest.fn(),
     goBack: jest.fn(),
     dispatch: jest.fn(),
+    getState: jest.fn(() => {
+      const routes = [{ key: 'Main' }, { key: 'PrivacySettings' }, { key: ROUTE_KEY }];
+      if (topKey !== ROUTE_KEY) {
+        routes.push({ key: topKey });
+      }
+      return { index: routes.length - 1, routes };
+    }),
     addListener: jest.fn((event, handler) => {
-      listeners[event] = handler;
+      listeners[event] = [...(listeners[event] ?? []), handler];
       return jest.fn();
     }),
   };
+  const setTop = (key) => { topKey = key; };
+  const emit = (event) => act(async () => {
+    listeners[event].forEach((handler) => handler());
+  });
   const appStateCalls = AppState.addEventListener.mock.calls.length;
   let renderer;
   await act(async () => {
@@ -117,7 +132,7 @@ async function render({ wallet = fakeWallet(), level = capability('full') } = {}
         <PortalProvider>
           <ExportPrivacyKeys
             navigation={navigation}
-            route={{ key: 'ExportPrivacyKeys-test', name: 'ExportPrivacyKeys' }}
+            route={{ key: ROUTE_KEY, name: 'ExportPrivacyKeys' }}
           />
         </PortalProvider>
       </Provider>,
@@ -133,72 +148,87 @@ async function render({ wallet = fakeWallet(), level = capability('full') } = {}
   const titles = () => renderer.root
     .findAll((node) => typeof node.props.title === 'string' && typeof node.props.onPress === 'function')
     .map((node) => node.props.title);
-  const press = (title, index = 0) => act(async () => {
-    renderer.root.findAll(
-      (node) => node.props.title === title && typeof node.props.onPress === 'function',
+  // Presses the index-th pressable text with the label, as "Copy" on the scan key, the second.
+  const pressText = (label, index = 0) => act(async () => {
+    renderer.root.findAllByType(TouchableOpacity).filter(
+      (node) => node.findAll((child) => child.type === 'Text' && child.props.children === label)
+        .length > 0,
     )[index].props.onPress();
   });
-  /** Acknowledges the warning and enters the PIN, as the PIN screen calls back with it. */
-  const exportWithPin = async (pin = PIN) => {
-    await press(EXPORT);
-    const [, params] = navigation.navigate.mock.calls[navigation.navigate.mock.calls.length - 1];
+  const pinScreenCalls = () => navigation.navigate.mock.calls
+    .filter(([name]) => name === 'PinScreen');
+  /** Enters the PIN, as the PIN screen calls back with it after it goes back. */
+  const enterPin = async (pin = PIN) => {
+    const [, params] = pinScreenCalls()[pinScreenCalls().length - 1];
     await act(async () => { await params.cb(pin); });
   };
   return {
     store,
     renderer,
     navigation,
-    listeners,
+    emit,
+    setTop,
     onAppState,
     texts,
     titles,
-    press,
-    exportWithPin,
+    pressText,
+    pinScreenCalls,
+    enterPin,
   };
 }
 
-// How the screen closes, with its PIN screen, when the shielded UI stops being available is tested
-// in a real stack, in PrivacyScreensStack.test.js.
-describe('ExportPrivacyKeys', () => {
-  test('shows the warning first, and reads nothing until it is acknowledged', async () => {
-    const wallet = fakeWallet();
-    const { texts, titles } = await render({ wallet });
+/**
+ * What a closeScreen of the export dispatched, on a stack with the privacy settings under it.
+ */
+const closedFromStack = (navigation) => {
+  const [[action]] = navigation.dispatch.mock.calls;
+  return action({
+    index: 2,
+    routes: [{ key: 'Main' }, { key: 'PrivacySettings' }, { key: ROUTE_KEY }],
+  });
+};
 
-    expect(texts()).toEqual(expect.arrayContaining([
-      'EXPORT PRIVACY KEYS',
-      'Read this before you export',
-      'These keys give read access to every private output this wallet receives, its change included: whoever holds them sees the amount and the token of each one.',
-      "This access can't be revoked. To end it, move your funds to a new wallet.",
-      "The keys can't spend: they don't move funds or sign transactions.",
-      "Share them only with an auditor you trust, over a secure channel. The auditor needs a tool that reads Hathor's private outputs.",
-    ]));
-    expect(titles()).toContain(EXPORT);
+// How the screen closes, with its PIN screen, when the shielded UI stops being available, and how
+// it goes back when its PIN screen closes, is also tested in a real stack, in
+// PrivacyScreensStack.test.js.
+describe('ExportPrivacyKeys', () => {
+  test('asks for the PIN as it opens, with params that carry no PIN and no key', async () => {
+    const wallet = fakeWallet();
+    const { pinScreenCalls } = await render({ wallet });
+
+    expect(pinScreenCalls()).toHaveLength(1);
+    const [, params] = pinScreenCalls()[0];
+    expect(params).toEqual({
+      cb: expect.any(Function),
+      canCancel: true,
+      screenText: 'Enter your 6-digit PIN to export the audit keys',
+    });
     expect(wallet.getShieldedCapability).not.toHaveBeenCalled();
     expect(wallet.storage.getSpendXPubKey).not.toHaveBeenCalled();
     expect(wallet.storage.getScanXPrivKey).not.toHaveBeenCalled();
   });
 
-  test('asks for the PIN on the PIN screen, whose params carry no PIN and no key', async () => {
-    const { navigation, press } = await render();
+  test('shows the warning, before and after the PIN', async () => {
+    const warning = [
+      'EXPORT PRIVACY KEYS',
+      'Read this before sharing',
+      'These two keys give an auditor read-only access to every shielded output your wallet receives — they can identify every incoming shielded transaction and decrypt the amount and token of each one.',
+      'They do NOT allow spending. Whoever holds them cannot move your funds, sign transactions on your behalf, or access transparent (non-shielded) balances.',
+      'Treat them like any other private wallet data. Share them only with auditors you trust, and over a secure channel.',
+    ];
+    const { texts, enterPin } = await render();
+    expect(texts()).toEqual(warning);
 
-    await press(EXPORT);
+    await enterPin();
 
-    expect(navigation.navigate).toHaveBeenCalledTimes(1);
-    const [route, params] = navigation.navigate.mock.calls[0];
-    expect(route).toBe('PinScreen');
-    expect(params).toEqual({
-      cb: expect.any(Function),
-      canCancel: true,
-      screenText: 'Enter your 6-digit pin to export the privacy keys',
-      biometryText: 'Export privacy keys',
-    });
+    expect(texts().slice(0, warning.length)).toEqual(warning);
   });
 
   test('checks the capability, then reads the keys with the PIN the PIN screen gives', async () => {
     const wallet = fakeWallet();
-    const { exportWithPin } = await render({ wallet });
+    const { enterPin } = await render({ wallet });
 
-    await exportWithPin();
+    await enterPin();
 
     expect(wallet.storage.getScanXPrivKey).toHaveBeenCalledWith(PIN);
     expect(wallet.storage.getSpendXPubKey).toHaveBeenCalledTimes(1);
@@ -207,80 +237,97 @@ describe('ExportPrivacyKeys', () => {
     expect(checked).toBeLessThan(wallet.storage.getSpendXPubKey.mock.invocationCallOrder[0]);
   });
 
-  test('shows each key masked, never in full, and never selectable', async () => {
-    const { renderer, texts, exportWithPin } = await render();
+  test('says it derives the keys while it reads them', async () => {
+    const wallet = fakeWallet();
+    let respond;
+    wallet.storage.getScanXPrivKey.mockImplementation(
+      () => new Promise((resolve) => { respond = resolve; }),
+    );
+    const { texts, pinScreenCalls } = await render({ wallet });
+    const [, params] = pinScreenCalls()[0];
+    let read;
+    await act(async () => { read = params.cb(PIN); });
 
-    await exportWithPin();
+    expect(texts()).toContain('Deriving keys…');
+
+    await act(async () => {
+      respond(SCAN_XPRIV);
+      await read;
+    });
+    expect(texts()).not.toContain('Deriving keys…');
+    expect(texts()).toContain(SCAN_MASKED);
+  });
+
+  test('shows each key masked, with what it gives, and the full key on request', async () => {
+    const { renderer, texts, pressText, enterPin } = await render();
+
+    await enterPin();
 
     expect(texts()).toEqual(expect.arrayContaining([
       'Spend public key (xpub)',
-      "Path m/44'/280'/2'/0. It finds the private outputs this wallet receives.",
+      "Path m/44'/280'/2'/0. Lets the auditor derive every receiving spend-side address and find your incoming shielded outputs on-chain.",
       SPEND_MASKED,
       'Scan private key (xpriv)',
-      "Path m/44'/280'/1'/0. It reads the amount and the token of each private output this wallet receives. It never signs.",
+      "Path m/44'/280'/1'/0. Lets the auditor decrypt the value and token of every shielded output your wallet receives. Used only for ECDH; never for signing.",
       SCAN_MASKED,
     ]));
-    const tree = JSON.stringify(renderer.toJSON());
-    expect(tree).not.toContain(SPEND_XPUB);
-    expect(tree).not.toContain(SCAN_XPRIV);
+    expect(JSON.stringify(renderer.toJSON())).not.toContain(SCAN_XPRIV);
+
+    // The scan key's card is the second one.
+    await pressText('Show full key', 1);
+    expect(texts()).toContain(SCAN_XPRIV);
+    expect(texts()).toContain(SPEND_MASKED);
+
+    await pressText('Hide');
+    expect(texts()).toContain(SCAN_MASKED);
+    expect(texts()).not.toContain(SCAN_XPRIV);
+  });
+
+  test('keeps the keys unselectable, so every copy goes through the clipboard that clears itself', async () => {
+    const { renderer, pressText, enterPin } = await render();
+    await enterPin();
+
+    await pressText('Show full key', 1);
+
     expect(renderer.root.findAll((node) => node.type === 'Text' && node.props.selectable))
       .toEqual([]);
   });
 
-  test('copies a key in full, and the clipboard clears a minute later', async () => {
-    const { texts, press, exportWithPin } = await render();
-    await exportWithPin();
+  test('copies a key in full, masked or not, and the clipboard clears a minute later', async () => {
+    const { texts, pressText, enterPin } = await render();
+    await enterPin();
     jest.useFakeTimers();
 
-    // The scan key's card is the second one.
-    await press('Copy', 1);
+    await pressText('Copy', 1);
 
     expect(Clipboard.setString.mock.calls).toEqual([[SCAN_XPRIV]]);
-    expect(texts()).toContain(COPIED);
+    expect(texts()).toContain('Copied');
 
     await act(async () => { jest.advanceTimersByTime(SENSITIVE_CLIPBOARD_CLEAR_MS); });
     expect(Clipboard.setString.mock.calls).toEqual([[SCAN_XPRIV], ['']]);
   });
 
-  test('says that the clipboard clears for a few seconds, long before it clears', async () => {
-    const { texts, press, exportWithPin } = await render();
-    await exportWithPin();
+  test('says Copied for a second and a half, on the key copied', async () => {
+    const { texts, pressText, enterPin } = await render();
+    await enterPin();
     jest.useFakeTimers();
 
-    await press('Copy', 1);
+    await pressText('Copy', 1);
+    expect(texts().filter((text) => text === 'Copied')).toHaveLength(1);
+    expect(texts().indexOf('Copied')).toBeGreaterThan(texts().indexOf(SCAN_MASKED));
+
     await act(async () => { jest.advanceTimersByTime(SENSITIVE_COPY_FEEDBACK_MS - 1); });
-    expect(texts()).toContain(COPIED);
+    expect(texts()).toContain('Copied');
 
     await act(async () => { jest.advanceTimersByTime(1); });
-    expect(texts()).not.toContain(COPIED);
+    expect(texts()).not.toContain('Copied');
     // The key is still in the clipboard.
     expect(Clipboard.setString.mock.calls).toEqual([[SCAN_XPRIV]]);
-
-    await act(async () => { jest.advanceTimersByTime(SENSITIVE_CLIPBOARD_CLEAR_MS); });
-    expect(Clipboard.setString.mock.calls).toEqual([[SCAN_XPRIV], ['']]);
-    expect(texts()).not.toContain(COPIED);
-  });
-
-  test('keeps the note for a few seconds from the last copy, on the key copied last', async () => {
-    const { texts, press, exportWithPin } = await render();
-    await exportWithPin();
-    jest.useFakeTimers();
-
-    await press('Copy', 0);
-    await act(async () => { jest.advanceTimersByTime(SENSITIVE_COPY_FEEDBACK_MS - 1); });
-    await press('Copy', 1);
-    await act(async () => { jest.advanceTimersByTime(SENSITIVE_COPY_FEEDBACK_MS - 1); });
-    expect(texts().filter((text) => text === COPIED)).toHaveLength(1);
-    // The scan key's card, the second one, holds the note.
-    expect(texts().indexOf(COPIED)).toBeGreaterThan(texts().indexOf(SCAN_MASKED));
-
-    await act(async () => { jest.advanceTimersByTime(1); });
-    expect(texts()).not.toContain(COPIED);
   });
 
   test('hides the keys while the app is not active', async () => {
-    const { texts, onAppState, exportWithPin } = await render();
-    await exportWithPin();
+    const { texts, onAppState, enterPin } = await render();
+    await enterPin();
 
     await act(async () => { onAppState('inactive'); });
     expect(texts()).not.toContain(SCAN_MASKED);
@@ -293,55 +340,63 @@ describe('ExportPrivacyKeys', () => {
     expect(texts()).toEqual(expect.arrayContaining([SPEND_MASKED, SCAN_MASKED]));
   });
 
-  test('drops the keys when the screen loses focus', async () => {
-    const { texts, titles, listeners, exportWithPin } = await render();
-    await exportWithPin();
-    expect(texts()).toContain(SCAN_MASKED);
+  test('goes back to the privacy settings when the PIN screen closes without the PIN', async () => {
+    const wallet = fakeWallet();
+    const { navigation, emit, setTop } = await render({ wallet });
 
-    await act(async () => { listeners.blur(); });
+    // The PIN screen comes up over the export, then closes.
+    setTop('PinScreen-test');
+    await emit('blur');
+    expect(navigation.dispatch).not.toHaveBeenCalled();
+    setTop(ROUTE_KEY);
+    await emit('focus');
 
-    expect(texts()).not.toContain(SCAN_MASKED);
-    expect(texts()).not.toContain(SPEND_MASKED);
-    expect(titles()).toContain(EXPORT);
+    expect(navigation.dispatch).toHaveBeenCalledTimes(1);
+    expect(closedFromStack(navigation)).toEqual(StackActions.pop(1));
+    expect(wallet.storage.getScanXPrivKey).not.toHaveBeenCalled();
   });
 
-  test('drops the keys when the lock screen comes up', async () => {
-    const { store, texts, exportWithPin } = await render();
-    await exportWithPin();
+  test('stays open when the PIN screen gives the PIN, and asks for no other', async () => {
+    const { navigation, emit, setTop, enterPin, texts, pinScreenCalls } = await render();
+
+    setTop('PinScreen-test');
+    await emit('blur');
+    // The PIN screen goes back, then calls back with the PIN.
+    setTop(ROUTE_KEY);
+    await enterPin();
+    await emit('focus');
+
+    expect(navigation.dispatch).not.toHaveBeenCalled();
+    expect(texts()).toContain(SCAN_MASKED);
+    expect(pinScreenCalls()).toHaveLength(1);
+  });
+
+  test('stays open on the focus of its opening, with the PIN screen already over it', async () => {
+    const { navigation, emit, setTop } = await render();
+
+    setTop('PinScreen-test');
+    await emit('focus');
+
+    expect(navigation.dispatch).not.toHaveBeenCalled();
+  });
+
+  test('keeps the keys when the screen loses focus, and when the lock screen comes and goes', async () => {
+    const { store, texts, emit, enterPin } = await render();
+    await enterPin();
+
+    await emit('blur');
+    await emit('focus');
+    expect(texts()).toEqual(expect.arrayContaining([SPEND_MASKED, SCAN_MASKED]));
 
     await act(async () => { store.dispatch(lockScreen()); });
     await act(async () => { store.dispatch(unlockScreen()); });
-
-    expect(texts()).not.toContain(SCAN_MASKED);
-    expect(texts()).not.toContain(SPEND_MASKED);
-  });
-
-  test('drops the keys a read returns after the screen lost focus', async () => {
-    const wallet = fakeWallet();
-    let respond;
-    wallet.storage.getScanXPrivKey.mockImplementation(
-      () => new Promise((resolve) => { respond = resolve; }),
-    );
-    const { texts, listeners, navigation, press } = await render({ wallet });
-    await press(EXPORT);
-    const [, params] = navigation.navigate.mock.calls[0];
-    let read;
-    await act(async () => { read = params.cb(PIN); });
-
-    await act(async () => { listeners.blur(); });
-    await act(async () => {
-      respond(SCAN_XPRIV);
-      await read;
-    });
-
-    expect(texts()).not.toContain(SCAN_MASKED);
-    expect(texts()).not.toContain(SPEND_MASKED);
+    expect(texts()).toEqual(expect.arrayContaining([SPEND_MASKED, SCAN_MASKED]));
   });
 
   test('keeps no PIN and no key in the redux state', async () => {
-    const { store, exportWithPin } = await render();
+    const { store, enterPin } = await render();
 
-    await exportWithPin();
+    await enterPin();
 
     // The state holds the wallet itself, the fake whose methods return the keys.
     const json = JSON.stringify(store.getState(), (key, value) => {
@@ -355,30 +410,40 @@ describe('ExportPrivacyKeys', () => {
 
   test('stops before it decrypts when the wallet no longer decodes its private outputs', async () => {
     const wallet = fakeWallet({ live: capability('watch') });
-    const { texts, exportWithPin } = await render({ wallet });
+    const { texts, enterPin } = await render({ wallet });
 
-    await exportWithPin();
+    await enterPin();
 
     expect(wallet.storage.getScanXPrivKey).not.toHaveBeenCalled();
     expect(texts()).toContain(READ_FAILED);
   });
 
-  test('shows a fixed text when the wallet has no spend xpub', async () => {
+  test('says the wallet has no shielded keys when it has no spend xpub', async () => {
     const wallet = fakeWallet();
     wallet.storage.getSpendXPubKey.mockResolvedValue(undefined);
-    const { texts, exportWithPin } = await render({ wallet });
+    const { texts, enterPin } = await render({ wallet });
 
-    await exportWithPin();
+    await enterPin();
 
-    expect(texts()).toContain(READ_FAILED);
+    expect(texts()).toContain(NO_SHIELDED_KEYS);
     expect(texts()).not.toContain(SCAN_MASKED);
+  });
+
+  test('says the wallet is not ready when it has no storage', async () => {
+    const wallet = fakeWallet();
+    delete wallet.storage;
+    const { texts, enterPin } = await render({ wallet });
+
+    await enterPin();
+
+    expect(texts()).toContain('Wallet not ready');
+    expect(wallet.getShieldedCapability).not.toHaveBeenCalled();
   });
 
   test('decrypts nothing when the PIN screen calls back after the screen went away', async () => {
     const wallet = fakeWallet();
-    const { navigation, press } = await render({ wallet });
-    await press(EXPORT);
-    const [, params] = navigation.navigate.mock.calls[0];
+    const { pinScreenCalls } = await render({ wallet });
+    const [, params] = pinScreenCalls()[0];
 
     await act(async () => { mounted.unmount(); });
     mounted = null;
@@ -394,12 +459,11 @@ describe('ExportPrivacyKeys', () => {
     wallet.storage.getScanXPrivKey.mockRejectedValue(new errors.InvalidPasswdError(leak));
     const consoleSpies = ['log', 'debug', 'info', 'warn', 'error']
       .map((method) => jest.spyOn(console, method));
-    const { renderer, texts, titles, exportWithPin } = await render({ wallet });
+    const { renderer, texts, enterPin } = await render({ wallet });
 
-    await exportWithPin();
+    await enterPin();
 
     expect(texts()).toContain(READ_FAILED);
-    expect(titles()).toContain(EXPORT);
     expect(JSON.stringify(renderer.toJSON())).not.toContain(leak);
     const logged = JSON.stringify(consoleSpies.flatMap((spy) => spy.mock.calls), (_key, value) => (
       value instanceof Error ? value.message : value
@@ -409,22 +473,36 @@ describe('ExportPrivacyKeys', () => {
     expect(logged).not.toContain(SPEND_XPUB);
   });
 
-  test('asks to unlock a locked private balance before the export', async () => {
-    const { texts, titles } = await render({ level: capability('watch') });
+  test('asks to unlock a locked private balance, then asks for the PIN once it is unlocked', async () => {
+    const { store, texts, titles, pinScreenCalls } = await render({ level: capability('watch') });
 
-    expect(texts()).toContain('Unlock your private balance to export the privacy keys.');
+    expect(texts()).toContain(UNLOCK_FIRST);
     expect(titles()).toContain('Unlock private balance');
-    expect(titles()).not.toContain(EXPORT);
+    expect(pinScreenCalls()).toEqual([]);
+
+    await act(async () => { store.dispatch(shieldedCapabilityUpdate(capability('full'))); });
+
+    expect(pinScreenCalls()).toHaveLength(1);
+    expect(texts()).not.toContain(UNLOCK_FIRST);
+  });
+
+  test('says the wallet has no shielded keys, without asking for the PIN', async () => {
+    const level = capability('none', { reason: 'no-shielded-keys', cause: null });
+    const { texts, titles, pinScreenCalls } = await render({ level });
+
+    expect(texts()).toContain(NO_SHIELDED_KEYS);
+    expect(titles()).not.toContain('Unlock private balance');
+    expect(pinScreenCalls()).toEqual([]);
   });
 
   test.each([
     ['a scan key no PIN can unlock', capability('watch', { cause: 'corrupt-key' })],
     ['shielded keys that do not match', capability('none', { reason: 'integrity', cause: 'key-mismatch' })],
   ])('offers no export for %s', async (_label, level) => {
-    const { texts, titles } = await render({ level });
+    const { texts, titles, pinScreenCalls } = await render({ level });
 
     expect(texts()).toContain('Private transfers are not available for this wallet.');
-    expect(titles()).not.toContain(EXPORT);
     expect(titles()).not.toContain('Unlock private balance');
+    expect(pinScreenCalls()).toEqual([]);
   });
 });

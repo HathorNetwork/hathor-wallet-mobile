@@ -40,7 +40,9 @@ import { PortalProvider } from '../../src/components/Portal';
 import PrivacySettings from '../../src/screens/PrivacySettings';
 import ExportPrivacyKeys from '../../src/screens/ExportPrivacyKeys';
 
-const EXPORT = 'I understand, export the keys';
+const PIN = '135790';
+const SCAN_XPRIV = 'xprv9zyUunmbsdp4RhWSTQD3Dub6p2wBJHqbFXuW9HbPMyGgM3iUWh5PpuFWFp3b2ybA2T61D9aw6xA2EoN7BVq6oG6wkxzURSGVNvqo7nKpx6H';
+const SCAN_MASKED = 'xprv9zyUunmb…o7nKpx6H';
 
 const capability = (level) => ({
   level,
@@ -82,7 +84,7 @@ const Stack = createNavigatorFactory(AllRoutesStack)();
 
 // The tabs, Settings among them, that the privacy settings open from.
 const MainStandIn = () => null;
-// The PIN screen, which never calls back here: the tests look at its route only.
+// The PIN screen: the tests read its params from its route, and act as it does.
 const PinScreenStandIn = () => null;
 
 let mounted = null;
@@ -112,8 +114,11 @@ async function render({ flag = true, level = 'full' } = {}) {
   store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
   store.dispatch(shieldedCapabilityUpdate(capability(level)));
   store.dispatch(setWallet({
-    getShieldedCapability: jest.fn(),
-    storage: { getSpendXPubKey: jest.fn(), getScanXPrivKey: jest.fn() },
+    getShieldedCapability: jest.fn(async () => capability('full')),
+    storage: {
+      getSpendXPubKey: jest.fn(async () => 'xpub-stand-in-for-the-spend-key'),
+      getScanXPrivKey: jest.fn(async () => SCAN_XPRIV),
+    },
   }));
   store.dispatch(unlockScreen());
 
@@ -152,21 +157,58 @@ async function render({ flag = true, level = 'full' } = {}) {
     await open('PrivacySettings');
     await open('ExportPrivacyKeys');
   };
+  /** Closes the PIN screen on top, as its Cancel and Android's back do. */
+  const cancelPin = () => act(async () => { navigationRef.goBack(); });
+  /** Enters the PIN on the PIN screen on top: it goes back, then calls back with the PIN. */
+  const enterPin = () => act(async () => {
+    const { cb } = navigationRef.getCurrentRoute().params;
+    navigationRef.goBack();
+    await cb(PIN);
+  });
   return {
     store,
     routes,
     open,
     openExport,
+    cancelPin,
+    enterPin,
     texts,
     press,
   };
 }
 
 describe('the privacy screens in the app stack', () => {
-  test('close with the export\'s PIN screen when the flag turns off', async () => {
-    const { store, routes, openExport, texts, press } = await render();
+  test('open the export with its PIN screen over it', async () => {
+    const { routes, openExport } = await render();
+
     await openExport();
-    await press(EXPORT);
+
+    expect(routes()).toEqual(['Main', 'PrivacySettings', 'ExportPrivacyKeys', 'PinScreen']);
+  });
+
+  test('go back to the privacy settings when the export\'s PIN screen closes without the PIN', async () => {
+    const { routes, openExport, cancelPin } = await render();
+    await openExport();
+    expect(routes()).toEqual(['Main', 'PrivacySettings', 'ExportPrivacyKeys', 'PinScreen']);
+
+    await cancelPin();
+
+    expect(routes()).toEqual(['Main', 'PrivacySettings']);
+  });
+
+  test('stay on the export, with the keys, when its PIN screen gives the PIN', async () => {
+    const { routes, openExport, enterPin, texts } = await render();
+    await openExport();
+
+    await enterPin();
+
+    expect(routes()).toEqual(['Main', 'PrivacySettings', 'ExportPrivacyKeys']);
+    expect(texts()).toContain(SCAN_MASKED);
+  });
+
+  test('close with the export\'s PIN screen when the flag turns off', async () => {
+    const { store, routes, openExport, texts } = await render();
+    await openExport();
     expect(routes()).toEqual(['Main', 'PrivacySettings', 'ExportPrivacyKeys', 'PinScreen']);
 
     await act(async () => {
@@ -198,9 +240,8 @@ describe('the privacy screens in the app stack', () => {
   });
 
   test('close the export with its PIN screen, without the privacy settings under it', async () => {
-    const { store, routes, open, press } = await render();
+    const { store, routes, open } = await render();
     await open('ExportPrivacyKeys');
-    await press(EXPORT);
     expect(routes()).toEqual(['Main', 'ExportPrivacyKeys', 'PinScreen']);
 
     await act(async () => {
@@ -221,9 +262,8 @@ describe('the privacy screens in the app stack', () => {
   });
 
   test('stay open, the PIN screen included, while the private balance locks', async () => {
-    const { store, routes, openExport, press } = await render();
+    const { store, routes, openExport } = await render();
     await openExport();
-    await press(EXPORT);
 
     await act(async () => { store.dispatch(shieldedCapabilityUpdate(capability('watch'))); });
 
