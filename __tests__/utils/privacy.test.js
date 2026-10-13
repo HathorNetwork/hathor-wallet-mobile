@@ -25,20 +25,25 @@ import {
 } from '../../src/utils/privacy';
 
 describe('the default privacy mode', () => {
-  test('can only be a mode of a send to a private address, Hide amount by default', () => {
-    expect(PRIVACY_DEFAULT_MODE_OPTIONS).toEqual([PRIVACY_MODE.HIDE_AMOUNT, PRIVACY_MODE.PRIVATE]);
-    expect(DEFAULT_PRIVACY_MODE).toBe(PRIVACY_MODE.HIDE_AMOUNT);
+  test('can be any mode, Public by default', () => {
+    expect(PRIVACY_DEFAULT_MODE_OPTIONS).toEqual(expect.arrayContaining([
+      PRIVACY_MODE.PRIVATE,
+      PRIVACY_MODE.HIDE_AMOUNT,
+      PRIVACY_MODE.PUBLIC,
+    ]));
+    expect(PRIVACY_DEFAULT_MODE_OPTIONS).toHaveLength(3);
+    expect(DEFAULT_PRIVACY_MODE).toBe(PRIVACY_MODE.PUBLIC);
   });
 
   test.each([
     PRIVACY_MODE.HIDE_AMOUNT,
     PRIVACY_MODE.PRIVATE,
+    PRIVACY_MODE.PUBLIC,
   ])('keeps a stored %s', (mode) => {
     expect(normalizePrivacyDefaultMode(mode)).toBe(mode);
   });
 
   test.each([
-    ['Public, which no send to a private address takes', PRIVACY_MODE.PUBLIC],
     ['nothing stored', null],
     ['undefined', undefined],
     ['an unknown mode', 'garbage'],

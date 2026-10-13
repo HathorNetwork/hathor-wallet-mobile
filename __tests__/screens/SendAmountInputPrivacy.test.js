@@ -454,31 +454,24 @@ describe('SendAmountInput with a default privacy mode', () => {
     );
   });
 
-  test('starts a send to a legacy address in Public, whatever the default', async () => {
-    const { store, selector, enterAmount, next } = await render(P2PKH);
+  test('starts a send to a legacy address in the default too, which says on Next why it cannot pay it', async () => {
+    const { store, selector, texts, enterAmount, next } = await render(P2PKH);
 
     await setDefault(store, PRIVACY_MODE.PRIVATE);
-    expect(selector()[0].props.mode).toBe(PRIVACY_MODE.PUBLIC);
+    expect(selector()[0].props.mode).toBe(PRIVACY_MODE.PRIVATE);
 
     await enterAmount('1.00', 100n);
     await next();
-    expect(mockNavigation.navigate).toHaveBeenCalledWith(
-      ...confirmParams(P2PKH, 100n, PRIVACY_MODE.PUBLIC),
-    );
+    expect(texts()).toContain(LEGACY_RECIPIENT);
+    expect(mockNavigation.navigate).not.toHaveBeenCalled();
   });
 
   test('keeps the mode picked in the sheet over the default', async () => {
-    const { store, renderer, selector, openSheet } = await render(SHIELDED);
+    const { store, selector, pickMode } = await render(SHIELDED);
     await setDefault(store, PRIVACY_MODE.PRIVATE);
 
-    await openSheet();
-    await act(async () => {
-      // Hide amount is the second row.
-      renderer.root.findAllByType(Switch)[1].props.onValueChange(true);
-    });
-    await act(async () => {
-      renderer.root.find((node) => node.props.title === 'Done' && node.props.onPress).props.onPress();
-    });
+    // Hide amount is the second row.
+    await pickMode(1);
 
     expect(selector()[0].props.mode).toBe(PRIVACY_MODE.HIDE_AMOUNT);
   });

@@ -113,7 +113,7 @@ async function render({ flag = true, level = 'full', saved = null } = {}) {
 }
 
 describe('PrivacySettings', () => {
-  test('offers the private modes as the default of sends to private addresses', async () => {
+  test('offers the three modes as the default of sends', async () => {
     const { texts, switches } = await render();
 
     expect(texts()).toEqual(expect.arrayContaining([
@@ -122,21 +122,23 @@ describe('PrivacySettings', () => {
       'DEFAULT FOR SENDS TO PRIVATE ADDRESSES',
       'Private',
       'Amount hidden on new sends to private addresses. The token is hidden among the tokens each send spends, but never when it is HTR.',
-      'Fee: 0.02 HTR per private output',
+      'Fee: 0.02 HTR per output',
       'Hide amount',
       'Token visible, amount hidden on new sends to private addresses',
-      'Fee: 0.01 HTR per private output',
+      'Fee: 0.01 HTR per output',
+      'Public',
+      'Token and amount visible',
+      'No privacy fees',
     ]));
-    expect(texts()).not.toContain('Public');
-    // Private, then Hide amount, the default when none is saved.
-    expect(DEFAULT_PRIVACY_MODE).toBe(PRIVACY_MODE.HIDE_AMOUNT);
-    expect(switches().map((node) => node.props.value)).toEqual([false, true]);
+    // Private, Hide amount, then Public, the default when none is saved.
+    expect(DEFAULT_PRIVACY_MODE).toBe(PRIVACY_MODE.PUBLIC);
+    expect(switches().map((node) => node.props.value)).toEqual([false, false, true]);
   });
 
   test('shows the default saved for the network', async () => {
     const { switches } = await render({ saved: PRIVACY_MODE.PRIVATE });
 
-    expect(switches().map((node) => node.props.value)).toEqual([true, false]);
+    expect(switches().map((node) => node.props.value)).toEqual([true, false, false]);
   });
 
   test('saves a mode as the default of the network as soon as it is switched on', async () => {
@@ -148,7 +150,7 @@ describe('PrivacySettings', () => {
     expect(setItem).toHaveBeenCalledTimes(1);
     expect(setItem).toHaveBeenCalledWith(KEY, PRIVACY_MODE.PRIVATE);
     expect(store.getState().privacyDefaultMode).toBe(PRIVACY_MODE.PRIVATE);
-    expect(switches().map((node) => node.props.value)).toEqual([true, false]);
+    expect(switches().map((node) => node.props.value)).toEqual([true, false, false]);
   });
 
   test('saves it where the next start of the wallet reads it', async () => {
@@ -182,7 +184,7 @@ describe('PrivacySettings', () => {
 
     expect(navigation.dispatch).not.toHaveBeenCalled();
     expect(navigation.goBack).not.toHaveBeenCalled();
-    expect(switches()).toHaveLength(2);
+    expect(switches()).toHaveLength(3);
   });
 });
 
