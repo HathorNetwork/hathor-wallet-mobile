@@ -2,7 +2,7 @@
 
 Shielded outputs hide the amount (amount-shielded) or the amount and the token (fully shielded) of a transaction output. The wallet decodes the ones paid to it with its shielded scan key and a native crypto provider (`@hathor/ct-crypto-mobile`).
 
-Run these tests on iOS and Android release builds. The shielded UI stays behind the `shielded-outputs-mobile.rollout` flag, which defaults to off. On the Shielded Testnet, the wallet decodes private outputs whether or not the flag is on.
+Run these tests on iOS and Android release builds. The shielded UI stays behind the `shielded-outputs.rollout` flag, which defaults to off. Unleash turns it on for the `testnet-shielded-outputs` network only. On the Shielded Testnet, the wallet decodes private outputs whether or not the flag is on.
 
 ### Before you start
 1. Set up a wallet that can send shielded outputs on the Shielded Testnet, for example a wallet-lib script with `@hathor/ct-crypto-node`, and fund it from the faucet.

@@ -11,7 +11,7 @@ This document describes what happens with the app and the lib during the wallet 
 	1. `this.websocket` is instantiated with `WalletWebSocket` (which extends `BaseWebSocket`)
 1. `HathorWallet` is instantiated, receiving this `connection` instance
 1. The history sync mode is set to `POLLING_HTTP_API`, wallet-lib's default and the only mode that watches the addresses shielded outputs are paid to
-1. On the shielded testnet (the selected network's `fullNetwork` is `testnet-shielded-outputs`), a seed wallet gets the shielded crypto provider of `@hathor/ct-crypto-mobile` (`registerShieldedCryptoProvider` in `src/sagas/shieldedProvider.js`), whether or not the `shielded-outputs-mobile.rollout` flag is on:
+1. On the shielded testnet (the selected network's `fullNetwork` is `testnet-shielded-outputs`), a seed wallet gets the shielded crypto provider of `@hathor/ct-crypto-mobile` (`registerShieldedCryptoProvider` in `src/sagas/shieldedProvider.js`), whether or not the `shielded-outputs.rollout` flag is on:
 	1. `loadShieldedCryptoProvider` creates the provider and self-tests it: deriving the tag of HTR must give HTR's known tag within 10 s. The provider that passes is kept for the next starts
 	1. `wallet.setShieldedCryptoProvider` registers it, and `state.shielded.providerStatus` becomes `ready`
 	1. On a failure, `providerStatus` becomes `failed` with the message in `providerError`, the error is logged, and the wallet starts transparent-only. Nothing is shown to the user
