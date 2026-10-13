@@ -528,33 +528,43 @@ export function* startWallet(action) {
 }
 
 /**
+ * The PIN that a reload starts the wallet with: the PIN of the last start request, or of a
+ * WALLET_PIN_CHANGED after it. A PIN change or a safe-biometry switch re-encrypts the access data,
+ * and start() decrypts it with the PIN it is given. The PIN is kept here, never in the redux state.
+ */
+let restartPin;
+
+/**
+ * Keeps restartPin up to date. It runs as long as the app does: a PIN change can land while a
+ * start is still loading, before waitForWalletRestart runs.
+ */
+export function* trackRestartPin() {
+  yield takeEvery([types.START_WALLET_REQUESTED, types.WALLET_PIN_CHANGED], (action) => {
+    restartPin = action.type === types.WALLET_PIN_CHANGED ? action.payload : action.payload?.pin;
+  });
+}
+
+/**
  * Waits for the request that ends the running wallet: a new start, a wallet reset or a reload.
- * A reload dispatches the start action again, with the PIN of the last WALLET_PIN_CHANGED: a PIN
- * change or a safe-biometry switch re-encrypts the access data, and start() decrypts it with the
- * PIN it is given.
+ * A reload dispatches the start action again, with restartPin.
  *
  * @param {Object} action The START_WALLET_REQUESTED action that started the running wallet
  */
 export function* waitForWalletRestart(action) {
-  let startAction = action;
-  while (true) {
-    const { reload, pinChange } = yield race({
-      start: take([
-        types.START_WALLET_REQUESTED,
-        types.RESET_WALLET,
-      ]),
-      reload: take(types.RELOAD_WALLET_REQUESTED),
-      pinChange: take(types.WALLET_PIN_CHANGED),
-    });
+  const { reload } = yield race({
+    start: take([
+      types.START_WALLET_REQUESTED,
+      types.RESET_WALLET,
+    ]),
+    reload: take(types.RELOAD_WALLET_REQUESTED),
+  });
 
-    if (!pinChange) {
-      if (reload) {
-        // Yield the start action again to reload the wallet
-        yield put(startAction);
-      }
-      return;
-    }
-    startAction = startWalletRequested({ ...startAction.payload, pin: pinChange.payload });
+  if (reload) {
+    // Yield the start action again to reload the wallet. The start action of a passkey wallet has
+    // no PIN.
+    yield put(action.payload?.pin === undefined
+      ? action
+      : startWalletRequested({ ...action.payload, pin: restartPin }));
   }
 }
 
@@ -1072,6 +1082,7 @@ export function* fetchFirstWalletAddress() {
 
 export function* saga() {
   yield all([
+    fork(trackRestartPin),
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
