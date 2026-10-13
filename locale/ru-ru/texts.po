@@ -505,7 +505,7 @@ msgstr "Авторизовать создание токена"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 #: src/screens/CreateTokenConfirm.js:200 src/screens/SendConfirmScreen.js:408
-#: src/screens/TokenSwapReview.js:271
+#: src/screens/TokenSwapReview.js:265
 msgid "Building transaction"
 msgstr ""
 
@@ -881,7 +881,7 @@ msgstr "Введите seed-фразу"
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
-#: src/components/Reown/SendTransactionRequest.js:550
+#: src/components/Reown/SendTransactionRequest.js:552
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:176
 #: src/screens/PinScreen.js:299 src/screens/TokenSwapLoadingScreen.js:90
@@ -1242,7 +1242,7 @@ msgstr[2] ""
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:77 src/screens/TokenSwapReview.js:370
+#: src/screens/SendConfirmScreen.js:77 src/screens/TokenSwapReview.js:364
 msgid "No fee"
 msgstr ""
 
@@ -1286,19 +1286,19 @@ msgstr ""
 msgid "Unlock private balance"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:387 src/screens/TokenSwapReview.js:226
+#: src/screens/SendConfirmScreen.js:387 src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:406
-#: src/screens/TokenSwapReview.js:269
+#: src/screens/TokenSwapReview.js:263
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:407
-#: src/screens/TokenSwapReview.js:270
+#: src/screens/TokenSwapReview.js:264
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
@@ -1381,7 +1381,7 @@ msgstr[2] ""
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/SendConfirmScreen.js:661 src/screens/TokenSwapReview.js:366
+#: src/screens/SendConfirmScreen.js:661 src/screens/TokenSwapReview.js:360
 msgid "Network Fee"
 msgstr ""
 
@@ -1489,19 +1489,19 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:281
+#: src/screens/TokenSwapReview.js:275
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:287
+#: src/screens/TokenSwapReview.js:281
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:305
+#: src/screens/TokenSwapReview.js:299
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:378
+#: src/screens/TokenSwapReview.js:372
 msgid "SWAP"
 msgstr ""
 
@@ -1640,7 +1640,7 @@ msgid "Reject All (${ pendingRequests.length })"
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:303
-#: src/components/Reown/SendTransactionRequest.js:472
+#: src/components/Reown/SendTransactionRequest.js:474
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:33
 msgid "Transaction successfully sent."
 msgstr ""
@@ -1948,22 +1948,21 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-#: src/sagas/wallet.js:1153
+#: src/sagas/wallet.js:1152
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1167
+#: src/sagas/wallet.js:1166
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1177
+#: src/sagas/wallet.js:1176
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#.  This will show the message in the feedback content. A new address the wallet has no
-#.  shielded chain for says why, and no legacy address stands in for it.
-#: src/sagas/wallet.js:1197
+#.  This will show the message in the feedback content
+#: src/sagas/wallet.js:1192
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -2242,7 +2241,7 @@ msgstr ""
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:132
+#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:133
 msgid "Date & Time"
 msgstr "Дата и Время"
 
@@ -2362,7 +2361,7 @@ msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
-#: src/components/TxDetailsModal.js:141
+#: src/components/TxDetailsModal.js:142
 msgid "Transaction ID"
 msgstr ""
 
@@ -2571,13 +2570,13 @@ msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:216
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:515
-#: src/components/Reown/SendTransactionRequest.js:487
+#: src/components/Reown/SendTransactionRequest.js:489
 msgid "Sending transaction"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:217
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:516
-#: src/components/Reown/SendTransactionRequest.js:488
+#: src/components/Reown/SendTransactionRequest.js:490
 msgid "Please wait."
 msgstr ""
 
@@ -2865,28 +2864,28 @@ msgstr ""
 msgid "Output"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:356
+#: src/components/Reown/SendTransactionRequest.js:358
 msgid "Data field"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:378
+#: src/components/Reown/SendTransactionRequest.js:380
 msgid "Change Address"
 msgstr ""
 
 #.  No unregistered tokens, just show success
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:302
-#: src/components/Reown/SendTransactionRequest.js:471
+#: src/components/Reown/SendTransactionRequest.js:473
 msgid "Success!"
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:573
-#: src/components/Reown/SendTransactionRequest.js:515
+#: src/components/Reown/SendTransactionRequest.js:517
 msgid "This transaction will only be built, not pushed to the network."
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:154
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:52
-#: src/components/Reown/SendTransactionRequest.js:525
+#: src/components/Reown/SendTransactionRequest.js:527
 msgid "Accept Transaction"
 msgstr ""
 
@@ -2894,12 +2893,12 @@ msgstr ""
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:453
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:474
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:53
-#: src/components/Reown/SendTransactionRequest.js:529
+#: src/components/Reown/SendTransactionRequest.js:531
 msgid "Decline Transaction"
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:622
-#: src/components/Reown/SendTransactionRequest.js:546
+#: src/components/Reown/SendTransactionRequest.js:548
 msgid "Error while sending transaction."
 msgstr ""
 

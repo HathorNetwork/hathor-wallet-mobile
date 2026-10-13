@@ -49,45 +49,32 @@ async function runFetchFirstAddress(state, wallet = createWallet()) {
 }
 
 describe('getFirstAddress', () => {
-  test('reads the address at index 0 of the chain asked for', async () => {
+  test('reads the legacy address at index 0', async () => {
     const wallet = createWallet();
 
-    await expect(getFirstAddress(wallet, true)).resolves.toBe(SHIELDED);
-    expect(wallet.getAddressAtIndex).toHaveBeenLastCalledWith(0, { legacy: false });
-
     await expect(getFirstAddress(wallet)).resolves.toBe(P2PKH);
-    expect(wallet.getAddressAtIndex).toHaveBeenLastCalledWith(0, { legacy: true });
+    expect(wallet.getAddressAtIndex).toHaveBeenCalledWith(0);
   });
 });
 
+// The first address is where a nano contract registration and a dApp's nano contract request
+// start their caller from. Nano contract callers are legacy addresses on every network.
 describe('fetchFirstWalletAddress', () => {
-  test('gives the nano contract caller the new address in the shielded environment', async () => {
-    const { dispatched } = await runFetchFirstAddress(SHIELDED_ENVIRONMENT);
-
-    expect(dispatched).toContainEqual({
-      type: types.FIRSTADDRESS_SUCCESS,
-      payload: { address: SHIELDED },
-    });
-  });
-
   test.each([
-    ['the flag is off', { ...SHIELDED_ENVIRONMENT, featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false } }],
-    ['on the wallet-service facade', {
-      ...SHIELDED_ENVIRONMENT,
-      useWalletService: true,
-      shielded: { providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED },
-    }],
+    ['in the shielded environment', SHIELDED_ENVIRONMENT],
+    ['when the flag is off', { ...SHIELDED_ENVIRONMENT, featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false } }],
     ['on another network', {}],
-  ])('gives it the legacy address when %s', async (_label, state) => {
-    const { dispatched } = await runFetchFirstAddress(state);
+  ])('gives the legacy address %s', async (_label, state) => {
+    const { wallet, dispatched } = await runFetchFirstAddress(state);
 
+    expect(wallet.getAddressAtIndex).toHaveBeenCalledWith(0);
     expect(dispatched).toContainEqual({
       type: types.FIRSTADDRESS_SUCCESS,
       payload: { address: P2PKH },
     });
   });
 
-  test('says why the caller is missing when the new address is refused', async () => {
+  test('says the first address could not be loaded, whatever the error', async () => {
     const wallet = createWallet();
     wallet.getAddressAtIndex.mockRejectedValue(
       new errors.ShieldedKeyError('shielded-no-provider', 'No shielded crypto provider is registered.'),
@@ -96,8 +83,7 @@ describe('fetchFirstWalletAddress', () => {
 
     expect(dispatched).toContainEqual({
       type: types.FIRSTADDRESS_FAILURE,
-      payload: { error: 'Private transfers could not be loaded on this device.' },
+      payload: { error: 'There was an error while loading first wallet address. Try again.' },
     });
-    expect(dispatched.map((action) => action.type)).not.toContain(types.FIRSTADDRESS_SUCCESS);
   });
 });
