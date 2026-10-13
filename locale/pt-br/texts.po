@@ -840,7 +840,7 @@ msgstr "Digite suas palavras separadas por espaços"
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
-#: src/components/Reown/SendTransactionRequest.js:550
+#: src/components/Reown/SendTransactionRequest.js:552
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:176
 #: src/screens/PinScreen.js:299 src/screens/TokenSwapLoadingScreen.js:90
@@ -1584,7 +1584,7 @@ msgid "Reject All (${ pendingRequests.length })"
 msgstr "Rejeitar Todas (${ pendingRequests.length })"
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:303
-#: src/components/Reown/SendTransactionRequest.js:472
+#: src/components/Reown/SendTransactionRequest.js:474
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:33
 msgid "Transaction successfully sent."
 msgstr "Transação enviada com sucesso."
@@ -2551,13 +2551,13 @@ msgstr "Dados do Token"
 
 #: src/components/Reown/CreateTokenRequest.js:216
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:515
-#: src/components/Reown/SendTransactionRequest.js:487
+#: src/components/Reown/SendTransactionRequest.js:489
 msgid "Sending transaction"
 msgstr "Enviando transação"
 
 #: src/components/Reown/CreateTokenRequest.js:217
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:516
-#: src/components/Reown/SendTransactionRequest.js:488
+#: src/components/Reown/SendTransactionRequest.js:490
 msgid "Please wait."
 msgstr "Por favor, espere."
 
@@ -2864,28 +2864,28 @@ msgstr "Outputs"
 msgid "Output"
 msgstr "Output"
 
-#: src/components/Reown/SendTransactionRequest.js:356
+#: src/components/Reown/SendTransactionRequest.js:358
 msgid "Data field"
 msgstr "Campo de dados"
 
-#: src/components/Reown/SendTransactionRequest.js:378
+#: src/components/Reown/SendTransactionRequest.js:380
 msgid "Change Address"
 msgstr "Endereço de troco"
 
 #.  No unregistered tokens, just show success
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:302
-#: src/components/Reown/SendTransactionRequest.js:471
+#: src/components/Reown/SendTransactionRequest.js:473
 msgid "Success!"
 msgstr "Sucesso!"
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:573
-#: src/components/Reown/SendTransactionRequest.js:515
+#: src/components/Reown/SendTransactionRequest.js:517
 msgid "This transaction will only be built, not pushed to the network."
 msgstr "Essa transação será apenas construída, não enviada para a rede."
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:154
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:52
-#: src/components/Reown/SendTransactionRequest.js:525
+#: src/components/Reown/SendTransactionRequest.js:527
 msgid "Accept Transaction"
 msgstr "Aceitar transação"
 
@@ -2893,12 +2893,12 @@ msgstr "Aceitar transação"
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:453
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:474
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:53
-#: src/components/Reown/SendTransactionRequest.js:529
+#: src/components/Reown/SendTransactionRequest.js:531
 msgid "Decline Transaction"
 msgstr "Recusar transação"
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:622
-#: src/components/Reown/SendTransactionRequest.js:546
+#: src/components/Reown/SendTransactionRequest.js:548
 msgid "Error while sending transaction."
 msgstr "Ocorreu um erro durante o envio da transação."
 
