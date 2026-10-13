@@ -108,7 +108,11 @@ import {
   getFirstAddress,
   normalizeAmountFormat,
 } from '../utils';
-import { isShieldedNetwork, shouldRegisterShieldedProvider } from '../shielded/gating';
+import {
+  isShieldedEnvironment,
+  isShieldedNetwork,
+  shouldRegisterShieldedProvider,
+} from '../shielded/gating';
 import { logger } from '../logger';
 
 const log = logger('wallet');
@@ -1105,11 +1109,23 @@ export function* onStartWalletFailed() {
   yield put(setWallet(null));
 }
 
+/**
+ * Puts the wallet's current legacy address as the shared address (lastSharedAddress). In the
+ * shielded environment the shielded saga puts it instead: the wallet's current shielded
+ * address, or none while it can't be read, never the legacy one.
+ */
 export function* refreshSharedAddress() {
+  if (yield select(isShieldedEnvironment)) {
+    return;
+  }
   const wallet = yield select((state) => state.wallet);
 
   const { address, index } = yield call(() => wallet.getCurrentAddress());
 
+  // The shielded UI may have turned on during the read.
+  if (yield select(isShieldedEnvironment)) {
+    return;
+  }
   yield put(sharedAddressUpdate(address, index));
 }
 

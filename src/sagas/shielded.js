@@ -25,6 +25,7 @@ import {
 import {
   types,
   onExceptionCaptured,
+  sharedAddressUpdate,
   shieldedCapabilityUpdate,
   shieldedReceiveAddressUpdate,
   shieldedUnlockStatusUpdate,
@@ -187,6 +188,10 @@ export function createReceiveRefreshes() {
  * goes back to idle. It keeps what it read only for the wallet that still runs, when no refresh
  * started after it, and puts nothing when the state is the same.
  *
+ * Where the shielded UI is on, it also puts the shared address (lastSharedAddress): the current
+ * shielded address, or none while that address can't be read, never the legacy one. Elsewhere
+ * the wallet saga's refreshSharedAddress puts the legacy address.
+ *
  * @param {ReturnType<createReceiveRefreshes>} refreshes
  */
 export function* refreshShieldedReceive(refreshes) {
@@ -211,18 +216,45 @@ export function* refreshShieldedReceive(refreshes) {
       }
     }
 
-    const { currentWallet, current } = yield select((state) => ({
+    const { currentWallet, current, sharedAddress } = yield select((state) => ({
       currentWallet: state.wallet,
       current: selectShieldedReceive(state),
+      sharedAddress: state.lastSharedAddress,
     }));
-    if (!refreshes.isLatest(refresh)
-      || currentWallet !== wallet
-      || isSameReceiveState(current, next)) {
+    if (!refreshes.isLatest(refresh) || currentWallet !== wallet) {
       return;
     }
-    yield put(shieldedReceiveAddressUpdate(next));
+    if (environment && sharedAddress !== next.address) {
+      yield put(sharedAddressUpdate(next.address, next.index));
+    }
+    if (!isSameReceiveState(current, next)) {
+      yield put(shieldedReceiveAddressUpdate(next));
+    }
   } catch (e) {
     log.error('Failed to refresh the private receive address.', e);
+  }
+}
+
+/**
+ * Handles FEATURE_TOGGLE_UPDATED: when the shielded UI turned on or off for the running wallet,
+ * reads its shared address and its private receive state again, as the shared address is the
+ * shielded one only while the shielded UI is on, and nothing else reads it again until the next
+ * tx or reload. The receive state is idle exactly when it was last read with the shielded UI
+ * off. A wallet that is starting reads both at the end of its start.
+ */
+export function* onFeatureToggleUpdated() {
+  try {
+    const { walletReady, environment, receive } = yield select((state) => ({
+      walletReady: state.walletStartState === WALLET_STATUS.READY,
+      environment: isShieldedEnvironment(state),
+      receive: selectShieldedReceive(state),
+    }));
+    const readInEnvironment = receive.status !== SHIELDED_RECEIVE_STATUS.IDLE;
+    if (walletReady && environment !== readInEnvironment) {
+      yield put(walletRefreshSharedAddress());
+    }
+  } catch (e) {
+    log.error('Failed to read the shared address again after a flag change.', e);
   }
 }
 
@@ -447,5 +479,6 @@ export function* saga() {
     // Dispatched at the end of a start or a reload, by handleTx and after a balance refresh.
     takeEvery(types.WALLET_REFRESH_SHARED_ADDRESS, refreshShieldedReceive, receiveRefreshes),
     takeLatest(types.SHIELDED_REPROCESS_REQUESTED, onShieldedReprocessRequested, loaded),
+    takeLatest(types.FEATURE_TOGGLE_UPDATED, onFeatureToggleUpdated),
   ]);
 }
