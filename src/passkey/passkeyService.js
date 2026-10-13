@@ -21,8 +21,10 @@
  * IMPORTANT — on-device prerequisites:
  *   - iOS: Associated Domains entitlement `webcredentials:<PASSKEY_RP_ID>` + a hosted
  *     https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association. Without it, create/get fail.
- *   - Android: a hosted https://<PASSKEY_RP_ID>/.well-known/assetlinks.json granting
- *     `delegate_permission/common.get_login_creds` to this package and its signing certificates.
+ *   - Android: a hosted https://<PASSKEY_RP_ID>/.well-known/assetlinks.json granting both
+ *     `delegate_permission/common.handle_all_urls` and `delegate_permission/common.get_login_creds`
+ *     to this package and its signing certificates. With get_login_creds alone, Google Play
+ *     services rejected creation on a test device with "RP ID cannot be validated".
  */
 
 import { Platform } from 'react-native';
