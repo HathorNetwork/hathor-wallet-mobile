@@ -17,8 +17,7 @@ import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
 import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
-import { canSendPrivately } from '../shielded/gating';
-import { selectPrivateSendsUnavailableText } from '../utils/shieldedSend';
+import { isShieldedEnvironment } from '../shielded/gating';
 
 export const SendAddressInput = () => {
   const route = useRoute();
@@ -34,20 +33,17 @@ export const SendAddressInput = () => {
     error: null,
   });
   const network = useSelector((state) => new Network(state.networkSettings.network));
-  // A private address, typed or scanned, can only be paid where the wallet sends privately.
-  const allowShielded = useSelector(canSendPrivately);
-  // Where the shielded UI shows, a private address the wallet can't pay is rejected with why.
-  const shieldedRejection = useSelector(selectPrivateSendsUnavailableText);
+  // A private address, typed or scanned, can be paid in the shielded environment: privately
+  // where the wallet sends privately, and in public, to the address of its spend key, anywhere
+  // there.
+  const allowShielded = useSelector(isShieldedEnvironment);
 
   const onAddressChange = (text) => {
     setFormModel({ address: text, error: null });
   }
 
   const onButtonPress = () => {
-    const validation = validateAddress(formModel.address, network, {
-      allowShielded,
-      shieldedRejection,
-    });
+    const validation = validateAddress(formModel.address, network, { allowShielded });
     if (validation.isValid) {
       navigation.navigate('SendAmountInput', { address: formModel.address });
     } else {

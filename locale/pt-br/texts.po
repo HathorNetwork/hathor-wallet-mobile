@@ -57,7 +57,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Última] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:116 src/utils.js:873
+#: src/models.js:116 src/utils.js:868
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -65,21 +65,21 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "This wallet does not support shielded addresses."
 msgstr "Esta wallet não suporta endereços blindados."
 
-#: src/utils.js:310
+#: src/utils.js:305
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
-#: src/utils.js:858
+#: src/utils.js:853
 msgid "CREATE DEPOSIT TOKEN"
 msgstr "CRIAR TOKEN DE DEPÓSITO"
 
-#: src/utils.js:860
+#: src/utils.js:855
 msgid "CREATE FEE TOKEN"
 msgstr "CRIAR TOKEN DE TAXA"
 
 #: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:115
 #: src/screens/CreateTokenDepositNotice.js:42
-#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:862
+#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:857
 msgid "CREATE TOKEN"
 msgstr "CRIAR TOKEN"
 
@@ -130,30 +130,17 @@ msgstr "Há uma nova transação na sua carteira."
 msgid "New transaction received"
 msgstr "Nova transação recebida"
 
-#: src/shielded/receiveState.js:149 src/utils/shieldedSend.js:89
-#: src/utils/shieldedSend.js:290
-msgid "Private transfers could not be loaded on this device."
-msgstr ""
-"Não foi possível carregar as transferências privadas neste dispositivo."
-
-#: src/components/Shielded/ShieldedBalanceSplit.js:101
-#: src/components/Shielded/ShieldedBalanceSplit.js:157
-#: src/screens/SendConfirmScreen.js:209 src/screens/SendConfirmScreen.js:237
-#: src/shielded/receiveState.js:154 src/utils/shieldedSend.js:90
-msgid "Private transfers are not available for this wallet."
-msgstr "Transferências privadas não estão disponíveis para esta carteira."
-
-#: src/screens/SendConfirmScreen.js:518 src/utils/shieldedSend.js:265
+#: src/screens/SendConfirmScreen.js:518 src/utils/shieldedSend.js:233
 msgid "Your private balance is locked. Unlock it to send privately."
 msgstr ""
 "Seu saldo privado está bloqueado. Desbloqueie-o para enviar de forma privada."
 
-#: src/utils/shieldedSend.js:268
+#: src/utils/shieldedSend.js:236
 msgid "This wallet cannot receive the private change this transaction needs."
 msgstr ""
 "Esta carteira não pode receber o troco privado de que esta transação precisa."
 
-#: src/utils/shieldedSend.js:276
+#: src/utils/shieldedSend.js:244
 msgid ""
 "To keep the value of the private funds it spends hidden, this transaction "
 "needs a private change, and there is not enough HTR to pay its privacy fee."
@@ -162,7 +149,7 @@ msgstr ""
 "precisa de um troco privado, e não há HTR suficiente para pagar a taxa de "
 "privacidade dele."
 
-#: src/utils/shieldedSend.js:280
+#: src/utils/shieldedSend.js:248
 msgid ""
 "To keep the amount it sends hidden, this transaction needs a private change, "
 "and there is not enough HTR to pay its privacy fee."
@@ -170,13 +157,13 @@ msgstr ""
 "Para manter oculto o valor que envia, esta transação precisa de um troco "
 "privado, e não há HTR suficiente para pagar a taxa de privacidade dele."
 
-#: src/utils/shieldedSend.js:284
+#: src/utils/shieldedSend.js:252
 msgid "Insufficient HTR to cover the privacy fees of this transaction."
 msgstr ""
 "Saldo insuficiente de HTR para cobrir as taxas de privacidade desta "
 "transação."
 
-#: src/utils/shieldedSend.js:287
+#: src/utils/shieldedSend.js:255
 msgid ""
 "An amount in this transaction, its change included, is too large to be "
 "private."
@@ -184,13 +171,18 @@ msgstr ""
 "Um valor desta transação, incluindo o troco, é grande demais para ser "
 "privado."
 
-#: src/utils/shieldedSend.js:293
+#: src/shielded/receiveState.js:149 src/utils/shieldedSend.js:258
+msgid "Private transfers could not be loaded on this device."
+msgstr ""
+"Não foi possível carregar as transferências privadas neste dispositivo."
+
+#: src/utils/shieldedSend.js:261
 msgid ""
 "The private change of this transaction could not be prepared. Try again."
 msgstr ""
 "Não foi possível preparar o troco privado desta transação. Tente novamente."
 
-#: src/utils/shieldedSend.js:312
+#: src/utils/shieldedSend.js:280
 msgid ""
 "This transaction spends private funds, so its change must stay private, but "
 "the dApp asked to send the change to an address that can't receive private "
@@ -216,6 +208,13 @@ msgstr ""
 #: src/shielded/receiveState.js:152
 msgid "Could not load your private address."
 msgstr "Não foi possível carregar seu endereço privado."
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:101
+#: src/components/Shielded/ShieldedBalanceSplit.js:157
+#: src/screens/SendConfirmScreen.js:209 src/screens/SendConfirmScreen.js:237
+#: src/shielded/receiveState.js:154
+msgid "Private transfers are not available for this wallet."
+msgstr "Transferências privadas não estão disponíveis para esta carteira."
 
 #: src/screens/About.js:83
 msgid "ABOUT"
@@ -497,7 +496,7 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
-#: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:75
+#: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:71
 #: src/screens/SendAmountInput.js:241
 msgid "Next"
 msgstr "Próximo"
@@ -1146,11 +1145,11 @@ msgstr "Mudar PIN"
 msgid "Lock wallet"
 msgstr "Bloquear a wallet"
 
-#: src/screens/SendAddressInput.js:62 src/screens/SendScanQRCode.js:80
+#: src/screens/SendAddressInput.js:58 src/screens/SendScanQRCode.js:80
 msgid "SEND"
 msgstr "ENVIAR"
 
-#: src/screens/SendAddressInput.js:68
+#: src/screens/SendAddressInput.js:64
 msgid "Address to send"
 msgstr "Endereço para enviar"
 

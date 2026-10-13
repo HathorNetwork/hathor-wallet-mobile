@@ -7,12 +7,7 @@
 
 import { constants as hathorLibConstants, errors, shielded } from '@hathor/wallet-lib';
 import { t } from 'ttag';
-import { DEFAULT_PRIVACY_MODE, PRIVACY_MODE, SHIELDED_PROVIDER_STATUS } from '../constants';
-import {
-  canSendPrivately,
-  isShieldedEnvironment,
-  selectShieldedCapability,
-} from '../shielded/gating';
+import { DEFAULT_PRIVACY_MODE, PRIVACY_MODE } from '../constants';
 
 const {
   FEE_PER_AMOUNT_SHIELDED_OUTPUT,
@@ -61,33 +56,6 @@ export const MAX_PRIVATE_AMOUNT = MAX_SHIELDED_OUTPUT_VALUE - 1n;
  */
 export function isPrivateAmountAllowed(amount) {
   return amount > 0n && amount < MAX_SHIELDED_OUTPUT_VALUE;
-}
-
-// The capability reason of a wallet with no shielded crypto provider registered.
-const NO_PROVIDER_REASON = 'no-provider';
-
-/**
- * Why the wallet can't pay a private address, where the shielded UI shows but private sends
- * aren't available, in the words Receive uses for its private address: the device couldn't load
- * private transfers, as when the crypto provider failed its self-test, or this wallet can't use
- * them, as with a scan key no PIN can unlock or no shielded chain it can use.
- *
- * It is null where the wallet can send privately, and where the shielded UI doesn't show (the
- * flag off, the wallet-service facade, other networks), where a private address is rejected as
- * unsupported.
- *
- * @param {Object} state Redux state
- * @returns {string|null}
- */
-export function selectPrivateSendsUnavailableText(state) {
-  if (!isShieldedEnvironment(state) || canSendPrivately(state)) {
-    return null;
-  }
-  const noProvider = state.shielded.providerStatus !== SHIELDED_PROVIDER_STATUS.READY
-    || selectShieldedCapability(state)?.reason === NO_PROVIDER_REASON;
-  return noProvider
-    ? t`Private transfers could not be loaded on this device.`
-    : t`Private transfers are not available for this wallet.`;
 }
 
 /**
