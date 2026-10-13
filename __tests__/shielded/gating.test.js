@@ -91,7 +91,8 @@ describe('isShieldedNetwork', () => {
 });
 
 describe('getShieldedFeatureToggle', () => {
-  test('defaults to off', () => {
+  test('is the shielded-outputs rollout flag, off by default', () => {
+    expect(SHIELDED_OUTPUTS_FEATURE_TOGGLE).toBe('shielded-outputs.rollout');
     expect(FEATURE_TOGGLE_DEFAULTS[SHIELDED_OUTPUTS_FEATURE_TOGGLE]).toBe(false);
     expect(getShieldedFeatureToggle({ featureToggles: { ...FEATURE_TOGGLE_DEFAULTS } }))
       .toBe(false);
