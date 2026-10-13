@@ -292,25 +292,55 @@ describe('processRequest with strings too long to be addresses', () => {
     jest.restoreAllMocks();
   });
 
-  test.each([
-    ['an output address', (string) => ({
-      method: 'htr_sendTransaction',
-      params: { network: 'testnet', outputs: [{ address: string, value: '5' }] },
-    })],
-    ['a nano contract argument', (string) => ({
-      method: 'htr_sendNanoContractTx', params: { ...nanoParams, args: [string] },
-    })],
-  ])('passes a 40,000-character string as %s to the rpc handler without decoding it', async (_field, buildRequest) => {
+  test('passes a 40,000-character string as a nano contract argument to the rpc handler without decoding it', async () => {
     handleRpcRequest.mockResolvedValue({ type: 'test-response' });
     const decode = jest.spyOn(Address.prototype, 'decode');
 
-    await runProcessRequest(buildRequest(LONG_STRING));
+    await runProcessRequest({
+      method: 'htr_sendNanoContractTx', params: { ...nanoParams, args: [LONG_STRING] },
+    });
 
     expect(decodedLengths(decode)).not.toContain(LONG_STRING.length);
     expect(handleRpcRequest).toHaveBeenCalledTimes(1);
     expect(walletKit.respondSessionRequest).toHaveBeenCalledWith(expect.objectContaining({
       response: expect.objectContaining({ result: { type: 'test-response' } }),
     }));
+  });
+
+  test.each([
+    ['an output address', (string) => ({
+      method: 'htr_sendTransaction',
+      params: { network: 'testnet', outputs: [{ address: string, value: '5' }] },
+    })],
+    ['the change address', (string) => ({
+      method: 'htr_sendTransaction',
+      params: { network: 'testnet', outputs: [{ address: P2PKH, value: '5' }], changeAddress: string },
+    })],
+    ['a token creation address', (string) => ({
+      method: 'htr_createToken',
+      params: { network: 'testnet', name: 'Token', symbol: 'TKN', amount: '100', mint_authority_address: string },
+    })],
+    ['a nano contract action address', (string) => ({
+      method: 'htr_sendNanoContractTx',
+      params: { ...nanoParams, actions: [{ type: 'withdrawal', token: '00', amount: '1', address: string }] },
+    })],
+  ])('rejects a 40,000-character string as %s as an invalid payload, without decoding it', async (_field, buildRequest) => {
+    const decode = jest.spyOn(Address.prototype, 'decode');
+
+    const dispatched = await runProcessRequest(buildRequest(LONG_STRING));
+
+    expect(decodedLengths(decode)).not.toContain(LONG_STRING.length);
+    expect(handleRpcRequest).not.toHaveBeenCalled();
+    expect(walletKit.respondSessionRequest).toHaveBeenCalledTimes(1);
+    expect(walletKit.respondSessionRequest).toHaveBeenCalledWith({
+      topic: TOPIC,
+      response: {
+        id: REQUEST_ID,
+        jsonrpc: '2.0',
+        error: { code: INVALID_PAYLOAD, message: expect.any(String) },
+      },
+    });
+    expect(dispatched.map((action) => action.type)).not.toContain(types.EXCEPTION_CAPTURED);
   });
 
   test('rejects a shielded address that comes after a 40,000-character string', async () => {
