@@ -15,6 +15,7 @@
 		6132EF182BDFF13200BBE14D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6132EF172BDFF13200BBE14D /* PrivacyInfo.xcprivacy */; };
 		BC45103AF5F92F4850F451F5 /* Pods_HathorMobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2616E9D74D74BE0440EA4F82 /* Pods_HathorMobile.framework */; };
 		CBF4F5972DA09D6B0058000F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF4F5962DA09D6B0058000F /* AppDelegate.swift */; };
+		94129A895D3CEC36C06410A0 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D031F45A8F39F1D6CE8FF7 /* SceneDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,6 +43,7 @@
 		6132EF172BDFF13200BBE14D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = HathorMobile/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		8BA80BB4B2C8AAC17AC488C9 /* Pods-HathorMobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HathorMobile.release.xcconfig"; path = "Target Support Files/Pods-HathorMobile/Pods-HathorMobile.release.xcconfig"; sourceTree = "<group>"; };
 		CBF4F5962DA09D6B0058000F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = HathorMobile/AppDelegate.swift; sourceTree = "<group>"; };
+		75D031F45A8F39F1D6CE8FF7 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = HathorMobile/SceneDelegate.swift; sourceTree = "<group>"; };
 		CBF4F5982DA09D740058000F /* HathorMobile-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HathorMobile-Bridging-Header.h"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		EEC219735916ED1204FE5682 /* Pods-HathorMobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HathorMobile.debug.xcconfig"; path = "Target Support Files/Pods-HathorMobile/Pods-HathorMobile.debug.xcconfig"; sourceTree = "<group>"; };
@@ -87,6 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				CBF4F5962DA09D6B0058000F /* AppDelegate.swift */,
+				75D031F45A8F39F1D6CE8FF7 /* SceneDelegate.swift */,
 				2BF6F88629E44EAC00FAA6D6 /* HathorMobile.entitlements */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -352,6 +355,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CBF4F5972DA09D6B0058000F /* AppDelegate.swift in Sources */,
+				94129A895D3CEC36C06410A0 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
