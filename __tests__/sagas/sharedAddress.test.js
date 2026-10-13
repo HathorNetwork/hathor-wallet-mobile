@@ -20,20 +20,25 @@ const LEGACY_ADDRESS = 'LEGACY_ADDRESS_2';
 
 /**
  * Runs refreshSharedAddress for a seed wallet on the shielded testnet, on the fullnode facade,
- * with a ready provider, and the shielded UI flag as given. The wallet's legacy read waits until
- * the test finishes it.
+ * with a ready provider, unless told otherwise, and the shielded UI flag as given. The wallet's
+ * legacy read waits until the test finishes it.
  */
-function run({ flag }) {
+function run({
+  flag,
+  network = FULL_NETWORK_SHIELDED_TESTNET,
+  providerStatus = SHIELDED_PROVIDER_STATUS.READY,
+  useWalletService = false,
+}) {
   let finishRead;
   const wallet = {
     getCurrentAddress: jest.fn(() => new Promise((resolve) => { finishRead = resolve; })),
   };
   let state = {
     wallet,
-    useWalletService: false,
-    fullNodeNetworkName: FULL_NETWORK_SHIELDED_TESTNET,
+    useWalletService,
+    fullNodeNetworkName: network,
     featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag },
-    shielded: { providerStatus: SHIELDED_PROVIDER_STATUS.READY },
+    shielded: { providerStatus },
   };
   const dispatched = [];
   const task = runSaga(
@@ -55,8 +60,16 @@ function run({ flag }) {
 }
 
 describe('refreshSharedAddress', () => {
-  test('shares the wallet\'s current legacy address outside the shielded environment', async () => {
-    const { wallet, dispatched, task, finishRead } = run({ flag: false });
+  test.each([
+    ['the shielded UI is off', { flag: false }],
+    ['the node reports another network', {
+      flag: true,
+      network: 'testnet',
+      providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+    }],
+    ['the wallet runs on the wallet-service facade', { flag: true, useWalletService: true }],
+  ])('shares the wallet\'s current legacy address while %s', async (_label, options) => {
+    const { wallet, dispatched, task, finishRead } = run(options);
 
     finishRead();
     await task.toPromise();

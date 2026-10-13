@@ -227,8 +227,8 @@ describe('the private receive state', () => {
         receive: SHIELDED_RECEIVE_INITIAL_STATE,
       },
     }],
-  ])('reads nothing from the wallet while %s', async (_label, change) => {
-    const { wallet, deliver, receiveUpdates } = setup({ change });
+  ])('reads nothing from the wallet, and leaves the shared address alone, while %s', async (_label, change) => {
+    const { wallet, deliver, receiveUpdates, sharedUpdates } = setup({ change });
 
     deliver(walletRefreshSharedAddress());
     await wait(0);
@@ -236,6 +236,7 @@ describe('the private receive state', () => {
     expect(wallet.getShieldedCapability).not.toHaveBeenCalled();
     expect(wallet.getCurrentAddress).not.toHaveBeenCalled();
     expect(receiveUpdates()).toEqual([]);
+    expect(sharedUpdates()).toEqual([]);
   });
 
   test('goes back to idle, reading nothing, when the shielded UI turns off', async () => {

@@ -21,6 +21,7 @@ import {
   setAddressMode,
   setFeatureToggles,
   setFullNodeNetworkName,
+  setUseWalletService,
   setWallet,
   sharedAddressUpdate,
   shieldedProviderUpdate,
@@ -58,11 +59,15 @@ afterEach(async () => {
 
 /**
  * Renders the Receive screen's address view on a store whose wallet runs on the shielded
- * testnet, on the fullnode facade, with a ready provider. With the flag on, that's the shielded
- * environment, where the shared address is the wallet's new address once it can be read.
+ * testnet, on the fullnode facade, with a ready provider, unless told otherwise. With the flag
+ * on, that's the shielded environment, where the shared address is the wallet's new address once
+ * it can be read.
  */
 async function render({
   flag = true,
+  network = FULL_NETWORK_SHIELDED_TESTNET,
+  providerStatus = SHIELDED_PROVIDER_STATUS.READY,
+  useWalletService = false,
   receive = null,
   shared = flag ? NEW_ADDRESS : LEGACY_ADDRESS,
   addressMode = ADDRESS_MODE.MULTI,
@@ -83,8 +88,9 @@ async function render({
     ...FEATURE_TOGGLE_DEFAULTS,
     [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag,
   }));
-  store.dispatch(setFullNodeNetworkName(FULL_NETWORK_SHIELDED_TESTNET));
-  store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
+  store.dispatch(setUseWalletService(useWalletService));
+  store.dispatch(setFullNodeNetworkName(network));
+  store.dispatch(shieldedProviderUpdate({ status: providerStatus }));
   store.dispatch(setWallet(wallet));
   store.dispatch(sharedAddressUpdate(shared, 0));
   store.dispatch(setAddressMode(addressMode));
@@ -145,6 +151,28 @@ describe('ReceiveMyAddress outside the shielded environment', () => {
     const { buttonTitles } = await render({ flag: false, addressMode: ADDRESS_MODE.SINGLE });
 
     expect(buttonTitles()).toEqual(['Share']);
+  });
+
+  test.each([
+    ['the shielded UI is off', { flag: false }],
+    ['the node reports another network', {
+      network: 'testnet',
+      providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+    }],
+    ['the wallet runs on the wallet-service facade', { useWalletService: true }],
+  ])('shows no new address, nor where it stands, while %s', async (_label, options) => {
+    const { qrValues, text, buttonTitles, actions } = await render({
+      ...options,
+      shared: LEGACY_ADDRESS,
+      receive: receive(SHIELDED_RECEIVE_STATUS.LOCKED, { reason: 'wrong-pin' }),
+    });
+
+    expect(qrValues()).toEqual([`hathor:${LEGACY_ADDRESS}`]);
+    expect(text()).not.toContain(NEW_ADDRESS);
+    expect(text()).not.toContain('Private receiving is locked');
+    expect(buttonTitles()).toEqual(['New address', 'Share']);
+    // Nor does it read the shielded address when it opens.
+    expect(actions).toEqual([]);
   });
 
   test('shares the next legacy address on New address', async () => {
