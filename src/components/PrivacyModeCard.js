@@ -25,7 +25,7 @@ const {
 
 /**
  * What the card's copy describes: the privacy of one send (PER_SEND), or the default privacy
- * mode of the network's sends (DEFAULT), which the privacy settings keep.
+ * mode of new sends (DEFAULT), which the privacy settings keep.
  */
 export const PRIVACY_MODE_CARD_VARIANT = {
   PER_SEND: 'per-send',

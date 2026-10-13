@@ -727,7 +727,7 @@ msgstr "Copiar"
 msgid "Enter your 6-digit pin to export the privacy keys"
 msgstr "Digite seu PIN de 6 dígitos para exportar as chaves de privacidade"
 
-#: src/screens/ExportPrivacyKeys.js:234 src/screens/PrivacySettings.js:91
+#: src/screens/ExportPrivacyKeys.js:234 src/screens/PrivacySettings.js:87
 msgid "Export privacy keys"
 msgstr "Exportar chaves de privacidade"
 
@@ -1056,11 +1056,11 @@ msgstr "Cancelar"
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
-#: src/screens/PrivacySettings.js:71
+#: src/screens/PrivacySettings.js:67
 msgid "PRIVACY SETTINGS"
 msgstr "CONFIGURAÇÕES DE PRIVACIDADE"
 
-#: src/screens/PrivacySettings.js:76
+#: src/screens/PrivacySettings.js:72
 msgid ""
 "The default applies to your sends to private addresses. You can change it "
 "for each send."
@@ -1068,11 +1068,11 @@ msgstr ""
 "O padrão vale para os seus envios para endereços privados. Você pode mudá-lo "
 "em cada envio."
 
-#: src/screens/PrivacySettings.js:79
+#: src/screens/PrivacySettings.js:75
 msgid "DEFAULT FOR SENDS TO PRIVATE ADDRESSES"
 msgstr "PADRÃO PARA ENVIOS A ENDEREÇOS PRIVADOS"
 
-#: src/screens/PrivacySettings.js:88
+#: src/screens/PrivacySettings.js:84
 msgid "AUDIT"
 msgstr "AUDITORIA"
 
@@ -2024,22 +2024,22 @@ msgstr "Transação"
 msgid "Open"
 msgstr "Abrir"
 
-#: src/sagas/wallet.js:1157
+#: src/sagas/wallet.js:1153
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1171
+#: src/sagas/wallet.js:1167
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:1181
+#: src/sagas/wallet.js:1177
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content. A new address the wallet has no
 #.  shielded chain for says why, and no legacy address stands in for it.
-#: src/sagas/wallet.js:1201
+#: src/sagas/wallet.js:1197
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."

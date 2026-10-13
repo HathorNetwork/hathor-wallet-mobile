@@ -24,7 +24,7 @@ describe('privacyDefaultMode reducer', () => {
     expect(next.privacyDefaultMode).toBe(PRIVACY_MODE.PRIVATE);
   });
 
-  test('goes back to the default privacy mode on a wallet reset', () => {
+  test('goes back to the default privacy mode on a wallet reset, until a start loads the saved one', () => {
     const set = reducer(getInitialState(), privacyDefaultModeSet(PRIVACY_MODE.PRIVATE));
 
     expect(reducer(set, resetWalletSuccess()).privacyDefaultMode).toBe(DEFAULT_PRIVACY_MODE);

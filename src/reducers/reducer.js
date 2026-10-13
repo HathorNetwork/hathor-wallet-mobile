@@ -309,8 +309,8 @@ const initialState = {
   addressMode: null,
   amountFormat: AMOUNT_FORMAT_DEFAULT,
   /**
-   * The mode a send to a private address starts in: the default the user saved for the network
-   * in Settings, under Privacy, which every wallet start loads, or else DEFAULT_PRIVACY_MODE.
+   * The mode a send starts in: the default the user saved on the device in Settings, under
+   * Privacy, which every wallet start loads, or else DEFAULT_PRIVACY_MODE.
    */
   privacyDefaultMode: DEFAULT_PRIVACY_MODE,
   reown: {

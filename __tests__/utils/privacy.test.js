@@ -11,11 +11,7 @@ import {
   EXPLORER_MAINNET_URL,
   EXPLORER_SHIELDED_TESTNET_URL,
   EXPLORER_TESTNET_URL,
-  PRE_SETTINGS_MAINNET,
-  PRE_SETTINGS_SHIELDED_TESTNET,
-  PRE_SETTINGS_TESTNET,
   PRIVACY_MODE,
-  privacyDefaultModeKey,
 } from '../../src/constants';
 import {
   PRIVACY_DEFAULT_MODE_OPTIONS,
@@ -51,30 +47,6 @@ describe('the default privacy mode', () => {
     ['an object', { mode: PRIVACY_MODE.PRIVATE }],
   ])('turns %s into the default', (_label, value) => {
     expect(normalizePrivacyDefaultMode(value)).toBe(DEFAULT_PRIVACY_MODE);
-  });
-});
-
-describe('privacyDefaultModeKey', () => {
-  test('keys the default by the full network name, so the two testnets keep their own', () => {
-    expect(privacyDefaultModeKey(PRE_SETTINGS_SHIELDED_TESTNET))
-      .toBe('wallet:privacy_default_mode:testnet-shielded-outputs');
-    expect(privacyDefaultModeKey(PRE_SETTINGS_TESTNET))
-      .toBe('wallet:privacy_default_mode:testnet');
-    expect(privacyDefaultModeKey(PRE_SETTINGS_MAINNET))
-      .toBe('wallet:privacy_default_mode:mainnet');
-    // Both testnets report the network 'testnet'.
-    expect(PRE_SETTINGS_SHIELDED_TESTNET.network).toBe(PRE_SETTINGS_TESTNET.network);
-  });
-
-  test('falls back to the network of settings saved without a full network name', () => {
-    const { fullNetwork, ...settings } = PRE_SETTINGS_TESTNET;
-    expect(fullNetwork).toBe('testnet');
-
-    expect(privacyDefaultModeKey(settings)).toBe('wallet:privacy_default_mode:testnet');
-  });
-
-  test('starts with the prefix a wallet reset clears', () => {
-    expect(privacyDefaultModeKey(PRE_SETTINGS_SHIELDED_TESTNET).startsWith('wallet:')).toBe(true);
   });
 });
 

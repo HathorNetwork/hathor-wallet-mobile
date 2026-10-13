@@ -54,7 +54,7 @@ const SendAmountInput = () => {
   const capability = useSelector(selectShieldedCapability);
   const unlock = useSelector(selectShieldedUnlock);
   const networkName = useSelector((state) => state.networkSettings.network);
-  // The default the user saved for the network, which a send starts in.
+  // The default the user saved on the device, which a send starts in.
   const privacyDefaultMode = useSelector((state) => state.privacyDefaultMode);
 
   const navigation = useNavigation();
@@ -69,8 +69,8 @@ const SendAmountInput = () => {
   const [isPrivacyModalShown, setIsPrivacyModalShown] = useState(false);
   const inputRef = useRef(null);
 
-  // A send starts in the default saved for the network. Where the wallet can't send privately,
-  // the send is public.
+  // A send starts in the default saved on the device. Where the wallet can't send privately, the
+  // send is public.
   const privacyMode = privateSendsAvailable
     ? (chosenPrivacyMode ?? privacyDefaultMode)
     : PRIVACY_MODE.PUBLIC;

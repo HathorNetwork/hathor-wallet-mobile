@@ -30,14 +30,13 @@ import {
   PRIVACY_MODE,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   SHIELDED_PROVIDER_STATUS,
-  privacyDefaultModeKey,
 } from '../../src/constants';
-import { STORE } from '../../src/store';
+import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../../src/store';
 import { loadPrivacyDefaultMode } from '../../src/sagas/wallet';
 import { PortalProvider } from '../../src/components/Portal';
 import PrivacySettings from '../../src/screens/PrivacySettings';
 
-const KEY = privacyDefaultModeKey(PRE_SETTINGS_SHIELDED_TESTNET);
+const KEY = PRIVACY_DEFAULT_MODE_KEY;
 
 const capability = (level) => ({
   level,
@@ -62,7 +61,7 @@ afterEach(async () => {
 
 /**
  * Renders the screen for a seed wallet on the shielded testnet, with a ready provider, at a
- * capability level, with the flag on unless `flag` is false, and the network's saved default.
+ * capability level, with the flag on unless `flag` is false, and the device's saved default.
  */
 async function render({ flag = true, level = 'full', saved = null } = {}) {
   const store = createStore(reducer);
@@ -135,13 +134,13 @@ describe('PrivacySettings', () => {
     expect(switches().map((node) => node.props.value)).toEqual([false, false, true]);
   });
 
-  test('shows the default saved for the network', async () => {
+  test('shows the default saved on the device', async () => {
     const { switches } = await render({ saved: PRIVACY_MODE.PRIVATE });
 
     expect(switches().map((node) => node.props.value)).toEqual([true, false, false]);
   });
 
-  test('saves a mode as the default of the network as soon as it is switched on', async () => {
+  test('saves a mode as the default of the device as soon as it is switched on', async () => {
     const setItem = jest.spyOn(STORE, 'setItem');
     const { store, switches, switchOn } = await render();
 
@@ -161,7 +160,6 @@ describe('PrivacySettings', () => {
     await runSaga(
       { dispatch: (action) => dispatched.push(action) },
       loadPrivacyDefaultMode,
-      PRE_SETTINGS_SHIELDED_TESTNET,
     ).toPromise();
 
     expect(dispatched).toEqual([privacyDefaultModeSet(PRIVACY_MODE.PRIVATE)]);

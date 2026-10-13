@@ -1064,8 +1064,8 @@ export const setAmountFormat = (format) => ({
 });
 
 /**
- * Set the default privacy mode of the network: the mode a send to a private address starts in.
- * @param {string} mode One of PRIVACY_MODE that a default can take: HIDE_AMOUNT or PRIVATE
+ * Set the default privacy mode: the mode a send starts in.
+ * @param {string} mode One of PRIVACY_MODE
  */
 export const privacyDefaultModeSet = (mode) => ({
   type: types.PRIVACY_DEFAULT_MODE_SET,

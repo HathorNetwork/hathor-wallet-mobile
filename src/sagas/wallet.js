@@ -44,9 +44,8 @@ import {
   addressModeKey,
   networkSettingsKeyMap,
   AMOUNT_FORMAT_KEY,
-  privacyDefaultModeKey,
 } from '../constants';
-import { STORE } from '../store';
+import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../store';
 import { makePasskeyTxSigner } from '../passkey/passkeySigner';
 import {
   facadeSupportsExternalSigner,
@@ -232,14 +231,11 @@ export function passkeyRequestPassword() {
 }
 
 /**
- * Loads the default privacy mode saved for the network into the redux state: the mode a send to
- * a private address starts in. Each network keeps its own, and a wallet reset clears them; a
- * network with none saved gets DEFAULT_PRIVACY_MODE.
- *
- * @param {Object} networkSettings The network settings the wallet starts on
+ * Loads the default privacy mode the device keeps into the redux state: the mode a send starts
+ * in. A wallet reset keeps it, and a device with none saved gets DEFAULT_PRIVACY_MODE.
  */
-export function* loadPrivacyDefaultMode(networkSettings) {
-  const stored = STORE.getItem(privacyDefaultModeKey(networkSettings));
+export function* loadPrivacyDefaultMode() {
+  const stored = STORE.getItem(PRIVACY_DEFAULT_MODE_KEY);
   yield put(privacyDefaultModeSet(normalizePrivacyDefaultMode(stored)));
 }
 
@@ -305,9 +301,9 @@ export function* startWallet(action) {
     networkSettings = yield select(getNetworkSettings);
   }
 
-  // startWallet re-runs on every unlock and reload, a network change included, so it loads the
-  // default privacy mode of the network it starts on.
-  yield call(loadPrivacyDefaultMode, networkSettings);
+  // startWallet re-runs on every unlock and reload, a wallet reset's new wallet included, so it
+  // loads the default privacy mode the device keeps.
+  yield call(loadPrivacyDefaultMode);
 
   // Refresh the unleash client context so feature toggles reflect the current
   // network. Required after wallet reset, since onResetWalletSuccess preserves

@@ -14,12 +14,10 @@ import { privacyDefaultModeSet, startWalletRequested } from '../../src/actions';
 import {
   DEFAULT_PRIVACY_MODE,
   PRE_SETTINGS_SHIELDED_TESTNET,
-  PRE_SETTINGS_TESTNET,
   PRIVACY_MODE,
   networkSettingsKeyMap,
-  privacyDefaultModeKey,
 } from '../../src/constants';
-import { STORE } from '../../src/store';
+import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../../src/store';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -33,48 +31,35 @@ function stubStoredItems(saved) {
 }
 
 /**
- * Runs loadPrivacyDefaultMode for the network and returns the actions it dispatched.
+ * Runs loadPrivacyDefaultMode and returns the actions it dispatched.
  */
-async function load(networkSettings) {
+async function load() {
   const dispatched = [];
   await runSaga(
     { dispatch: (action) => dispatched.push(action) },
     loadPrivacyDefaultMode,
-    networkSettings,
   ).toPromise();
   return dispatched;
 }
 
 describe('loadPrivacyDefaultMode', () => {
-  test('puts the default saved for the network', async () => {
-    stubStoredItems({
-      [privacyDefaultModeKey(PRE_SETTINGS_SHIELDED_TESTNET)]: PRIVACY_MODE.PRIVATE,
-    });
+  test.each([
+    PRIVACY_MODE.PRIVATE,
+    PRIVACY_MODE.HIDE_AMOUNT,
+    PRIVACY_MODE.PUBLIC,
+  ])('puts the default the device keeps: %s', async (mode) => {
+    stubStoredItems({ [PRIVACY_DEFAULT_MODE_KEY]: mode });
 
-    expect(await load(PRE_SETTINGS_SHIELDED_TESTNET))
-      .toEqual([privacyDefaultModeSet(PRIVACY_MODE.PRIVATE)]);
-  });
-
-  test("ignores another network's default", async () => {
-    // The public testnet shares the shielded testnet's network, 'testnet'.
-    stubStoredItems({
-      [privacyDefaultModeKey(PRE_SETTINGS_TESTNET)]: PRIVACY_MODE.PRIVATE,
-    });
-
-    expect(await load(PRE_SETTINGS_SHIELDED_TESTNET))
-      .toEqual([privacyDefaultModeSet(DEFAULT_PRIVACY_MODE)]);
+    expect(await load()).toEqual([privacyDefaultModeSet(mode)]);
   });
 
   test.each([
+    ['nothing saved', null],
     ['an unknown value', 'garbage'],
-    ['Public', PRIVACY_MODE.PUBLIC],
   ])('puts the default privacy mode for %s', async (_label, value) => {
-    stubStoredItems({
-      [privacyDefaultModeKey(PRE_SETTINGS_SHIELDED_TESTNET)]: value,
-    });
+    stubStoredItems({ [PRIVACY_DEFAULT_MODE_KEY]: value });
 
-    expect(await load(PRE_SETTINGS_SHIELDED_TESTNET))
-      .toEqual([privacyDefaultModeSet(DEFAULT_PRIVACY_MODE)]);
+    expect(await load()).toEqual([privacyDefaultModeSet(DEFAULT_PRIVACY_MODE)]);
   });
 });
 
@@ -83,13 +68,13 @@ describe('loadPrivacyDefaultMode', () => {
  * returns the effects it yielded up to that one. A select reads the network settings of the
  * state; every other effect gets nothing back.
  */
-function effectsUntilPrivacyDefault({ storedNetwork = null, stateNetwork }) {
+function effectsUntilPrivacyDefault() {
   jest.spyOn(STORE, 'getWalletMeta').mockReturnValue(null);
   jest.spyOn(STORE, 'getStorage').mockReturnValue({
     store: { cleanMetadata: jest.fn() },
     cleanStorage: jest.fn(),
   });
-  stubStoredItems({ [networkSettingsKeyMap.networkSettings]: storedNetwork });
+  stubStoredItems({ [networkSettingsKeyMap.networkSettings]: null });
 
   const gen = startWallet(startWalletRequested({ words: 'seed words', pin: '111111' }));
   const effects = [];
@@ -99,7 +84,7 @@ function effectsUntilPrivacyDefault({ storedNetwork = null, stateNetwork }) {
     if (step.value.type === 'CALL' && step.value.payload.fn === loadPrivacyDefaultMode) {
       break;
     }
-    step = gen.next(step.value.type === 'SELECT' ? stateNetwork : undefined);
+    step = gen.next(step.value.type === 'SELECT' ? PRE_SETTINGS_SHIELDED_TESTNET : undefined);
   }
   gen.return();
   return effects;
@@ -108,22 +93,11 @@ function effectsUntilPrivacyDefault({ storedNetwork = null, stateNetwork }) {
 const isCallTo = (fn) => (effect) => effect.type === 'CALL' && effect.payload.fn === fn;
 
 describe('startWallet', () => {
-  test('loads the default privacy mode of the network in the state, before the flags', () => {
-    const effects = effectsUntilPrivacyDefault({ stateNetwork: PRE_SETTINGS_SHIELDED_TESTNET });
+  test('loads the default privacy mode the device keeps, before the flags', () => {
+    const effects = effectsUntilPrivacyDefault();
 
-    expect(effects[effects.length - 1])
-      .toEqual(call(loadPrivacyDefaultMode, PRE_SETTINGS_SHIELDED_TESTNET));
+    expect(effects[effects.length - 1]).toEqual(call(loadPrivacyDefaultMode));
     expect(effects.filter(isCallTo(loadPrivacyDefaultMode))).toHaveLength(1);
     expect(effects.some(isCallTo(monitorFeatureFlags))).toBe(false);
-  });
-
-  test('loads the default privacy mode of a custom network the storage holds', () => {
-    const custom = { ...PRE_SETTINGS_TESTNET, nodeUrl: 'https://node.example/v1a/' };
-    const effects = effectsUntilPrivacyDefault({
-      storedNetwork: custom,
-      stateNetwork: PRE_SETTINGS_SHIELDED_TESTNET,
-    });
-
-    expect(effects[effects.length - 1]).toEqual(call(loadPrivacyDefaultMode, custom));
   });
 });

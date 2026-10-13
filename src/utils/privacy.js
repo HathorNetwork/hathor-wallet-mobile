@@ -16,9 +16,9 @@ export const PRIVACY_DEFAULT_MODE_OPTIONS = Object.values(PRIVACY_MODE);
 
 /**
  * The default privacy mode a stored value stands for: the value, when a default can take it, or
- * else DEFAULT_PRIVACY_MODE, as for a network with no default saved.
+ * else DEFAULT_PRIVACY_MODE, as for a device with no default saved.
  *
- * @param {unknown} value The value stored for the network
+ * @param {unknown} value The value stored on the device
  * @returns {string} One of PRIVACY_DEFAULT_MODE_OPTIONS
  */
 export function normalizePrivacyDefaultMode(value) {

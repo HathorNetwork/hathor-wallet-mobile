@@ -686,7 +686,7 @@ msgstr ""
 msgid "Enter your 6-digit pin to export the privacy keys"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:234 src/screens/PrivacySettings.js:91
+#: src/screens/ExportPrivacyKeys.js:234 src/screens/PrivacySettings.js:87
 msgid "Export privacy keys"
 msgstr ""
 
@@ -998,21 +998,21 @@ msgstr "Отмена"
 msgid "Biometry failed or canceled."
 msgstr "Биометрия не удалась или была отменена."
 
-#: src/screens/PrivacySettings.js:71
+#: src/screens/PrivacySettings.js:67
 msgid "PRIVACY SETTINGS"
 msgstr ""
 
-#: src/screens/PrivacySettings.js:76
+#: src/screens/PrivacySettings.js:72
 msgid ""
 "The default applies to your sends to private addresses. You can change it "
 "for each send."
 msgstr ""
 
-#: src/screens/PrivacySettings.js:79
+#: src/screens/PrivacySettings.js:75
 msgid "DEFAULT FOR SENDS TO PRIVATE ADDRESSES"
 msgstr ""
 
-#: src/screens/PrivacySettings.js:88
+#: src/screens/PrivacySettings.js:84
 msgid "AUDIT"
 msgstr ""
 
@@ -1943,22 +1943,22 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-#: src/sagas/wallet.js:1157
+#: src/sagas/wallet.js:1153
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1171
+#: src/sagas/wallet.js:1167
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1181
+#: src/sagas/wallet.js:1177
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content. A new address the wallet has no
 #.  shielded chain for says why, and no legacy address stands in for it.
-#: src/sagas/wallet.js:1201
+#: src/sagas/wallet.js:1197
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 

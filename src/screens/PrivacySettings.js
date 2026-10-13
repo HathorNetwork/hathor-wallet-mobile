@@ -19,18 +19,16 @@ import HathorHeader from '../components/HathorHeader';
 import { ListMenu } from '../components/HathorList';
 import PrivacyModeCard, { PRIVACY_MODE_CARD_VARIANT } from '../components/PrivacyModeCard';
 import { COLORS } from '../styles/themes';
-import { STORE } from '../store';
-import { privacyDefaultModeKey } from '../constants';
+import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../store';
 import { privacyDefaultModeSet } from '../actions';
-import { getNetworkSettings } from '../sagas/helpers';
 import { isShieldedAvailable } from '../shielded/gating';
 import { closeScreen } from '../utils/navigation';
 
 /**
- * The privacy settings of the network the wallet runs on: the default privacy mode of its sends to
- * private addresses. A mode applies as soon as it is switched on, with no save step: it is saved
- * for the network, and every start of the wallet on the network loads it. The privacy sheet of a
- * send still overrides it for that send.
+ * The privacy settings: the default privacy mode of new sends. A mode applies as soon as it is
+ * switched on, with no save step: it is saved for the device, on every network and across wallet
+ * resets, and every start of the wallet loads it. The privacy sheet of a send still overrides it
+ * for that send.
  *
  * Its audit section opens the export of the privacy keys, with no params: the export asks for the
  * PIN itself. A passkey wallet's record holds no scan key, so it gets no export.
@@ -46,7 +44,6 @@ import { closeScreen } from '../utils/navigation';
 export default function PrivacySettings({ navigation, route }) {
   const dispatch = useDispatch();
   const available = useSelector(isShieldedAvailable);
-  const networkSettings = useSelector(getNetworkSettings);
   const selectedMode = useSelector((state) => state.privacyDefaultMode);
   const canExportKeys = !STORE.isPasskeyWallet();
 
@@ -60,8 +57,7 @@ export default function PrivacySettings({ navigation, route }) {
     if (mode === selectedMode) {
       return;
     }
-    // The key of the network the wallet started on, the one startWallet reads.
-    STORE.setItem(privacyDefaultModeKey(networkSettings), mode);
+    STORE.setItem(PRIVACY_DEFAULT_MODE_KEY, mode);
     dispatch(privacyDefaultModeSet(mode));
   };
 
