@@ -128,6 +128,7 @@ import { STORE } from '../store';
 import { consumePasskeySigningCancelled } from '../passkey/passkeySigner';
 import { isShieldedAddress, shieldedAddressNotSupportedText } from '../utils';
 import { mapDappSendPrepareError } from '../utils/shieldedSend';
+import { isShieldedEnvironment } from '../shielded/gating';
 import { logger } from '../logger';
 
 const log = logger('reown');
@@ -721,11 +722,13 @@ export function* processRequest(action) {
       return false;
     }
 
-    // wallet-lib validates shielded addresses, but this wallet cannot pay, mint to or otherwise
-    // use them. Reject the request before the rpc handler builds a transaction for it, checking
-    // the addresses on the network of the wallet that would build it.
+    // wallet-lib validates shielded addresses, but outside the shielded environment this wallet
+    // cannot pay, mint to or otherwise use them. Reject the request there before the rpc handler
+    // builds a transaction for it, checking the addresses on the network of the wallet that would
+    // build it. In the shielded environment, the request goes to the rpc handler as any other.
+    const acceptsShieldedAddresses = yield select(isShieldedEnvironment);
     const requestAddresses = getRequestAddresses(params.request);
-    if (requestAddresses.length > 0) {
+    if (!acceptsShieldedAddresses && requestAddresses.length > 0) {
       const network = wallet.getNetworkObject();
       if (requestAddresses.some((address) => isShieldedAddress(address, network))) {
         log.debug(`Rejecting ${params.request.method}: it has a shielded address.`);
