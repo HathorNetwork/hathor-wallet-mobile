@@ -1021,7 +1021,7 @@ msgstr ""
 msgid "Export privacy keys"
 msgstr ""
 
-#: src/screens/PushNotification.js:58 src/screens/Settings.js:175
+#: src/screens/PushNotification.js:58 src/screens/Settings.js:182
 msgid "Push Notification"
 msgstr ""
 
@@ -1423,7 +1423,7 @@ msgstr "Создать новый токен"
 msgid "Security"
 msgstr "Безопасность"
 
-#: src/screens/Settings.js:182
+#: src/screens/Settings.js:175
 msgid "Reown"
 msgstr ""
 

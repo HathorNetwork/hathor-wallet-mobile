@@ -169,18 +169,18 @@ export class Settings extends React.Component {
               title={t`Security`}
               onPress={() => this.props.navigation.navigate('Security')}
             />
-            {this.props.isPushNotificationAvailable
-              && (
-                <ListMenu
-                  title={t`Push Notification`}
-                  onPress={() => this.props.navigation.navigate('PushNotification')}
-                />
-              )}
             {this.props.reownEnabled
               && (
                 <ListMenu
                   title={t`Reown`}
                   onPress={() => this.props.navigation.navigate('ReownList')}
+                />
+              )}
+            {this.props.isPushNotificationAvailable
+              && (
+                <ListMenu
+                  title={t`Push Notification`}
+                  onPress={() => this.props.navigation.navigate('PushNotification')}
                 />
               )}
           </HathorList>

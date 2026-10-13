@@ -1084,7 +1084,7 @@ msgstr "AUDITORIA"
 msgid "Export privacy keys"
 msgstr "Exportar chaves de privacidade"
 
-#: src/screens/PushNotification.js:58 src/screens/Settings.js:175
+#: src/screens/PushNotification.js:58 src/screens/Settings.js:182
 msgid "Push Notification"
 msgstr "Notificação"
 
@@ -1495,7 +1495,7 @@ msgstr "Criar um novo token"
 msgid "Security"
 msgstr "Segurança"
 
-#: src/screens/Settings.js:182
+#: src/screens/Settings.js:175
 msgid "Reown"
 msgstr "Reown"
 

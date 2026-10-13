@@ -13,8 +13,11 @@ import { legacy_createStore as createStore } from 'redux';
 import { reducer } from '../../src/reducers/reducer';
 import {
   networkSettingsUpdateState,
+  pushDeviceRegistered,
+  setAvailablePushNotification,
   setFeatureToggles,
   setFullNodeNetworkName,
+  setServerInfo,
   setUseWalletService,
   shieldedCapabilityUpdate,
   shieldedProviderUpdate,
@@ -23,8 +26,11 @@ import {
   AMOUNT_FORMAT_FEATURE_TOGGLE,
   FEATURE_TOGGLE_DEFAULTS,
   FULL_NETWORK_SHIELDED_TESTNET,
+  NANO_CONTRACT_FEATURE_TOGGLE,
   NETWORK_SETTINGS_FEATURE_TOGGLE,
+  PRE_SETTINGS_MAINNET,
   PRE_SETTINGS_SHIELDED_TESTNET,
+  REOWN_FEATURE_TOGGLE,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   SHIELDED_PROVIDER_STATUS,
   SINGLE_ADDRESS_FEATURE_TOGGLE,
@@ -54,7 +60,8 @@ afterEach(async () => {
 /**
  * Renders the settings of a seed wallet on the shielded testnet with the amount format flag on.
  * By default the shielded UI is available: the flag is on, the fullnode reports the shielded
- * testnet, and the provider passed its self-test. `toggles` sets other flags.
+ * testnet, and the provider passed its self-test. `toggles` sets other flags, and `actions` are
+ * dispatched last.
  */
 async function render({
   flag = true,
@@ -63,6 +70,7 @@ async function render({
   useWalletService = false,
   level = 'full',
   toggles = {},
+  actions = [],
 } = {}) {
   const store = createStore(reducer);
   store.dispatch(networkSettingsUpdateState(PRE_SETTINGS_SHIELDED_TESTNET));
@@ -76,6 +84,7 @@ async function render({
   store.dispatch(setUseWalletService(useWalletService));
   store.dispatch(shieldedProviderUpdate({ status: providerStatus }));
   store.dispatch(shieldedCapabilityUpdate(capability(level)));
+  actions.forEach((action) => store.dispatch(action));
 
   const navigation = { navigate: jest.fn() };
   let renderer;
@@ -140,6 +149,24 @@ describe('Settings', () => {
 
     expect(titles()).not.toContain('Privacy');
     expect(titles()).toContain('Amount format');
+  });
+
+  test('lists Reown right after Security, before Push Notification', async () => {
+    const { titles, lastRows } = await render({
+      toggles: { [REOWN_FEATURE_TOGGLE]: true, [NANO_CONTRACT_FEATURE_TOGGLE]: true },
+      // Push notifications are offered on mainnet only, on a device registered to them.
+      actions: [
+        networkSettingsUpdateState(PRE_SETTINGS_MAINNET),
+        setAvailablePushNotification(true),
+        pushDeviceRegistered(true),
+        setServerInfo({ nano_contracts_enabled: true }),
+      ],
+    });
+
+    const order = titles();
+    const security = order.indexOf('Security');
+    expect(order.slice(security, security + 3)).toEqual(['Security', 'Reown', 'Push Notification']);
+    expect(lastRows()).toEqual(['Push Notification', 'Reset wallet']);
   });
 
   test('rounds the first and the last row of each card', async () => {
