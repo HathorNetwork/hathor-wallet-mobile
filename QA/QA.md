@@ -78,9 +78,8 @@ After completing the suite, leave the wallet on `testnet` with the "Multi Addres
 ### Transaction History Tests
 1. Verify Dashboard displays HTR token by default
 1. Check balance display
-1. Tap to expand balance details (Available and Locked when expanded)
+1. Tap the balance: it doesn't expand. It shows the available balance, under "Available Balance", and no Locked balance
 1. Verify network name is shown
-1. Tap again to collapse
 1. See the HTR History. Your balance should be 8.00 HTR.
 1. Check that you have two transactions.
 1. Verify positive balances are in green
