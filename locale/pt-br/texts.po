@@ -714,7 +714,6 @@ msgstr "Tokens"
 msgid "Nano Contracts"
 msgstr "Nano Contracts"
 
-#: src/components/AuditUnblindingRows.js:149
 #: src/screens/ExportPrivacyKeys.js:96
 msgid "Copied. The clipboard clears in one minute."
 msgstr "Copiado. A área de transferência será limpa em um minuto."
@@ -1046,7 +1045,6 @@ msgstr "Digite seu PIN "
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
-#: src/components/AuditUnblindingRows.js:119
 #: src/components/Reown/RequestConfirmationModal.js:110
 #: src/screens/PinScreen.js:325 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
@@ -2019,7 +2017,7 @@ msgstr "walletServiceWsUrl deve ser uma URL válida."
 msgid "Transaction"
 msgstr "Transação"
 
-#: src/components/AuditUnblindingRows.js:121 src/sagas/pushNotification.js:89
+#: src/sagas/pushNotification.js:89
 msgid "Open"
 msgstr "Abrir"
 
@@ -2149,31 +2147,17 @@ msgstr ""
 "Para continuar recebendo notificações, é necessário atualizar sua "
 "configuração de notificação. Deseja atualizar agora?"
 
-#: src/components/AuditUnblindingRows.js:116
-msgid "Open the unblinded link?"
-msgstr "Abrir o link com os dados revelados?"
-
-#: src/components/AuditUnblindingRows.js:117
-msgid ""
-"The link holds the values that reveal the amounts and tokens you received in "
-"this transaction. Your browser keeps it in its history, which may sync to "
-"your other devices."
-msgstr ""
-"O link contém os dados que revelam os valores e os tokens que você recebeu "
-"nesta transação. Seu navegador o guarda no histórico, que pode ser "
-"sincronizado com seus outros dispositivos."
-
-#: src/components/AuditUnblindingRows.js:142
+#: src/components/AuditUnblindingRows.js:104
 msgid "View in Explorer unblinded"
 msgstr "Ver no Explorer com os dados revelados"
 
-#: src/components/AuditUnblindingRows.js:149
-msgid "Copy unblinding values"
-msgstr "Copiar os dados de revelação"
-
-#: src/components/CopyClipboard.js:55
+#: src/components/AuditUnblindingRows.js:111 src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
 msgstr "Copiado!"
+
+#: src/components/AuditUnblindingRows.js:111
+msgid "Copy unblinding values"
+msgstr "Copiar os dados de revelação"
 
 #: src/components/GlobalErrorModal.js:46
 msgid ""
@@ -3401,6 +3385,18 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid "Open the unblinded link?"
+#~ msgstr "Abrir o link com os dados revelados?"
+
+#~ msgid ""
+#~ "The link holds the values that reveal the amounts and tokens you received "
+#~ "in this transaction. Your browser keeps it in its history, which may sync "
+#~ "to your other devices."
+#~ msgstr ""
+#~ "O link contém os dados que revelam os valores e os tokens que você "
+#~ "recebeu nesta transação. Seu navegador o guarda no histórico, que pode "
+#~ "ser sincronizado com seus outros dispositivos."
 
 #~ msgid ""
 #~ "The default applies to your sends to private addresses. You can change it "

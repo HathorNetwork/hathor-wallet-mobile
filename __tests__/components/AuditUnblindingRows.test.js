@@ -38,6 +38,7 @@ import {
   PRE_SETTINGS_SHIELDED_TESTNET,
   PRE_SETTINGS_TESTNET,
   SENSITIVE_CLIPBOARD_CLEAR_MS,
+  SENSITIVE_COPY_FEEDBACK_MS,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   SHIELDED_PROVIDER_STATUS,
 } from '../../src/constants';
@@ -57,6 +58,7 @@ const MINE = 'WMINE';
 const THEIRS = 'WTHEIRS';
 const VIEW = 'View in Explorer unblinded';
 const COPY = 'Copy unblinding values';
+const COPIED = 'Copied to clipboard!';
 const PAYLOAD = 'eyJ2IjoxfQ';
 // The opening of a private output the wallet received: its index in the tx, value, token and
 // blinding factor.
@@ -65,6 +67,13 @@ const OPENING = {
   value: 500n,
   token: HTR,
   vbf: '11'.repeat(32),
+};
+// The opening of a private output of the wallet that a tx spends, from the tx that created it.
+const INPUT_OPENING = {
+  index: 0,
+  value: 800n,
+  token: HTR,
+  vbf: '22'.repeat(32),
 };
 
 const capability = (level) => ({
@@ -191,67 +200,53 @@ describe('AuditUnblindingRows', () => {
     expect(wallet.getShieldedUnblindingForTx).not.toHaveBeenCalled();
   });
 
-  test('renders nothing for a tx the wallet paid, whose values it never reads', async () => {
-    const { wallet, titles } = await render({ wallet: fakeWallet({ inputAddress: MINE }) });
+  test('offers both rows for a tx the wallet paid, with the openings of its own outputs only', async () => {
+    // wallet-lib gives the openings of the wallet's own outputs only: its change, and the
+    // outputs of the wallet that the tx spends. The recipient's output has none.
+    const openings = { outputs: [OPENING], inputs: [INPUT_OPENING] };
+    const wallet = fakeWallet({ inputAddress: MINE, openings });
+    const { titles, press } = await render({ wallet });
 
-    expect(titles()).toEqual([]);
-    expect(wallet.getShieldedUnblindingForTx).not.toHaveBeenCalled();
+    expect(titles()).toEqual([VIEW, COPY]);
+    await press(COPY);
+    expect(encoder).toHaveBeenCalledWith(TX_ID, [OPENING], [INPUT_OPENING]);
+    expect(wallet.getTx).not.toHaveBeenCalled();
+    expect(wallet.checkAddressesMine).not.toHaveBeenCalled();
   });
 
-  test.each([
-    ['without private outputs of the wallet', { outputs: [], inputs: [] }],
-    ['that spends an output of the wallet', { outputs: [OPENING], inputs: [OPENING] }],
-  ])('renders nothing for a tx %s', async (_label, openings) => {
+  test('offers both rows for a tx that only spends a private output of the wallet', async () => {
+    const openings = { outputs: [], inputs: [INPUT_OPENING] };
+    const { titles } = await render({ wallet: fakeWallet({ inputAddress: MINE, openings }) });
+
+    expect(titles()).toEqual([VIEW, COPY]);
+  });
+
+  test('renders nothing for a tx without private outputs of the wallet', async () => {
+    const openings = { outputs: [], inputs: [] };
     const { titles } = await render({ wallet: fakeWallet({ openings }) });
 
     expect(titles()).toEqual([]);
   });
 
-  test.each([
-    ['the values', 'getShieldedUnblindingForTx'],
-    ['the tx', 'getTx'],
-  ])('renders nothing when %s cannot be read', async (_label, method) => {
+  test('renders nothing when the values cannot be read', async () => {
     const wallet = fakeWallet();
-    wallet[method].mockRejectedValue(new Error(`no ${method}`));
+    wallet.getShieldedUnblindingForTx.mockRejectedValue(new Error('no values'));
     const { titles } = await render({ wallet });
 
     expect(titles()).toEqual([]);
   });
 
-  test('warns that the link stays in the browser history, then opens it with the values', async () => {
+  test('opens the explorer at the tx with the values, without asking first', async () => {
     const alert = jest.spyOn(Alert, 'alert');
     const { press } = await render();
 
     await press(VIEW);
 
-    expect(Linking.openURL).not.toHaveBeenCalled();
-    expect(alert).toHaveBeenCalledTimes(1);
-    const [title, message, buttons] = alert.mock.calls[0];
-    expect(title).toBe('Open the unblinded link?');
-    expect(message).toBe('The link holds the values that reveal the amounts and tokens you received in this transaction. Your browser keeps it in its history, which may sync to your other devices.');
-    expect(buttons.map((button) => button.text)).toEqual(['Cancel', 'Open']);
-
-    await act(async () => { buttons[1].onPress(); });
-
+    expect(alert).not.toHaveBeenCalled();
     expect(encoder).toHaveBeenCalledWith(TX_ID, [OPENING], []);
     expect(Linking.openURL).toHaveBeenCalledWith(
       `${EXPLORER_SHIELDED_TESTNET_URL}transaction/${TX_ID}#unblind=${PAYLOAD}`,
     );
-  });
-
-  test('opens nothing, and encodes nothing, when the warning is cancelled', async () => {
-    const alert = jest.spyOn(Alert, 'alert');
-    const { press } = await render();
-
-    await press(VIEW);
-    const [, , [cancel]] = alert.mock.calls[0];
-    expect(cancel.style).toBe('cancel');
-    if (cancel.onPress) {
-      await act(async () => { cancel.onPress(); });
-    }
-
-    expect(Linking.openURL).not.toHaveBeenCalled();
-    expect(encoder).not.toHaveBeenCalled();
   });
 
   test('copies the values through the clipboard that clears itself', async () => {
@@ -262,11 +257,26 @@ describe('AuditUnblindingRows', () => {
 
     expect(encoder).toHaveBeenCalledWith(TX_ID, [OPENING], []);
     expect(Clipboard.setString.mock.calls).toEqual([[PAYLOAD]]);
-    expect(titles()).toContain('Copied. The clipboard clears in one minute.');
+    expect(titles()).toEqual([VIEW, COPIED]);
 
     await act(async () => { jest.advanceTimersByTime(SENSITIVE_CLIPBOARD_CLEAR_MS); });
     expect(Clipboard.setString.mock.calls).toEqual([[PAYLOAD], ['']]);
     expect(titles()).toEqual([VIEW, COPY]);
+  });
+
+  test('says it copied for a second and a half', async () => {
+    const { titles, press } = await render();
+    jest.useFakeTimers();
+
+    await press(COPY);
+    expect(SENSITIVE_COPY_FEEDBACK_MS).toBe(1500);
+    await act(async () => { jest.advanceTimersByTime(SENSITIVE_COPY_FEEDBACK_MS - 1); });
+    expect(titles()).toContain(COPIED);
+
+    await act(async () => { jest.advanceTimersByTime(1); });
+    expect(titles()).toEqual([VIEW, COPY]);
+    // The values are still in the clipboard.
+    expect(Clipboard.setString.mock.calls).toEqual([[PAYLOAD]]);
   });
 });
 

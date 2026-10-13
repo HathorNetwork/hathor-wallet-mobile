@@ -508,10 +508,10 @@ export const SHIELDED_UNLOCK_SOURCE = {
 export const SENSITIVE_CLIPBOARD_CLEAR_MS = 60 * 1000;
 
 /**
- * How long the note of a sensitive copy, which says that the clipboard clears, stays on screen, in
- * milliseconds: far less than the clipboard keeps the copy, so the note never outlives it.
+ * How long a sensitive copy's button says that it copied, in milliseconds: far less than the
+ * clipboard keeps the copy.
  */
-export const SENSITIVE_COPY_FEEDBACK_MS = 3 * 1000;
+export const SENSITIVE_COPY_FEEDBACK_MS = 1500;
 
 /**
  * The explorers that read the unblinding values of a tx from the #unblind= fragment of its link:

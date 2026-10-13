@@ -672,7 +672,6 @@ msgstr "Tokens"
 msgid "Nano Contracts"
 msgstr ""
 
-#: src/components/AuditUnblindingRows.js:149
 #: src/screens/ExportPrivacyKeys.js:96
 msgid "Copied. The clipboard clears in one minute."
 msgstr ""
@@ -986,7 +985,6 @@ msgstr "Indtast din pinkode "
 msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
-#: src/components/AuditUnblindingRows.js:119
 #: src/components/Reown/RequestConfirmationModal.js:110
 #: src/screens/PinScreen.js:325 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
@@ -1932,7 +1930,7 @@ msgstr ""
 msgid "Transaction"
 msgstr "Transaktion"
 
-#: src/components/AuditUnblindingRows.js:121 src/sagas/pushNotification.js:89
+#: src/sagas/pushNotification.js:89
 msgid "Open"
 msgstr "Åben"
 
@@ -2046,28 +2044,17 @@ msgid ""
 "registration. Do you want to do it now?"
 msgstr ""
 
-#: src/components/AuditUnblindingRows.js:116
-msgid "Open the unblinded link?"
-msgstr ""
-
-#: src/components/AuditUnblindingRows.js:117
-msgid ""
-"The link holds the values that reveal the amounts and tokens you received in "
-"this transaction. Your browser keeps it in its history, which may sync to "
-"your other devices."
-msgstr ""
-
-#: src/components/AuditUnblindingRows.js:142
+#: src/components/AuditUnblindingRows.js:104
 msgid "View in Explorer unblinded"
 msgstr ""
 
-#: src/components/AuditUnblindingRows.js:149
-msgid "Copy unblinding values"
-msgstr ""
-
-#: src/components/CopyClipboard.js:55
+#: src/components/AuditUnblindingRows.js:111 src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
 msgstr "Kopieret til udklipsholder!"
+
+#: src/components/AuditUnblindingRows.js:111
+msgid "Copy unblinding values"
+msgstr ""
 
 #: src/components/GlobalErrorModal.js:46
 msgid ""
