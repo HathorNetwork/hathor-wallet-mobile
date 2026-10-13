@@ -7,7 +7,7 @@
 
 import { describe, test, expect } from '@jest/globals';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { AMOUNT_FORMAT } from '../../../src/constants';
 import { renderValue } from '../../../src/utils';
@@ -34,7 +34,17 @@ async function render(props) {
   const toggle = () => act(async () => {
     renderer.root.findByType(TouchableOpacity).props.onPress();
   });
-  return { texts, toggle };
+  // The style of the innermost view that holds the expanded network and privacy fees.
+  const breakdownStyle = () => {
+    const holds = (node, text) => node.findAll(
+      (child) => child.type === 'Text' && child.props.children === text,
+    ).length > 0;
+    const views = renderer.root.findAll(
+      (node) => node.type === 'View' && holds(node, 'Network fee') && holds(node, 'Privacy fee'),
+    );
+    return StyleSheet.flatten(views[views.length - 1].props.style);
+  };
+  return { texts, toggle, breakdownStyle };
 }
 
 describe('FeeBreakdown', () => {
@@ -60,6 +70,19 @@ describe('FeeBreakdown', () => {
 
     await toggle();
     expect(texts().slice(2)).toEqual(shown);
+  });
+
+  test('styles the expanded fees with breakdownStyle', async () => {
+    const { toggle, breakdownStyle } = await render({ breakdownStyle: { paddingTop: 8 } });
+
+    await toggle();
+
+    expect(breakdownStyle()).toEqual(expect.objectContaining({
+      paddingLeft: 16,
+      paddingRight: 16,
+      paddingTop: 8,
+      paddingBottom: 8,
+    }));
   });
 
   test('renders amounts with the network\'s decimal places, amount format and symbol', async () => {

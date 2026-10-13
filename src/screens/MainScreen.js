@@ -11,8 +11,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Image,
-  TouchableWithoutFeedback,
   TouchableHighlight,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -30,8 +28,6 @@ import { HathorList } from '../components/HathorList';
 import {
   Strong, str2jsx, renderValue, isTokenNFT, getDisplayAmountFormat, renderHomeValue,
 } from '../utils';
-import chevronUp from '../assets/icons/chevron-up.png';
-import chevronDown from '../assets/icons/chevron-down.png';
 import { DEFAULT_TOKEN, IS_MULTI_TOKEN } from '../constants';
 import { fetchMoreHistory, tokenFetchBalanceRequested, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
@@ -40,7 +36,7 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
 import {
   isShieldedAvailable,
-  isShieldedEnabled,
+  isShieldedEnvironment,
   selectShieldedCapability,
 } from '../shielded/gating';
 import { createPrivateBalanceRequests } from '../shielded/balance';
@@ -73,7 +69,7 @@ const mapStateToProps = (state) => ({
   decimalPlaces: state.serverInfo?.decimal_places,
   shieldedAvailable: isShieldedAvailable(state),
   shieldedCapability: selectShieldedCapability(state),
-  shieldedEnabled: isShieldedEnabled(state),
+  shieldedEnvironment: isShieldedEnvironment(state),
   nativeSymbol: state.serverInfo?.native_token?.symbol ?? DEFAULT_TOKEN.symbol,
 });
 
@@ -160,7 +156,7 @@ class MainScreen extends React.Component {
         amountFormat={this.props.amountFormat}
         decimalPlaces={this.props.decimalPlaces}
         wallet={this.props.wallet}
-        showFees={this.props.shieldedEnabled}
+        showFees={this.props.shieldedEnvironment}
         nativeSymbol={this.props.nativeSymbol}
       />
     );
@@ -557,27 +553,20 @@ class TxListItem extends React.Component {
   }
 }
 
+/**
+ * The token's available balance, with its private and public parts where the shielded UI shows
+ * them. It doesn't expand: the locked balance isn't shown.
+ */
 class BalanceView extends React.Component {
-  state = {
-    isExpanded: false,
-  };
-
   style = StyleSheet.create({
-    toucharea: {
-      alignSelf: 'stretch',
-    },
     center: {
       alignItems: 'center',
     },
     view: {
       paddingTop: 32,
+      paddingBottom: 24,
       paddingLeft: 54,
       paddingRight: 54,
-    },
-    balanceLocked: {
-      marginTop: 24,
-      fontSize: 18,
-      fontWeight: 'bold',
     },
     balanceAvailable: {
       fontSize: 32,
@@ -589,15 +578,7 @@ class BalanceView extends React.Component {
       fontWeight: 'bold',
       color: COLORS.textColorShadow,
     },
-    expandButton: {
-      marginTop: 24,
-      marginBottom: 24,
-    },
   });
-
-  toggleExpanded = () => {
-    this.setState((prevState) => ({ isExpanded: !prevState.isExpanded }));
-  }
 
   /**
    * The private and public parts of the available balance, where the shielded UI shows them.
@@ -616,47 +597,6 @@ class BalanceView extends React.Component {
         amountFormat={this.props.amountFormat}
         navigation={this.props.navigation}
       />
-    );
-  }
-
-  renderExpanded() {
-    const availableStr = renderHomeValue(
-      this.props.balance.available,
-      this.props.isNFT,
-      this.props.decimalPlaces,
-      this.props.amountFormat
-    );
-    const lockedStr = renderHomeValue(
-      this.props.balance.locked,
-      this.props.isNFT,
-      this.props.decimalPlaces,
-      this.props.amountFormat
-    );
-    const { token } = this.props;
-    const { style } = this;
-    return (
-      <View style={style.center}>
-        <Text
-          style={style.balanceAvailable}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
-          {`${availableStr} ${token.symbol}`}
-        </Text>
-        <Text style={style.text1}>{t`Available Balance`}</Text>
-        {this.renderSplit()}
-        <Text
-          style={style.balanceLocked}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
-          {`${lockedStr} ${token.symbol}`}
-        </Text>
-        <Text style={style.text1}>{t`Locked`}</Text>
-        <Image style={style.expandButton} source={chevronUp} width={12} height={7} />
-      </View>
     );
   }
 
@@ -681,7 +621,6 @@ class BalanceView extends React.Component {
         </Text>
         <Text style={style.text1}>{t`Available Balance`}</Text>
         {this.renderSplit()}
-        <Image style={style.expandButton} source={chevronDown} width={12} height={7} />
       </View>
     );
   }
@@ -689,13 +628,9 @@ class BalanceView extends React.Component {
   render() {
     const { style } = this;
     return (
-      <TouchableWithoutFeedback style={style.toucharea} onPress={this.toggleExpanded}>
-        <View style={style.view}>
-          {!this.state.isExpanded
-            ? this.renderSimple()
-            : this.renderExpanded()}
-        </View>
-      </TouchableWithoutFeedback>
+      <View style={style.view}>
+        {this.renderSimple()}
+      </View>
     );
   }
 }

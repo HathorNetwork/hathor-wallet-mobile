@@ -14,6 +14,7 @@ import { reducer } from '../../src/reducers/reducer';
 import {
   setFeatureToggles,
   setFullNodeNetworkName,
+  setUseWalletService,
   setWallet,
   shieldedCapabilityUpdate,
   shieldedProviderUpdate,
@@ -59,15 +60,22 @@ afterEach(async () => {
   }
 });
 
-async function pressTx({ flag = true, level = 'full' } = {}) {
-  const wallet = { getTx: jest.fn(async () => null) };
+async function pressTx({
+  flag = true,
+  level = 'full',
+  network = FULL_NETWORK_SHIELDED_TESTNET,
+  providerStatus = SHIELDED_PROVIDER_STATUS.READY,
+  useWalletService = false,
+} = {}) {
+  const wallet = { getFullTxById: jest.fn(async () => ({ success: true, tx: {}, meta: {} })) };
   const store = createStore(reducer);
   store.dispatch(setFeatureToggles({
     ...FEATURE_TOGGLE_DEFAULTS,
     [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag,
   }));
-  store.dispatch(setFullNodeNetworkName(FULL_NETWORK_SHIELDED_TESTNET));
-  store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
+  store.dispatch(setUseWalletService(useWalletService));
+  store.dispatch(setFullNodeNetworkName(network));
+  store.dispatch(shieldedProviderUpdate({ status: providerStatus }));
   store.dispatch(shieldedCapabilityUpdate(capability(level)));
   store.dispatch(setWallet(wallet));
   store.dispatch(tokenFetchBalanceSuccess(DEFAULT_TOKEN.uid, {
@@ -93,21 +101,30 @@ async function pressTx({ flag = true, level = 'full' } = {}) {
 }
 
 describe('the tx details of the token screen', () => {
-  test('asks for the fees where the wallet decodes its private outputs', async () => {
-    const { modal } = await pressTx();
+  test.each([
+    ['decodes its private outputs', {}],
+    ['holds its private balance locked', { level: 'watch' }],
+    ['could not load the crypto provider', { providerStatus: SHIELDED_PROVIDER_STATUS.FAILED }],
+  ])('asks for the fees in the shielded environment, for a wallet that %s', async (_label, options) => {
+    const { modal, wallet } = await pressTx(options);
 
     expect(modal.props.showFees).toBe(true);
     expect(modal.props.nativeSymbol).toBe(DEFAULT_TOKEN.symbol);
-    expect(typeof modal.props.wallet.getTx).toBe('function');
+    expect(modal.props.wallet).toBe(wallet);
+    expect(wallet.getFullTxById).toHaveBeenCalledWith(TX.txId);
   });
 
   test.each([
     ['the shielded UI is off', { flag: false }],
-    ['the private balance is locked', { level: 'watch' }],
+    ['the wallet runs on the wallet-service facade', { useWalletService: true }],
+    ['the node reports another network', {
+      network: 'testnet',
+      providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+    }],
   ])('asks for no fees while %s', async (_label, options) => {
     const { modal, wallet } = await pressTx(options);
 
     expect(modal.props.showFees).toBe(false);
-    expect(wallet.getTx).not.toHaveBeenCalled();
+    expect(wallet.getFullTxById).not.toHaveBeenCalled();
   });
 });
