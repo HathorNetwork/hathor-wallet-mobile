@@ -15,11 +15,10 @@ import { reducer } from '../../src/reducers/reducer';
 import { setServerInfo } from '../../src/actions';
 import { PRIVACY_MODE } from '../../src/constants';
 import { PortalProvider } from '../../src/components/Portal';
+import TextFmt from '../../src/components/TextFmt';
 import PrivacyModeCard, { PRIVACY_MODE_CARD_VARIANT } from '../../src/components/PrivacyModeCard';
 import PrivacyModeSelector from '../../src/components/PrivacyModeSelector';
 import TransactionPrivacyModal from '../../src/components/TransactionPrivacyModal';
-
-const PRIVATE_ONLY = [PRIVACY_MODE.HIDE_AMOUNT, PRIVACY_MODE.PRIVATE];
 
 let mounted = null;
 
@@ -67,41 +66,34 @@ describe('PrivacyModeCard', () => {
 
     expect(texts()).toEqual([
       'Private',
-      'Amount hidden. The token is hidden among the tokens this send spends, but never when it is HTR.',
-      'Fee: 0.02 HTR per private output',
+      'Token and amount hidden',
+      'Fee: 0.02 HTR per output',
       'Hide amount',
       'Token visible, amount hidden',
-      'Fee: 0.01 HTR per private output',
+      'Fee: 0.01 HTR per output',
       'Public',
       'Token and amount visible',
-      'No privacy fee unless the send spends private funds',
+      'No privacy fees',
     ]);
   });
 
-  test("shows the fees with the network's decimal places and native symbol", async () => {
+  test("shows the fees with the network's decimal places", async () => {
     const { texts } = await render(
       <PrivacyModeCard selectedMode={PRIVACY_MODE.PUBLIC} onSelect={jest.fn()} />,
-      { decimalPlaces: 4, symbol: 'XHT' },
+      { decimalPlaces: 4 },
     );
 
-    expect(texts()).toContain('Fee: 0.0002 XHT per private output');
-    expect(texts()).toContain('Fee: 0.0001 XHT per private output');
+    expect(texts()).toContain('Fee: 0.0002 HTR per output');
+    expect(texts()).toContain('Fee: 0.0001 HTR per output');
   });
 
-  test('offers only the modes it is given', async () => {
-    const { texts, renderer } = await render(
-      <PrivacyModeCard
-        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
-        onSelect={jest.fn()}
-        options={PRIVATE_ONLY}
-      />,
+  test('switches on the selected mode only', async () => {
+    const { renderer } = await render(
+      <PrivacyModeCard selectedMode={PRIVACY_MODE.HIDE_AMOUNT} onSelect={jest.fn()} />,
     );
 
-    expect(texts()).not.toContain('Public');
-    expect(texts().filter((text) => text === 'Private' || text === 'Hide amount'))
-      .toEqual(['Private', 'Hide amount']);
     expect(renderer.root.findAllByType(Switch).map((node) => node.props.value))
-      .toEqual([false, true]);
+      .toEqual([false, true, false]);
   });
 
   test('reports the mode the user switches on', async () => {
@@ -118,23 +110,38 @@ describe('PrivacyModeCard', () => {
 });
 
 describe('TransactionPrivacyModal', () => {
-  test('applies the mode chosen in the sheet only on Done', async () => {
-    const onConfirm = jest.fn();
+  test('says the choice is only for this transaction, and where the default is', async () => {
     const { renderer, texts } = await render(
       <TransactionPrivacyModal
         visible
         onDismiss={jest.fn()}
-        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
-        options={PRIVATE_ONLY}
-        onConfirm={onConfirm}
+        selectedMode={PRIVACY_MODE.PUBLIC}
+        onConfirm={jest.fn()}
       />,
     );
     await waitForSheetContent();
 
     expect(texts()).toEqual(expect.arrayContaining([
       'Transaction privacy',
-      'Choose what this transaction hides.',
+      'You can change your default on advanced settings',
     ]));
+    expect(renderer.root.findByType(TextFmt).props.children)
+      .toBe("Choose what's hidden **only for this transaction**");
+    expect(renderer.root.findAll((node) => node.props.title === 'DONE' && node.props.onPress))
+      .toHaveLength(1);
+  });
+
+  test('applies the mode chosen in the sheet only on DONE', async () => {
+    const onConfirm = jest.fn();
+    const { renderer } = await render(
+      <TransactionPrivacyModal
+        visible
+        onDismiss={jest.fn()}
+        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
+        onConfirm={onConfirm}
+      />,
+    );
+    await waitForSheetContent();
 
     await act(async () => {
       renderer.root.findAllByType(Switch)[0].props.onValueChange(true);
@@ -142,40 +149,24 @@ describe('TransactionPrivacyModal', () => {
     expect(onConfirm).not.toHaveBeenCalled();
 
     await act(async () => {
-      renderer.root.find((node) => node.props.title === 'Done' && node.props.onPress).props.onPress();
+      renderer.root.find((node) => node.props.title === 'DONE' && node.props.onPress).props.onPress();
     });
     expect(onConfirm).toHaveBeenCalledWith(PRIVACY_MODE.PRIVATE);
   });
 
-  test('says that a private address only gets private sends', async () => {
-    const { texts } = await render(
-      <TransactionPrivacyModal
-        visible
-        onDismiss={jest.fn()}
-        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
-        options={PRIVATE_ONLY}
-        onConfirm={jest.fn()}
-      />,
-    );
-    await waitForSheetContent();
-
-    expect(texts()).toContain('Payments to a private address are always private.');
-    expect(texts()).not.toContain('Public');
-  });
-
-  test('points to no default setting', async () => {
-    const { texts } = await render(
+  test('offers the three modes, whatever the recipient', async () => {
+    const { renderer, texts } = await render(
       <TransactionPrivacyModal
         visible
         onDismiss={jest.fn()}
         selectedMode={PRIVACY_MODE.PUBLIC}
-        options={Object.values(PRIVACY_MODE)}
         onConfirm={jest.fn()}
       />,
     );
     await waitForSheetContent();
 
-    expect(texts().join('\n')).not.toMatch(/default|settings/i);
+    expect(renderer.root.findAllByType(Switch)).toHaveLength(3);
+    expect(texts()).toEqual(expect.arrayContaining(['Private', 'Hide amount', 'Public']));
     expect(texts()).not.toContain('Payments to a private address are always private.');
   });
 });
@@ -197,17 +188,12 @@ describe('PrivacyModeSelector', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  test('says why it is disabled, and does not open', async () => {
-    const { renderer, texts } = await render(
-      <PrivacyModeSelector mode={PRIVACY_MODE.PUBLIC} onPress={jest.fn()} disabled />,
+  test('describes each mode as the sheet does', async () => {
+    const { texts } = await render(
+      <PrivacyModeSelector mode={PRIVACY_MODE.PRIVATE} onPress={jest.fn()} />,
     );
 
-    expect(texts()).toEqual([
-      'Public',
-      'Token and amount visible',
-      'Private sends need a private address.',
-    ]);
-    expect(renderer.root.findByType(Pressable).props.disabled).toBe(true);
+    expect(texts()).toEqual(['Private', 'Token and amount hidden']);
   });
 });
 
@@ -217,19 +203,21 @@ describe('PrivacyModeCard for the default privacy mode', () => {
       <PrivacyModeCard
         selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
         onSelect={jest.fn()}
-        options={PRIVATE_ONLY}
         variant={PRIVACY_MODE_CARD_VARIANT.DEFAULT}
       />,
-      { decimalPlaces: 4, symbol: 'XHT' },
+      { decimalPlaces: 4 },
     );
 
     expect(texts()).toEqual([
       'Private',
       'Amount hidden on new sends to private addresses. The token is hidden among the tokens each send spends, but never when it is HTR.',
-      'Fee: 0.0002 XHT per private output',
+      'Fee: 0.0002 HTR per output',
       'Hide amount',
       'Token visible, amount hidden on new sends to private addresses',
-      'Fee: 0.0001 XHT per private output',
+      'Fee: 0.0001 HTR per output',
+      'Public',
+      'Token and amount visible',
+      'No privacy fees',
     ]);
   });
 
@@ -238,44 +226,11 @@ describe('PrivacyModeCard for the default privacy mode', () => {
       <PrivacyModeCard
         selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
         onSelect={jest.fn()}
-        options={PRIVATE_ONLY}
         variant={PRIVACY_MODE_CARD_VARIANT.PER_SEND}
       />,
     );
 
     expect(texts()).toContain('Token visible, amount hidden');
     expect(texts().join('\n')).not.toContain('new sends');
-  });
-});
-
-describe('TransactionPrivacyModal and the default privacy mode', () => {
-  test('points a send to a private address to the default in Settings', async () => {
-    const { texts } = await render(
-      <TransactionPrivacyModal
-        visible
-        onDismiss={jest.fn()}
-        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
-        options={PRIVATE_ONLY}
-        onConfirm={jest.fn()}
-      />,
-    );
-    await waitForSheetContent();
-
-    expect(texts()).toContain('You can change the default in Settings, under Privacy.');
-  });
-
-  test('points to no default where Public is offered, since the default never applies', async () => {
-    const { texts } = await render(
-      <TransactionPrivacyModal
-        visible
-        onDismiss={jest.fn()}
-        selectedMode={PRIVACY_MODE.PUBLIC}
-        options={[PRIVACY_MODE.PUBLIC]}
-        onConfirm={jest.fn()}
-      />,
-    );
-    await waitForSheetContent();
-
-    expect(texts()).not.toContain('You can change the default in Settings, under Privacy.');
   });
 });

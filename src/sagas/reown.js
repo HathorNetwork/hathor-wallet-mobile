@@ -128,6 +128,8 @@ import { STORE } from '../store';
 import { consumePasskeySigningCancelled } from '../passkey/passkeySigner';
 import { isShieldedAddress, shieldedAddressNotSupportedText } from '../utils';
 import { mapDappSendPrepareError } from '../utils/shieldedSend';
+import { isShieldedEnvironment } from '../shielded/gating';
+import { newAddressErrorText } from '../shielded/newAddress';
 import { logger } from '../logger';
 
 const log = logger('reown');
@@ -182,6 +184,7 @@ const AVAILABLE_EVENTS = [];
 const ERROR_CODES = {
   UNAUTHORIZED_METHODS: 3001,
   UNSUPPORTED_CHAINS: 5100,
+  UNSUPPORTED_ACCOUNTS: 5103,
   USER_DISCONNECTED: 6000,
   USER_REJECTED: 5000,
   USER_REJECTED_METHOD: 5002,
@@ -721,11 +724,13 @@ export function* processRequest(action) {
       return false;
     }
 
-    // wallet-lib validates shielded addresses, but this wallet cannot pay, mint to or otherwise
-    // use them. Reject the request before the rpc handler builds a transaction for it, checking
-    // the addresses on the network of the wallet that would build it.
+    // wallet-lib validates shielded addresses, but outside the shielded environment this wallet
+    // cannot pay, mint to or otherwise use them. Reject the request there before the rpc handler
+    // builds a transaction for it, checking the addresses on the network of the wallet that would
+    // build it. In the shielded environment, the request goes to the rpc handler as any other.
+    const acceptsShieldedAddresses = yield select(isShieldedEnvironment);
     const requestAddresses = getRequestAddresses(params.request);
-    if (requestAddresses.length > 0) {
+    if (!acceptsShieldedAddresses && requestAddresses.length > 0) {
       const network = wallet.getNetworkObject();
       if (requestAddresses.some((address) => isShieldedAddress(address, network))) {
         log.debug(`Rejecting ${params.request.method}: it has a shielded address.`);
@@ -1500,7 +1505,39 @@ export function* onSessionProposal(action) {
 
   const { walletKit } = reownClient;
   const wallet = yield select((state) => state.wallet);
-  const firstAddress = yield call(() => wallet.getAddressAtIndex(0));
+  // In the shielded environment the wallet's address is its new address.
+  const shieldedEnvironment = yield select(isShieldedEnvironment);
+  let firstAddress;
+  try {
+    firstAddress = yield call(
+      () => wallet.getAddressAtIndex(0, { legacy: !shieldedEnvironment })
+    );
+  } catch (e) {
+    // wallet-lib refuses a new address the wallet has no shielded chain for. No legacy address
+    // stands in for it: the user is told why, and the dApp that the wallet has no account to give.
+    const errorMessage = newAddressErrorText(e);
+    if (!errorMessage) {
+      throw e;
+    }
+    log.error('The new address of the wallet could not be read for a session proposal.', e);
+    yield put(setReownModal({
+      show: true,
+      type: ReownModalTypes.REQUEST_ERROR,
+      data: { errorMessage },
+    }));
+    try {
+      yield call(() => walletKit.rejectSession({
+        id,
+        reason: {
+          code: ERROR_CODES.UNSUPPORTED_ACCOUNTS,
+          message: 'The wallet has no address to connect with.',
+        },
+      }));
+    } catch (rejectError) {
+      log.error('Error rejecting session without an address', rejectError);
+    }
+    return;
+  }
 
   const data = {
     icon: get(params, 'proposer.metadata.icons[0]', null),

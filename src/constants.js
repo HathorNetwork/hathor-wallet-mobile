@@ -161,10 +161,10 @@ export const PRIVACY_MODE = {
 };
 
 /**
- * The privacy mode a send to a private address starts in, until the user saves another default
- * for the network in Settings, under Privacy.
+ * The privacy mode a send starts in, until the user saves another default for the network in
+ * Settings, under Privacy.
  */
-export const DEFAULT_PRIVACY_MODE = PRIVACY_MODE.HIDE_AMOUNT;
+export const DEFAULT_PRIVACY_MODE = PRIVACY_MODE.PUBLIC;
 
 // The default privacy mode is namespaced per network, by the network's full name: the shielded
 // testnet's network is 'testnet', as the public testnet's is. Settings saved before networks had a
@@ -242,11 +242,14 @@ export const SINGLE_ADDRESS_FEATURE_TOGGLE = 'single-address-mobile.rollout';
 export const PASSKEY_ONBOARDING_FEATURE_TOGGLE = 'passkey-onboarding.rollout';
 export const AMOUNT_FORMAT_FEATURE_TOGGLE = 'amount-format-mobile.rollout';
 /**
- * Shows the shielded outputs UI. Like the other mobile-only flags, its name ends in
- * '-mobile.rollout', apart from the flags other wallets share. It doesn't decide where the
- * shielded crypto provider is registered: on the shielded testnet it is registered either way.
+ * Shows the shielded outputs UI, the Shielded Testnet preset included. It is off by default: the
+ * Unleash proxy leaves out the flags it doesn't enable, so a flag it doesn't return reads as off,
+ * and Unleash turns it on only where it targets it, such as the `testnet-shielded-outputs`
+ * network. The UI's own gates also keep the rest of the shielded UI to the shielded testnet. It
+ * doesn't decide where the shielded crypto provider is registered: on the shielded testnet it is
+ * registered either way.
  */
-export const SHIELDED_OUTPUTS_FEATURE_TOGGLE = 'shielded-outputs-mobile.rollout';
+export const SHIELDED_OUTPUTS_FEATURE_TOGGLE = 'shielded-outputs.rollout';
 
 /**
  * Default feature toggle values.

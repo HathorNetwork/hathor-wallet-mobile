@@ -13,7 +13,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { t } from 'ttag';
 
 import { getPrivacyModeDetail } from './PrivacyModeCard';
 import { ChevronDownIcon } from './Icons/ChevronDown.icon';
@@ -21,15 +20,13 @@ import { COLORS } from '../styles/themes';
 
 /**
  * The privacy mode of a send, as a card that opens the privacy sheet: the mode's icon, title and
- * description. Disabled, it can't be opened and says why: only a private address can receive a
- * private send.
+ * description.
  *
  * @param {Object} props
  * @param {string} props.mode The send's mode, one of PRIVACY_MODE
  * @param {function(): void} props.onPress Opens the privacy sheet
- * @param {boolean} [props.disabled] Whether the recipient leaves no choice
  */
-const PrivacyModeSelector = ({ mode, onPress, disabled = false }) => {
+const PrivacyModeSelector = ({ mode, onPress }) => {
   const detail = getPrivacyModeDetail(mode);
   if (!detail) {
     return null;
@@ -43,34 +40,24 @@ const PrivacyModeSelector = ({ mode, onPress, disabled = false }) => {
   };
 
   return (
-    <View style={styles.wrapper}>
-      <Pressable
-        style={[styles.card, disabled && styles.cardDisabled]}
-        onPress={open}
-        disabled={disabled}
-        accessibilityRole='button'
-        accessibilityState={{ disabled }}
-      >
-        <View style={styles.cardLeft}>
-          <Icon size={28} color={COLORS.textColor} />
-          <View style={styles.cardText}>
-            <Text style={styles.cardTitle}>{detail.title}</Text>
-            <Text style={styles.cardSubtitle}>{detail.description}</Text>
-          </View>
+    <Pressable
+      style={styles.card}
+      onPress={open}
+      accessibilityRole='button'
+    >
+      <View style={styles.cardLeft}>
+        <Icon size={28} color={COLORS.textColor} />
+        <View style={styles.cardText}>
+          <Text style={styles.cardTitle}>{detail.title}</Text>
+          <Text style={styles.cardSubtitle}>{detail.description}</Text>
         </View>
-        {!disabled && <ChevronDownIcon size={20} color={COLORS.textColorShadow} />}
-      </Pressable>
-      {disabled && (
-        <Text style={styles.disabledReason}>{t`Private sends need a private address.`}</Text>
-      )}
-    </View>
+      </View>
+      <ChevronDownIcon size={20} color={COLORS.textColorShadow} />
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
-    marginBottom: 16,
-  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -83,9 +70,7 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     paddingBottom: 12,
     paddingLeft: 16,
-  },
-  cardDisabled: {
-    opacity: 0.6,
+    marginBottom: 16,
   },
   cardLeft: {
     flex: 1,
@@ -105,12 +90,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textColorShadow,
     marginTop: 4,
-  },
-  disabledReason: {
-    fontSize: 12,
-    color: COLORS.textColorShadow,
-    textAlign: 'center',
-    marginTop: 8,
   },
 });
 

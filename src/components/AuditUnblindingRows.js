@@ -18,9 +18,31 @@ import { COLORS } from '../styles/themes';
 import { SENSITIVE_COPY_FEEDBACK_MS } from '../constants';
 import { combineURLs } from '../utils';
 import { isShieldedEnabled } from '../shielded/gating';
-import { isTxPaidByWallet } from '../shielded/fees';
 import { getUnblindingEncoder, supportsUnblindLink } from '../utils/privacy';
 import { copySensitive } from '../utils/sensitiveClipboard';
+
+/**
+ * Whether the wallet paid a tx: one of the tx's inputs, in the wallet's history, spends an output
+ * of the wallet. The wallet's shielded inputs carry their address there too; an input of another
+ * wallet's shielded output has none.
+ *
+ * @param {HathorWallet} wallet A fullnode-facade wallet
+ * @param {string} txId
+ * @returns {Promise<boolean>}
+ */
+async function isTxPaidByWallet(wallet, txId) {
+  const tx = await wallet.getTx(txId);
+  const addresses = [...new Set(
+    (tx?.inputs ?? [])
+      .map((input) => input.decoded?.address)
+      .filter((address) => typeof address === 'string'),
+  )];
+  if (addresses.length === 0) {
+    return false;
+  }
+  const mine = await wallet.checkAddressesMine(addresses);
+  return addresses.some((address) => mine[address] === true);
+}
 
 /**
  * The audit rows of a tx's details. They share the unblinding values of the private outputs the

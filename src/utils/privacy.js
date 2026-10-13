@@ -6,15 +6,13 @@
  */
 
 import { shielded } from '@hathor/wallet-lib';
-import { DEFAULT_PRIVACY_MODE, UNBLIND_EXPLORER_URLS } from '../constants';
-import { getPrivacyModeOptions } from './shieldedSend';
+import { DEFAULT_PRIVACY_MODE, PRIVACY_MODE, UNBLIND_EXPLORER_URLS } from '../constants';
 
 /**
- * The modes a default privacy mode can take. The default applies only to sends to private
- * addresses, which take the private modes: a legacy address only takes a public send, and a
- * private address never gets one.
+ * The modes a default privacy mode can take: every mode, as a send offers each one, whatever the
+ * recipient.
  */
-export const PRIVACY_DEFAULT_MODE_OPTIONS = getPrivacyModeOptions(true);
+export const PRIVACY_DEFAULT_MODE_OPTIONS = Object.values(PRIVACY_MODE);
 
 /**
  * The default privacy mode a stored value stands for: the value, when a default can take it, or

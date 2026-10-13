@@ -6,15 +6,11 @@
  */
 
 import React, { useEffect } from 'react';
-import {
-  Dimensions, Share, StyleSheet, Text, View,
-} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { t } from 'ttag';
-import QRCode from 'react-native-qrcode-svg';
 import { useDispatch, useSelector } from 'react-redux';
 
 import SimpleButton from '../SimpleButton';
-import CopyClipboard from '../CopyClipboard';
 import Spinner from '../Spinner';
 import ShieldedUnlockAction from './ShieldedUnlockAction';
 import { walletRefreshSharedAddress } from '../../actions';
@@ -28,21 +24,22 @@ import {
 import { COLORS } from '../../styles/themes';
 
 /**
- * The wallet's private (shielded) receive address, or where it stands: locked, with the action
- * that unlocks it, unavailable, with why, or loading. When the address couldn't be read, for an
- * error nothing expects, a ready wallet also offers to read it again. It never shows the public
- * address in its place. It offers no new address: the wallet gives out its current shielded
- * address, which moves on once an output paid to it is decoded.
+ * The wallet's private (shielded) receive address: the children, which show it as the shared
+ * address, once the wallet gives it out; otherwise where it stands: locked, with the action that
+ * unlocks it, unavailable, with why, or loading. When the address couldn't be read, for an error
+ * nothing expects, a ready wallet also offers to read it again. It never shows the legacy
+ * address in its place.
  *
  * @param {Object} props
  * @param {{ navigate: Function }} props.navigation Opens the PIN screen of the unlock
+ * @param {React.ReactNode} props.children The address, shown once the wallet gives it out
  */
-export default function PrivateReceiveAddress({ navigation }) {
+export default function PrivateReceiveAddress({ navigation, children }) {
   const dispatch = useDispatch();
   const receive = useSelector(selectShieldedReceive);
   const walletReady = useSelector((state) => state.walletStartState === WALLET_STATUS.READY);
 
-  // The state may be from before the shielded UI turned on: read it again when the tab opens.
+  // The state may be from before the shielded UI turned on: read it again when Receive opens.
   useEffect(() => {
     if (walletReady) {
       dispatch(walletRefreshSharedAddress());
@@ -51,7 +48,7 @@ export default function PrivateReceiveAddress({ navigation }) {
 
   switch (receive.status) {
     case SHIELDED_RECEIVE_STATUS.READY:
-      return <PrivateAddress address={receive.address} />;
+      return children;
     case SHIELDED_RECEIVE_STATUS.LOCKED:
       return (
         <Notice
@@ -86,47 +83,6 @@ export default function PrivateReceiveAddress({ navigation }) {
 }
 
 /**
- * The private address, with its QR code, copy and share.
- *
- * @param {Object} props
- * @param {string} props.address The wallet's current shielded address
- */
-const PrivateAddress = ({ address }) => {
-  const shareAddress = () => {
-    Share.share({
-      message: t`Here is my private address: ${address}`,
-    });
-  };
-
-  const { height } = Dimensions.get('window');
-
-  return (
-    <View style={styles.wrapper}>
-      <View style={styles.qrcodeWrapper}>
-        <QRCode value={`hathor:${address}`} size={height < 650 ? 160 : 250} />
-      </View>
-      <View style={styles.addressWrapper}>
-        <CopyClipboard
-          text={address}
-          textStyle={{ fontSize: height < 650 ? 11 : 13, textAlign: 'center' }}
-        />
-      </View>
-      <Text style={styles.hint}>
-        {t`Only wallets that support private transfers can pay this address.`}
-      </Text>
-      <View style={styles.buttonRow}>
-        <SimpleButton
-          onPress={shareAddress}
-          title={t`Share`}
-          color={COLORS.textColor}
-          containerStyle={styles.buttonContainer}
-        />
-      </View>
-    </View>
-  );
-};
-
-/**
  * Why there's no private address to show, and what to do about it.
  *
  * @param {Object} props
@@ -143,46 +99,6 @@ const Notice = ({ title, body, children }) => (
 );
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: COLORS.backgroundColor,
-  },
-  qrcodeWrapper: {
-    padding: 24,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  addressWrapper: {
-    padding: 16,
-    borderTopWidth: 1.5,
-    borderColor: COLORS.borderColor,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'stretch',
-  },
-  hint: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    fontSize: 12,
-    lineHeight: 16,
-    textAlign: 'center',
-    color: COLORS.textColorShadow,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    alignSelf: 'stretch',
-    borderTopWidth: 1.5,
-    borderBottomWidth: 1.5,
-    borderColor: COLORS.borderColor,
-  },
-  buttonContainer: {
-    flex: 1,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    paddingVertical: 16,
-  },
   centered: {
     flex: 1,
     alignItems: 'center',

@@ -16,7 +16,7 @@ import { EyeOffSlashIcon } from './Icons/EyeOffSlash.icon';
 import { EyeIcon } from './Icons/Eye.icon';
 import { COLORS } from '../styles/themes';
 import { getDisplayAmountFormat, renderValue } from '../utils';
-import { DEFAULT_TOKEN, PRIVACY_MODE } from '../constants';
+import { PRIVACY_MODE } from '../constants';
 
 const {
   FEE_PER_AMOUNT_SHIELDED_OUTPUT,
@@ -25,7 +25,7 @@ const {
 
 /**
  * What the card's copy describes: the privacy of one send (PER_SEND), or the default privacy
- * mode of the network's sends to private addresses (DEFAULT), which the privacy settings keep.
+ * mode of the network's sends (DEFAULT), which the privacy settings keep.
  */
 export const PRIVACY_MODE_CARD_VARIANT = {
   PER_SEND: 'per-send',
@@ -37,8 +37,8 @@ export const PRIVACY_MODE_CARD_VARIANT = {
  * privacy fee each of its outputs pays (null for Public, whose outputs pay none).
  *
  * @param {string} [variant] One of PRIVACY_MODE_CARD_VARIANT, PER_SEND by default. The DEFAULT
- *   descriptions say that the mode applies to new sends to private addresses; Public, which no
- *   send to a private address takes, has none of its own.
+ *   descriptions of Private and Hide amount say that the mode applies to new sends to private
+ *   addresses; Public has none of its own.
  * @returns {{ mode: string, Icon: Function, title: string, description: string,
  *   feePerOutput: bigint|null }[]}
  */
@@ -53,7 +53,7 @@ export function getPrivacyModeDetails(variant = PRIVACY_MODE_CARD_VARIANT.PER_SE
       // fee always spends HTR: an HTR output stays known as HTR.
       description: isDefault
         ? t`Amount hidden on new sends to private addresses. The token is hidden among the tokens each send spends, but never when it is HTR.`
-        : t`Amount hidden. The token is hidden among the tokens this send spends, but never when it is HTR.`,
+        : t`Token and amount hidden`,
       feePerOutput: FEE_PER_FULL_SHIELDED_OUTPUT,
     },
     {
@@ -85,41 +85,33 @@ export function getPrivacyModeDetail(mode) {
   return getPrivacyModeDetails().find((detail) => detail.mode === mode);
 }
 
-const ALL_MODES = Object.values(PRIVACY_MODE);
-
 /**
  * The privacy modes a send can pick, one row each, with a switch for the selected one. Each row
- * shows the privacy fee of the mode's outputs in the network's native token. A send that spends
- * private funds keeps its change private, so even a Public send can pay a privacy fee.
+ * shows the privacy fee, in HTR, that each output of the mode pays.
  *
  * @param {Object} props
  * @param {string} props.selectedMode One of PRIVACY_MODE
  * @param {function(string): void} props.onSelect Called with the mode the user switches on
- * @param {string[]} [props.options] The modes to offer, all of them by default
  * @param {string} [props.variant] One of PRIVACY_MODE_CARD_VARIANT: the copy of one send's
  *   privacy, by default, or of the default privacy mode
  */
 const PrivacyModeCard = ({
   selectedMode,
   onSelect,
-  options = ALL_MODES,
   variant = PRIVACY_MODE_CARD_VARIANT.PER_SEND,
 }) => {
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
   const amountFormat = useSelector(getDisplayAmountFormat);
-  const symbol = useSelector(
-    (state) => state.serverInfo?.native_token?.symbol ?? DEFAULT_TOKEN.symbol,
-  );
 
   const feeLabel = (feePerOutput) => {
     if (feePerOutput === null) {
-      return t`No privacy fee unless the send spends private funds`;
+      return t`No privacy fees`;
     }
     const fee = renderValue(feePerOutput, false, decimalPlaces, amountFormat);
-    return t`Fee: ${fee} ${symbol} per private output`;
+    return t`Fee: ${fee} HTR per output`;
   };
 
-  const rows = getPrivacyModeDetails(variant).filter((detail) => options.includes(detail.mode));
+  const rows = getPrivacyModeDetails(variant);
 
   return (
     <View style={styles.card}>

@@ -17,10 +17,12 @@ jest.mock('../../src/hooks/navigation', () => ({
   useNavigation: () => mockNavigation,
   useParams: () => mockParams,
 }));
+// The status bar's height, which the keyboard offset of the screen counts.
+jest.mock('react-native-status-bar-height', () => ({ getStatusBarHeight: () => 20 }));
 
 /* eslint-disable import/first */
 import React from 'react';
-import { ActivityIndicator, Switch } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Switch } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
@@ -31,6 +33,7 @@ import {
   setFeatureToggles,
   setFullNodeNetworkName,
   setServerInfo,
+  setUseWalletService,
   shieldedCapabilityUpdate,
   shieldedProviderUpdate,
   shieldedUnlockStatusUpdate,
@@ -48,6 +51,7 @@ import {
   SHIELDED_UNLOCK_SOURCE,
 } from '../../src/constants';
 import { SHIELDED_UNLOCK_PROGRESS } from '../../src/shielded/unlockState';
+import { STYLE } from '../../src/styles/themes';
 import { PortalProvider } from '../../src/components/Portal';
 import AmountTextInput from '../../src/components/AmountTextInput';
 import PrivacyModeSelector from '../../src/components/PrivacyModeSelector';
@@ -58,6 +62,8 @@ import SendAmountInput from '../../src/screens/SendAmountInput';
 // Testnet addresses built with wallet-lib's address encoders from fixed keys.
 const P2PKH = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';
 const SHIELDED = 'K3KokZRo7DyNRRiyijpsVix2VADrd4HeA8vWLR5itAj81BVC4Vv7xoXbrYyKYwsLMWhefXqXKgJvC6HcVkDuJ7AJ7qUMS7fVc';
+
+const LEGACY_RECIPIENT = 'The selected privacy mode requires a shielded address as the recipient. The address you entered is not shielded — change the address or switch to Public.';
 
 /**
  * The capability at a level; below 'full', the private balance is locked, by default by a wrong
@@ -86,13 +92,16 @@ afterEach(async () => {
 
 /**
  * Renders the amount screen of an HTR send to the address, for a seed wallet on the shielded
- * testnet with a ready provider, and a balance of 2^41 base units. `progress` is where the
- * unlock of the private balance stands, if one runs.
+ * testnet with a ready provider, and a balance of 2^41 base units, unless the options say
+ * otherwise. `progress` is where the unlock of the private balance stands, if one runs.
  */
 async function render(address, {
   flag = true,
   level = capability('full'),
   progress = null,
+  providerStatus = SHIELDED_PROVIDER_STATUS.READY,
+  fullNodeNetworkName = FULL_NETWORK_SHIELDED_TESTNET,
+  useWalletService = false,
 } = {}) {
   mockParams = { address };
   const actions = [];
@@ -107,8 +116,9 @@ async function render(address, {
     ...FEATURE_TOGGLE_DEFAULTS,
     [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag,
   }));
-  store.dispatch(setFullNodeNetworkName(FULL_NETWORK_SHIELDED_TESTNET));
-  store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
+  store.dispatch(setUseWalletService(useWalletService));
+  store.dispatch(setFullNodeNetworkName(fullNodeNetworkName));
+  store.dispatch(shieldedProviderUpdate({ status: providerStatus }));
   store.dispatch(shieldedCapabilityUpdate(level));
   store.dispatch(tokenFetchBalanceSuccess(DEFAULT_TOKEN.uid, { available: 2n ** 41n, locked: 0n }));
   if (progress) {
@@ -147,6 +157,14 @@ async function render(address, {
       (node) => node.props.title === title && typeof node.props.onPress === 'function',
     ).props.onPress();
   });
+  // Picks the mode of a row of the sheet: Private, Hide amount and Public, in that order.
+  const pickMode = async (row) => {
+    await openSheet();
+    await act(async () => {
+      renderer.root.findAllByType(Switch)[row].props.onValueChange(true);
+    });
+    await press('DONE');
+  };
   return {
     renderer,
     store,
@@ -156,6 +174,7 @@ async function render(address, {
     selector,
     texts,
     openSheet,
+    pickMode,
     buttonTitles,
     press,
   };
@@ -167,6 +186,15 @@ const confirmParams = (address, amount, privacyMode) => ['SendConfirmScreen', {
   token: DEFAULT_TOKEN,
   privacyMode,
 }];
+
+describe('SendAmountInput layout', () => {
+  test('keeps the button above the keyboard, under the header', async () => {
+    const { renderer } = await render(P2PKH, { flag: false });
+
+    expect(renderer.root.findByType(KeyboardAvoidingView).props.keyboardVerticalOffset)
+      .toBe(20 + STYLE.headerHeight);
+  });
+});
 
 describe('SendAmountInput with private sends', () => {
   test('shows no privacy mode while the shielded UI is off, and sends in public', async () => {
@@ -182,9 +210,38 @@ describe('SendAmountInput with private sends', () => {
     );
   });
 
+  test.each([
+    ['on the testnet', {
+      fullNodeNetworkName: 'testnet',
+      providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+      level: capability('none', { cause: null }),
+    }],
+    ['on the wallet-service facade', {
+      useWalletService: true,
+      providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+      level: capability('none', { cause: null }),
+    }],
+    ['where the crypto provider failed', {
+      providerStatus: SHIELDED_PROVIDER_STATUS.FAILED,
+      level: capability('none', { cause: null }),
+    }],
+    ['for a scan key no PIN can unlock', { level: capability('watch', { cause: 'corrupt-key' }) }],
+  ])('shows no privacy mode %s, and sends in public', async (_label, options) => {
+    const { selector, renderer, enterAmount, next } = await render(P2PKH, options);
+
+    expect(selector()).toEqual([]);
+    expect(renderer.root.findAllByType(TransactionPrivacyModal)).toEqual([]);
+
+    await enterAmount('1.00', 100n);
+    await next();
+    expect(mockNavigation.navigate).toHaveBeenCalledWith(
+      ...confirmParams(P2PKH, 100n, PRIVACY_MODE.PUBLIC),
+    );
+  });
+
   test('picks no private mode while the shielded UI is off, even for a private address', async () => {
-    // The flag can turn off after the address was taken: the send confirmation then refuses
-    // to pay the private address in public.
+    // The flag can turn off after the address was taken: the send confirmation then pays the
+    // private address in public.
     const { selector, enterAmount, next } = await render(SHIELDED, { flag: false });
 
     expect(selector()).toEqual([]);
@@ -195,77 +252,84 @@ describe('SendAmountInput with private sends', () => {
     );
   });
 
-  test('offers only Public to a legacy address, and says why', async () => {
-    const { selector, texts, enterAmount, next } = await render(P2PKH);
+  test.each([
+    ['a legacy address', P2PKH],
+    ['a private address', SHIELDED],
+  ])('offers every mode for %s, starting in Public', async (_label, address) => {
+    const { selector, renderer, texts, openSheet } = await render(address);
 
     expect(selector()).toHaveLength(1);
-    expect(selector()[0].props).toEqual(expect.objectContaining({
-      mode: PRIVACY_MODE.PUBLIC,
-      disabled: true,
-    }));
-    expect(texts()).toContain('Private sends need a private address.');
+    expect(selector()[0].props.mode).toBe(PRIVACY_MODE.PUBLIC);
+    expect(selector()[0].props.disabled).toBeUndefined();
+    expect(texts()).not.toContain('Private sends need a private address.');
+
+    await openSheet();
+    expect(renderer.root.findAllByType(Switch)).toHaveLength(3);
+    expect(texts()).not.toContain('Payments to a private address are always private.');
+  });
+
+  test.each([
+    ['a legacy address', P2PKH],
+    ['a private address', SHIELDED],
+  ])('sends %s in Public by default', async (_label, address) => {
+    const { enterAmount, next } = await render(address);
 
     await enterAmount('1.00', 100n);
+    await next();
+    expect(mockNavigation.navigate).toHaveBeenCalledWith(
+      ...confirmParams(address, 100n, PRIVACY_MODE.PUBLIC),
+    );
+  });
+
+  test.each([
+    [PRIVACY_MODE.PRIVATE, 0],
+    [PRIVACY_MODE.HIDE_AMOUNT, 1],
+  ])('sends a private address in the mode picked in the sheet: %s', async (mode, row) => {
+    const { selector, pickMode, enterAmount, next } = await render(SHIELDED);
+
+    await pickMode(row);
+    expect(selector()[0].props.mode).toBe(mode);
+
+    await enterAmount('1.00', 100n);
+    await next();
+    expect(mockNavigation.navigate).toHaveBeenCalledWith(
+      ...confirmParams(SHIELDED, 100n, mode),
+    );
+  });
+
+  test.each([
+    [PRIVACY_MODE.PRIVATE, 0],
+    [PRIVACY_MODE.HIDE_AMOUNT, 1],
+  ])('does not send a legacy address in %s, and says why on Next', async (mode, row) => {
+    const { selector, pickMode, enterAmount, next, texts } = await render(P2PKH);
+
+    await pickMode(row);
+    expect(selector()[0].props.mode).toBe(mode);
+    await enterAmount('1.00', 100n);
+    expect(texts()).not.toContain(LEGACY_RECIPIENT);
+
+    await next();
+    expect(mockNavigation.navigate).not.toHaveBeenCalled();
+    expect(texts()).toContain(LEGACY_RECIPIENT);
+
+    // Public pays it.
+    await pickMode(2);
     await next();
     expect(mockNavigation.navigate).toHaveBeenCalledWith(
       ...confirmParams(P2PKH, 100n, PRIVACY_MODE.PUBLIC),
     );
   });
 
-  test('starts a send to a private address in Hide amount, and offers only private modes', async () => {
-    const { selector, renderer, texts, openSheet } = await render(SHIELDED);
-
-    expect(selector()[0].props).toEqual(expect.objectContaining({
-      mode: PRIVACY_MODE.HIDE_AMOUNT,
-      disabled: false,
-    }));
-
-    await openSheet();
-    expect(renderer.root.findByType(TransactionPrivacyModal).props.options)
-      .toEqual([PRIVACY_MODE.HIDE_AMOUNT, PRIVACY_MODE.PRIVATE]);
-    expect(texts()).toContain('Payments to a private address are always private.');
-    expect(renderer.root.findAllByType(Switch)).toHaveLength(2);
-  });
-
-  test('sends in the mode picked in the sheet', async () => {
-    const { renderer, selector, openSheet, enterAmount, next } = await render(SHIELDED);
-
-    await openSheet();
-    await act(async () => {
-      // Private is the first row, the most private mode.
-      renderer.root.findAllByType(Switch)[0].props.onValueChange(true);
-    });
-    await act(async () => {
-      renderer.root.find((node) => node.props.title === 'Done' && node.props.onPress).props.onPress();
-    });
-    expect(selector()[0].props.mode).toBe(PRIVACY_MODE.PRIVATE);
-
-    await enterAmount('1.00', 100n);
-    await next();
-    expect(mockNavigation.navigate).toHaveBeenCalledWith(
-      ...confirmParams(SHIELDED, 100n, PRIVACY_MODE.PRIVATE),
-    );
-  });
-
-  test('sends a private address in Hide amount by default', async () => {
-    const { enterAmount, next } = await render(SHIELDED);
-
-    await enterAmount('1.00', 100n);
-    await next();
-    expect(mockNavigation.navigate).toHaveBeenCalledWith(
-      ...confirmParams(SHIELDED, 100n, PRIVACY_MODE.HIDE_AMOUNT),
-    );
-  });
-
-  test('offers the private modes to a locked wallet a PIN can unlock', async () => {
+  test('offers every mode to a locked wallet a PIN can unlock', async () => {
     const { selector } = await render(SHIELDED, { level: capability('watch') });
 
-    expect(selector()[0].props.mode).toBe(PRIVACY_MODE.HIDE_AMOUNT);
+    expect(selector()[0].props.mode).toBe(PRIVACY_MODE.PUBLIC);
   });
 
   test('caps a private send below 2^40 base units', async () => {
-    const { enterAmount, next, texts } = await render(SHIELDED);
+    const { pickMode, enterAmount, next, texts } = await render(SHIELDED);
 
+    await pickMode(1);
     await enterAmount('10995116277.76', 2n ** 40n);
     await next();
 

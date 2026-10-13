@@ -59,10 +59,18 @@ afterEach(async () => {
 });
 
 /**
- * Renders the selected token's screen on the shielded testnet, with a ready provider and a
- * wallet at level full, and the selected token's balance as given.
+ * Renders the selected token's screen on the shielded testnet, on the fullnode facade, with a
+ * ready provider and a wallet at level full, unless told otherwise, and the selected token's
+ * balance as given.
  */
-async function render({ flag = true, balance }) {
+async function render({
+  flag = true,
+  network = FULL_NETWORK_SHIELDED_TESTNET,
+  providerStatus = SHIELDED_PROVIDER_STATUS.READY,
+  useWalletService = false,
+  capability = FULL,
+  balance,
+}) {
   const actions = [];
   const recordActions = () => (next) => (action) => {
     actions.push(action);
@@ -73,9 +81,10 @@ async function render({ flag = true, balance }) {
     ...FEATURE_TOGGLE_DEFAULTS,
     [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag,
   }));
-  store.dispatch(setFullNodeNetworkName(FULL_NETWORK_SHIELDED_TESTNET));
-  store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
-  store.dispatch(shieldedCapabilityUpdate(FULL));
+  store.dispatch(setUseWalletService(useWalletService));
+  store.dispatch(setFullNodeNetworkName(network));
+  store.dispatch(shieldedProviderUpdate({ status: providerStatus }));
+  store.dispatch(shieldedCapabilityUpdate(capability));
   // The app opens this screen once the wallet's start has loaded its balances.
   store.dispatch(startWalletSuccess());
   store.dispatch(tokenFetchBalanceSuccess(DEFAULT_TOKEN.uid, balance));
@@ -94,11 +103,10 @@ async function render({ flag = true, balance }) {
   const balanceRequests = () => actions.filter(
     (action) => action.type === types.TOKEN_FETCH_BALANCE_REQUESTED,
   );
-  const expand = () => act(async () => {
-    renderer.root.findByType(TouchableWithoutFeedback).props.onPress();
-  });
+  // How many areas expand on a tap, as master's balance did into the Locked balance.
+  const expandables = () => renderer.root.findAllByType(TouchableWithoutFeedback).length;
   return {
-    store, text, balanceRequests, expand,
+    store, text, balanceRequests, expandables,
   };
 }
 
@@ -119,32 +127,67 @@ describe('the balance split on the token screen', () => {
     });
 
     expect(text()).toContain('Available Balance');
-    expect(text()).toContain('"Private"');
+    expect(text()).toContain('"private"');
     expect(text()).toContain('"4.00"');
     expect(text()).toContain('"6.00"');
     expect(balanceRequests()).toEqual([]);
   });
 
-  test('keeps the locked balance in the expanded view, with the split', async () => {
-    const { text, expand } = await render({
+  test('has no Locked balance to expand', async () => {
+    const { text, expandables } = await render({
       balance: { available: 1000n, locked: 50n, privateAvailable: 400n },
     });
 
-    await expand();
-
-    expect(text()).toContain('"Locked"');
-    expect(text()).toContain('0.50 HTR');
-    expect(text()).toContain('"Private"');
+    expect(expandables()).toBe(0);
+    expect(text()).not.toContain('Locked');
+    expect(text()).not.toContain('"0.50 HTR"');
   });
 
-  test('shows the screen as it was while the shielded UI is off', async () => {
-    const { text, balanceRequests } = await render({
+  test('shows the available balance alone while the shielded UI is off, with no Locked balance to expand', async () => {
+    const { text, balanceRequests, expandables } = await render({
       flag: false,
       balance: { available: 1000n, locked: 50n },
     });
 
+    expect(text()).toContain('10.00 HTR');
     expect(text()).toContain('Available Balance');
-    expect(text()).not.toContain('"Private"');
+    expect(text()).not.toContain('"private"');
+    expect(expandables()).toBe(0);
+    expect(text()).not.toContain('Locked');
+    expect(balanceRequests()).toEqual([]);
+  });
+
+  test.each([
+    ['the shielded UI is off', { flag: false }],
+    ['the node reports another network', {
+      network: 'testnet',
+      providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
+    }],
+    ['the wallet runs on the wallet-service facade', { useWalletService: true }],
+    ['the crypto provider could not be loaded', {
+      providerStatus: SHIELDED_PROVIDER_STATUS.FAILED,
+    }],
+  ])('shows no split and no notice of the private balance while %s', async (_label, options) => {
+    const { text, balanceRequests } = await render({
+      ...options,
+      // A locked private balance, whose split would count and unlock the locked outputs.
+      capability: {
+        ...FULL,
+        level: 'watch',
+        reason: 'locked',
+        cause: 'wrong-pin',
+        canReceive: false,
+        canSpend: false,
+        undecoded: { ...FULL.undecoded, txIds: ['tx1', 'tx2'], locked: 2 },
+      },
+      balance: { available: 1000n, locked: 50n, privateAvailable: 400n },
+    });
+
+    expect(text()).toContain('Available Balance');
+    expect(text()).not.toContain('"private"');
+    expect(text()).not.toContain('"public"');
+    expect(text()).not.toContain('2 private outputs are locked');
+    expect(text()).not.toContain('Unlock private balance');
     expect(balanceRequests()).toEqual([]);
   });
 
@@ -175,7 +218,7 @@ describe('the balance split on the token screen', () => {
     });
 
     expect(balanceRequests()).toEqual([]);
-    expect(text()).not.toContain('"Private"');
+    expect(text()).not.toContain('"private"');
   });
 
   test('fetches the balance again once the flag turns on, for its private part', async () => {
@@ -199,7 +242,7 @@ describe('the balance split on the token screen', () => {
         privateAvailable: 400n,
       }));
     });
-    expect(text()).toContain('"Private"');
+    expect(text()).toContain('"private"');
     expect(balanceRequests()).toHaveLength(1);
   });
 
@@ -212,13 +255,13 @@ describe('the balance split on the token screen', () => {
     await setFlag(store, false);
 
     expect(text()).toContain('Available Balance');
-    expect(text()).not.toContain('"Private"');
-    expect(text()).not.toContain('"Public"');
+    expect(text()).not.toContain('"private"');
+    expect(text()).not.toContain('"public"');
 
     await setFlag(store, true);
 
-    expect(text()).toContain('"Private"');
-    expect(text()).toContain('"Public"');
+    expect(text()).toContain('"private"');
+    expect(text()).toContain('"public"');
     expect(balanceRequests()).toEqual([]);
   });
 });

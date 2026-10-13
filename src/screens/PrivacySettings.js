@@ -25,7 +25,6 @@ import { privacyDefaultModeSet } from '../actions';
 import { getNetworkSettings } from '../sagas/helpers';
 import { isShieldedAvailable } from '../shielded/gating';
 import { closeScreen } from '../utils/navigation';
-import { PRIVACY_DEFAULT_MODE_OPTIONS } from '../utils/privacy';
 
 /**
  * The privacy settings of the network the wallet runs on: the default privacy mode of its sends to
@@ -81,7 +80,6 @@ export default function PrivacySettings({ navigation, route }) {
         <PrivacyModeCard
           selectedMode={selectedMode}
           onSelect={onSelect}
-          options={PRIVACY_DEFAULT_MODE_OPTIONS}
           variant={PRIVACY_MODE_CARD_VARIANT.DEFAULT}
         />
 

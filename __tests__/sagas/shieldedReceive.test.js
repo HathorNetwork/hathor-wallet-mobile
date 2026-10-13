@@ -22,6 +22,7 @@ import { CAPABILITY_REFRESH_DELAY_MS, saga } from '../../src/sagas/shielded';
 import { WALLET_STATUS } from '../../src/sagas/wallet';
 import { reducer } from '../../src/reducers/reducer';
 import {
+  sharedAddressUpdate,
   shieldedCapabilityUpdate,
   shieldedReceiveAddressUpdate,
   startWalletSuccess,
@@ -45,6 +46,9 @@ const log = logger();
 const { LOADING, LOCKED, READY, UNAVAILABLE } = SHIELDED_RECEIVE_STATUS;
 const ADDRESS = 'SHIELDED_ADDRESS_3';
 const OTHER_ADDRESS = 'SHIELDED_ADDRESS_4';
+const LEGACY_ADDRESS = 'LEGACY_ADDRESS_0';
+const FLAG_OFF = { ...FEATURE_TOGGLE_DEFAULTS, [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false };
+const FLAG_ON = { ...FEATURE_TOGGLE_DEFAULTS, [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: true };
 
 const capability = ({ undecoded, ...rest } = {}) => ({
   level: 'full',
@@ -75,10 +79,16 @@ const READY_RECEIVE = receive(READY, { address: ADDRESS, index: 3 });
 
 /**
  * Runs the shielded saga over the state of a seed wallet running on the shielded testnet, with
- * the shielded UI flag on and the crypto provider ready. The shielded slice changes as the
- * reducer changes it, for the actions the saga puts and the ones a test delivers.
+ * the shielded UI flag on and the crypto provider ready. The shielded slice and the shared
+ * address change as the reducer changes them, for the actions the saga puts and the ones a test
+ * delivers. The shared address starts as the given one, the legacy address by default.
  */
-function setup({ start = FULL, startReceive = SHIELDED_RECEIVE_INITIAL_STATE, change = {} } = {}) {
+function setup({
+  start = FULL,
+  startReceive = SHIELDED_RECEIVE_INITIAL_STATE,
+  startShared = { address: LEGACY_ADDRESS, index: 0 },
+  change = {},
+} = {}) {
   const wallet = {
     isReady: jest.fn(() => true),
     getShieldedCapability: jest.fn(async () => state.shielded.capability),
@@ -89,8 +99,10 @@ function setup({ start = FULL, startReceive = SHIELDED_RECEIVE_INITIAL_STATE, ch
     walletStartState: WALLET_STATUS.READY,
     useWalletService: false,
     fullNodeNetworkName: FULL_NETWORK_SHIELDED_TESTNET,
-    featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: true },
+    featureToggles: FLAG_ON,
     tokens: {},
+    lastSharedAddress: startShared.address,
+    lastSharedIndex: startShared.index,
     shielded: {
       providerStatus: SHIELDED_PROVIDER_STATUS.READY,
       providerError: null,
@@ -99,8 +111,8 @@ function setup({ start = FULL, startReceive = SHIELDED_RECEIVE_INITIAL_STATE, ch
     },
     ...change,
   };
-  const reduceShielded = (action) => {
-    if (action.type.startsWith('SHIELDED_')) {
+  const reduceWritten = (action) => {
+    if (action.type.startsWith('SHIELDED_') || action.type === types.SHARED_ADDRESS_UPDATE) {
       state = reducer(state, action);
     }
   };
@@ -111,25 +123,25 @@ function setup({ start = FULL, startReceive = SHIELDED_RECEIVE_INITIAL_STATE, ch
       channel,
       dispatch: (action) => {
         dispatched.push(action);
-        reduceShielded(action);
+        reduceWritten(action);
       },
       getState: () => state,
     },
     saga,
   );
   const deliver = (action) => {
-    reduceShielded(action);
+    reduceWritten(action);
     channel.put(action);
   };
-  const receiveUpdates = () => dispatched.filter(
-    (action) => action.type === types.SHIELDED_RECEIVE_ADDRESS_UPDATE,
-  );
+  const ofType = (type) => () => dispatched.filter((action) => action.type === type);
   // The start loaded the balances with the start capability.
   deliver(startWalletSuccess());
   return {
     wallet,
     deliver,
-    receiveUpdates,
+    receiveUpdates: ofType(types.SHIELDED_RECEIVE_ADDRESS_UPDATE),
+    sharedUpdates: ofType(types.SHARED_ADDRESS_UPDATE),
+    refreshRequests: ofType(types.WALLET_REFRESH_SHARED_ADDRESS),
     getState: () => state,
     setState: (next) => { state = { ...state, ...next }; },
   };
@@ -215,8 +227,8 @@ describe('the private receive state', () => {
         receive: SHIELDED_RECEIVE_INITIAL_STATE,
       },
     }],
-  ])('reads nothing from the wallet while %s', async (_label, change) => {
-    const { wallet, deliver, receiveUpdates } = setup({ change });
+  ])('reads nothing from the wallet, and leaves the shared address alone, while %s', async (_label, change) => {
+    const { wallet, deliver, receiveUpdates, sharedUpdates } = setup({ change });
 
     deliver(walletRefreshSharedAddress());
     await wait(0);
@@ -224,6 +236,7 @@ describe('the private receive state', () => {
     expect(wallet.getShieldedCapability).not.toHaveBeenCalled();
     expect(wallet.getCurrentAddress).not.toHaveBeenCalled();
     expect(receiveUpdates()).toEqual([]);
+    expect(sharedUpdates()).toEqual([]);
   });
 
   test('goes back to idle, reading nothing, when the shielded UI turns off', async () => {
@@ -242,12 +255,16 @@ describe('the private receive state', () => {
   });
 
   test('puts nothing when the state is the same', async () => {
-    const { deliver, receiveUpdates } = setup({ startReceive: READY_RECEIVE });
+    const { deliver, receiveUpdates, sharedUpdates } = setup({
+      startReceive: READY_RECEIVE,
+      startShared: { address: ADDRESS, index: 3 },
+    });
 
     deliver(walletRefreshSharedAddress());
     await wait(0);
 
     expect(receiveUpdates()).toEqual([]);
+    expect(sharedUpdates()).toEqual([]);
   });
 
   test('reads the state again once a capability change settles', async () => {
@@ -293,10 +310,11 @@ describe('the private receive state', () => {
     const later = receive(READY, { address: OTHER_ADDRESS, index: 4 });
     expect(receiveUpdates()).toEqual([shieldedReceiveAddressUpdate(later)]);
     expect(getState().shielded.receive).toEqual(later);
+    expect(getState().lastSharedAddress).toBe(OTHER_ADDRESS);
   });
 
   test('drops what it read for a wallet the app has replaced', async () => {
-    const { wallet, deliver, receiveUpdates, setState } = setup();
+    const { wallet, deliver, receiveUpdates, sharedUpdates, setState } = setup();
     let finish;
     wallet.getCurrentAddress.mockImplementationOnce(
       () => new Promise((resolve) => { finish = resolve; }),
@@ -309,5 +327,135 @@ describe('the private receive state', () => {
     await wait(0);
 
     expect(receiveUpdates()).toEqual([]);
+    expect(sharedUpdates()).toEqual([]);
+  });
+});
+
+describe('the shared address in the shielded environment', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  test('is the current shielded address', async () => {
+    const { deliver, sharedUpdates, getState } = setup();
+
+    deliver(walletRefreshSharedAddress());
+    await wait(0);
+
+    expect(sharedUpdates()).toEqual([sharedAddressUpdate(ADDRESS, 3)]);
+    expect(getState().lastSharedAddress).toBe(ADDRESS);
+    expect(getState().lastSharedIndex).toBe(3);
+  });
+
+  test.each([
+    ['locked', LOCKED_CAPABILITY],
+    ['unavailable', capability({ level: 'none', reason: 'no-provider', canReceive: false })],
+    ['loading', capability({ level: 'none', reason: 'not-started', canReceive: false })],
+  ])('is none while the shielded address is %s, never the legacy one', async (_label, current) => {
+    const { deliver, sharedUpdates, getState } = setup({ start: current });
+
+    deliver(walletRefreshSharedAddress());
+    await wait(0);
+
+    expect(sharedUpdates()).toEqual([sharedAddressUpdate(null, null)]);
+    expect(getState().lastSharedAddress).toBeNull();
+  });
+
+  test('is none when the shielded address could not be read', async () => {
+    const { wallet, deliver, sharedUpdates } = setup();
+    wallet.getCurrentAddress.mockRejectedValue(new Error('storage closed'));
+
+    deliver(walletRefreshSharedAddress());
+    await wait(0);
+
+    expect(sharedUpdates()).toEqual([sharedAddressUpdate(null, null)]);
+  });
+
+  test('is put again when it is not the address the receive state holds', async () => {
+    const { deliver, receiveUpdates, sharedUpdates } = setup({ startReceive: READY_RECEIVE });
+
+    deliver(walletRefreshSharedAddress());
+    await wait(0);
+
+    expect(receiveUpdates()).toEqual([]);
+    expect(sharedUpdates()).toEqual([sharedAddressUpdate(ADDRESS, 3)]);
+  });
+
+  test('is left to the legacy refresh while the shielded UI is off', async () => {
+    const { deliver, sharedUpdates, getState } = setup({
+      startReceive: READY_RECEIVE,
+      change: { featureToggles: FLAG_OFF },
+    });
+
+    deliver(walletRefreshSharedAddress());
+    await wait(0);
+
+    expect(sharedUpdates()).toEqual([]);
+    expect(getState().lastSharedAddress).toBe(LEGACY_ADDRESS);
+  });
+});
+
+describe('a change of the shielded UI flag', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  const toggleUpdated = { type: types.FEATURE_TOGGLE_UPDATED };
+
+  test('reads the shared address again when the shielded UI turns on', async () => {
+    const { deliver, refreshRequests, setState } = setup({ change: { featureToggles: FLAG_OFF } });
+
+    setState({ featureToggles: FLAG_ON });
+    deliver(toggleUpdated);
+    await wait(0);
+
+    expect(refreshRequests()).toEqual([walletRefreshSharedAddress()]);
+  });
+
+  test('reads the shared address again when the shielded UI turns off', async () => {
+    const { deliver, refreshRequests, setState } = setup({
+      startReceive: READY_RECEIVE,
+      startShared: { address: ADDRESS, index: 3 },
+    });
+
+    setState({ featureToggles: FLAG_OFF });
+    deliver(toggleUpdated);
+    await wait(0);
+
+    expect(refreshRequests()).toEqual([walletRefreshSharedAddress()]);
+  });
+
+  test.each([
+    ['on', FLAG_ON, READY_RECEIVE],
+    ['off', FLAG_OFF, SHIELDED_RECEIVE_INITIAL_STATE],
+  ])('reads nothing when the shielded UI stays %s', async (_label, featureToggles, startReceive) => {
+    const { deliver, refreshRequests } = setup({ startReceive, change: { featureToggles } });
+
+    deliver(toggleUpdated);
+    await wait(0);
+
+    expect(refreshRequests()).toEqual([]);
+  });
+
+  test('reads nothing while the wallet starts: its start reads the shared address', async () => {
+    const { deliver, refreshRequests, setState } = setup({
+      change: { featureToggles: FLAG_OFF, walletStartState: WALLET_STATUS.LOADING },
+    });
+
+    setState({ featureToggles: FLAG_ON });
+    deliver(toggleUpdated);
+    await wait(0);
+
+    expect(refreshRequests()).toEqual([]);
   });
 });

@@ -24,7 +24,7 @@ import React from 'react';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
-import { TokenVersion } from '@hathor/wallet-lib';
+import { TokenVersion, errors } from '@hathor/wallet-lib';
 import { reducer } from '../../src/reducers/reducer';
 import {
   setFeatureToggles,
@@ -43,11 +43,14 @@ import { PortalProvider } from '../../src/components/Portal';
 import CreateTokenConfirm from '../../src/screens/CreateTokenConfirm';
 /* eslint-enable import/first */
 
+// Testnet addresses built with wallet-lib's address encoders from fixed keys.
 const P2PKH = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';
+const SHIELDED = 'K3KokZRo7DyNRRiyijpsVix2VADrd4HeA8vWLR5itAj81BVC4Vv7xoXbrYyKYwsLMWhefXqXKgJvC6HcVkDuJ7AJ7qUMS7fVc';
 const WARNING = 'Creating a token can spend private HTR and make its amount public.';
 
 /**
- * A wallet whose storage holds the given UTXOs, filtered as wallet-lib's storage filters them.
+ * A wallet whose storage holds the given UTXOs, filtered as wallet-lib's storage filters them,
+ * and whose current address is the new address on the shielded chain and a legacy one otherwise.
  */
 const createWallet = (utxos) => ({
   storage: {
@@ -63,7 +66,10 @@ const createWallet = (utxos) => ({
       }
     }),
   },
-  getCurrentAddress: jest.fn(async () => ({ address: P2PKH, index: 3 })),
+  getCurrentAddress: jest.fn(async (_options, opts) => ({
+    address: opts?.legacy === false ? SHIELDED : P2PKH,
+    index: 3,
+  })),
   prepareCreateNewToken: jest.fn(async () => { throw new Error('stopped by the test'); }),
 });
 
@@ -111,64 +117,66 @@ async function render(wallet, { flag = true } = {}) {
 const PRIVATE_HTR = { token: '00', value: 500n, shielded: true, timelock: null };
 const PUBLIC_HTR = { token: '00', value: 500n, shielded: false, timelock: null };
 
-describe('CreateTokenConfirm with private HTR', () => {
-  test('warns that the creation can spend private HTR', async () => {
+describe('CreateTokenConfirm on the shielded testnet', () => {
+  test.each([
+    ['the shielded UI is on', true],
+    ['the shielded UI is off', false],
+  ])('neither reads the private HTR nor warns about it when %s', async (_label, flag) => {
     const wallet = createWallet([PUBLIC_HTR, PRIVATE_HTR]);
-    const { texts } = await render(wallet);
-
-    expect(texts()).toContain(WARNING);
-    expect(wallet.storage.selectUtxos).toHaveBeenCalledWith(expect.objectContaining({
-      token: '00',
-      shielded: true,
-    }));
-  });
-
-  test('says nothing when the wallet holds no private HTR', async () => {
-    const { texts } = await render(createWallet([PUBLIC_HTR]));
-
-    expect(texts()).not.toContain(WARNING);
-  });
-
-  test('warns when it could not read the private HTR', async () => {
-    // The creation can still spend private HTR: when the screen can't tell, it warns.
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-    const readError = new Error('storage read failed');
-    const wallet = createWallet([PUBLIC_HTR, PRIVATE_HTR]);
-    wallet.storage.selectUtxos = jest.fn(() => ({
-      [Symbol.asyncIterator]: () => ({
-        next: async () => { throw readError; },
-      }),
-    }));
-    const { texts } = await render(wallet);
-
-    expect(wallet.storage.selectUtxos).toHaveBeenCalledTimes(1);
-    expect(texts()).toContain(WARNING);
-    expect(consoleError).toHaveBeenCalledWith(
-      '[create-token] Failed to read the private HTR of the wallet.',
-      readError,
-    );
-  });
-
-  test('reads nothing while the shielded UI is off', async () => {
-    const wallet = createWallet([PUBLIC_HTR, PRIVATE_HTR]);
-    const { texts } = await render(wallet, { flag: false });
+    const { texts } = await render(wallet, { flag });
 
     expect(texts()).not.toContain(WARNING);
     expect(wallet.storage.selectUtxos).not.toHaveBeenCalled();
   });
 
-  test('mints to a legacy address of the wallet, as before', async () => {
-    const wallet = createWallet([PRIVATE_HTR]);
-    const { renderer } = await render(wallet);
-
+  // Creates the token with the PIN, up to prepareCreateNewToken, which the wallet fails.
+  const createToken = async (renderer) => {
     await act(async () => {
       renderer.root.find((node) => node.props.title === 'Create token' && node.props.onPress)
         .props.onPress();
     });
     const [, pinParams] = mockNavigation.navigate.mock.calls[0];
     await act(async () => { pinParams.cb('123456'); });
+  };
 
-    expect(wallet.getCurrentAddress).toHaveBeenCalledWith({ markAsUsed: true });
+  test('mints to the new address of the wallet in the shielded environment', async () => {
+    const wallet = createWallet([PRIVATE_HTR]);
+    const { renderer } = await render(wallet);
+
+    await createToken(renderer);
+
+    expect(wallet.getCurrentAddress).toHaveBeenCalledWith({ markAsUsed: true }, { legacy: false });
+    expect(wallet.prepareCreateNewToken).toHaveBeenCalledWith(
+      'Token',
+      'TKN',
+      10000n,
+      expect.objectContaining({ address: SHIELDED }),
+    );
+  });
+
+  test('says the private balance is locked when the wallet gives no new address', async () => {
+    const wallet = createWallet([PRIVATE_HTR]);
+    wallet.getCurrentAddress.mockRejectedValue(new errors.ShieldedKeyError(
+      'shielded-locked',
+      "The wallet's scan key is not unlocked, so it cannot see what a shielded address receives.",
+    ));
+    const { renderer, texts } = await render(wallet);
+
+    await createToken(renderer);
+    await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 150); }); });
+
+    // No legacy address stands in for it.
+    expect(wallet.prepareCreateNewToken).not.toHaveBeenCalled();
+    expect(texts()).toContain('Your private balance is locked. Unlock it and try again.');
+  });
+
+  test('mints to a legacy address of the wallet while the shielded UI is off', async () => {
+    const wallet = createWallet([PRIVATE_HTR]);
+    const { renderer } = await render(wallet, { flag: false });
+
+    await createToken(renderer);
+
+    expect(wallet.getCurrentAddress).toHaveBeenCalledWith({ markAsUsed: true }, { legacy: true });
     expect(wallet.prepareCreateNewToken).toHaveBeenCalledWith(
       'Token',
       'TKN',

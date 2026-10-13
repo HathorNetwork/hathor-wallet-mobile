@@ -159,32 +159,3 @@ describe('validateAddress where the wallet sends privately', () => {
       .toEqual({ isValid: false, message: shieldedAddressNotSupportedText });
   });
 });
-
-describe('validateAddress with the reason private sends are unavailable', () => {
-  const network = new Network('testnet');
-  const shieldedRejection = 'Private transfers could not be loaded on this device.';
-
-  it('rejects a shielded address of the network with the reason', () => {
-    expect(validateAddress(ADDRESSES.testnet.shielded, network, { shieldedRejection }))
-      .toEqual({ isValid: false, message: shieldedRejection });
-  });
-
-  it('keeps the shielded address message without a reason', () => {
-    expect(validateAddress(ADDRESSES.testnet.shielded, network, { shieldedRejection: null }))
-      .toEqual({ isValid: false, message: shieldedAddressNotSupportedText });
-  });
-
-  it('gives the reason to no other address', () => {
-    expect(validateAddress(ADDRESSES.testnet.p2pkh, network, { shieldedRejection }))
-      .toEqual({ isValid: true });
-    expect(validateAddress(ADDRESSES.mainnet.shielded, network, { shieldedRejection }))
-      .toEqual({ isValid: false, message: 'Invalid address' });
-  });
-
-  it('takes a shielded address where the wallet sends privately', () => {
-    expect(validateAddress(ADDRESSES.testnet.shielded, network, {
-      allowShielded: true,
-      shieldedRejection,
-    })).toEqual({ isValid: true });
-  });
-});

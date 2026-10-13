@@ -110,7 +110,12 @@ import {
   getFirstAddress,
   normalizeAmountFormat,
 } from '../utils';
-import { isShieldedNetwork, shouldRegisterShieldedProvider } from '../shielded/gating';
+import {
+  isShieldedEnvironment,
+  isShieldedNetwork,
+  shouldRegisterShieldedProvider,
+} from '../shielded/gating';
+import { newAddressErrorText } from '../shielded/newAddress';
 import { normalizePrivacyDefaultMode } from '../utils/privacy';
 import { logger } from '../logger';
 
@@ -1124,11 +1129,23 @@ export function* onStartWalletFailed() {
   yield put(setWallet(null));
 }
 
+/**
+ * Puts the wallet's current legacy address as the shared address (lastSharedAddress). In the
+ * shielded environment the shielded saga puts it instead: the wallet's current shielded
+ * address, or none while it can't be read, never the legacy one.
+ */
 export function* refreshSharedAddress() {
+  if (yield select(isShieldedEnvironment)) {
+    return;
+  }
   const wallet = yield select((state) => state.wallet);
 
   const { address, index } = yield call(() => wallet.getCurrentAddress());
 
+  // The shielded UI may have turned on during the read.
+  if (yield select(isShieldedEnvironment)) {
+    return;
+  }
   yield put(sharedAddressUpdate(address, index));
 }
 
@@ -1170,14 +1187,18 @@ export function* fetchFirstWalletAddress() {
   }
 
   try {
-    const address = yield call(getFirstAddress, wallet);
+    // In the shielded environment the wallet's address is its new address.
+    const shieldedEnvironment = yield select(isShieldedEnvironment);
+    const address = yield call(getFirstAddress, wallet, shieldedEnvironment);
     log.log('First wallet address loaded with success.');
     yield put(firstAddressSuccess({ address }));
   } catch (error) {
     log.error('Error while fetching first wallet address.', error);
-    // This will show the message in the feedback content
+    // This will show the message in the feedback content. A new address the wallet has no
+    // shielded chain for says why, and no legacy address stands in for it.
     yield put(firstAddressFailure({
-      error: t`There was an error while loading first wallet address. Try again.`
+      error: newAddressErrorText(error)
+        ?? t`There was an error while loading first wallet address. Try again.`,
     }));
   }
 }

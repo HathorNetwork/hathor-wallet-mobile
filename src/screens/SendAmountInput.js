@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -15,13 +15,17 @@ import {
   View,
 } from 'react-native';
 import { useSelector } from 'react-redux';
-import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
 import { Network } from '@hathor/wallet-lib';
 
 import { IS_MULTI_TOKEN, PRIVACY_MODE } from '../constants';
-import { renderValue, isTokenNFT, isShieldedAddress } from '../utils';
+import {
+  getKeyboardAvoidingViewTopDistance,
+  renderValue,
+  isTokenNFT,
+  isShieldedAddress,
+} from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -37,12 +41,7 @@ import { COLORS } from '../styles/themes';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { canSendPrivately, selectShieldedCapability } from '../shielded/gating';
 import { isShieldedUnlockInProgress, selectShieldedUnlock } from '../shielded/unlockState';
-import {
-  MAX_PRIVATE_AMOUNT,
-  getPrivacyModeOptions,
-  initialPrivacyMode,
-  isPrivateAmountAllowed,
-} from '../utils/shieldedSend';
+import { MAX_PRIVATE_AMOUNT, isPrivateAmountAllowed } from '../utils/shieldedSend';
 
 const SendAmountInput = () => {
   const selectedToken = useSelector((state) => state.selectedToken);
@@ -55,7 +54,7 @@ const SendAmountInput = () => {
   const capability = useSelector(selectShieldedCapability);
   const unlock = useSelector(selectShieldedUnlock);
   const networkName = useSelector((state) => state.networkSettings.network);
-  // The default the user saved for the network, which a send to a private address starts in.
+  // The default the user saved for the network, which a send starts in.
   const privacyDefaultMode = useSelector((state) => state.privacyDefaultMode);
 
   const navigation = useNavigation();
@@ -65,28 +64,16 @@ const SendAmountInput = () => {
   const [amountValue, setAmountValue] = useState(null);
   const [token, setToken] = useState(selectedToken);
   const [error, setError] = useState(null);
-  // The mode the user picked in the privacy sheet, if any.
+  // The mode the user picked in the privacy sheet, if any: it changes the mode for this send only.
   const [chosenPrivacyMode, setChosenPrivacyMode] = useState(null);
   const [isPrivacyModalShown, setIsPrivacyModalShown] = useState(false);
   const inputRef = useRef(null);
 
-  // The recipient decides the privacy modes. The send address input validated it, so it
-  // parses; should the check fail anyway, the recipient is taken as public, and the send
-  // confirmation, which checks it again, refuses to pay it.
-  const recipientIsShielded = useMemo(() => {
-    try {
-      return isShieldedAddress(params.address, new Network(networkName));
-    } catch (e) {
-      return false;
-    }
-  }, [params.address, networkName]);
-  const privacyOptions = getPrivacyModeOptions(recipientIsShielded);
-  let privacyMode = PRIVACY_MODE.PUBLIC;
-  if (privateSendsAvailable) {
-    privacyMode = privacyOptions.includes(chosenPrivacyMode)
-      ? chosenPrivacyMode
-      : initialPrivacyMode(privacyOptions, privacyDefaultMode);
-  }
+  // A send starts in the default saved for the network. Where the wallet can't send privately,
+  // the send is public.
+  const privacyMode = privateSendsAvailable
+    ? (chosenPrivacyMode ?? privacyDefaultMode)
+    : PRIVACY_MODE.PUBLIC;
 
   // The available balance leaves out the private outputs the wallet holds locked. Where a PIN
   // can unlock them (private sends are available at level watch only then), the screen says how
@@ -148,6 +135,22 @@ const SendAmountInput = () => {
       return;
     }
 
+    // A private output is built with the scan key a private (shielded) address carries: a legacy
+    // address can only receive a public one. The user can change the address or the mode.
+    if (privacyMode !== PRIVACY_MODE.PUBLIC && params?.address) {
+      try {
+        if (!isShieldedAddress(params.address, new Network(networkName))) {
+          setError(
+            t`The selected privacy mode requires a shielded address as the recipient. The address you entered is not shielded — change the address or switch to Public.`
+          );
+          return;
+        }
+      } catch (e) {
+        // The send address input validated the address. Should the check fail anyway, the
+        // send confirmation's build fails with wallet-lib's error.
+      }
+    }
+
     if (privacyMode !== PRIVACY_MODE.PUBLIC && !isPrivateAmountAllowed(amountValue)) {
       const max = renderValue(MAX_PRIVATE_AMOUNT, isNFT(), decimalPlaces);
       const { symbol } = token;
@@ -199,7 +202,13 @@ const SendAmountInput = () => {
           title={t`SEND ${tokenNameUpperCase}`}
           onBackPress={() => navigation.goBack()}
         />
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
+        <KeyboardAvoidingView
+          behavior='padding'
+          style={{ flex: 1 }}
+          // The distance from the top of the screen to the top of the KeyboardAvoidingView,
+          // which is under the header.
+          keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}
+        >
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <View style={{
@@ -235,7 +244,6 @@ const SendAmountInput = () => {
               {privateSendsAvailable && (
                 <PrivacyModeSelector
                   mode={privacyMode}
-                  disabled={!recipientIsShielded}
                   onPress={() => setIsPrivacyModalShown(true)}
                 />
               )}
@@ -254,11 +262,9 @@ const SendAmountInput = () => {
           visible={isPrivacyModalShown}
           onDismiss={() => setIsPrivacyModalShown(false)}
           selectedMode={privacyMode}
-          options={privacyOptions}
           onConfirm={(mode) => {
             setChosenPrivacyMode(mode);
             setIsPrivacyModalShown(false);
-            setError(null);
           }}
         />
       )}
