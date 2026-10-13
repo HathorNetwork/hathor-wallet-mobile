@@ -912,12 +912,17 @@ export const getAllAddresses = async (wallet) => {
  * Return the first wallet's address.
  *
  * @param {Object} wallet
+ * @param {boolean} [shieldedEnabled=false] Whether to return the new (shielded) address at index
+ *   0 instead of the legacy one, as in the shielded environment
  *
  * @returns {Promise<string>}
  * @throws {Error} either wallet not ready or other http request error if using wallet service.
+ *   For the new address, the ShieldedKeyError of a wallet with no shielded chain it can use.
  * @async
  */
-export const getFirstAddress = async (wallet) => wallet.getAddressAtIndex(0);
+export const getFirstAddress = async (wallet, shieldedEnabled = false) => (
+  wallet.getAddressAtIndex(0, { legacy: !shieldedEnabled })
+);
 
 /**
  * Verifies if the invalidModel of the form has an error message.

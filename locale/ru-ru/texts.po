@@ -157,7 +157,8 @@ msgid ""
 "private."
 msgstr ""
 
-#: src/shielded/receiveState.js:149 src/utils/shieldedSend.js:232
+#: src/shielded/newAddress.js:34 src/shielded/receiveState.js:149
+#: src/utils/shieldedSend.js:232
 msgid "Private transfers could not be loaded on this device."
 msgstr ""
 
@@ -185,15 +186,19 @@ msgstr ""
 msgid "Could not build the swap transaction. Please try again."
 msgstr ""
 
-#: src/shielded/receiveState.js:152
-msgid "Could not load your private address."
+#: src/shielded/newAddress.js:32
+msgid "Your private balance is locked. Unlock it and try again."
 msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:101
 #: src/components/Shielded/ShieldedBalanceSplit.js:157
 #: src/screens/SendConfirmScreen.js:198 src/screens/SendConfirmScreen.js:230
-#: src/shielded/receiveState.js:154
+#: src/shielded/newAddress.js:36 src/shielded/receiveState.js:154
 msgid "Private transfers are not available for this wallet."
+msgstr ""
+
+#: src/shielded/receiveState.js:152
+msgid "Could not load your private address."
 msgstr ""
 
 #: src/screens/About.js:83
@@ -1837,21 +1842,22 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-#: src/sagas/wallet.js:1121
+#: src/sagas/wallet.js:1126
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1135
+#: src/sagas/wallet.js:1140
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1145
+#: src/sagas/wallet.js:1150
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#.  This will show the message in the feedback content
-#: src/sagas/wallet.js:1161
+#.  This will show the message in the feedback content. A new address the wallet has no
+#.  shielded chain for says why, and no legacy address stands in for it.
+#: src/sagas/wallet.js:1170
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 

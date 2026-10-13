@@ -108,7 +108,12 @@ import {
   getFirstAddress,
   normalizeAmountFormat,
 } from '../utils';
-import { isShieldedNetwork, shouldRegisterShieldedProvider } from '../shielded/gating';
+import {
+  isShieldedEnvironment,
+  isShieldedNetwork,
+  shouldRegisterShieldedProvider,
+} from '../shielded/gating';
+import { newAddressErrorText } from '../shielded/newAddress';
 import { logger } from '../logger';
 
 const log = logger('wallet');
@@ -1151,14 +1156,18 @@ export function* fetchFirstWalletAddress() {
   }
 
   try {
-    const address = yield call(getFirstAddress, wallet);
+    // In the shielded environment the wallet's address is its new address.
+    const shieldedEnvironment = yield select(isShieldedEnvironment);
+    const address = yield call(getFirstAddress, wallet, shieldedEnvironment);
     log.log('First wallet address loaded with success.');
     yield put(firstAddressSuccess({ address }));
   } catch (error) {
     log.error('Error while fetching first wallet address.', error);
-    // This will show the message in the feedback content
+    // This will show the message in the feedback content. A new address the wallet has no
+    // shielded chain for says why, and no legacy address stands in for it.
     yield put(firstAddressFailure({
-      error: t`There was an error while loading first wallet address. Try again.`
+      error: newAddressErrorText(error)
+        ?? t`There was an error while loading first wallet address. Try again.`,
     }));
   }
 }
