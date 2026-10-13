@@ -37,7 +37,6 @@ import {
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   SHIELDED_PROVIDER_STATUS,
 } from '../../src/constants';
-import { shieldedAddressNotSupportedText } from '../../src/utils';
 import SendAddressInput from '../../src/screens/SendAddressInput';
 /* eslint-enable import/first */
 
@@ -99,13 +98,15 @@ async function render({
   const type = (text) => act(async () => {
     renderer.root.findByType(TextInput).props.onChangeText(text);
   });
+  const nextButton = () => renderer.root.find(
+    (node) => node.props.title === 'Next' && typeof node.props.onPress === 'function',
+  );
+  // Next is disabled until the address is one the wallet can pay.
   const next = () => act(async () => {
-    renderer.root.find((node) => node.props.title === 'Next' && node.props.onPress).props.onPress();
+    expect(nextButton().props.disabled).toBe(false);
+    nextButton().props.onPress();
   });
-  const texts = () => renderer.root
-    .findAll((node) => node.type === 'Text')
-    .map((node) => [].concat(node.props.children).join(''));
-  return { type, next, texts };
+  return { type, next, nextButton };
 }
 
 describe('SendAddressInput with private sends', () => {
@@ -148,14 +149,14 @@ describe('SendAddressInput with private sends', () => {
       providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
       level: capability('none', null, 'no-provider'),
     }],
-  ])('rejects a private address as unsupported when %s', async (_label, options) => {
-    const { type, next, texts } = await render(options);
+  ])('does not take a private address when %s', async (_label, options) => {
+    const { type, nextButton } = await render(options);
 
     await type(SHIELDED);
-    await next();
 
+    // validateAddress rejects it as unsupported there: Next stays disabled.
+    expect(nextButton().props.disabled).toBe(true);
     expect(mockNavigation.navigate).not.toHaveBeenCalled();
-    expect(texts()).toContain(shieldedAddressNotSupportedText);
   });
 
   // A public send to a private address pays the address of its spend key, which needs no crypto

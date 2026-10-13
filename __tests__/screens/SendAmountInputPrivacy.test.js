@@ -17,10 +17,12 @@ jest.mock('../../src/hooks/navigation', () => ({
   useNavigation: () => mockNavigation,
   useParams: () => mockParams,
 }));
+// The status bar's height, which the keyboard offset of the screen counts.
+jest.mock('react-native-status-bar-height', () => ({ getStatusBarHeight: () => 20 }));
 
 /* eslint-disable import/first */
 import React from 'react';
-import { ActivityIndicator, Switch } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Switch } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
@@ -47,6 +49,7 @@ import {
   SHIELDED_UNLOCK_SOURCE,
 } from '../../src/constants';
 import { SHIELDED_UNLOCK_PROGRESS } from '../../src/shielded/unlockState';
+import { STYLE } from '../../src/styles/themes';
 import { PortalProvider } from '../../src/components/Portal';
 import AmountTextInput from '../../src/components/AmountTextInput';
 import PrivacyModeSelector from '../../src/components/PrivacyModeSelector';
@@ -166,6 +169,15 @@ const confirmParams = (address, amount, privacyMode) => ['SendConfirmScreen', {
   token: DEFAULT_TOKEN,
   privacyMode,
 }];
+
+describe('SendAmountInput layout', () => {
+  test('keeps the button above the keyboard, under the header', async () => {
+    const { renderer } = await render(P2PKH, { flag: false });
+
+    expect(renderer.root.findByType(KeyboardAvoidingView).props.keyboardVerticalOffset)
+      .toBe(20 + STYLE.headerHeight);
+  });
+});
 
 describe('SendAmountInput with private sends', () => {
   test('shows no privacy mode while the shielded UI is off, and sends in public', async () => {

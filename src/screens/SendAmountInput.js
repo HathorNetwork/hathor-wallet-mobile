@@ -15,13 +15,17 @@ import {
   View,
 } from 'react-native';
 import { useSelector } from 'react-redux';
-import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
 import { Network } from '@hathor/wallet-lib';
 
 import { IS_MULTI_TOKEN, PRIVACY_MODE } from '../constants';
-import { renderValue, isTokenNFT, isShieldedAddress } from '../utils';
+import {
+  getKeyboardAvoidingViewTopDistance,
+  renderValue,
+  isTokenNFT,
+  isShieldedAddress,
+} from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -197,7 +201,13 @@ const SendAmountInput = () => {
           title={t`SEND ${tokenNameUpperCase}`}
           onBackPress={() => navigation.goBack()}
         />
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
+        <KeyboardAvoidingView
+          behavior='padding'
+          style={{ flex: 1 }}
+          // The distance from the top of the screen to the top of the KeyboardAvoidingView,
+          // which is under the header.
+          keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}
+        >
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <View style={{

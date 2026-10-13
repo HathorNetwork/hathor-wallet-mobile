@@ -179,48 +179,29 @@ const CameraPermissionScreen = () => null;
 /**
  * Stack of screens dedicated to the token sending process
  */
-const SendStack = ({ navigation }) => {
+const SendStack = () => {
   const Stack = createStackNavigator();
-  const [initialRoute, setInitialRoute] = useState('CameraPermissionScreen');
   const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
   const dispatch = useDispatch();
 
-  /*
-   * Request camera permission on initialization, if permission is not already set
-   */
+  // Request camera permission on initialization, so the QR code scanner the address input
+  // opens works without a prompt on the first scan. The address input is the first screen
+  // whatever the permission.
   useEffect(() => {
     if (isCameraAvailable === null) {
       dispatch(requestCameraPermission());
     }
   }, []);
 
-  // Listen to camera permission changes from user input and navigate to the relevant screen
-  useEffect(() => {
-    let initScreenName;
-    switch (isCameraAvailable) {
-      case true:
-        initScreenName = 'SendScanQRCode';
-        break;
-      case false:
-        initScreenName = 'SendAddressInput';
-        break;
-      default:
-        initScreenName = 'CameraPermissionScreen';
-    }
-    setInitialRoute(initScreenName);
-    navigation.replace(initScreenName);
-  }, [isCameraAvailable]);
-
   return (
     <Stack.Navigator
-      initialRouteName={initialRoute}
+      initialRouteName='SendAddressInput'
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Stack.Screen name='CameraPermissionScreen' component={CameraPermissionScreen} />
-      <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
       <Stack.Screen name='SendAddressInput' component={SendAddressInput} />
+      <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
       <Stack.Screen name='SendAmountInput' component={SendAmountInput} />
       <Stack.Screen name='SendConfirmScreen' component={SendConfirmScreen} />
     </Stack.Navigator>

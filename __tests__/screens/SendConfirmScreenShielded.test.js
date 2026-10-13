@@ -18,6 +18,10 @@ jest.mock('../../src/hooks/navigation', () => ({
   useNavigation: () => mockNavigation,
   useParams: () => mockParams,
 }));
+jest.mock('../../src/NavigationService', () => ({
+  __esModule: true,
+  default: { navigate: jest.fn(), resetToMain: jest.fn(), setTopLevelNavigator: jest.fn() },
+}));
 
 // Every send the screen builds, with the facade and the arguments it was built with. A build
 // waits for `pendingRun`, when a test sets it.
@@ -92,6 +96,7 @@ import {
   SHIELDED_PROVIDER_STATUS,
 } from '../../src/constants';
 import { STORE } from '../../src/store';
+import NavigationService from '../../src/NavigationService';
 import { PortalProvider } from '../../src/components/Portal';
 import SendConfirmScreen from '../../src/screens/SendConfirmScreen';
 /* eslint-enable import/first */
@@ -657,5 +662,31 @@ describe('SendConfirmScreen unlock of a locked private balance', () => {
 
     expect(mockSends).toHaveLength(1);
     expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+  });
+});
+
+describe('SendConfirmScreen after a send', () => {
+  test('goes home, then starts the send flow again at the address input', async () => {
+    const { renderer } = await render(
+      { address: P2PKH, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC },
+      { providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED },
+    );
+    await act(async () => {
+      renderer.root.find((node) => node.props.title === 'Send' && node.props.onPress).props.onPress();
+    });
+    const [, pinParams] = mockNavigation.navigate.mock.calls[0];
+    await act(async () => { pinParams.cb('123456'); });
+    await settle();
+
+    const feedback = renderer.root.find((node) => typeof node.props.onDismissSuccess === 'function');
+    await act(async () => { feedback.props.onDismissSuccess(); });
+    expect(NavigationService.navigate).toHaveBeenCalledWith('Main', { screen: 'Home' });
+
+    // The send stack is reset once the home screen shows.
+    await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 550); }); });
+    expect(mockNavigation.reset).toHaveBeenCalledWith({
+      index: 0,
+      routes: [{ name: 'SendAddressInput' }],
+    });
   });
 });
