@@ -71,12 +71,11 @@ function canUnlockWithPin(capability) {
 const noShieldedKeysText = () => t`This wallet has no shielded keys. They are only present on wallets created after the shielded outputs feature was enabled.`;
 
 /**
- * What the export says when the keys can't be read, whatever the error: its message may quote
- * what failed.
+ * What the export says of a wallet whose private outputs a PIN can unlock.
  *
  * @returns {string}
  */
-const readFailedText = () => t`The privacy keys could not be read.`;
+const unlockFirstText = () => t`Unlock your private balance to export the privacy keys.`;
 
 /**
  * Why a wallet that doesn't decode its private outputs, and no PIN unlocks, can't export the keys.
@@ -89,6 +88,17 @@ function unavailableText(capability) {
     return noShieldedKeysText();
   }
   return t`Private transfers are not available for this wallet.`;
+}
+
+/**
+ * Why a wallet that doesn't decode its private outputs can't export the keys: a PIN unlocks them
+ * first, or nothing does.
+ *
+ * @param {Object|null} capability The wallet's IShieldedCapability
+ * @returns {string}
+ */
+function blockedText(capability) {
+  return canUnlockWithPin(capability) ? unlockFirstText() : unavailableText(capability);
 }
 
 /**
@@ -165,8 +175,8 @@ const KeyCard = ({ label, description, value }) => {
  * The keys show masked, and "Show full key" reveals one. Copy goes through the clipboard that
  * clears itself. The keys hide while the app isn't active, out of iOS's app-switcher snapshot;
  * Android takes its recents thumbnail before the app reports it, so the thumbnail can show them.
- * A failure that isn't the wallet's state shows a fixed text, never the error's message, and logs
- * nothing.
+ * A read that fails shows the error's message, and logs nothing. A wallet that no longer decodes
+ * its private outputs when the PIN comes says why, as the screen does when it opens.
  *
  * The privacy settings open it, where the shielded UI is available. When it no longer is, the
  * screen closes with the screens above it, such as its PIN screen, whose callback then never runs.
@@ -250,7 +260,7 @@ export default function ExportPrivacyKeys({ navigation, route }) {
         return;
       }
       if (!decodesPrivateOutputs(current)) {
-        fail(current?.reason === NO_SHIELDED_KEYS_REASON ? noShieldedKeysText() : readFailedText());
+        fail(blockedText(current));
         return;
       }
       const [spendXpub, scanXpriv] = await Promise.all([
@@ -264,16 +274,12 @@ export default function ExportPrivacyKeys({ navigation, route }) {
         fail(noShieldedKeysText());
         return;
       }
-      if (!scanXpriv) {
-        fail(readFailedText());
-        return;
-      }
       setKeys({ spendXpub, scanXpriv });
       setStage(STAGE.KEYS);
     } catch (e) {
-      // Neither the message nor the error is shown or logged.
+      // The error isn't logged.
       if (mounted.current) {
-        fail(readFailedText());
+        fail(e instanceof Error ? e.message : String(e));
       }
     }
   };
@@ -299,9 +305,7 @@ export default function ExportPrivacyKeys({ navigation, route }) {
     if (canUnlockWithPin(capability)) {
       return (
         <View>
-          <Text style={styles.note}>
-            {t`Unlock your private balance to export the privacy keys.`}
-          </Text>
+          <Text style={styles.note}>{unlockFirstText()}</Text>
           <ShieldedUnlockAction navigation={navigation} />
         </View>
       );
@@ -360,13 +364,15 @@ export default function ExportPrivacyKeys({ navigation, route }) {
               }
               value={keys.spendXpub}
             />
-            <KeyCard
-              label={t`Scan private key (xpriv)`}
-              description={
-                t`Path m/44'/280'/1'/0. Lets the auditor decrypt the value and token of every shielded output your wallet receives. Used only for ECDH; never for signing.`
-              }
-              value={keys.scanXpriv}
-            />
+            {Boolean(keys.scanXpriv) && (
+              <KeyCard
+                label={t`Scan private key (xpriv)`}
+                description={
+                  t`Path m/44'/280'/1'/0. Lets the auditor decrypt the value and token of every shielded output your wallet receives. Used only for ECDH; never for signing.`
+                }
+                value={keys.scanXpriv}
+              />
+            )}
           </>
         )}
 

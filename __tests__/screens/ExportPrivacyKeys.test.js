@@ -12,7 +12,6 @@ import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
 import { StackActions } from '@react-navigation/native';
-import { errors } from '@hathor/wallet-lib';
 import { reducer } from '../../src/reducers/reducer';
 import {
   lockScreen,
@@ -45,9 +44,9 @@ const SPEND_MASKED = 'xpub6EkS2eyW…RPVTnmE1';
 const SCAN_MASKED = 'xprv9zyUunmb…o7nKpx6H';
 
 const ROUTE_KEY = 'ExportPrivacyKeys-test';
-const READ_FAILED = 'The privacy keys could not be read.';
 const NO_SHIELDED_KEYS = 'This wallet has no shielded keys. They are only present on wallets created after the shielded outputs feature was enabled.';
 const UNLOCK_FIRST = 'Unlock your private balance to export the privacy keys.';
+const UNAVAILABLE = 'Private transfers are not available for this wallet.';
 
 const capability = (level, { cause = 'wrong-pin', reason = 'locked' } = {}) => ({
   level,
@@ -408,14 +407,19 @@ describe('ExportPrivacyKeys', () => {
     expect(json).not.toContain(SPEND_XPUB);
   });
 
-  test('stops before it decrypts when the wallet no longer decodes its private outputs', async () => {
-    const wallet = fakeWallet({ live: capability('watch') });
+  test.each([
+    ['locked by a PIN', capability('watch'), UNLOCK_FIRST],
+    ['locked by a scan key no PIN can unlock', capability('watch', { cause: 'corrupt-key' }), UNAVAILABLE],
+    ['without shielded keys', capability('none', { reason: 'no-shielded-keys', cause: null }), NO_SHIELDED_KEYS],
+  ])('stops before it decrypts, and says why, when the wallet is now %s', async (_label, live, text) => {
+    const wallet = fakeWallet({ live });
     const { texts, enterPin } = await render({ wallet });
 
     await enterPin();
 
     expect(wallet.storage.getScanXPrivKey).not.toHaveBeenCalled();
-    expect(texts()).toContain(READ_FAILED);
+    expect(texts()).toContain(text);
+    expect(texts()).not.toContain(SPEND_MASKED);
   });
 
   test('says the wallet has no shielded keys when it has no spend xpub', async () => {
@@ -453,24 +457,46 @@ describe('ExportPrivacyKeys', () => {
     expect(wallet.storage.getScanXPrivKey).not.toHaveBeenCalled();
   });
 
-  test('shows a fixed text when a key cannot be read, and logs nothing', async () => {
+  test('shows the error\'s message when a key cannot be read, and logs nothing', async () => {
     const wallet = fakeWallet();
-    const leak = `wrong password for ${PIN}`;
-    wallet.storage.getScanXPrivKey.mockRejectedValue(new errors.InvalidPasswdError(leak));
+    // What wallet-lib throws for a wallet without a scan key.
+    const message = 'Scan private key is not present on this wallet.';
+    wallet.storage.getScanXPrivKey.mockRejectedValue(new Error(message));
     const consoleSpies = ['log', 'debug', 'info', 'warn', 'error']
       .map((method) => jest.spyOn(console, method));
-    const { renderer, texts, enterPin } = await render({ wallet });
+    const { texts, enterPin } = await render({ wallet });
 
     await enterPin();
 
-    expect(texts()).toContain(READ_FAILED);
-    expect(JSON.stringify(renderer.toJSON())).not.toContain(leak);
+    expect(texts()).toContain(message);
+    expect(texts()).not.toContain(SPEND_MASKED);
     const logged = JSON.stringify(consoleSpies.flatMap((spy) => spy.mock.calls), (_key, value) => (
       value instanceof Error ? value.message : value
     ));
-    expect(logged).not.toContain(leak);
+    expect(logged).not.toContain(message);
     expect(logged).not.toContain(PIN);
     expect(logged).not.toContain(SPEND_XPUB);
+  });
+
+  test('shows what a read failed with when it is not an Error', async () => {
+    const wallet = fakeWallet();
+    wallet.storage.getSpendXPubKey.mockRejectedValue('The storage is closed.');
+    const { texts, enterPin } = await render({ wallet });
+
+    await enterPin();
+
+    expect(texts()).toContain('The storage is closed.');
+  });
+
+  test('shows the spend key alone when the wallet gives no scan key', async () => {
+    const wallet = fakeWallet();
+    wallet.storage.getScanXPrivKey.mockResolvedValue(undefined);
+    const { texts, enterPin } = await render({ wallet });
+
+    await enterPin();
+
+    expect(texts()).toEqual(expect.arrayContaining(['Spend public key (xpub)', SPEND_MASKED]));
+    expect(texts()).not.toContain('Scan private key (xpriv)');
   });
 
   test('asks to unlock a locked private balance, then asks for the PIN once it is unlocked', async () => {
@@ -501,7 +527,7 @@ describe('ExportPrivacyKeys', () => {
   ])('offers no export for %s', async (_label, level) => {
     const { texts, titles, pinScreenCalls } = await render({ level });
 
-    expect(texts()).toContain('Private transfers are not available for this wallet.');
+    expect(texts()).toContain(UNAVAILABLE);
     expect(titles()).not.toContain('Unlock private balance');
     expect(pinScreenCalls()).toEqual([]);
   });
