@@ -569,7 +569,7 @@ msgstr "Símbolo do token"
 msgid "Deposit"
 msgstr "Depósito"
 
-#: src/components/Shielded/FeeBreakdown.js:96
+#: src/components/Shielded/FeeBreakdown.js:70
 #: src/screens/CreateTokenConfirm.js:293 src/screens/SendConfirmScreen.js:635
 msgid "Network fee"
 msgstr "Taxa de Rede"
@@ -1315,7 +1315,7 @@ msgstr "Resumo da transação"
 msgid "To"
 msgstr "Para"
 
-#: src/components/Shielded/FeeBreakdown.js:62
+#: src/components/Shielded/FeeBreakdown.js:58
 #: src/screens/SendConfirmScreen.js:610
 msgid "Fees"
 msgstr "Taxas"
@@ -2337,16 +2337,9 @@ msgstr "Inválida"
 msgid "Transaction ID"
 msgstr "ID da Transação"
 
-#: src/components/Shielded/FeeBreakdown.js:63
+#: src/components/Shielded/FeeBreakdown.js:76
 msgid "Privacy fee"
 msgstr "Taxa de Privacidade"
-
-#: src/components/Shielded/FeeBreakdown.js:106
-#, javascript-format
-msgid "${ count } private output"
-msgid_plural "${ count } private outputs"
-msgstr[0] "${ count } saída privada"
-msgstr[1] "${ count } saídas privadas"
 
 #: src/components/Shielded/PrivateReceiveAddress.js:55
 msgid "Private receiving is locked"
@@ -3247,6 +3240,12 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#, javascript-format
+#~ msgid "${ count } private output"
+#~ msgid_plural "${ count } private outputs"
+#~ msgstr[0] "${ count } saída privada"
+#~ msgstr[1] "${ count } saídas privadas"
 
 #~ msgid "Locked"
 #~ msgstr "Bloqueado"
