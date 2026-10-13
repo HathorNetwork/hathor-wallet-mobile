@@ -159,14 +159,14 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 1. With the flag on, connect a dApp through Reown: the session's account is `hathor:testnet:` and the wallet's new address at index 0.
 1. Have the dApp send with `htr_sendTransaction` to a private address: the request reaches the confirmation and is sent, as a public output to the address of the private address's spend key.
 1. Repeat with the flag off, and on Testnet: the request error modal says "This wallet does not support shielded addresses." and the dApp gets an error. The session's account is the legacy address at index 0.
-1. With the flag on, open a nano contract request, and register a nano contract: the address they start from is the wallet's new address. wallet-lib 4.1 serializes a 71-byte caller in the nano header, which the node reads as 25 bytes, so expect such a transaction to fail until wallet-lib maps the caller to its spend address.
-1. In a debug build, make the provider's self-test fail, then connect a dApp: the request error modal says "Private transfers could not be loaded on this device.", and the dApp's proposal is rejected. Registering a nano contract shows the same reason.
+1. With the flag on, open a nano contract request, and register a nano contract: the caller they start from is the wallet's legacy address at index 0, as on Testnet, and the address list offers legacy addresses only. Send the request: it goes through.
+1. In a debug build, make the provider's self-test fail, then connect a dApp: the request error modal says "Private transfers could not be loaded on this device.", and the dApp's proposal is rejected. Registering a nano contract still works, with the legacy address.
 
 ### Token creation and swaps
 1. With the flag on, create a token: the confirmation has no warning about private HTR, and the token is minted to the wallet's current new address. The new tokens show in the balance.
 1. With the flag off, the token is minted to a legacy address, as before.
 1. With the private balance locked, as in "A start that leaves the private funds locked", create a token: the creation fails with "Your private balance is locked. Unlock it and try again." Unlock it from the token screen and create it again: it is created.
-1. With the flag on, swap tokens: the swap calls the pool with the wallet's new address at index 0. The swap is a nano contract call, so expect it to fail with wallet-lib 4.1, as the nano contract requests above do.
+1. With the flag on, swap tokens: the swap, a nano contract call, uses the wallet's legacy address at index 0, as on Testnet, and goes through.
 
 ### Timings of private sends on a low-end Android device
 On the Shielded Testnet, record the time from Next on the amount screen to the confirmation's summary, for a Hide amount send and for a Private send of a custom token, and compare it with a public send.

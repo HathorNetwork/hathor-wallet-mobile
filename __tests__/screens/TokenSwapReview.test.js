@@ -103,33 +103,24 @@ async function render(wallet, { flag = true } = {}) {
   return { texts };
 }
 
+// A swap is a nano contract call: its caller is the legacy address at index 0 on every network.
 describe('TokenSwapReview', () => {
-  test('swaps with the new address of the wallet in the shielded environment', async () => {
+  test.each([
+    ['in the shielded environment', true],
+    ['while the shielded UI is off', false],
+  ])('swaps with the legacy address of the wallet %s', async (_label, flag) => {
     const wallet = createWallet();
-    await render(wallet);
+    await render(wallet, { flag });
 
-    expect(wallet.getAddressAtIndex).toHaveBeenCalledWith(0, { legacy: false });
+    expect(wallet.getAddressAtIndex).toHaveBeenCalledWith(0);
     expect(buildTokenSwap).toHaveBeenCalledWith(
       'pool-manager',
-      SHIELDED,
+      P2PKH,
       expect.anything(),
       TOKEN_IN.uid,
       TOKEN_OUT.uid,
       expect.anything(),
     );
-    expect(wallet.createNanoContractTransaction).toHaveBeenCalledWith(
-      mockSwap[0],
-      SHIELDED,
-      mockSwap[1],
-      { signTx: false },
-    );
-  });
-
-  test('swaps with the legacy address of the wallet while the shielded UI is off', async () => {
-    const wallet = createWallet();
-    await render(wallet, { flag: false });
-
-    expect(wallet.getAddressAtIndex).toHaveBeenCalledWith(0, { legacy: true });
     expect(wallet.createNanoContractTransaction).toHaveBeenCalledWith(
       mockSwap[0],
       P2PKH,
@@ -138,15 +129,14 @@ describe('TokenSwapReview', () => {
     );
   });
 
-  test('says why it does not swap when the new address is refused', async () => {
+  test('says it could not build the swap when the address can not be read', async () => {
     const wallet = createWallet();
     wallet.getAddressAtIndex.mockRejectedValue(
       new errors.ShieldedKeyError('shielded-no-keys', 'The wallet record has no shielded keys.'),
     );
     const { texts } = await render(wallet);
 
-    // No legacy address stands in for it.
     expect(wallet.createNanoContractTransaction).not.toHaveBeenCalled();
-    expect(texts()).toContain('Private transfers are not available for this wallet.');
+    expect(texts()).toContain('Could not build the swap transaction. Please try again.');
   });
 });

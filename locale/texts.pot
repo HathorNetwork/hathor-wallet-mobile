@@ -507,7 +507,7 @@ msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:200
 #: src/screens/SendConfirmScreen.js:408
-#: src/screens/TokenSwapReview.js:271
+#: src/screens/TokenSwapReview.js:265
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 msgid "Building transaction"
 msgstr ""
@@ -1143,7 +1143,7 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
 #: src/screens/SendConfirmScreen.js:77
-#: src/screens/TokenSwapReview.js:370
+#: src/screens/TokenSwapReview.js:364
 msgid "No fee"
 msgstr ""
 
@@ -1191,20 +1191,20 @@ msgid "Unlock private balance"
 msgstr ""
 
 #: src/screens/SendConfirmScreen.js:387
-#: src/screens/TokenSwapReview.js:226
+#: src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr ""
 
 #: src/sagas/helpers.js:147
 #: src/screens/SendConfirmScreen.js:406
-#: src/screens/TokenSwapReview.js:269
+#: src/screens/TokenSwapReview.js:263
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
 #: src/sagas/helpers.js:148
 #: src/screens/SendConfirmScreen.js:407
-#: src/screens/TokenSwapReview.js:270
+#: src/screens/TokenSwapReview.js:264
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 msgid "Authorize operation"
 msgstr ""
@@ -1287,7 +1287,7 @@ msgstr[1] ""
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
 #: src/screens/SendConfirmScreen.js:661
-#: src/screens/TokenSwapReview.js:366
+#: src/screens/TokenSwapReview.js:360
 msgid "Network Fee"
 msgstr ""
 
@@ -1392,19 +1392,19 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:281
+#: src/screens/TokenSwapReview.js:275
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:287
+#: src/screens/TokenSwapReview.js:281
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:305
+#: src/screens/TokenSwapReview.js:299
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:378
+#: src/screens/TokenSwapReview.js:372
 msgid "SWAP"
 msgstr ""
 
@@ -1851,22 +1851,21 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/sagas/wallet.js:1138
+#: src/sagas/wallet.js:1137
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:1152
+#: src/sagas/wallet.js:1151
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1162
+#: src/sagas/wallet.js:1161
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:1182
-#.  This will show the message in the feedback content. A new address the wallet has no
-#.  shielded chain for says why, and no legacy address stands in for it.
+#: src/sagas/wallet.js:1177
+#.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 

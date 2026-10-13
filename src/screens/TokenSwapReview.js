@@ -51,8 +51,6 @@ import {
 } from '../passkey/passkeySigner';
 import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
-import { isShieldedEnvironment } from '../shielded/gating';
-import { newAddressErrorText } from '../shielded/newAddress';
 import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
@@ -70,8 +68,6 @@ const TokenSwapReview = () => {
   const useWalletService = useSelector((state) => state.useWalletService);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const contractId = useSelector(selectTokenSwapContractId);
-  // In the shielded environment the wallet's address, which swaps, is its new address.
-  const shieldedEnvironment = useSelector(isShieldedEnvironment);
 
   const { quote, tokenIn, tokenOut } = useParams();
 
@@ -95,7 +91,7 @@ const TokenSwapReview = () => {
 
     (async () => {
       try {
-        const address = await wallet.getAddressAtIndex(0, { legacy: !shieldedEnvironment });
+        const address = await wallet.getAddressAtIndex(0);
         const [method, data] = buildTokenSwap(
           contractId,
           address,
@@ -119,9 +115,7 @@ const TokenSwapReview = () => {
       } catch (err) {
         if (cancelled) return;
         console.error(err);
-        // A new address the wallet has no shielded chain for says why: no legacy address stands
-        // in for it.
-        setBuildError({ message: newAddressErrorText(err) ?? mapBuildError(err) });
+        setBuildError({ message: mapBuildError(err) });
         setPhase(PHASE.ERROR);
       }
     })();
