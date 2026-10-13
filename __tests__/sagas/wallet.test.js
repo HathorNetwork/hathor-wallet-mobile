@@ -102,6 +102,26 @@ describe('waitForWalletRestart', () => {
   });
 });
 
+describe('trackRestartPin', () => {
+  // waitForWalletRestart reads the PIN that trackRestartPin keeps: a reload starts the wallet with
+  // it.
+  test('forgets the PIN when the wallet is reset', async () => {
+    const startAction = startWalletRequested({ words: 'seed words', pin: '111111' });
+    const channel = stdChannel();
+    const dispatched = [];
+    const io = { channel, dispatch: (action) => dispatched.push(action) };
+    const pinTracker = runSaga(io, trackRestartPin);
+    channel.put(startAction);
+    channel.put(resetWallet());
+    const task = runSaga(io, waitForWalletRestart, startAction);
+    channel.put(reloadWalletRequested());
+    await task.toPromise();
+    pinTracker.cancel();
+
+    expect(dispatched).toEqual([startWalletRequested({ words: 'seed words', pin: null })]);
+  });
+});
+
 describe('wallet saga', () => {
   // startWallet loads the wallet, then runs waitForWalletRestart. In its place, the saga runs this
   // start, which loads until the test dispatches WALLET_LOADED.

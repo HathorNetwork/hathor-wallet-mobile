@@ -530,7 +530,8 @@ export function* startWallet(action) {
 /**
  * The PIN that a reload starts the wallet with: the PIN of the last start request, or of a
  * WALLET_PIN_CHANGED after it. A PIN change or a safe-biometry switch re-encrypts the access data,
- * and start() decrypts it with the PIN it is given. The PIN is kept here, never in the redux state.
+ * and start() decrypts it with the PIN it is given. The PIN is kept here, never in the redux state,
+ * and a wallet reset clears it.
  */
 let restartPin;
 
@@ -539,9 +540,21 @@ let restartPin;
  * start is still loading, before waitForWalletRestart runs.
  */
 export function* trackRestartPin() {
-  yield takeEvery([types.START_WALLET_REQUESTED, types.WALLET_PIN_CHANGED], (action) => {
-    restartPin = action.type === types.WALLET_PIN_CHANGED ? action.payload : action.payload?.pin;
-  });
+  yield takeEvery(
+    [types.START_WALLET_REQUESTED, types.WALLET_PIN_CHANGED, types.RESET_WALLET],
+    (action) => {
+      switch (action.type) {
+        case types.WALLET_PIN_CHANGED:
+          restartPin = action.payload;
+          break;
+        case types.RESET_WALLET:
+          restartPin = null;
+          break;
+        default:
+          restartPin = action.payload?.pin;
+      }
+    },
+  );
 }
 
 /**
