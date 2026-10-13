@@ -18,10 +18,10 @@ jest.mock('@hathor/hathor-rpc-handler', () => ({
 
 /* eslint-disable import/first */
 import { runSaga } from 'redux-saga';
-import { Network } from '@hathor/wallet-lib';
+import { Address, Network } from '@hathor/wallet-lib';
 import { handleRpcRequest } from '@hathor/hathor-rpc-handler';
 import { processRequest } from '../../src/sagas/reown';
-import { types } from '../../src/actions';
+import { onExceptionCaptured, types } from '../../src/actions';
 import { shieldedAddressNotSupportedText } from '../../src/utils';
 /* eslint-enable import/first */
 
@@ -33,6 +33,7 @@ const NC_ID = '000063f99b133c7630bc9d0117919f5b8726155412ad063dbbd618bdc7f85d7a'
 const TOPIC = 'topic-1';
 const REQUEST_ID = 42;
 const INVALID_PAYLOAD = 5003;
+const INTERNAL_ERROR = 5004;
 
 // How many levels deep processRequest reads nano contract arguments: `args` is one level, and
 // each list, tuple, dict or SignedData value in it is one more.
@@ -126,9 +127,12 @@ const requestErrorModal = {
   type: types.SET_REOWN_MODAL,
   payload: { show: true, type: 'RequestError' },
 };
+// An error reported with the alert that offers to send it to the Hathor team.
+const reportedError = expect.objectContaining({ type: types.EXCEPTION_CAPTURED });
 
 afterEach(() => {
   jest.clearAllMocks();
+  jest.restoreAllMocks();
 });
 
 describe('processRequest with nested nano contract arguments', () => {
@@ -148,6 +152,8 @@ describe('processRequest with nested nano contract arguments', () => {
     expect(walletKit.respondSessionRequest).toHaveBeenCalledTimes(1);
     expect(walletKit.respondSessionRequest).toHaveBeenCalledWith(invalidPayloadAnswer);
     expect(dispatched).toContainEqual(requestErrorModal);
+    // An error of the request, not of the wallet.
+    expect(dispatched).not.toContainEqual(reportedError);
   });
 
   test('answers arguments one level deeper than the limit with INVALID_PAYLOAD', async () => {
@@ -157,6 +163,7 @@ describe('processRequest with nested nano contract arguments', () => {
     expect(walletKit.respondSessionRequest).toHaveBeenCalledTimes(1);
     expect(walletKit.respondSessionRequest).toHaveBeenCalledWith(invalidPayloadAnswer);
     expect(dispatched).toContainEqual(requestErrorModal);
+    expect(dispatched).not.toContainEqual(reportedError);
   });
 
   test.each([
@@ -198,27 +205,62 @@ describe('processRequest with nested nano contract arguments', () => {
 });
 
 describe('processRequest when the address check fails', () => {
-  test('answers the request with INVALID_PAYLOAD', async () => {
+  const request = {
+    method: 'htr_sendTransaction',
+    params: { network: 'testnet', outputs: [{ address: P2PKH, value: '10' }] },
+  };
+
+  // A failure of the wallet, not of the request: answered with INTERNAL_ERROR, as the rpc handler's
+  // unexpected errors are, and reported.
+  function expectInternalError(dispatched, error) {
+    expect(handleRpcRequest).not.toHaveBeenCalled();
+    expect(walletKit.respondSessionRequest).toHaveBeenCalledTimes(1);
+    expect(walletKit.respondSessionRequest).toHaveBeenCalledWith({
+      topic: TOPIC,
+      response: {
+        id: REQUEST_ID,
+        jsonrpc: '2.0',
+        error: { code: INTERNAL_ERROR, message: expect.any(String) },
+      },
+    });
+    expect(dispatched).toContainEqual(onExceptionCaptured(error));
+    expect(dispatched).toContainEqual(requestErrorModal);
+  }
+
+  test('answers INTERNAL_ERROR and reports the error when the wallet has no network', async () => {
+    const error = new Error('The wallet has no network.');
     const wallet = {
       getNetworkObject: () => {
-        throw new Error('The wallet has no network.');
+        throw error;
       },
-    };
-    const request = {
-      method: 'htr_sendTransaction',
-      params: { network: 'testnet', outputs: [{ address: P2PKH, value: '10' }] },
     };
 
     const dispatched = await runProcessRequest(request, wallet);
 
-    expect(handleRpcRequest).not.toHaveBeenCalled();
-    expect(walletKit.respondSessionRequest).toHaveBeenCalledTimes(1);
-    expect(walletKit.respondSessionRequest).toHaveBeenCalledWith(invalidPayloadAnswer);
-    expect(dispatched).toContainEqual(requestErrorModal);
+    expectInternalError(dispatched, error);
     // The error details behind the modal's "See error details".
     expect(dispatched).toContainEqual({
       type: types.REOWN_SET_ERROR,
       payload: expect.objectContaining({ message: 'The wallet has no network.' }),
     });
+  });
+
+  test('answers INTERNAL_ERROR and reports the error when there is no wallet', async () => {
+    // As after a start that failed before it set the wallet.
+    const dispatched = await runProcessRequest(request, null);
+
+    expectInternalError(dispatched, expect.any(TypeError));
+  });
+
+  test('answers INTERNAL_ERROR and reports an error of wallet-lib other than an invalid address', async () => {
+    // isShieldedAddress takes only an AddressError for "not a shielded address".
+    const error = new TypeError('unexpected failure');
+    jest.spyOn(Address.prototype, 'getType').mockImplementation(() => {
+      throw error;
+    });
+
+    const dispatched = await runProcessRequest(request);
+
+    expectInternalError(dispatched, error);
   });
 });

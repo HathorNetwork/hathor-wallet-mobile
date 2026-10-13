@@ -196,6 +196,16 @@ const ERROR_CODES = {
 const MAX_NANO_ARGUMENT_DEPTH = 32;
 
 /**
+ * The arguments of a nano contract request nest deeper than MAX_NANO_ARGUMENT_DEPTH levels.
+ */
+class NanoArgumentsTooDeepError extends Error {
+  constructor() {
+    super(`Nano contract arguments nest deeper than ${MAX_NANO_ARGUMENT_DEPTH} levels.`);
+    this.name = 'NanoArgumentsTooDeepError';
+  }
+}
+
+/**
  * The length of the longest shielded address: it is 71 bytes, at most 97 base58 characters, and
  * any longer string decodes to 72 bytes or more.
  */
@@ -211,7 +221,8 @@ const MAX_SHIELDED_ADDRESS_LENGTH = 97;
  *
  * @param {unknown} args The `args` of a nano contract request, as the dApp sent them
  * @returns {string[]}
- * @throws {Error} When the arguments nest deeper than MAX_NANO_ARGUMENT_DEPTH levels
+ * @throws {NanoArgumentsTooDeepError} When the arguments nest deeper than MAX_NANO_ARGUMENT_DEPTH
+ *   levels
  */
 function getNanoArgumentStrings(args) {
   const strings = [];
@@ -223,9 +234,7 @@ function getNanoArgumentStrings(args) {
       strings.push(value);
     } else if (value !== null && typeof value === 'object') {
       if (depth >= MAX_NANO_ARGUMENT_DEPTH) {
-        throw new Error(
-          `Nano contract arguments nest deeper than ${MAX_NANO_ARGUMENT_DEPTH} levels.`,
-        );
+        throw new NanoArgumentsTooDeepError();
       }
       // The items of a list, or the keys and values of an object.
       const items = Array.isArray(value) ? value : Object.entries(value).flat();
@@ -245,7 +254,8 @@ function getNanoArgumentStrings(args) {
  *
  * @param {Object} request The JSON-RPC request from the dApp, with `method` and `params`
  * @returns {string[]} The non-empty strings found where the request can carry an address
- * @throws {Error} When its nano contract arguments nest deeper than MAX_NANO_ARGUMENT_DEPTH levels
+ * @throws {NanoArgumentsTooDeepError} When its nano contract arguments nest deeper than
+ *   MAX_NANO_ARGUMENT_DEPTH levels
  */
 export function getRequestAddresses(request) {
   const params = request?.params ?? {};
@@ -769,6 +779,13 @@ export function* processRequest(action) {
       // The error handling around the rpc handler below doesn't cover this check, and
       // WalletConnect holds back the later requests of every dApp until this one is answered.
       log.error(`Rejecting ${params.request.method}: its addresses could not be checked.`, e);
+      // Arguments nested too deep are an error of the request. Any other failure is the
+      // wallet's: it is answered with INTERNAL_ERROR, as the unexpected errors of the rpc handler
+      // are, and reported.
+      const isInvalidPayload = e instanceof NanoArgumentsTooDeepError;
+      if (!isInvalidPayload) {
+        yield put(onExceptionCaptured(e));
+      }
       const errorDetails = extractErrorDetails(e);
       yield put(setReownError(errorDetails));
       // The modal shows its generic message, and the error details have the reason.
@@ -782,7 +799,7 @@ export function* processRequest(action) {
           id: payload.id,
           jsonrpc: '2.0',
           error: {
-            code: ERROR_CODES.INVALID_PAYLOAD,
+            code: isInvalidPayload ? ERROR_CODES.INVALID_PAYLOAD : ERROR_CODES.INTERNAL_ERROR,
             message: errorDetails.message,
           },
         },
