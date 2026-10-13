@@ -7,8 +7,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
@@ -29,12 +27,6 @@ import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { getCreateTokenTitle } from '../utils';
-import { isShieldedAvailable } from '../shielded/gating';
-import { getPrivateAvailableBalance } from '../shielded/balance';
-import { AlertUI } from '../styles/themes';
-import { logger } from '../logger';
-
-const log = logger('create-token');
 
 const TokenTypeInfoBox = ({ tokenVersion }) => {
   let infoText = t`You chose to create a **Deposit-Based Token**, which requires a 1% HTR deposit.`;
@@ -61,22 +53,6 @@ const TokenTypeInfoBox = ({ tokenVersion }) => {
 }
 
 /**
- * Warns that a token creation can spend the wallet's private HTR: wallet-lib picks its deposit
- * and fee from the private and the public HTR alike, and its change is public, which can reveal
- * the value of a private HTR output it spends.
- */
-const PrivateHtrWarning = () => (
-  <View style={styles.privateHtrWarning}>
-    <View style={{ margin: 8 }}>
-      <InfoCircleIcon color={AlertUI.darkColor} />
-    </View>
-    <Text style={styles.privateHtrWarningText}>
-      {t`Creating a token can spend private HTR and make its amount public.`}
-    </Text>
-  </View>
-);
-
-/**
  * This component expects the following parameters in navigation:
  * name {string} token name
  * symbol {string} token symbol
@@ -88,7 +64,6 @@ const CreateTokenConfirm = () => {
   const useWalletService = useSelector((state) => state.useWalletService);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
-  const shieldedAvailable = useSelector(isShieldedAvailable);
 
   const dispatch = useDispatch();
   const dispatchUpdateSelectedToken = (token) => dispatch(updateSelectedToken(token));
@@ -115,7 +90,6 @@ const CreateTokenConfirm = () => {
   const [title, setTitle] = useState(t`CREATE TOKEN`);
   const [deposit, setDeposit] = useState(null);
   const [networkFee, setNetworkFee] = useState(null);
-  const [holdsPrivateHtr, setHoldsPrivateHtr] = useState(false);
 
   useEffect(() => {
     setTitle(getCreateTokenTitle(tokenVersion));
@@ -133,29 +107,6 @@ const CreateTokenConfirm = () => {
       setNetworkFee(null);
     }
   }, [tokenVersion, amount]);
-
-  // Where the wallet can hold private HTR, a creation may spend it. When the wallet's private HTR
-  // can't be read, the creation may still spend some: the warning shows then too.
-  useEffect(() => {
-    if (!shieldedAvailable) {
-      setHoldsPrivateHtr(false);
-      return undefined;
-    }
-    let cancelled = false;
-    getPrivateAvailableBalance(wallet, hathorLib.constants.NATIVE_TOKEN_UID)
-      .then((privateHtr) => {
-        if (!cancelled) {
-          setHoldsPrivateHtr(privateHtr > 0n);
-        }
-      })
-      .catch((e) => {
-        log.error('Failed to read the private HTR of the wallet.', e);
-        if (!cancelled) {
-          setHoldsPrivateHtr(true);
-        }
-      });
-    return () => { cancelled = true; };
-  }, [wallet, shieldedAvailable]);
 
   // Re-enable the Create token button whenever this screen regains focus. This
   // covers the PinScreen being dismissed by cancel or hardware back (neither
@@ -330,7 +281,6 @@ const CreateTokenConfirm = () => {
             />
           )}
           { tokenVersion != null && <TokenTypeInfoBox tokenVersion={tokenVersion} /> }
-          { holdsPrivateHtr && <PrivateHtrWarning /> }
         </View>
         <NewHathorButton
           title={t`Create token`}
@@ -342,20 +292,5 @@ const CreateTokenConfirm = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  privateHtrWarning: {
-    marginTop: 16,
-    padding: 16,
-    backgroundColor: AlertUI.lightColor,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  privateHtrWarningText: {
-    flexShrink: 1,
-    color: AlertUI.darkColor,
-  },
-});
 
 export default CreateTokenConfirm;

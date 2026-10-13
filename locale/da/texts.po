@@ -77,7 +77,7 @@ msgstr ""
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:115
+#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:90
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:857
 msgid "CREATE TOKEN"
@@ -466,75 +466,71 @@ msgstr ""
 msgid "Next"
 msgstr "Næste"
 
-#: src/screens/CreateTokenConfirm.js:40
+#: src/screens/CreateTokenConfirm.js:32
 msgid ""
 "You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
 "deposit."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:42
+#: src/screens/CreateTokenConfirm.js:34
 msgid ""
 "You chose to create a **Fee-Based Token**, so a small fee will be applied to "
 "each future transaction of this token."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:74
-msgid "Creating a token can spend private HTR and make its amount public."
-msgstr ""
-
-#: src/screens/CreateTokenConfirm.js:206
+#: src/screens/CreateTokenConfirm.js:157
 msgid "Creating token"
 msgstr "Opretter token"
 
-#: src/screens/CreateTokenConfirm.js:212
+#: src/screens/CreateTokenConfirm.js:163
 msgid "Building the transaction"
 msgstr ""
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:230
+#: src/screens/CreateTokenConfirm.js:181
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Indtast din 6-cifrede pin for at oprette din token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:231
+#: src/screens/CreateTokenConfirm.js:182
 msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:233 src/screens/SendConfirmScreen.js:408
+#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:408
 #: src/screens/TokenSwapReview.js:265
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:274
+#: src/screens/CreateTokenConfirm.js:225
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:291
+#: src/screens/CreateTokenConfirm.js:242
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:305
+#: src/screens/CreateTokenConfirm.js:256
 msgid "Token name"
 msgstr "Token navn"
 
-#: src/screens/CreateTokenConfirm.js:311 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:262 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Token symbol"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:318
+#: src/screens/CreateTokenConfirm.js:269
 msgid "Deposit"
 msgstr "Indsæt"
 
 #: src/components/Shielded/FeeBreakdown.js:96
-#: src/screens/CreateTokenConfirm.js:326 src/screens/SendConfirmScreen.js:635
+#: src/screens/CreateTokenConfirm.js:277 src/screens/SendConfirmScreen.js:635
 msgid "Network fee"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:336
+#: src/screens/CreateTokenConfirm.js:286
 msgid "Create token"
 msgstr "Opret token"
 

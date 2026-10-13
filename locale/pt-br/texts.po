@@ -77,7 +77,7 @@ msgstr "CRIAR TOKEN DE DEPÓSITO"
 msgid "CREATE FEE TOKEN"
 msgstr "CRIAR TOKEN DE TAXA"
 
-#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:115
+#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:90
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:857
 msgid "CREATE TOKEN"
@@ -501,7 +501,7 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 msgid "Next"
 msgstr "Próximo"
 
-#: src/screens/CreateTokenConfirm.js:40
+#: src/screens/CreateTokenConfirm.js:32
 msgid ""
 "You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
 "deposit."
@@ -509,7 +509,7 @@ msgstr ""
 "Você escolheu criar um **Token Baseado em Depósito**, que requer um depósito "
 "de 1% em HTR."
 
-#: src/screens/CreateTokenConfirm.js:42
+#: src/screens/CreateTokenConfirm.js:34
 msgid ""
 "You chose to create a **Fee-Based Token**, so a small fee will be applied to "
 "each future transaction of this token."
@@ -517,63 +517,59 @@ msgstr ""
 "Você escolheu criar um **Token com Taxa**, então uma pequena taxa será "
 "aplicada a cada transação futura deste token."
 
-#: src/screens/CreateTokenConfirm.js:74
-msgid "Creating a token can spend private HTR and make its amount public."
-msgstr "Criar um token pode gastar HTR privado e tornar público o seu valor."
-
-#: src/screens/CreateTokenConfirm.js:206
+#: src/screens/CreateTokenConfirm.js:157
 msgid "Creating token"
 msgstr "Criando um token"
 
-#: src/screens/CreateTokenConfirm.js:212
+#: src/screens/CreateTokenConfirm.js:163
 msgid "Building the transaction"
 msgstr "Criando a transação"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:230
+#: src/screens/CreateTokenConfirm.js:181
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:231
+#: src/screens/CreateTokenConfirm.js:182
 msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:233 src/screens/SendConfirmScreen.js:408
+#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:408
 #: src/screens/TokenSwapReview.js:265
 msgid "Building transaction"
 msgstr "Criando transação"
 
-#: src/screens/CreateTokenConfirm.js:274
+#: src/screens/CreateTokenConfirm.js:225
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr "**${ name }** criado com sucesso"
 
-#: src/screens/CreateTokenConfirm.js:291
+#: src/screens/CreateTokenConfirm.js:242
 msgid "Amount of ${ name }"
 msgstr "Quantidade de ${ name }"
 
-#: src/screens/CreateTokenConfirm.js:305
+#: src/screens/CreateTokenConfirm.js:256
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:311 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:262 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:318
+#: src/screens/CreateTokenConfirm.js:269
 msgid "Deposit"
 msgstr "Depósito"
 
 #: src/components/Shielded/FeeBreakdown.js:96
-#: src/screens/CreateTokenConfirm.js:326 src/screens/SendConfirmScreen.js:635
+#: src/screens/CreateTokenConfirm.js:277 src/screens/SendConfirmScreen.js:635
 msgid "Network fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/CreateTokenConfirm.js:336
+#: src/screens/CreateTokenConfirm.js:286
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -3289,6 +3285,10 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid "Creating a token can spend private HTR and make its amount public."
+#~ msgstr ""
+#~ "Criar um token pode gastar HTR privado e tornar público o seu valor."
 
 #~ msgid "**To**"
 #~ msgstr "**Para**"

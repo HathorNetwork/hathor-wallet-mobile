@@ -112,46 +112,12 @@ const PRIVATE_HTR = { token: '00', value: 500n, shielded: true, timelock: null }
 const PUBLIC_HTR = { token: '00', value: 500n, shielded: false, timelock: null };
 
 describe('CreateTokenConfirm with private HTR', () => {
-  test('warns that the creation can spend private HTR', async () => {
+  test.each([
+    ['the shielded UI is on', true],
+    ['the shielded UI is off', false],
+  ])('neither reads the private HTR nor warns about it when %s', async (_label, flag) => {
     const wallet = createWallet([PUBLIC_HTR, PRIVATE_HTR]);
-    const { texts } = await render(wallet);
-
-    expect(texts()).toContain(WARNING);
-    expect(wallet.storage.selectUtxos).toHaveBeenCalledWith(expect.objectContaining({
-      token: '00',
-      shielded: true,
-    }));
-  });
-
-  test('says nothing when the wallet holds no private HTR', async () => {
-    const { texts } = await render(createWallet([PUBLIC_HTR]));
-
-    expect(texts()).not.toContain(WARNING);
-  });
-
-  test('warns when it could not read the private HTR', async () => {
-    // The creation can still spend private HTR: when the screen can't tell, it warns.
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-    const readError = new Error('storage read failed');
-    const wallet = createWallet([PUBLIC_HTR, PRIVATE_HTR]);
-    wallet.storage.selectUtxos = jest.fn(() => ({
-      [Symbol.asyncIterator]: () => ({
-        next: async () => { throw readError; },
-      }),
-    }));
-    const { texts } = await render(wallet);
-
-    expect(wallet.storage.selectUtxos).toHaveBeenCalledTimes(1);
-    expect(texts()).toContain(WARNING);
-    expect(consoleError).toHaveBeenCalledWith(
-      '[create-token] Failed to read the private HTR of the wallet.',
-      readError,
-    );
-  });
-
-  test('reads nothing while the shielded UI is off', async () => {
-    const wallet = createWallet([PUBLIC_HTR, PRIVATE_HTR]);
-    const { texts } = await render(wallet, { flag: false });
+    const { texts } = await render(wallet, { flag });
 
     expect(texts()).not.toContain(WARNING);
     expect(wallet.storage.selectUtxos).not.toHaveBeenCalled();
