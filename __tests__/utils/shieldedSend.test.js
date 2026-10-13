@@ -8,49 +8,17 @@
 import { jest, describe, test, expect } from '@jest/globals';
 import { EventEmitter } from 'events';
 import { constants, shielded } from '@hathor/wallet-lib';
-import { DEFAULT_PRIVACY_MODE, PRIVACY_MODE } from '../../src/constants';
+import { PRIVACY_MODE } from '../../src/constants';
 import {
   MAX_PRIVATE_AMOUNT,
   buildSendOutput,
   computeSendFees,
-  getPrivacyModeOptions,
-  initialPrivacyMode,
   isPrivateAmountAllowed,
   mapDappSendPrepareError,
   mapShieldedSendError,
   privacyModeToShieldedMode,
   waitForWalletReady,
 } from '../../src/utils/shieldedSend';
-
-describe('getPrivacyModeOptions', () => {
-  test('gives a legacy address only public sends', () => {
-    expect(getPrivacyModeOptions(false)).toEqual([PRIVACY_MODE.PUBLIC]);
-  });
-
-  test('gives a private address only private sends', () => {
-    expect(getPrivacyModeOptions(true)).toEqual([PRIVACY_MODE.HIDE_AMOUNT, PRIVACY_MODE.PRIVATE]);
-  });
-});
-
-describe('initialPrivacyMode', () => {
-  test('starts a send to a private address in the default mode, Hide amount', () => {
-    expect(DEFAULT_PRIVACY_MODE).toBe(PRIVACY_MODE.HIDE_AMOUNT);
-    expect(initialPrivacyMode(getPrivacyModeOptions(true))).toBe(PRIVACY_MODE.HIDE_AMOUNT);
-  });
-
-  test('starts a send to a legacy address in Public', () => {
-    expect(initialPrivacyMode(getPrivacyModeOptions(false))).toBe(PRIVACY_MODE.PUBLIC);
-  });
-
-  test('takes a preferred mode only where the recipient can take it', () => {
-    expect(initialPrivacyMode(getPrivacyModeOptions(true), PRIVACY_MODE.PRIVATE))
-      .toBe(PRIVACY_MODE.PRIVATE);
-    expect(initialPrivacyMode(getPrivacyModeOptions(true), PRIVACY_MODE.PUBLIC))
-      .toBe(PRIVACY_MODE.HIDE_AMOUNT);
-    expect(initialPrivacyMode(getPrivacyModeOptions(false), PRIVACY_MODE.PRIVATE))
-      .toBe(PRIVACY_MODE.PUBLIC);
-  });
-});
 
 describe('isPrivateAmountAllowed', () => {
   test('takes amounts below 2^40 base units', () => {

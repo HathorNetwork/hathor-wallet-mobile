@@ -161,9 +161,9 @@ export const PRIVACY_MODE = {
 };
 
 /**
- * The privacy mode a send to a private address starts in.
+ * The privacy mode a send starts in.
  */
-export const DEFAULT_PRIVACY_MODE = PRIVACY_MODE.HIDE_AMOUNT;
+export const DEFAULT_PRIVACY_MODE = PRIVACY_MODE.PUBLIC;
 
 /**
  * Amount display format (wallet-wide, network-independent).

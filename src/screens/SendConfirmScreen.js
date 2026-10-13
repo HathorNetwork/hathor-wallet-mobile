@@ -32,6 +32,7 @@ import {
   isShieldedAddress,
   isTokenNFT,
   renderValue,
+  shieldedAddressNotSupportedText,
 } from '../utils';
 import NavigationService from '../NavigationService';
 import { useNavigation, useParams } from '../hooks/navigation';
@@ -185,7 +186,8 @@ const SendConfirmScreen = () => {
   /**
    * Builds the send to its single output, without inputs: wallet-lib selects them, and on the
    * shielded testnet completes a private output and decides the change by its rules. This gives
-   * the exact fee the user pays, shown before the user authorizes the send.
+   * the exact fee the user pays, shown before the user authorizes the send. A public output to a
+   * private address pays the P2PKH address of its spend key.
    *
    * Where the shielded crypto provider is registered, the send is built with the wallet: it
    * waits for the wallet to be ready, which a reconnect or a decode walk delays, and once the
@@ -195,17 +197,17 @@ const SendConfirmScreen = () => {
   const build = async () => {
     try {
       const shieldedMode = privacyModeToShieldedMode(privacyMode);
-      // wallet-lib would pay a private address in public, to the address of its spend key.
-      if (shieldedMode === null && isShieldedAddress(address, new hathorLib.Network(networkName))) {
-        failBuild(t`Payments to a private address are always private.`);
-        return;
-      }
 
       let sendTransaction;
       if (useWalletService) {
-        // The wallet-service facade has no private sends.
+        // The wallet-service facade has no private sends, and would pay a private address with
+        // a script that no key can spend.
         if (shieldedMode !== null) {
           failBuild(t`Private transfers are not available for this wallet.`);
+          return;
+        }
+        if (isShieldedAddress(address, new hathorLib.Network(networkName))) {
+          failBuild(shieldedAddressNotSupportedText);
           return;
         }
         const outputs = [{ address, value: amount, token: token.uid }];

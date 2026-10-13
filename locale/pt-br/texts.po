@@ -130,17 +130,17 @@ msgstr "Há uma nova transação na sua carteira."
 msgid "New transaction received"
 msgstr "Nova transação recebida"
 
-#: src/screens/SendConfirmScreen.js:508 src/utils/shieldedSend.js:233
+#: src/screens/SendConfirmScreen.js:510 src/utils/shieldedSend.js:207
 msgid "Your private balance is locked. Unlock it to send privately."
 msgstr ""
 "Seu saldo privado está bloqueado. Desbloqueie-o para enviar de forma privada."
 
-#: src/utils/shieldedSend.js:236
+#: src/utils/shieldedSend.js:210
 msgid "This wallet cannot receive the private change this transaction needs."
 msgstr ""
 "Esta carteira não pode receber o troco privado de que esta transação precisa."
 
-#: src/utils/shieldedSend.js:244
+#: src/utils/shieldedSend.js:218
 msgid ""
 "To keep the value of the private funds it spends hidden, this transaction "
 "needs a private change, and there is not enough HTR to pay its privacy fee."
@@ -149,7 +149,7 @@ msgstr ""
 "precisa de um troco privado, e não há HTR suficiente para pagar a taxa de "
 "privacidade dele."
 
-#: src/utils/shieldedSend.js:248
+#: src/utils/shieldedSend.js:222
 msgid ""
 "To keep the amount it sends hidden, this transaction needs a private change, "
 "and there is not enough HTR to pay its privacy fee."
@@ -157,13 +157,13 @@ msgstr ""
 "Para manter oculto o valor que envia, esta transação precisa de um troco "
 "privado, e não há HTR suficiente para pagar a taxa de privacidade dele."
 
-#: src/utils/shieldedSend.js:252
+#: src/utils/shieldedSend.js:226
 msgid "Insufficient HTR to cover the privacy fees of this transaction."
 msgstr ""
 "Saldo insuficiente de HTR para cobrir as taxas de privacidade desta "
 "transação."
 
-#: src/utils/shieldedSend.js:255
+#: src/utils/shieldedSend.js:229
 msgid ""
 "An amount in this transaction, its change included, is too large to be "
 "private."
@@ -171,18 +171,18 @@ msgstr ""
 "Um valor desta transação, incluindo o troco, é grande demais para ser "
 "privado."
 
-#: src/shielded/receiveState.js:149 src/utils/shieldedSend.js:258
+#: src/shielded/receiveState.js:149 src/utils/shieldedSend.js:232
 msgid "Private transfers could not be loaded on this device."
 msgstr ""
 "Não foi possível carregar as transferências privadas neste dispositivo."
 
-#: src/utils/shieldedSend.js:261
+#: src/utils/shieldedSend.js:235
 msgid ""
 "The private change of this transaction could not be prepared. Try again."
 msgstr ""
 "Não foi possível preparar o troco privado desta transação. Tente novamente."
 
-#: src/utils/shieldedSend.js:280
+#: src/utils/shieldedSend.js:254
 msgid ""
 "This transaction spends private funds, so its change must stay private, but "
 "the dApp asked to send the change to an address that can't receive private "
@@ -211,7 +211,7 @@ msgstr "Não foi possível carregar seu endereço privado."
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:101
 #: src/components/Shielded/ShieldedBalanceSplit.js:157
-#: src/screens/SendConfirmScreen.js:208 src/screens/SendConfirmScreen.js:236
+#: src/screens/SendConfirmScreen.js:206 src/screens/SendConfirmScreen.js:238
 #: src/shielded/receiveState.js:154
 msgid "Private transfers are not available for this wallet."
 msgstr "Transferências privadas não estão disponíveis para esta carteira."
@@ -468,7 +468,7 @@ msgid "Back"
 msgstr "Voltar"
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:144
+#: src/screens/SendAmountInput.js:125
 msgid "Invalid amount"
 msgstr "Quantidade inválida"
 
@@ -497,7 +497,7 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:151
-#: src/screens/SendAmountInput.js:251
+#: src/screens/SendAmountInput.js:247
 msgid "Next"
 msgstr "Próximo"
 
@@ -540,7 +540,7 @@ msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:233 src/screens/SendConfirmScreen.js:410
+#: src/screens/CreateTokenConfirm.js:233 src/screens/SendConfirmScreen.js:412
 #: src/screens/TokenSwapReview.js:265
 msgid "Building transaction"
 msgstr "Criando transação"
@@ -1161,44 +1161,53 @@ msgstr "Endereço para enviar"
 msgid "Paste or type address"
 msgstr "Cole ou digite o endereço"
 
-#: src/screens/SendAmountInput.js:149
+#: src/screens/SendAmountInput.js:130
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:156
+#: src/screens/SendAmountInput.js:140
+msgid ""
+"The selected privacy mode requires a shielded address as the recipient. The "
+"address you entered is not shielded — change the address or switch to Public."
+msgstr ""
+"O modo de privacidade selecionado exige um endereço blindado como "
+"destinatário. O endereço informado não é blindado — altere o endereço ou "
+"mude para Público."
+
+#: src/screens/SendAmountInput.js:153
 #, javascript-format
 msgid "A private send can be at most ${ max } ${ symbol }."
 msgstr "Um envio privado pode ter no máximo ${ max } ${ symbol }."
 
-#: src/screens/SendAmountInput.js:187
+#: src/screens/SendAmountInput.js:184
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:201 src/screens/SendConfirmScreen.js:492
+#: src/screens/SendAmountInput.js:198 src/screens/SendConfirmScreen.js:494
 #, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:77 src/screens/TokenSwapReview.js:364
+#: src/screens/SendConfirmScreen.js:78 src/screens/TokenSwapReview.js:364
 msgid "No fee"
 msgstr "Sem taxa"
 
-#: src/screens/SendConfirmScreen.js:103
+#: src/screens/SendConfirmScreen.js:104
 msgid "Insufficient HTR to cover the network fee."
 msgstr "Saldo insuficiente de HTR para cobrir a taxa da rede."
 
-#: src/screens/SendConfirmScreen.js:106 src/screens/SendConfirmScreen.js:113
+#: src/screens/SendConfirmScreen.js:107 src/screens/SendConfirmScreen.js:114
 msgid "Insufficient balance to send this transaction."
 msgstr "Saldo insuficiente para completar a transação."
 
 #.  HTR pays the fees: for HTR, they count with the amount.
-#: src/screens/SendConfirmScreen.js:112
+#: src/screens/SendConfirmScreen.js:113
 msgid "Insufficient HTR to cover this transaction and its fees."
 msgstr "Saldo insuficiente de HTR para cobrir esta transação e suas taxas."
 
-#: src/screens/SendConfirmScreen.js:116
+#: src/screens/SendConfirmScreen.js:117
 msgid ""
 "This amount needs more inputs than a transaction can hold. Try sending a "
 "smaller amount."
@@ -1206,119 +1215,114 @@ msgstr ""
 "Este valor precisa de mais entradas do que uma transação comporta. Tente "
 "enviar um valor menor."
 
-#: src/screens/SendConfirmScreen.js:118
+#: src/screens/SendConfirmScreen.js:119
 msgid "Failed to process transaction."
 msgstr "Falha ao processar a transação"
 
-#: src/components/TransactionPrivacyModal.js:67
-#: src/screens/SendConfirmScreen.js:200
-msgid "Payments to a private address are always private."
-msgstr "Pagamentos para um endereço privado são sempre privados."
-
 #: src/components/Shielded/ShieldedBalanceSplit.js:103
 #: src/components/Shielded/ShieldedUnlockAction.js:61
-#: src/screens/SendConfirmScreen.js:286 src/screens/SendConfirmScreen.js:303
+#: src/screens/SendConfirmScreen.js:288 src/screens/SendConfirmScreen.js:305
 msgid "Could not unlock your private balance."
 msgstr "Não foi possível desbloquear seu saldo privado."
 
 #: src/components/Shielded/ShieldedUnlockAction.js:53
-#: src/screens/SendConfirmScreen.js:313
+#: src/screens/SendConfirmScreen.js:315
 msgid "Enter your 6-digit pin to unlock your private balance"
 msgstr "Digite seu PIN de 6 dígitos para desbloquear seu saldo privado"
 
 #: src/components/Shielded/ShieldedUnlockAction.js:54
 #: src/components/Shielded/ShieldedUnlockAction.js:64
-#: src/screens/SendConfirmScreen.js:314 src/screens/SendConfirmScreen.js:512
+#: src/screens/SendConfirmScreen.js:316 src/screens/SendConfirmScreen.js:514
 msgid "Unlock private balance"
 msgstr "Desbloquear saldo privado"
 
-#: src/screens/SendConfirmScreen.js:389 src/screens/TokenSwapReview.js:220
+#: src/screens/SendConfirmScreen.js:391 src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:408
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:410
 #: src/screens/TokenSwapReview.js:263
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:409
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:411
 #: src/screens/TokenSwapReview.js:264
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
-#: src/screens/SendConfirmScreen.js:440
+#: src/screens/SendConfirmScreen.js:442
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] "Você tem ${ availablePretty } disponível"
 msgstr[1] "Você tem ${ availablePretty } disponíveis"
 
-#: src/screens/SendConfirmScreen.js:463
+#: src/screens/SendConfirmScreen.js:465
 msgid "Loading fee information..."
 msgstr "Carregando informações da taxa..."
 
-#: src/screens/SendConfirmScreen.js:466
+#: src/screens/SendConfirmScreen.js:468
 msgid "This is the native token, no network fees are charged."
 msgstr "Token nativo, nenhuma taxa aplicada."
 
-#: src/screens/SendConfirmScreen.js:469
+#: src/screens/SendConfirmScreen.js:471
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr "Este token é de Depósito, nenhuma taxa de rede será cobrada."
 
-#: src/screens/SendConfirmScreen.js:471
+#: src/screens/SendConfirmScreen.js:473
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr "Esta taxa é fixa e obrigatória para cada transação deste token."
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:476
+#: src/screens/SendConfirmScreen.js:478
 msgid "Loading..."
 msgstr "Carregando..."
 
-#: src/screens/SendConfirmScreen.js:498
+#: src/screens/SendConfirmScreen.js:500
 msgid "Building your transaction"
 msgstr "Criando sua transação"
 
-#: src/screens/SendConfirmScreen.js:519
+#: src/screens/SendConfirmScreen.js:521
 msgid "Reading your private balance"
 msgstr "Lendo seu saldo privado"
 
-#: src/screens/SendConfirmScreen.js:539
+#: src/screens/SendConfirmScreen.js:541
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ amountAndToken }** foi confirmada"
 
-#: src/screens/SendConfirmScreen.js:555
+#: src/screens/SendConfirmScreen.js:557
 msgid "Read more."
 msgstr "Ler mais."
 
-#: src/screens/SendConfirmScreen.js:577
+#: src/screens/SendConfirmScreen.js:579
 msgid "**Transaction summary**"
 msgstr "**Resumo da transação**"
 
-#: src/screens/SendConfirmScreen.js:580
+#: src/screens/SendConfirmScreen.js:582
 msgid "**To**"
 msgstr "**Para**"
 
-#: src/screens/SendConfirmScreen.js:585
+#: src/screens/SendConfirmScreen.js:587
 msgid "Private address"
 msgstr "Endereço privado"
 
-#: src/screens/SendConfirmScreen.js:594
+#: src/screens/SendConfirmScreen.js:596
 msgid "**Privacy**"
 msgstr "**Privacidade**"
 
-#: src/screens/SendConfirmScreen.js:608
+#: src/screens/SendConfirmScreen.js:610
 msgid "**Network Fee**"
 msgstr "**Taxa de Rede**"
 
-#: src/screens/SendConfirmScreen.js:617
+#: src/screens/SendConfirmScreen.js:619
 msgid "**Total**"
 msgstr "**Total**"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:624
+#: src/screens/SendConfirmScreen.js:626
 msgid "Send"
 msgstr "Enviar"
 
@@ -1989,7 +1993,7 @@ msgid "Max"
 msgstr "Máx"
 
 #: src/components/AmountInputAccessory.js:105
-#: src/components/TransactionPrivacyModal.js:72
+#: src/components/TransactionPrivacyModal.js:62
 msgid "Done"
 msgstr "Ok"
 
@@ -2193,18 +2197,14 @@ msgstr "Público"
 msgid "Token and amount visible"
 msgstr "Token e valor visíveis"
 
-#: src/components/PrivacyModeCard.js:92
+#: src/components/PrivacyModeCard.js:89
 msgid "No privacy fee unless the send spends private funds"
 msgstr "Sem taxa de privacidade, a menos que o envio gaste fundos privados"
 
-#: src/components/PrivacyModeCard.js:95
+#: src/components/PrivacyModeCard.js:92
 #, javascript-format
 msgid "Fee: ${ fee } ${ symbol } per private output"
 msgstr "Taxa: ${ fee } ${ symbol } por saída privada"
-
-#: src/components/PrivacyModeSelector.js:64
-msgid "Private sends need a private address."
-msgstr "Envios privados precisam de um endereço privado."
 
 #: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"
@@ -2321,11 +2321,11 @@ msgstr ""
 "Encontramos tokens vinculados aos seus endereços que não estão em sua "
 "carteira ainda."
 
-#: src/components/TransactionPrivacyModal.js:56
+#: src/components/TransactionPrivacyModal.js:53
 msgid "Transaction privacy"
 msgstr "Privacidade da transação"
 
-#: src/components/TransactionPrivacyModal.js:57
+#: src/components/TransactionPrivacyModal.js:54
 msgid "Choose what this transaction hides."
 msgstr "Escolha o que esta transação oculta."
 
@@ -3295,6 +3295,12 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid "Payments to a private address are always private."
+#~ msgstr "Pagamentos para um endereço privado são sempre privados."
+
+#~ msgid "Private sends need a private address."
+#~ msgstr "Envios privados precisam de um endereço privado."
 
 #~ msgid "Could not create the wallet"
 #~ msgstr "Erro ao criar carteira"

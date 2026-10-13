@@ -68,8 +68,6 @@ export function getPrivacyModeDetail(mode) {
   return getPrivacyModeDetails().find((detail) => detail.mode === mode);
 }
 
-const ALL_MODES = Object.values(PRIVACY_MODE);
-
 /**
  * The privacy modes a send can pick, one row each, with a switch for the selected one. Each row
  * shows the privacy fee of the mode's outputs in the network's native token. A send that spends
@@ -78,9 +76,8 @@ const ALL_MODES = Object.values(PRIVACY_MODE);
  * @param {Object} props
  * @param {string} props.selectedMode One of PRIVACY_MODE
  * @param {function(string): void} props.onSelect Called with the mode the user switches on
- * @param {string[]} [props.options] The modes to offer, all of them by default
  */
-const PrivacyModeCard = ({ selectedMode, onSelect, options = ALL_MODES }) => {
+const PrivacyModeCard = ({ selectedMode, onSelect }) => {
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
   const amountFormat = useSelector(getDisplayAmountFormat);
   const symbol = useSelector(
@@ -95,7 +92,7 @@ const PrivacyModeCard = ({ selectedMode, onSelect, options = ALL_MODES }) => {
     return t`Fee: ${fee} ${symbol} per private output`;
   };
 
-  const rows = getPrivacyModeDetails().filter((detail) => options.includes(detail.mode));
+  const rows = getPrivacyModeDetails();
 
   return (
     <View style={styles.card}>

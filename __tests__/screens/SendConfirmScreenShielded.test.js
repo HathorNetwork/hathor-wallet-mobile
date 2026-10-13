@@ -194,11 +194,46 @@ async function render(params, {
 }
 
 describe('SendConfirmScreen with private sends', () => {
-  test('refuses to pay a private address in public', async () => {
-    const { texts } = await render({ address: SHIELDED, amount: 100n, token: HTR });
+  test('pays a private address in public, with no mode', async () => {
+    // wallet-lib pays it to the P2PKH address of its spend key.
+    const { wallet, texts } = await render({
+      address: SHIELDED,
+      amount: 100n,
+      token: HTR,
+      privacyMode: PRIVACY_MODE.PUBLIC,
+    });
+
+    expect(mockSends).toHaveLength(1);
+    const { facade, options } = mockSends[0];
+    expect(facade).toBe('fullnode');
+    expect(options.wallet).toBe(wallet);
+    expect(options.outputs).toEqual([{ address: SHIELDED, value: 100n, token: HTR.uid }]);
+    expect('shieldedMode' in options.outputs[0]).toBe(false);
+    expect(texts()).not.toContain('Payments to a private address are always private.');
+  });
+
+  test('pays a private address in public where the crypto provider failed', async () => {
+    const { wallet } = await render(
+      { address: SHIELDED, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC },
+      { providerStatus: SHIELDED_PROVIDER_STATUS.FAILED, level: capability('none') },
+    );
+
+    expect(mockSends).toHaveLength(1);
+    expect(mockSends[0].options).toEqual({
+      storage: wallet.storage,
+      outputs: [{ address: SHIELDED, value: 100n, token: HTR.uid }],
+    });
+  });
+
+  test('refuses a private address on the wallet-service facade', async () => {
+    // The wallet-service facade would build a script no key can spend for it.
+    const { texts } = await render(
+      { address: SHIELDED, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC },
+      { useWalletService: true, providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED },
+    );
 
     expect(mockSends).toEqual([]);
-    expect(texts()).toContain('Payments to a private address are always private.');
+    expect(texts()).toContain('This wallet does not support shielded addresses.');
   });
 
   test('builds a public send from the storage, as before, where no provider is registered', async () => {

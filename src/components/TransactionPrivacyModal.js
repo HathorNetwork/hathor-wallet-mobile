@@ -13,7 +13,6 @@ import BackdropModal from './BackdropModal';
 import NewHathorButton from './NewHathorButton';
 import PrivacyModeCard from './PrivacyModeCard';
 import { COLORS } from '../styles/themes';
-import { PRIVACY_MODE } from '../constants';
 
 /**
  * Bottom sheet that picks the privacy mode of one send. The choice applies when the user taps
@@ -23,14 +22,12 @@ import { PRIVACY_MODE } from '../constants';
  * @param {boolean} props.visible Whether the sheet shows
  * @param {function(): void} props.onDismiss Called when the user dismisses it
  * @param {string} props.selectedMode The send's mode, one of PRIVACY_MODE
- * @param {string[]} props.options The modes the send can take
  * @param {function(string): void} props.onConfirm Called with the chosen mode on Done
  */
 const TransactionPrivacyModal = ({
   visible,
   onDismiss,
   selectedMode,
-  options,
   onConfirm,
 }) => {
   const [localMode, setLocalMode] = useState(selectedMode);
@@ -59,14 +56,7 @@ const TransactionPrivacyModal = ({
         <PrivacyModeCard
           selectedMode={localMode}
           onSelect={setLocalMode}
-          options={options}
         />
-
-        {!options.includes(PRIVACY_MODE.PUBLIC) && (
-          <Text style={styles.note}>
-            {t`Payments to a private address are always private.`}
-          </Text>
-        )}
 
         <NewHathorButton
           title={t`Done`}
@@ -105,12 +95,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textColorShadow,
     marginBottom: 24,
-  },
-  note: {
-    fontSize: 12,
-    color: COLORS.textColorShadow,
-    textAlign: 'center',
-    marginTop: 16,
   },
   done: {
     marginTop: 20,
