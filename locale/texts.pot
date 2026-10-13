@@ -427,7 +427,7 @@ msgstr ""
 
 #: src/components/TokenImportBanner.js:77
 #: src/screens/ConfirmImportScreen.js:121
-#: src/screens/Settings.js:134
+#: src/screens/Settings.js:157
 msgid "Import tokens"
 msgstr ""
 
@@ -775,7 +775,7 @@ msgid "You can register a new one manually."
 msgstr ""
 
 #: src/screens/ImportTokensScreen.js:145
-#: src/screens/Settings.js:126
+#: src/screens/Settings.js:149
 msgid "Register a token"
 msgstr ""
 
@@ -908,7 +908,7 @@ msgstr ""
 #: src/screens/LoadWalletErrorScreen.js:28
 #: src/screens/PasskeyLockScreen.js:199
 #: src/screens/PinScreen.js:334
-#: src/screens/Settings.js:196
+#: src/screens/Settings.js:223
 msgid "Reset wallet"
 msgstr ""
 
@@ -1024,7 +1024,7 @@ msgid "Export privacy keys"
 msgstr ""
 
 #: src/screens/PushNotification.js:58
-#: src/screens/Settings.js:152
+#: src/screens/Settings.js:175
 msgid "Push Notification"
 msgstr ""
 
@@ -1420,55 +1420,55 @@ msgstr ""
 msgid "Scan the QR code"
 msgstr ""
 
-#: src/screens/Settings.js:113
+#: src/screens/Settings.js:136
 msgid "You are connected to"
 msgstr ""
 
-#: src/screens/Settings.js:122
+#: src/screens/Settings.js:145
 msgid "General Settings"
 msgstr ""
 
-#: src/screens/Settings.js:141
+#: src/screens/Settings.js:164
 msgid "Create a new token"
 msgstr ""
 
-#: src/screens/Settings.js:146
+#: src/screens/Settings.js:169
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:159
+#: src/screens/Settings.js:182
 msgid "Reown"
 msgstr ""
 
-#: src/screens/Settings.js:166
+#: src/screens/Settings.js:189
 msgid "Advanced Settings"
 msgstr ""
 
-#: src/screens/Settings.js:170
+#: src/screens/Settings.js:193
 msgid "Network Settings"
 msgstr ""
 
-#: src/screens/Settings.js:177
+#: src/screens/Settings.js:201
 msgid "Address Mode"
 msgstr ""
 
-#: src/screens/Settings.js:184
+#: src/screens/Settings.js:209
 msgid "Amount format"
 msgstr ""
 
-#: src/screens/Settings.js:191
+#: src/screens/Settings.js:217
 msgid "Privacy"
 msgstr ""
 
-#: src/screens/Settings.js:204
+#: src/screens/Settings.js:232
 msgid "About"
 msgstr ""
 
-#: src/screens/Settings.js:212
+#: src/screens/Settings.js:240
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:225
+#: src/screens/Settings.js:253
 msgid "Connected to"
 msgstr ""
 

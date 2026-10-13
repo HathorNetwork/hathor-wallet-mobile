@@ -23,9 +23,11 @@ import {
   AMOUNT_FORMAT_FEATURE_TOGGLE,
   FEATURE_TOGGLE_DEFAULTS,
   FULL_NETWORK_SHIELDED_TESTNET,
+  NETWORK_SETTINGS_FEATURE_TOGGLE,
   PRE_SETTINGS_SHIELDED_TESTNET,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   SHIELDED_PROVIDER_STATUS,
+  SINGLE_ADDRESS_FEATURE_TOGGLE,
 } from '../../src/constants';
 import { ListMenu } from '../../src/components/HathorList';
 import Settings from '../../src/screens/Settings';
@@ -52,7 +54,7 @@ afterEach(async () => {
 /**
  * Renders the settings of a seed wallet on the shielded testnet with the amount format flag on.
  * By default the shielded UI is available: the flag is on, the fullnode reports the shielded
- * testnet, and the provider passed its self-test.
+ * testnet, and the provider passed its self-test. `toggles` sets other flags.
  */
 async function render({
   flag = true,
@@ -60,6 +62,7 @@ async function render({
   providerStatus = SHIELDED_PROVIDER_STATUS.READY,
   useWalletService = false,
   level = 'full',
+  toggles = {},
 } = {}) {
   const store = createStore(reducer);
   store.dispatch(networkSettingsUpdateState(PRE_SETTINGS_SHIELDED_TESTNET));
@@ -67,6 +70,7 @@ async function render({
     ...FEATURE_TOGGLE_DEFAULTS,
     [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag,
     [AMOUNT_FORMAT_FEATURE_TOGGLE]: true,
+    ...toggles,
   }));
   store.dispatch(setFullNodeNetworkName(networkName));
   store.dispatch(setUseWalletService(useWalletService));
@@ -84,7 +88,14 @@ async function render({
 
   const menus = () => renderer.root.findAllByType(ListMenu);
   const titles = () => menus().map((node) => node.props.title);
-  return { navigation, menus, titles };
+  // The rows with round top corners, and those with round bottom corners.
+  const firstRows = () => menus().filter((node) => node.props.isFirst)
+    .map((node) => node.props.title);
+  const lastRows = () => menus().filter((node) => node.props.isLast)
+    .map((node) => node.props.title);
+  return {
+    navigation, menus, titles, firstRows, lastRows,
+  };
 }
 
 describe('Settings', () => {
@@ -129,5 +140,32 @@ describe('Settings', () => {
 
     expect(titles()).not.toContain('Privacy');
     expect(titles()).toContain('Amount format');
+  });
+
+  test('rounds the first and the last row of each card', async () => {
+    const { firstRows, lastRows } = await render();
+
+    expect(firstRows()).toEqual(['Register a token', 'Amount format', 'About']);
+    expect(lastRows()).toEqual(['Security', 'Reset wallet']);
+  });
+
+  test.each([
+    ['Network Settings, where it shows', {
+      toggles: { [NETWORK_SETTINGS_FEATURE_TOGGLE]: true, [SINGLE_ADDRESS_FEATURE_TOGGLE]: true },
+    }, 'Network Settings'],
+    ['Address Mode, where it is the first that shows', {
+      toggles: { [SINGLE_ADDRESS_FEATURE_TOGGLE]: true },
+    }, 'Address Mode'],
+    ['Privacy, where it is the first that shows', {
+      toggles: { [AMOUNT_FORMAT_FEATURE_TOGGLE]: false },
+    }, 'Privacy'],
+    ['Reset wallet, where no other row shows', {
+      flag: false,
+      toggles: { [AMOUNT_FORMAT_FEATURE_TOGGLE]: false },
+    }, 'Reset wallet'],
+  ])('rounds the top of Advanced Settings on %s', async (_label, options, first) => {
+    const { firstRows } = await render(options);
+
+    expect(firstRows()).toEqual(['Register a token', first, 'About']);
   });
 });

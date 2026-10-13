@@ -98,7 +98,30 @@ export class Settings extends React.Component {
     },
   });
 
+  /**
+   * The route of the first row Advanced Settings shows, whose top corners are round: the first one
+   * whose flag holds, or Reset wallet, which always shows.
+   *
+   * @returns {string}
+   */
+  firstAdvancedRoute() {
+    if (this.props.networkSettingsEnabled) {
+      return NetworkSettingsFlowNav;
+    }
+    if (this.props.singleAddressEnabled) {
+      return 'AddressMode';
+    }
+    if (this.props.amountFormatEnabled) {
+      return 'AmountFormat';
+    }
+    if (this.props.privacySettingsEnabled) {
+      return 'PrivacySettings';
+    }
+    return 'ResetWallet';
+  }
+
   render() {
+    const firstAdvancedRoute = this.firstAdvancedRoute();
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <ScrollView contentContainerStyle={this.style.scrollView}>
@@ -169,6 +192,7 @@ export class Settings extends React.Component {
                 <ListMenu
                   title={t`Network Settings`}
                   onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
+                  isFirst={firstAdvancedRoute === NetworkSettingsFlowNav}
                 />
               )}
             {this.props.singleAddressEnabled
@@ -176,6 +200,7 @@ export class Settings extends React.Component {
                 <ListMenu
                   title={t`Address Mode`}
                   onPress={() => this.props.navigation.navigate('AddressMode')}
+                  isFirst={firstAdvancedRoute === 'AddressMode'}
                 />
               )}
             {this.props.amountFormatEnabled
@@ -183,6 +208,7 @@ export class Settings extends React.Component {
                 <ListMenu
                   title={t`Amount format`}
                   onPress={() => this.props.navigation.navigate('AmountFormat')}
+                  isFirst={firstAdvancedRoute === 'AmountFormat'}
                 />
               )}
             {this.props.privacySettingsEnabled
@@ -190,11 +216,13 @@ export class Settings extends React.Component {
                 <ListMenu
                   title={t`Privacy`}
                   onPress={() => this.props.navigation.navigate('PrivacySettings')}
+                  isFirst={firstAdvancedRoute === 'PrivacySettings'}
                 />
               )}
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}
+              isFirst={firstAdvancedRoute === 'ResetWallet'}
             />
           </HathorList>
 

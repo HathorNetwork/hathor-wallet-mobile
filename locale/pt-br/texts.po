@@ -462,7 +462,7 @@ msgid "You are about to add these tokens to your wallet:"
 msgstr "Você está prestes a adicionar esses tokens à sua carteira:"
 
 #: src/components/TokenImportBanner.js:77
-#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:134
+#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:157
 msgid "Import tokens"
 msgstr "Importar tokens"
 
@@ -826,7 +826,7 @@ msgstr "Não encontramos nenhum token não registrado vinculado à sua carteira.
 msgid "You can register a new one manually."
 msgstr "Você pode registrar um novo token manualmente."
 
-#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:126
+#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:149
 msgid "Register a token"
 msgstr "Registrar um token"
 
@@ -967,7 +967,7 @@ msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:199
-#: src/screens/PinScreen.js:334 src/screens/Settings.js:196
+#: src/screens/PinScreen.js:334 src/screens/Settings.js:223
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
 
@@ -1084,7 +1084,7 @@ msgstr "AUDITORIA"
 msgid "Export privacy keys"
 msgstr "Exportar chaves de privacidade"
 
-#: src/screens/PushNotification.js:58 src/screens/Settings.js:152
+#: src/screens/PushNotification.js:58 src/screens/Settings.js:175
 msgid "Push Notification"
 msgstr "Notificação"
 
@@ -1479,55 +1479,55 @@ msgstr "ENVIAR"
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
-#: src/screens/Settings.js:113
+#: src/screens/Settings.js:136
 msgid "You are connected to"
 msgstr "Você está conectado à"
 
-#: src/screens/Settings.js:122
+#: src/screens/Settings.js:145
 msgid "General Settings"
 msgstr "Configurações Gerais"
 
-#: src/screens/Settings.js:141
+#: src/screens/Settings.js:164
 msgid "Create a new token"
 msgstr "Criar um novo token"
 
-#: src/screens/Settings.js:146
+#: src/screens/Settings.js:169
 msgid "Security"
 msgstr "Segurança"
 
-#: src/screens/Settings.js:159
+#: src/screens/Settings.js:182
 msgid "Reown"
 msgstr "Reown"
 
-#: src/screens/Settings.js:166
+#: src/screens/Settings.js:189
 msgid "Advanced Settings"
 msgstr "Configurações Avançadas"
 
-#: src/screens/Settings.js:170
+#: src/screens/Settings.js:193
 msgid "Network Settings"
 msgstr "Configurações de Rede"
 
-#: src/screens/Settings.js:177
+#: src/screens/Settings.js:201
 msgid "Address Mode"
 msgstr "Modo de Endereço"
 
-#: src/screens/Settings.js:184
+#: src/screens/Settings.js:209
 msgid "Amount format"
 msgstr "Formato de Valor"
 
-#: src/screens/Settings.js:191
+#: src/screens/Settings.js:217
 msgid "Privacy"
 msgstr "Privacidade"
 
-#: src/screens/Settings.js:204
+#: src/screens/Settings.js:232
 msgid "About"
 msgstr "Sobre"
 
-#: src/screens/Settings.js:212
+#: src/screens/Settings.js:240
 msgid "Unique app identifier"
 msgstr "Identificador único do aplicativo"
 
-#: src/screens/Settings.js:225
+#: src/screens/Settings.js:253
 msgid "Connected to"
 msgstr "Conectado ao servidor"
 
