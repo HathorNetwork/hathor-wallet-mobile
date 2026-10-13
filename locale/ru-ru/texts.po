@@ -2110,7 +2110,7 @@ msgstr ""
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:131
+#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:132
 msgid "Date & Time"
 msgstr "Дата и Время"
 
@@ -2230,7 +2230,7 @@ msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
-#: src/components/TxDetailsModal.js:140
+#: src/components/TxDetailsModal.js:141
 msgid "Transaction ID"
 msgstr ""
 

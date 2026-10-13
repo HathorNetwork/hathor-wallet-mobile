@@ -80,8 +80,8 @@ export class TxHistory {
      */
     this.firstBlock = firstBlock;
     /**
-     * The privacy fee the tx's shielded outputs cost whoever paid the tx, part of the fee it
-     * declares. It is the wallet's to show only for a tx the wallet paid.
+     * The privacy part of the tx's fee: what its shielded outputs cost whoever paid the tx. The
+     * tx details' Fees row shows it for any tx with fees, where the shielded UI shows.
      * @type {bigint}
      */
     this.privacyFee = privacyFee;

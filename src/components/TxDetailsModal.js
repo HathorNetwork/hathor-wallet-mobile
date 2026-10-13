@@ -68,15 +68,16 @@ class TxDetailsModal extends Component {
   }
 
   /**
-   * Loads the fees of the tx, whoever paid them, where the shielded UI shows (props.showFees).
-   * The history has no fees: the fullnode lists them.
+   * Loads the fees of the tx, whoever paid them. The history has no fees: the fullnode lists
+   * them. Where the shielded UI doesn't show (props.showPrivacyFee), the privacy fee counts in
+   * the network fee.
    */
   async loadFees() {
-    const { showFees, wallet, tx } = this.props;
-    if (!showFees || !wallet) {
+    const { showPrivacyFee, wallet, tx } = this.props;
+    if (!wallet) {
       return;
     }
-    const fees = await getTxFees(wallet, tx.txId, tx.privacyFee);
+    const fees = await getTxFees(wallet, tx.txId, showPrivacyFee ? tx.privacyFee : 0n);
     if (this.isOpen && fees) {
       this.setState({ fees });
     }
@@ -89,7 +90,7 @@ class TxDetailsModal extends Component {
      *   tx: TxHistory;
      *   isNFT: boolean;
      *   wallet?: HathorWallet;
-     *   showFees?: boolean;
+     *   showPrivacyFee?: boolean;
      *   nativeSymbol?: string;
      * }} TxDetailsModal properties
      */

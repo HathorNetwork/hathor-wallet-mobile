@@ -56,6 +56,22 @@ const NANO_TX = TxHistory.from({
   firstBlock: '000000002ab1b5a6f6bc6e3f6b3c9e2b8ed2d29b6c6f6d3e1c9c2f8b5a4e3d2c',
 }, HTR);
 
+const FEE_TOKEN = {
+  uid: '00000943573723a28e3dd980c10e08419d0e00bc647a95f4ca9671ebea7d5669',
+  name: 'Fee-Based Token',
+  symbol: 'FBT',
+  version: TokenVersion.FEE,
+};
+
+// A send of 1.00 FBT, a fee-based token, with no private outputs.
+const FEE_TOKEN_TX = TxHistory.from({
+  txId: '0000d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5',
+  timestamp: 1700000300,
+  balance: -100n,
+  voided: false,
+  version: 1,
+}, FEE_TOKEN.uid);
+
 /**
  * A wallet whose fullnode reports these fees for every tx.
  */
@@ -79,10 +95,15 @@ const waitForModalContent = () => act(async () => {
   await new Promise((resolve) => { setTimeout(resolve, 150); });
 });
 
+/**
+ * A row's label and the text after it, its value.
+ */
+const rowOf = (texts, label) => texts.slice(texts.indexOf(label), texts.indexOf(label) + 2);
+
 async function render({
   tx = SENT_TX,
   wallet = fakeWallet(),
-  showFees = true,
+  showPrivacyFee = true,
   token = TOKEN,
 } = {}) {
   const store = createStore(reducer);
@@ -99,7 +120,7 @@ async function render({
             amountFormat={AMOUNT_FORMAT.EXPANDED}
             decimalPlaces={2}
             wallet={wallet}
-            showFees={showFees}
+            showPrivacyFee={showPrivacyFee}
             nativeSymbol='HTR'
           />
         </PortalProvider>
@@ -124,7 +145,7 @@ async function render({
 
 describe('TxDetailsModal', () => {
   test('shows the amount, with Sent under it for a send', async () => {
-    const { texts } = await render({ showFees: false });
+    const { texts } = await render();
 
     const order = texts();
     expect(order.slice(0, 2)).toEqual(['-10.03 HTR', 'Sent HTR']);
@@ -132,13 +153,13 @@ describe('TxDetailsModal', () => {
   });
 
   test('shows Received under the amount of a receive', async () => {
-    const { texts } = await render({ tx: RECEIVED_TX, showFees: false });
+    const { texts } = await render({ tx: RECEIVED_TX });
 
     expect(texts().slice(0, 2)).toEqual(['5.00 HTR', 'Received HTR']);
   });
 
   test('has no Token, Description or Fee Model row', async () => {
-    const { texts } = await render({ showFees: false });
+    const { texts } = await render();
 
     const shown = texts();
     for (const row of ['Token', 'Hathor (HTR)', 'Description', 'Fee Model', 'Native Token']) {
@@ -147,7 +168,7 @@ describe('TxDetailsModal', () => {
   });
 
   test('has no nano contract rows', async () => {
-    const { texts } = await render({ tx: NANO_TX, showFees: false });
+    const { texts } = await render({ tx: NANO_TX });
 
     const shown = texts();
     for (const row of [
@@ -211,12 +232,32 @@ describe('TxDetailsModal', () => {
     expect(texts()).not.toContain('Fees');
   });
 
-  test('loads no fees while the shielded UI is off', async () => {
+  test('shows the whole fee as the network fee where the shielded UI does not show', async () => {
     const wallet = fakeWallet();
-    const { texts } = await render({ wallet, showFees: false });
+    const { texts, expandFees } = await render({ wallet, showPrivacyFee: false });
 
-    expect(texts()).not.toContain('Fees');
-    expect(wallet.getFullTxById).not.toHaveBeenCalled();
+    expect(wallet.getFullTxById).toHaveBeenCalledWith(SENT_TX.txId);
+    expect(rowOf(texts(), 'Fees')).toEqual(['Fees', '0.03 HTR']);
+
+    await expandFees();
+
+    expect(rowOf(texts(), 'Network fee')).toEqual(['Network fee', '0.03 HTR']);
+    expect(texts()).not.toContain('Privacy fee');
+  });
+
+  test('shows the HTR fee of a fee-based token send, as its network fee', async () => {
+    const wallet = fakeWallet({ fees: [{ token_uid: HTR, amount: 1 }] });
+    const { texts, expandFees } = await render({
+      tx: FEE_TOKEN_TX, token: FEE_TOKEN, wallet, showPrivacyFee: false,
+    });
+
+    expect(texts().slice(0, 2)).toEqual(['-1.00 FBT', 'Sent FBT']);
+    expect(rowOf(texts(), 'Fees')).toEqual(['Fees', '0.01 HTR']);
+
+    await expandFees();
+
+    expect(rowOf(texts(), 'Network fee')).toEqual(['Network fee', '0.01 HTR']);
+    expect(texts()).not.toContain('Privacy fee');
   });
 
   test('drops fees that arrive once the modal is closed', async () => {

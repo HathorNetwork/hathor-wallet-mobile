@@ -2210,7 +2210,7 @@ msgstr "Taxa: ${ fee } HTR por saída"
 msgid "Public Explorer"
 msgstr "Explorer Público"
 
-#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:131
+#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:132
 msgid "Date & Time"
 msgstr "Data & Hora"
 
@@ -2333,7 +2333,7 @@ msgstr "Inválida"
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
-#: src/components/TxDetailsModal.js:140
+#: src/components/TxDetailsModal.js:141
 msgid "Transaction ID"
 msgstr "ID da Transação"
 
