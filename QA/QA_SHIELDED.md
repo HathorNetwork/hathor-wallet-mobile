@@ -123,7 +123,7 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 On the Shielded Testnet, record the time from the PIN entry of "Unlock private balance" to the private part of the balance, and the time a token screen with many private UTXOs takes to show its parts.
 
 ### Private sends
-With the flag on, on the Shielded Testnet, with public and private HTR and a registered custom token. Copy a private address from another wallet's Receive screen, on Private.
+With the flag on, on the Shielded Testnet, with public and private HTR and a registered custom token. Copy a private address from another wallet's Receive screen, which shows only that address on the Shielded Testnet.
 1. Send HTR to a public address. The amount screen shows the privacy mode above Next, in Public. Tap it: the "Transaction privacy" sheet says "Choose what's hidden only for this transaction", with "only for this transaction" in bold, and offers Private ("Token and amount hidden", "Fee: 0.02 HTR per output"), Hide amount ("Token visible, amount hidden", "Fee: 0.01 HTR per output") and Public ("Token and amount visible", "No privacy fees"). Under them it says "You can change your default on advanced settings", above DONE.
 1. Pick Hide amount, tap DONE, type an amount and tap Next: the screen says "The selected privacy mode requires a shielded address as the recipient. The address you entered is not shielded — change the address or switch to Public." Pick Public and tap Next: the send goes on.
 1. Send HTR to the private address in Public, the mode the amount screen starts in. The send is built and sent: the recipient gets a public output, paid to the P2PKH address of the private address's spend key.
