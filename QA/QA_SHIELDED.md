@@ -7,10 +7,11 @@ Run these tests on iOS and Android release builds. The shielded UI stays behind 
 ### Before you start
 1. Set up a wallet that can send shielded outputs on the Shielded Testnet, for example a wallet-lib script with `@hathor/ct-crypto-node`, and fund it from the faucet.
 1. With the flag on, Receive shows the wallet's new (shielded) address. With the flag off, the app shows none: to pay the mobile wallet privately, restore its seed in a wallet-lib script with a crypto provider and read its shielded address, for example with `getCurrentAddress({}, { legacy: false })`.
-1. On Unleash, the flag targets the network the wallet reports as `network`: `testnet` for the Testnet preset and `testnet-shielded-outputs` for the Shielded Testnet preset. Enable it for both to see the preset from the Testnet.
+1. On Unleash, the flag targets the network the wallet reports as `network`: `testnet-shielded-outputs` for the Shielded Testnet. With the flag on only there, the Shielded Testnet preset doesn't show on Mainnet or Testnet. Reach the Shielded Testnet through a custom network with `https://node1.shielded-outputs.testnet.hathor.network/v1a/`, whose node reports `testnet-shielded-outputs`. To check the preset itself, also turn the flag on for your device on Testnet.
 1. Read the app's logs: on iOS with `log stream --predicate 'process == "HathorMobile"'` on the simulator, or Console.app for a device; on Android with `adb logcat ReactNativeJS:V`. Release builds on iOS only log errors.
 
-### Mainnet and Testnet are unchanged
+### Mainnet and Testnet have no shielded features
+The token screen's balance and the tx details follow the original shielded redesign on every network (see the general QA). The steps below check that nothing shielded runs there.
 1. With the flag off, unlock a wallet on Mainnet, then on Testnet.
 1. Check the logs: there's no `[shielded-provider]` line.
 1. The loading screen finds the same addresses, in the same time, as a build on wallet-lib 3.1.1 with the same seed: no shielded address is derived or subscribed.
@@ -128,7 +129,7 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 On the Shielded Testnet, record the time from the PIN entry of "Unlock private balance" to the private part of the balance, and the time a token screen with many private UTXOs takes to show its parts.
 
 ### Private sends
-With the flag on, on the Shielded Testnet, with public and private HTR and a registered custom token. Copy a private address from another wallet's Receive screen, on Private.
+With the flag on, on the Shielded Testnet, with public and private HTR and a registered custom token. Copy a private address from another wallet's Receive screen, which shows only that address on the Shielded Testnet.
 1. Send HTR to a public address. The amount screen shows the privacy mode above Next, in Public. Tap it: the "Transaction privacy" sheet says "Choose what's hidden only for this transaction", with "only for this transaction" in bold, and offers Private ("Token and amount hidden", "Fee: 0.02 HTR per output"), Hide amount ("Token visible, amount hidden", "Fee: 0.01 HTR per output") and Public ("Token and amount visible", "No privacy fees"). Under them it says "You can change your default on advanced settings", above DONE.
 1. Pick Hide amount, tap DONE, type an amount and tap Next: the screen says "The selected privacy mode requires a shielded address as the recipient. The address you entered is not shielded — change the address or switch to Public." Pick Public and tap Next: the send goes on.
 1. Send HTR to the private address in Public, the mode the amount screen starts in. The send is built and sent: the recipient gets a public output, paid to the P2PKH address of the private address's spend key.
