@@ -268,11 +268,16 @@ export const FEATURE_TOGGLE_DEFAULTS = {
  * Passkey (PRF) onboarding config (passkey PRF secret -> BIP39 seed).
  *
  * PASSKEY_RP_ID MUST be a domain Hathor controls with the Associated Domains entitlement
- * (`webcredentials:<PASSKEY_RP_ID>`) and a hosted
- * https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association — otherwise passkey create/get
- * fail on device.
+ * (`webcredentials:<PASSKEY_RP_ID>`), a hosted
+ * https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association and a hosted
+ * https://<PASSKEY_RP_ID>/.well-known/assetlinks.json — otherwise passkey create/get fail on device.
+ *
+ * It is PERMANENT, like the PRF salt: a passkey belongs to one RP ID, so changing it leaves every
+ * existing passkey wallet unreachable. It is the web wallet's domain so that the web wallet can
+ * open the same passkey wallets; for the same reason, every site under this domain can ask for
+ * the passkey, so nothing outside Hathor's control may be hosted under it.
  */
-export const PASSKEY_RP_ID = 'wallet.hathor.dev';
+export const PASSKEY_RP_ID = 'wallet.hathor.network';
 export const PASSKEY_RP_NAME = 'Hathor Wallet';
 
 // Project id configured in https://walletconnect.com

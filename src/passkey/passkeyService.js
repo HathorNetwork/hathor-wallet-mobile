@@ -21,6 +21,8 @@
  * IMPORTANT — on-device prerequisites:
  *   - iOS: Associated Domains entitlement `webcredentials:<PASSKEY_RP_ID>` + a hosted
  *     https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association. Without it, create/get fail.
+ *   - Android: a hosted https://<PASSKEY_RP_ID>/.well-known/assetlinks.json granting
+ *     `delegate_permission/common.get_login_creds` to this package and its signing certificates.
  */
 
 import { Platform } from 'react-native';
