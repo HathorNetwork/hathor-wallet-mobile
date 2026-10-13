@@ -282,14 +282,18 @@ describe('ExportPrivacyKeys', () => {
     expect(texts()).not.toContain(SCAN_XPRIV);
   });
 
-  test('keeps the keys unselectable, so every copy goes through the clipboard that clears itself', async () => {
+  test('makes the text of each key selectable, masked or in full', async () => {
     const { renderer, pressText, enterPin } = await render();
     await enterPin();
+    const selectableTexts = () => renderer.root
+      .findAll((node) => node.type === 'Text' && node.props.selectable)
+      .map((node) => [].concat(node.props.children).join(''));
+
+    expect(selectableTexts()).toEqual([SPEND_MASKED, SCAN_MASKED]);
 
     await pressText('Show full key', 1);
 
-    expect(renderer.root.findAll((node) => node.type === 'Text' && node.props.selectable))
-      .toEqual([]);
+    expect(selectableTexts()).toEqual([SPEND_MASKED, SCAN_XPRIV]);
   });
 
   test('copies a key in full, masked or not, and the clipboard clears a minute later', async () => {

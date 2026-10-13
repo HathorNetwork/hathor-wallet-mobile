@@ -115,7 +115,7 @@ function maskKey(key) {
 /**
  * One exported key: its name, what it gives, its value, masked until "Show full key" reveals it,
  * and Copy, which copies the full value through the clipboard that clears itself, whatever shows.
- * The value isn't selectable, so no copy goes around that clipboard.
+ * The value's text is selectable too, as it shows; a copy of the selection doesn't clear itself.
  */
 const KeyCard = ({ label, description, value }) => {
   const [revealed, setRevealed] = useState(false);
@@ -138,7 +138,11 @@ const KeyCard = ({ label, description, value }) => {
       <Text style={styles.keyDescription}>{description}</Text>
 
       <View style={styles.keyValueBox}>
-        <Text style={styles.keyValue} numberOfLines={revealed ? undefined : 1}>
+        <Text
+          style={styles.keyValue}
+          selectable
+          numberOfLines={revealed ? undefined : 1}
+        >
           {revealed ? value : maskKey(value)}
         </Text>
       </View>
@@ -173,10 +177,11 @@ const KeyCard = ({ label, description, value }) => {
  * first, and the PIN comes once it is unlocked.
  *
  * The keys show masked, and "Show full key" reveals one. Copy goes through the clipboard that
- * clears itself. The keys hide while the app isn't active, out of iOS's app-switcher snapshot;
- * Android takes its recents thumbnail before the app reports it, so the thumbnail can show them.
- * A read that fails shows the error's message, and logs nothing. A wallet that no longer decodes
- * its private outputs when the PIN comes says why, as the screen does when it opens.
+ * clears itself, and the keys' text is selectable. The keys hide while the app isn't active, out
+ * of iOS's app-switcher snapshot; Android takes its recents thumbnail before the app reports it,
+ * so the thumbnail can show them. A read that fails shows the error's message, and logs nothing.
+ * A wallet that no longer decodes its private outputs when the PIN comes says why, as the screen
+ * does when it opens.
  *
  * The privacy settings open it, where the shielded UI is available. When it no longer is, the
  * screen closes with the screens above it, such as its PIN screen, whose callback then never runs.

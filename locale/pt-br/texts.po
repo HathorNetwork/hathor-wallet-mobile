@@ -726,39 +726,39 @@ msgstr ""
 msgid "Unlock your private balance to export the privacy keys."
 msgstr "Desbloqueie seu saldo privado para exportar as chaves de privacidade."
 
-#: src/screens/ExportPrivacyKeys.js:149
+#: src/screens/ExportPrivacyKeys.js:153
 msgid "Hide"
 msgstr "Ocultar"
 
-#: src/screens/ExportPrivacyKeys.js:149
+#: src/screens/ExportPrivacyKeys.js:153
 msgid "Show full key"
 msgstr "Mostrar chave completa"
 
-#: src/screens/ExportPrivacyKeys.js:154
+#: src/screens/ExportPrivacyKeys.js:158
 msgid "Copied"
 msgstr "Copiado"
 
-#: src/screens/ExportPrivacyKeys.js:154
+#: src/screens/ExportPrivacyKeys.js:158
 msgid "Copy"
 msgstr "Copiar"
 
-#: src/screens/ExportPrivacyKeys.js:255
+#: src/screens/ExportPrivacyKeys.js:260
 msgid "Wallet not ready"
 msgstr "Carteira não está pronta"
 
-#: src/screens/ExportPrivacyKeys.js:297
+#: src/screens/ExportPrivacyKeys.js:302
 msgid "Enter your 6-digit PIN to export the audit keys"
 msgstr "Digite seu PIN de 6 dígitos para exportar as chaves de auditoria"
 
-#: src/screens/ExportPrivacyKeys.js:325
+#: src/screens/ExportPrivacyKeys.js:330
 msgid "EXPORT PRIVACY KEYS"
 msgstr "EXPORTAR CHAVES DE PRIVACIDADE"
 
-#: src/screens/ExportPrivacyKeys.js:333
+#: src/screens/ExportPrivacyKeys.js:338
 msgid "Read this before sharing"
 msgstr "Leia isto antes de compartilhar"
 
-#: src/screens/ExportPrivacyKeys.js:335
+#: src/screens/ExportPrivacyKeys.js:340
 msgid ""
 "These two keys give an auditor read-only access to every shielded output "
 "your wallet receives — they can identify every incoming shielded transaction "
@@ -768,7 +768,7 @@ msgstr ""
 "blindadas que sua carteira recebe — com elas, é possível identificar todas "
 "as transações blindadas recebidas e decifrar o valor e o token de cada uma."
 
-#: src/screens/ExportPrivacyKeys.js:338
+#: src/screens/ExportPrivacyKeys.js:343
 msgid ""
 "They do NOT allow spending. Whoever holds them cannot move your funds, sign "
 "transactions on your behalf, or access transparent (non-shielded) balances."
@@ -776,7 +776,7 @@ msgstr ""
 "Elas NÃO permitem gastar. Quem as tiver não pode mover seus fundos, assinar "
 "transações em seu nome nem acessar saldos transparentes (não blindados)."
 
-#: src/screens/ExportPrivacyKeys.js:341
+#: src/screens/ExportPrivacyKeys.js:346
 msgid ""
 "Treat them like any other private wallet data. Share them only with auditors "
 "you trust, and over a secure channel."
@@ -784,15 +784,15 @@ msgstr ""
 "Trate-as como qualquer outro dado privado da carteira. Compartilhe-as apenas "
 "com auditores de confiança, e por um canal seguro."
 
-#: src/screens/ExportPrivacyKeys.js:348
+#: src/screens/ExportPrivacyKeys.js:353
 msgid "Deriving keys…"
 msgstr "Derivando as chaves…"
 
-#: src/screens/ExportPrivacyKeys.js:361
+#: src/screens/ExportPrivacyKeys.js:366
 msgid "Spend public key (xpub)"
 msgstr "Chave pública de gasto (xpub)"
 
-#: src/screens/ExportPrivacyKeys.js:363
+#: src/screens/ExportPrivacyKeys.js:368
 msgid ""
 "Path m/44'/280'/2'/0. Lets the auditor derive every receiving spend-side "
 "address and find your incoming shielded outputs on-chain."
@@ -801,11 +801,11 @@ msgstr ""
 "recebimento do lado de gasto e encontrar na blockchain as saídas blindadas "
 "que você recebe."
 
-#: src/screens/ExportPrivacyKeys.js:369
+#: src/screens/ExportPrivacyKeys.js:374
 msgid "Scan private key (xpriv)"
 msgstr "Chave privada de varredura (xpriv)"
 
-#: src/screens/ExportPrivacyKeys.js:371
+#: src/screens/ExportPrivacyKeys.js:376
 msgid ""
 "Path m/44'/280'/1'/0. Lets the auditor decrypt the value and token of every "
 "shielded output your wallet receives. Used only for ECDH; never for signing."

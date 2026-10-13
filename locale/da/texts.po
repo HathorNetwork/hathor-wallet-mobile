@@ -682,76 +682,76 @@ msgstr ""
 msgid "Unlock your private balance to export the privacy keys."
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:149
+#: src/screens/ExportPrivacyKeys.js:153
 msgid "Hide"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:149
+#: src/screens/ExportPrivacyKeys.js:153
 msgid "Show full key"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:154
+#: src/screens/ExportPrivacyKeys.js:158
 msgid "Copied"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:154
+#: src/screens/ExportPrivacyKeys.js:158
 msgid "Copy"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:255
+#: src/screens/ExportPrivacyKeys.js:260
 msgid "Wallet not ready"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:297
+#: src/screens/ExportPrivacyKeys.js:302
 msgid "Enter your 6-digit PIN to export the audit keys"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:325
+#: src/screens/ExportPrivacyKeys.js:330
 msgid "EXPORT PRIVACY KEYS"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:333
+#: src/screens/ExportPrivacyKeys.js:338
 msgid "Read this before sharing"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:335
+#: src/screens/ExportPrivacyKeys.js:340
 msgid ""
 "These two keys give an auditor read-only access to every shielded output "
 "your wallet receives — they can identify every incoming shielded transaction "
 "and decrypt the amount and token of each one."
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:338
+#: src/screens/ExportPrivacyKeys.js:343
 msgid ""
 "They do NOT allow spending. Whoever holds them cannot move your funds, sign "
 "transactions on your behalf, or access transparent (non-shielded) balances."
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:341
+#: src/screens/ExportPrivacyKeys.js:346
 msgid ""
 "Treat them like any other private wallet data. Share them only with auditors "
 "you trust, and over a secure channel."
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:348
+#: src/screens/ExportPrivacyKeys.js:353
 msgid "Deriving keys…"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:361
+#: src/screens/ExportPrivacyKeys.js:366
 msgid "Spend public key (xpub)"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:363
+#: src/screens/ExportPrivacyKeys.js:368
 msgid ""
 "Path m/44'/280'/2'/0. Lets the auditor derive every receiving spend-side "
 "address and find your incoming shielded outputs on-chain."
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:369
+#: src/screens/ExportPrivacyKeys.js:374
 msgid "Scan private key (xpriv)"
 msgstr ""
 
-#: src/screens/ExportPrivacyKeys.js:371
+#: src/screens/ExportPrivacyKeys.js:376
 msgid ""
 "Path m/44'/280'/1'/0. Lets the auditor decrypt the value and token of every "
 "shielded output your wallet receives. Used only for ECDH; never for signing."
