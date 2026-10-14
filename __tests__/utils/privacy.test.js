@@ -55,18 +55,20 @@ describe('getUnblindingEncoder', () => {
   // bitcore-lib, which refuses to.
   const walletLib = jest.requireActual('@hathor/wallet-lib');
 
-  test('finds no encoder in the wallet-lib build the app runs with', () => {
-    expect(getUnblindingEncoder()).toBeNull();
+  test('finds the encoder of the wallet-lib build the app runs with', () => {
+    expect(getUnblindingEncoder()).toBe(walletLib.shielded.encodeShieldedUnblindingPayload);
   });
 
-  test('returns the encoder of a wallet-lib build that has one, looked up at each call', () => {
+  test('finds no encoder in a wallet-lib build without one, and looks it up at each call', () => {
     // wallet-lib's own exports are read-only, so a stand-in shielded namespace starts without
     // the encoder and gets it once the module that looks it up is loaded.
     const shieldedNamespace = {};
     let isolated;
     jest.isolateModules(() => {
       jest.doMock('@hathor/wallet-lib', () => {
-        Object.assign(shieldedNamespace, walletLib.shielded);
+        Object.keys(walletLib.shielded)
+          .filter((name) => name !== 'encodeShieldedUnblindingPayload')
+          .forEach((name) => { shieldedNamespace[name] = walletLib.shielded[name]; });
         return { ...walletLib, shielded: shieldedNamespace };
       });
       // eslint-disable-next-line global-require

@@ -7,8 +7,7 @@
 
 import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 
-// The wallet-lib build the app runs with has no encoder of the unblinding values: each test
-// gives the rows one, or the real lookup.
+// Each test gives the rows a stand-in encoder of the unblinding values, none, or the real lookup.
 jest.mock('../../src/utils/privacy', () => ({
   ...jest.requireActual('../../src/utils/privacy'),
   getUnblindingEncoder: jest.fn(),
@@ -20,7 +19,7 @@ import { Alert, Clipboard, Linking } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
-import { TokenVersion, constants as hathorLibConstants } from '@hathor/wallet-lib';
+import { TokenVersion, constants as hathorLibConstants, shielded } from '@hathor/wallet-lib';
 import { reducer } from '../../src/reducers/reducer';
 import {
   networkSettingsUpdateState,
@@ -168,13 +167,25 @@ async function render({ wallet = fakeWallet(), ...options } = {}) {
 }
 
 describe('AuditUnblindingRows', () => {
-  test('renders nothing in this wallet-lib build, which has no encoder, and reads nothing', async () => {
-    getUnblindingEncoder.mockImplementation(realGetUnblindingEncoder);
+  test('renders nothing in a wallet-lib build without the encoder, and reads nothing', async () => {
+    getUnblindingEncoder.mockReturnValue(null);
     const { wallet, titles } = await render();
 
     expect(titles()).toEqual([]);
     expect(wallet.getShieldedUnblindingForTx).not.toHaveBeenCalled();
     expect(wallet.getTx).not.toHaveBeenCalled();
+  });
+
+  test('copies the values with the encoder of the wallet-lib build the app runs with', async () => {
+    getUnblindingEncoder.mockImplementation(realGetUnblindingEncoder);
+    const { titles, press } = await render();
+
+    expect(titles()).toEqual([VIEW, COPY]);
+    await press(COPY);
+
+    const expected = shielded.encodeShieldedUnblindingPayload(TX_ID, [OPENING], []);
+    expect(expected).not.toBe('');
+    expect(Clipboard.setString.mock.calls).toEqual([[expected]]);
   });
 
   test('offers both rows for a tx the wallet received, on the shielded testnet, unencoded', async () => {
