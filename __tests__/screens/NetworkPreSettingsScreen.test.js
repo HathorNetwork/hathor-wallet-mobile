@@ -15,6 +15,7 @@ import { setFeatureToggles, types } from '../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   PRE_SETTINGS_SHIELDED_TESTNET,
+  SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
 } from '../../src/constants';
 import { NetworkPreSettingsScreen } from '../../src/screens/NetworkSettings/NetworkPreSettingsScreen';
@@ -32,7 +33,7 @@ afterEach(async () => {
   }
 });
 
-async function render({ shieldedFlag }) {
+async function render({ presetFlag = false, shieldedFlag = false }) {
   const actions = [];
   const recordActions = () => (next) => (action) => {
     actions.push(action);
@@ -41,6 +42,7 @@ async function render({ shieldedFlag }) {
   const store = createStore(reducer, applyMiddleware(recordActions));
   store.dispatch(setFeatureToggles({
     ...FEATURE_TOGGLE_DEFAULTS,
+    [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: presetFlag,
     [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: shieldedFlag,
   }));
   const navigation = { goBack: jest.fn(), push: jest.fn() };
@@ -64,18 +66,25 @@ async function render({ shieldedFlag }) {
 }
 
 describe('NetworkPreSettingsScreen', () => {
-  test('offers no Shielded Testnet while the flag is off', async () => {
-    const { presetTitles } = await render({ shieldedFlag: false });
+  test('offers no Shielded Testnet while both flags are off', async () => {
+    const { presetTitles } = await render({});
     expect(presetTitles).toEqual(['Mainnet', 'Testnet']);
   });
 
-  test('offers the Shielded Testnet while the flag is on', async () => {
-    const { presetTitles } = await render({ shieldedFlag: true });
+  test('offers the Shielded Testnet while its preset flag is on', async () => {
+    const { presetTitles } = await render({ presetFlag: true });
     expect(presetTitles).toEqual(['Mainnet', 'Testnet', SHIELDED_TESTNET_TITLE]);
   });
 
+  // The shielded outputs flag is for the shielded UI, on the shielded testnet: on the networks
+  // the user switches from it is off, so it doesn't show the preset either way.
+  test('offers no Shielded Testnet for the shielded outputs flag alone', async () => {
+    const { presetTitles } = await render({ shieldedFlag: true });
+    expect(presetTitles).toEqual(['Mainnet', 'Testnet']);
+  });
+
   test('saves the Shielded Testnet preset when it is pressed', async () => {
-    const { actions, findPreset } = await render({ shieldedFlag: true });
+    const { actions, findPreset } = await render({ presetFlag: true });
 
     await act(async () => {
       findPreset(SHIELDED_TESTNET_TITLE).props.onPress();

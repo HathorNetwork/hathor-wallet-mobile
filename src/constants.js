@@ -233,14 +233,20 @@ export const SINGLE_ADDRESS_FEATURE_TOGGLE = 'single-address-mobile.rollout';
 export const PASSKEY_ONBOARDING_FEATURE_TOGGLE = 'passkey-onboarding.rollout';
 export const AMOUNT_FORMAT_FEATURE_TOGGLE = 'amount-format-mobile.rollout';
 /**
- * Shows the shielded outputs UI, the Shielded Testnet preset included. It is off by default: the
- * Unleash proxy leaves out the flags it doesn't enable, so a flag it doesn't return reads as off,
- * and Unleash turns it on only where it targets it, such as the `testnet-shielded-outputs`
- * network. The UI's own gates also keep the rest of the shielded UI to the shielded testnet. It
- * doesn't decide where the shielded crypto provider is registered: on the shielded testnet it is
- * registered either way.
+ * Shows the shielded outputs UI. It is off by default: the Unleash proxy leaves out the flags it
+ * doesn't enable, so a flag it doesn't return reads as off, and Unleash turns it on only where it
+ * targets it, such as the `testnet-shielded-outputs` network. The UI's own gates also keep the
+ * shielded UI to the shielded testnet. It doesn't decide where the shielded crypto provider is
+ * registered: on the shielded testnet it is registered either way.
  */
 export const SHIELDED_OUTPUTS_FEATURE_TOGGLE = 'shielded-outputs.rollout';
+/**
+ * Shows the Shielded Testnet preset in Network Settings, and nothing else. It is separate from
+ * SHIELDED_OUTPUTS_FEATURE_TOGGLE because the app reads flags with the network it is on: a flag
+ * targeted at the shielded testnet is off on the networks the user switches from, so it can't
+ * also show the way there. Off by default, like every flag Unleash doesn't return.
+ */
+export const SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE = 'shielded-outputs-network.rollout';
 
 /**
  * Default feature toggle values.
@@ -263,6 +269,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [PASSKEY_ONBOARDING_FEATURE_TOGGLE]: false,
   [AMOUNT_FORMAT_FEATURE_TOGGLE]: false,
   [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false,
+  [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: false,
 };
 
 /**
