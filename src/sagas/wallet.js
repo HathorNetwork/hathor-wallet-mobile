@@ -9,6 +9,7 @@ import {
   Connection,
   HathorWallet,
   HathorWalletServiceWallet,
+  HistorySyncMode,
   Network,
   SCANNING_POLICY,
   constants as hathorLibConstants,
@@ -88,6 +89,7 @@ import {
   tokenImportFetchRequested,
   setAmountFormat,
   startWalletRequested,
+  shieldedCapabilityUpdate,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -101,11 +103,13 @@ import {
   progressiveRetryRequest,
 } from './helpers';
 import { monitorFeatureFlags } from './featureToggle';
+import { registerShieldedCryptoProvider } from './shieldedProvider';
 import {
   getAllAddresses,
   getFirstAddress,
   normalizeAmountFormat,
 } from '../utils';
+import { isShieldedNetwork, shouldRegisterShieldedProvider } from '../shielded/gating';
 import { logger } from '../logger';
 
 const log = logger('wallet');
@@ -182,6 +186,13 @@ export function* isWalletServiceEnabled() {
 
   // At this point, the networkSettings have already been set by startWallet.
   const networkSettings = yield select(getNetworkSettings);
+  if (isShieldedNetwork(networkSettings)) {
+    // The shielded testnet runs on the fullnode facade only, even when a custom network gives a
+    // wallet-service URL: the wallet-service facade has no shielded support, so the wallet's
+    // private funds would disappear there.
+    yield put(setUseWalletService(false));
+    return false;
+  }
   if (walletServiceEnabled && isEmpty(networkSettings.walletServiceUrl)) {
     // In case of an empty value for walletServiceUrl, it means the user
     // doesn't intend to use the Wallet Service. Therefore, we need to force
@@ -375,6 +386,16 @@ export function* startWallet(action) {
       // start() is not enforced — we do it here, before start(), as a safe convention.
       wallet.setExternalTxSigningMethod(makePasskeyTxSigner());
     }
+
+    // Only the polling sync watches the addresses shielded outputs are paid to. It is already
+    // wallet-lib's default: set it so that a change of default can't hide private receives.
+    wallet.setHistorySyncMode(HistorySyncMode.POLLING_HTTP_API);
+
+    // The provider must be set before start(), which loads and decodes the shielded history.
+    // On the shielded testnet it is registered whether or not the shielded UI flag is on.
+    if (shouldRegisterShieldedProvider({ networkSettings, useWalletService, isPasskeyWallet })) {
+      yield call(registerShieldedCryptoProvider, wallet);
+    }
   }
 
   if (isPasskeyWallet && typeof wallet.setExternalPrivateKeyMethod === 'function') {
@@ -497,6 +518,17 @@ export function* startWallet(action) {
     }
   }
 
+  // The listener above gets every capability change from now on. Read the capability once the
+  // wallet is ready too, as the event fires only when the capability changes.
+  if (typeof wallet.getShieldedCapability === 'function') {
+    try {
+      const capability = yield call([wallet, wallet.getShieldedCapability]);
+      yield put(shieldedCapabilityUpdate(capability));
+    } catch (e) {
+      log.error('Failed to read the shielded capability.', e);
+    }
+  }
+
   // After connection, confirm the actual scan policy. The wallet-lib changes
   // SINGLE_ADDRESS → GAP_LIMIT during the first connection if it finds tx on
   // addresses with index > 0. Persist the *real* mode here — single point of
@@ -534,6 +566,26 @@ export function* startWallet(action) {
 }
 
 /**
+ * Stops the fullnode-facade wallet that a reload or a failed start drops, keeping its storage
+ * (cleanStorage: false): the next start builds its own. Without it, the dropped wallet keeps its
+ * websocket open and its shielded scan key in memory. A wallet that is already stopped, as after
+ * a network change, and a wallet-service wallet are left as they are. A stop that fails is
+ * logged, and the caller goes on.
+ *
+ * @param {Object|null} wallet The wallet the app drops
+ */
+export function* stopDroppedWallet(wallet) {
+  if (!(wallet instanceof HathorWallet) || wallet.walletStopped) {
+    return;
+  }
+  try {
+    yield call([wallet, wallet.stop], { cleanStorage: false });
+  } catch (e) {
+    log.error('Failed to stop the wallet the app drops.', e);
+  }
+}
+
+/**
  * The PIN that a reload starts the wallet with: the PIN of the last start request, or of a
  * WALLET_PIN_CHANGED after it. A PIN change or a safe-biometry switch re-encrypts the access data,
  * and start() decrypts it with the PIN it is given. The PIN is kept here, never in the redux state,
@@ -565,7 +617,7 @@ export function* trackRestartPin() {
 
 /**
  * Waits for the request that ends the running wallet: a new start, a wallet reset or a reload.
- * A reload dispatches the start action again, with restartPin.
+ * A reload stops the running wallet, then dispatches the start action again, with restartPin.
  *
  * @param {Object} action The START_WALLET_REQUESTED action that started the running wallet
  */
@@ -579,6 +631,8 @@ export function* waitForWalletRestart(action) {
   });
 
   if (reload) {
+    const wallet = yield select((state) => state.wallet);
+    yield call(stopDroppedWallet, wallet);
     // Yield the start action again to reload the wallet. The start action of a passkey wallet has
     // no PIN.
     yield put(action.payload?.pin === undefined
@@ -765,7 +819,14 @@ export function* handleTx(action) {
   // need a list of tokens and addresses involved in the transaction from both the
   // inputs and outputs.
   const { inputs, outputs } = tx;
-  const data = [...inputs, ...outputs];
+  // Shielded outputs are not in tx.outputs. The wallet's own are the ones it decoded: their value
+  // is set, along with their token and address. Ownership is never decoded.address, which every
+  // shielded output carries. The wallet's shielded inputs are already in tx.inputs with their
+  // token and address.
+  const ownShieldedOutputs = (tx.shielded_outputs ?? []).filter(
+    (shieldedOutput) => shieldedOutput.value !== undefined,
+  );
+  const data = [...inputs, ...outputs, ...ownShieldedOutputs];
 
   // tokenAddressesMap should be an object { [tokenUid]: Set(addresses) }
   // txAddresses should be a Set with all addresses involved in the tx
@@ -889,6 +950,13 @@ export function* setupWalletListeners(wallet) {
       type: 'WALLET_NEW_TX',
       data,
     }));
+    // What the wallet can do with shielded outputs. start() emits it once, and the wallet emits
+    // it again whenever it changes.
+    const onShieldedCapability = (capability) => emitter({
+      type: types.SHIELDED_CAPABILITY_UPDATE,
+      data: capability,
+    });
+    wallet.on('shielded-capability', onShieldedCapability);
 
     return () => {
       // XXX: Is this cleanup working?
@@ -899,6 +967,7 @@ export function* setupWalletListeners(wallet) {
       wallet.removeListener('reload-data', listener);
       wallet.removeListener('update-tx', listener);
       wallet.removeListener('new-tx', listener);
+      wallet.removeListener('shielded-capability', onShieldedCapability);
     };
   });
 
@@ -1035,6 +1104,8 @@ export function* onStartWalletFailed() {
     // Same with wallet.conn
     wallet.conn.removeAllListeners();
   }
+
+  yield call(stopDroppedWallet, wallet);
 
   // Remove the wallet from redux so we can retry the
   // startWallet on the next PIN unlock

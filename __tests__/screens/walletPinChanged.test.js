@@ -20,6 +20,7 @@ import { STORE } from '../../src/store';
 import { ChangePin } from '../../src/screens/ChangePin';
 import { Security } from '../../src/screens/Security';
 import { PinScreen } from '../../src/screens/PinScreen';
+import { SHIELDED_UNLOCK_SOURCE } from '../../src/constants';
 /* eslint-enable import/first */
 
 // Each screen below re-encrypts the access data of the running wallet. A reload starts the wallet
@@ -130,6 +131,7 @@ describe('PinScreen as the lock screen of a running wallet', () => {
     startWalletRequested: jest.fn(),
     onExceptionCaptured: jest.fn(),
     walletPinChanged: jest.fn(),
+    shieldedViewUnlockRequested: jest.fn(),
   });
 
   test('hands the password over when the biometry migration re-encrypts the access data', async () => {
@@ -156,5 +158,58 @@ describe('PinScreen as the lock screen of a running wallet', () => {
 
     expect(props.walletPinChanged).not.toHaveBeenCalled();
     expect(props.unlockScreen).toHaveBeenCalled();
+  });
+
+  // A wallet that started with a stale PIN holds its shielded outputs locked until a PIN entry.
+  test('asks to unlock the shielded view with the password the biometry migration set', async () => {
+    jest.spyOn(STORE, 'handleDataMigration').mockResolvedValue(undefined);
+    biometricsMigration.mockResolvedValue(PASSWORD);
+    const props = lockScreenProps();
+    const screen = instantiate(PinScreen, props);
+
+    await screen.dismiss(PIN);
+
+    expect(props.shieldedViewUnlockRequested).toHaveBeenCalledWith({
+      pinCode: PASSWORD,
+      source: SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN,
+    });
+  });
+
+  test('asks to unlock the shielded view with the PIN when nothing was re-encrypted', async () => {
+    jest.spyOn(STORE, 'handleDataMigration').mockResolvedValue(undefined);
+    biometricsMigration.mockResolvedValue(PIN);
+    const props = lockScreenProps();
+    const screen = instantiate(PinScreen, props);
+
+    await screen.dismiss(PIN);
+
+    expect(props.shieldedViewUnlockRequested).toHaveBeenCalledWith({
+      pinCode: PIN,
+      source: SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN,
+    });
+  });
+});
+
+describe('PinScreen as the lock screen of a cold start', () => {
+  test('starts the wallet with the PIN, and asks for no unlock', async () => {
+    jest.spyOn(STORE, 'handleDataMigration').mockResolvedValue(undefined);
+    jest.spyOn(STORE, 'getWalletWords').mockResolvedValue('seed words');
+    biometricsMigration.mockResolvedValue(PIN);
+    const props = {
+      isLockScreen: true,
+      wallet: null,
+      unlockScreen: jest.fn(),
+      startWalletRequested: jest.fn(),
+      onExceptionCaptured: jest.fn(),
+      walletPinChanged: jest.fn(),
+      shieldedViewUnlockRequested: jest.fn(),
+    };
+    const screen = instantiate(PinScreen, props);
+
+    await screen.dismiss(PIN);
+
+    expect(props.startWalletRequested).toHaveBeenCalledWith({ words: 'seed words', pin: PIN });
+    expect(props.shieldedViewUnlockRequested).not.toHaveBeenCalled();
+    expect(props.walletPinChanged).not.toHaveBeenCalled();
   });
 });

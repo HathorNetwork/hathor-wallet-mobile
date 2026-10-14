@@ -725,7 +725,7 @@ msgstr ""
 #: src/screens/LoadHistoryScreen.js:51
 #: src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:176
-#: src/screens/PinScreen.js:289
+#: src/screens/PinScreen.js:299
 #: src/screens/TokenSwapLoadingScreen.js:90
 msgid "Try again"
 msgstr ""
@@ -750,7 +750,7 @@ msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28
 #: src/screens/PasskeyLockScreen.js:199
-#: src/screens/PinScreen.js:324
+#: src/screens/PinScreen.js:334
 #: src/screens/Settings.js:186
 msgid "Reset wallet"
 msgstr ""
@@ -828,26 +828,26 @@ msgstr ""
 msgid "Unlock"
 msgstr ""
 
-#: src/screens/PinScreen.js:278
+#: src/screens/PinScreen.js:288
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:78
+#: src/screens/PinScreen.js:80
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:79
+#: src/screens/PinScreen.js:81
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:315
+#: src/screens/PinScreen.js:325
 #: src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:355
-#: src/screens/PinScreen.js:359
+#: src/screens/PinScreen.js:365
+#: src/screens/PinScreen.js:369
 msgid "Biometry failed or canceled."
 msgstr ""
 
@@ -1559,11 +1559,11 @@ msgstr ""
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:29
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:34
 msgid "Network Pre-Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:131
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:147
 msgid "Customize"
 msgstr ""
 
@@ -1716,20 +1716,20 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/sagas/wallet.js:1051
+#: src/sagas/wallet.js:1122
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:1065
+#: src/sagas/wallet.js:1136
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1075
+#: src/sagas/wallet.js:1146
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:1091
+#: src/sagas/wallet.js:1162
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""

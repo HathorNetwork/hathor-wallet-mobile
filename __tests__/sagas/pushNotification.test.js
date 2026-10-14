@@ -468,6 +468,7 @@ describe('startWallet (passkey wallet)', () => {
 
   test('on the fullnode facade, registers both the tx signer and the private-key provider', () => {
     const fullnodeWallet = {
+      setHistorySyncMode: jest.fn(),
       setExternalTxSigningMethod: jest.fn(),
       setExternalPrivateKeyMethod: jest.fn(),
     };
@@ -486,7 +487,7 @@ describe('startWallet (passkey wallet)', () => {
 
   test('on a wallet-lib without setExternalPrivateKeyMethod, starts without a provider', () => {
     // wallet-lib 3.1.1: no setExternalPrivateKeyMethod / hasExternalPrivateKeyMethod.
-    const fullnodeWallet = { setExternalTxSigningMethod: jest.fn() };
+    const fullnodeWallet = { setHistorySyncMode: jest.fn(), setExternalTxSigningMethod: jest.fn() };
 
     HathorWallet.mockImplementation(() => fullnodeWallet);
 
