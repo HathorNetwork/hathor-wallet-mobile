@@ -18,7 +18,7 @@ import {
 import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
-import { numberUtils, constants } from '@hathor/wallet-lib';
+import { numberUtils } from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import TokenListCard from '../components/TokenListCard';
@@ -40,6 +40,7 @@ const ImportTokensScreen = () => {
   const loading = useSelector((state) => state.tokenImport.loading);
   const tokensBalance = useSelector((state) => state.tokensBalance);
   const explorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
   // Selection lives locally; the visible list is derived from the store so any
   // newly detected unregistered tokens appear without needing to re-enter the screen.
@@ -114,7 +115,7 @@ const ImportTokensScreen = () => {
       return `— ${token.symbol}`;
     }
     const available = entry.data?.available ?? 0n;
-    return `${numberUtils.prettyValue(available, constants.DECIMAL_PLACES)} ${token.symbol}`;
+    return `${numberUtils.prettyValue(available, decimalPlaces)} ${token.symbol}`;
   };
 
   const renderTokenItem = ({ item, index }) => (

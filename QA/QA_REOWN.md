@@ -23,14 +23,19 @@ On the screens that have a selectable response, look closely at the response dat
 1. On the Mobile Wallet initial screen (Dashboard), click the QR Code reader on the top right.
 1. Read the QR Code on the testing environment to start the process of connecting your wallet using the WalletConnect/ReOwn
 1. Reject the connection and check that the testing environment just closes the QR Code modal
-1. Start again but this time connect your wallet
+1. Start again and, on the "Connect to this dApp?" approval screen, check that the following disclosures are shown *before* connecting:
+   1. That the dApp will receive your wallet's public address
+   1. The line *"This dApp will also be able to view the balance of your tokens."* — connecting is what grants the dApp prompt-free read access to your token balances (see [Get Balance](#get-balance) below)
+1. Connect your wallet
 1. Check the testing dApp is now connected to your wallet through the "Hathor Bet" ReOwn session on the Wallet
 
 # Basic Wallet Interaction
 Retrieving data, signing messages and sending basic transactions.
 
 ## Get Wallet Information
-Just execute this request and have the Wallet app opened to automatically retrieve this data. No approval is necessary by the user.
+Just execute this request and have the Wallet app opened to automatically retrieve this data. This is **prompt-free** — no approval is necessary by the user.
+
+The response now also includes the wallet `balance`. The optional `tokens` parameter works exactly like in [Get Balance](#get-balance): omit it to include every registered token, or provide an array of UIDs to restrict the balance to that subset.
 
 ### Request
 ```json
@@ -43,12 +48,32 @@ Just execute this request and have the Wallet app opened to automatically retrie
 ```
 
 ### Response
+The `balance` array follows the same per-token shape as the [Get Balance](#get-balance) response (one entry per resolved token).
 ```json
 {
   "type": 12,
   "response": {
     "network": "testnet",
-    "address0": "{base58 address}"
+    "address0": "{base58 address}",
+    "balance": [
+      {
+        "token": {
+          "id": "00",
+          "name": "Hathor",
+          "symbol": "HTR"
+        },
+        "balance": {
+          "unlocked": "123456",
+          "locked": "0"
+        },
+        "transactions": 12,
+        "lockExpires": null,
+        "tokenAuthorities": {
+          "unlocked": { "mint": "0", "melt": "0" },
+          "locked": { "mint": "0", "melt": "0" }
+        }
+      }
+    ]
   }
 }
 ```
@@ -74,6 +99,79 @@ Just execute this request and have the Wallet app opened to automatically retrie
     "network": "testnet",
     "genesisHash": ""
   }
+}
+```
+
+## Get Balance
+Reading balances is **prompt-free**: a connected dApp receives this data automatically, with **no approval screen**.
+
+The `tokens` parameter is **optional**:
+- Omit it to return the balance of **every token registered in the wallet**.
+- Provide an array of token UIDs to restrict the response to those tokens only.
+
+### Request (1) - All registered tokens
+Omit `tokens` to get every registered token's balance. Have at least one custom token registered so the response contains more than just HTR.
+```json
+{
+  "method": "htr_getBalance",
+  "params": {
+    "network": "testnet"
+  }
+}
+```
+
+### Request (2) - Specific tokens
+```json
+{
+  "method": "htr_getBalance",
+  "params": {
+    "network": "testnet",
+    "tokens": ["00"]
+  }
+}
+```
+
+### Response
+The response is an array with one entry per resolved token. For Request (1) expect one entry for HTR (`"00"`) plus one for each registered custom token; for Request (2) only the requested tokens.
+```json
+{
+  "type": 3,
+  "response": [
+    {
+      "token": {
+        "id": "00",
+        "name": "Hathor",
+        "symbol": "HTR"
+      },
+      "balance": {
+        "unlocked": "123456",
+        "locked": "0"
+      },
+      "transactions": 12,
+      "lockExpires": null,
+      "tokenAuthorities": {
+        "unlocked": { "mint": "0", "melt": "0" },
+        "locked": { "mint": "0", "melt": "0" }
+      }
+    },
+    {
+      "token": {
+        "id": "{custom token UID}",
+        "name": "{custom token name}",
+        "symbol": "{custom token symbol}"
+      },
+      "balance": {
+        "unlocked": "100",
+        "locked": "0"
+      },
+      "transactions": 3,
+      "lockExpires": null,
+      "tokenAuthorities": {
+        "unlocked": { "mint": "0", "melt": "0" },
+        "locked": { "mint": "0", "melt": "0" }
+      }
+    }
+  ]
 }
 ```
 

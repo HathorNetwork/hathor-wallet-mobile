@@ -11,8 +11,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Image,
-  TouchableWithoutFeedback,
   TouchableHighlight,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -27,20 +25,30 @@ import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
 import OfflineBar from '../components/OfflineBar';
 import { HathorList } from '../components/HathorList';
-import { Strong, str2jsx, renderValue, isTokenNFT } from '../utils';
-import chevronUp from '../assets/icons/chevron-up.png';
-import chevronDown from '../assets/icons/chevron-down.png';
-import { IS_MULTI_TOKEN } from '../constants';
-import { fetchMoreHistory, updateTokenHistory } from '../actions';
+import {
+  Strong, str2jsx, renderValue, isTokenNFT, getDisplayAmountFormat, renderHomeValue,
+} from '../utils';
+import { DEFAULT_TOKEN, IS_MULTI_TOKEN } from '../constants';
+import { fetchMoreHistory, tokenFetchBalanceRequested, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
+import ShieldedBalanceSplit from '../components/Shielded/ShieldedBalanceSplit';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
+import { WALLET_STATUS } from '../sagas/wallet';
+import {
+  isShieldedAvailable,
+  isShieldedEnvironment,
+  selectShieldedCapability,
+} from '../shielded/gating';
+import { createPrivateBalanceRequests } from '../shielded/balance';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
 
 /**
  * txList {Array} array with transactions of the selected token
- * balance {Object} object with token balance {'available', 'locked'}
+ * balance {Object} object with token balance {'available', 'locked'}, and its private part
+ *   ('privateAvailable') where the balance split shows
+ * balanceLoaded {boolean} whether the wallet's start ended and the balance is loaded
  * selectedToken {string} uid of the selected token
  */
 const mapStateToProps = (state) => ({
@@ -50,10 +58,19 @@ const mapStateToProps = (state) => ({
   // If we are on this screen, we can be sure that the balance is loaded since we don't navigate
   // to it if the status is `failed`
   balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, { available: 0n, locked: 0n }),
+  // The screen stays mounted while a start or a reload clears and loads the balances again.
+  balanceLoaded: state.walletStartState === WALLET_STATUS.READY
+    && get(state.tokensBalance, `${state.selectedToken.uid}.status`) === TOKEN_DOWNLOAD_STATUS.READY,
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
   wallet: state.wallet,
   tokenMetadata: state.tokenMetadata,
+  amountFormat: getDisplayAmountFormat(state),
+  decimalPlaces: state.serverInfo?.decimal_places,
+  shieldedAvailable: isShieldedAvailable(state),
+  shieldedCapability: selectShieldedCapability(state),
+  shieldedEnvironment: isShieldedEnvironment(state),
+  nativeSymbol: state.serverInfo?.native_token?.symbol ?? DEFAULT_TOKEN.symbol,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -61,7 +78,8 @@ const mapDispatchToProps = (dispatch) => ({
   getHistory: (token) => dispatch({
     type: 'TOKEN_FETCH_HISTORY_REQUESTED',
     tokenId: token.uid,
-  })
+  }),
+  fetchBalance: (tokenUid) => dispatch(tokenFetchBalanceRequested(tokenUid, true)),
 });
 
 class MainScreen extends React.Component {
@@ -84,12 +102,15 @@ class MainScreen extends React.Component {
     },
   });
 
+  privateBalanceRequests = createPrivateBalanceRequests();
+
   closeTxDetails = () => {
     this.setState({ modal: null });
   }
 
   componentDidMount() {
     this.props.getHistory(this.props.selectedToken);
+    this.requestPrivateBalance();
   }
 
   // Refetch when the cached history is invalidated externally (e.g. by handleTx
@@ -100,6 +121,24 @@ class MainScreen extends React.Component {
     const status = get(this.props.tokenHistory, 'status');
     if (status === TOKEN_DOWNLOAD_STATUS.INVALIDATED && prevStatus !== status) {
       this.props.getHistory(this.props.selectedToken);
+    }
+    this.requestPrivateBalance();
+  }
+
+  /**
+   * A balance fetched while the balance split was off has no private part, as after the
+   * shielded UI flag turns on: fetch it again, once per token, once the wallet's start loaded
+   * it.
+   */
+  requestPrivateBalance() {
+    const tokenUid = this.props.selectedToken.uid;
+    if (this.privateBalanceRequests.shouldRequest({
+      splitAvailable: this.props.shieldedAvailable,
+      balanceLoaded: this.props.balanceLoaded,
+      tokenUid,
+      privateAvailable: this.props.balance.privateAvailable,
+    })) {
+      this.props.fetchBalance(tokenUid);
     }
   }
 
@@ -114,6 +153,11 @@ class MainScreen extends React.Component {
         token={this.props.selectedToken}
         onRequestClose={this.closeTxDetails}
         isNFT={this.isNFT()}
+        amountFormat={this.props.amountFormat}
+        decimalPlaces={this.props.decimalPlaces}
+        wallet={this.props.wallet}
+        showPrivacyFee={this.props.shieldedEnvironment}
+        nativeSymbol={this.props.nativeSymbol}
       />
     );
     this.setState({ modal: txDetailsModal });
@@ -197,6 +241,8 @@ class MainScreen extends React.Component {
             wallet={this.props.wallet}
             updateTokenHistory={this.props.updateTokenHistory}
             isNFT={this.isNFT()}
+            amountFormat={this.props.amountFormat}
+            decimalPlaces={this.props.decimalPlaces}
           />
         );
       }
@@ -235,6 +281,11 @@ class MainScreen extends React.Component {
           balance={this.props.balance}
           token={this.props.selectedToken}
           isNFT={this.isNFT()}
+          amountFormat={this.props.amountFormat}
+          decimalPlaces={this.props.decimalPlaces}
+          shieldedAvailable={this.props.shieldedAvailable}
+          shieldedCapability={this.props.shieldedCapability}
+          navigation={this.props.navigation}
         />
         {renderTxHistory()}
         <OfflineBar />
@@ -260,6 +311,8 @@ class TxHistoryView extends React.Component {
         token={this.props.token}
         onTxPress={this.props.onTxPress}
         isNFT={this.props.isNFT}
+        amountFormat={this.props.amountFormat}
+        decimalPlaces={this.props.decimalPlaces}
       />
     );
   }
@@ -327,6 +380,7 @@ class TxListItem extends React.Component {
     },
     middleView: {
       flex: 1,
+      maxWidth: '45%',
     },
     icon: {
       marginLeft: 16,
@@ -340,6 +394,9 @@ class TxListItem extends React.Component {
     balance: {
       fontSize: 16,
       marginRight: 16,
+      maxWidth: '45%',
+      marginLeft: 'auto',
+      textAlign: 'right',
     },
     description: {
       fontSize: 14,
@@ -469,7 +526,12 @@ class TxListItem extends React.Component {
     const style = this.getStyle(item);
     const image = this.getImage(item);
 
-    const balanceStr = renderValue(item.balance, this.props.isNFT);
+    const balanceStr = renderValue(
+      item.balance,
+      this.props.isNFT,
+      this.props.decimalPlaces,
+      this.props.amountFormat
+    );
     const description = item.getDescription(this.props.token);
     const { timestamp } = this.state;
     return (
@@ -484,34 +546,27 @@ class TxListItem extends React.Component {
             <Text style={style.secondaryText}>{timestamp}</Text>
             <Text style={[style.secondaryText, style.bold]}>{item.getVersionInfo()}</Text>
           </View>
-          <Text style={style.balance} numberOfLines={1}>{balanceStr}</Text>
+          <Text style={style.balance}>{balanceStr}</Text>
         </View>
       </TouchableHighlight>
     );
   }
 }
 
+/**
+ * The token's available balance, with its private and public parts where the shielded UI shows
+ * them. It doesn't expand: the locked balance isn't shown.
+ */
 class BalanceView extends React.Component {
-  state = {
-    isExpanded: false,
-  };
-
   style = StyleSheet.create({
-    toucharea: {
-      alignSelf: 'stretch',
-    },
     center: {
       alignItems: 'center',
     },
     view: {
       paddingTop: 32,
+      paddingBottom: 24,
       paddingLeft: 54,
       paddingRight: 54,
-    },
-    balanceLocked: {
-      marginTop: 24,
-      fontSize: 18,
-      fontWeight: 'bold',
     },
     balanceAvailable: {
       fontSize: 32,
@@ -523,48 +578,35 @@ class BalanceView extends React.Component {
       fontWeight: 'bold',
       color: COLORS.textColorShadow,
     },
-    expandButton: {
-      marginTop: 24,
-      marginBottom: 24,
-    },
   });
 
-  toggleExpanded = () => {
-    this.setState((prevState) => ({ isExpanded: !prevState.isExpanded }));
-  }
-
-  renderExpanded() {
-    const availableStr = renderValue(this.props.balance.available, this.props.isNFT);
-    const lockedStr = renderValue(this.props.balance.locked, this.props.isNFT);
-    const { token } = this.props;
-    const { style } = this;
+  /**
+   * The private and public parts of the available balance, where the shielded UI shows them.
+   */
+  renderSplit() {
+    if (!this.props.shieldedAvailable) {
+      return null;
+    }
     return (
-      <View style={style.center}>
-        <Text
-          style={style.balanceAvailable}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
-          {`${availableStr} ${token.symbol}`}
-        </Text>
-        <Text style={style.text1}>{t`Available Balance`}</Text>
-        <Text
-          style={style.balanceLocked}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
-          {`${lockedStr} ${token.symbol}`}
-        </Text>
-        <Text style={style.text1}>{t`Locked`}</Text>
-        <Image style={style.expandButton} source={chevronUp} width={12} height={7} />
-      </View>
+      <ShieldedBalanceSplit
+        available={this.props.balance.available}
+        privateAvailable={this.props.balance.privateAvailable}
+        capability={this.props.shieldedCapability}
+        isNFT={this.props.isNFT}
+        decimalPlaces={this.props.decimalPlaces}
+        amountFormat={this.props.amountFormat}
+        navigation={this.props.navigation}
+      />
     );
   }
 
   renderSimple() {
-    const availableStr = renderValue(this.props.balance.available, this.props.isNFT);
+    const availableStr = renderHomeValue(
+      this.props.balance.available,
+      this.props.isNFT,
+      this.props.decimalPlaces,
+      this.props.amountFormat
+    );
     const { token } = this.props;
     const { style } = this;
     return (
@@ -578,7 +620,7 @@ class BalanceView extends React.Component {
           {`${availableStr} ${token.symbol}`}
         </Text>
         <Text style={style.text1}>{t`Available Balance`}</Text>
-        <Image style={style.expandButton} source={chevronDown} width={12} height={7} />
+        {this.renderSplit()}
       </View>
     );
   }
@@ -586,13 +628,9 @@ class BalanceView extends React.Component {
   render() {
     const { style } = this;
     return (
-      <TouchableWithoutFeedback style={style.toucharea} onPress={this.toggleExpanded}>
-        <View style={style.view}>
-          {!this.state.isExpanded
-            ? this.renderSimple()
-            : this.renderExpanded()}
-        </View>
-      </TouchableWithoutFeedback>
+      <View style={style.view}>
+        {this.renderSimple()}
+      </View>
     );
   }
 }

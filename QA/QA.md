@@ -1,8 +1,10 @@
 # Suggested Test Sequence
 The main test sequence should be executed on the `testnet` network by default, unless a specific test requires another network.
 
-### Fee feature flag
-1. Make sure `FBT_FEATURE_TOGGLE` is active.
+### Feature flags
+Make sure the following feature flags are active.
+1. `FBT_FEATURE_TOGGLE` is active.
+1. `SINGLE_ADDRESS_FEATURE_TOGGLE` is active.
 
 ### App update
 1. Load the last release of the app and start a wallet. You can confirm the version on Settings -> About.
@@ -42,8 +44,19 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Repeat the steps
 1. The Next button should not be clickable. Also, Network fee value should be 0.01 HTR (flat) and your balance should turn red.
 
+### Address mode
+
+Run these tests early, while the wallet still has no transactions on addresses other than index `0`. Reuse the same wallet for the steps below.
+
+Follow the [Address Mode QA](QA_ADDRESS_MODE.md) steps.
+
+After completing the suite, leave the wallet on `testnet` with the "Multi Address" mode selected so subsequent tests have a consistent setup.
+
+### Import tokens (empty wallet)
+1. Go to "Settings" -> Import tokens
+1. You should see the message "No tokens available to import", click in the button you should be redirected to the register token screen.
+
 ### Receive Tests
-1. Go to "Settings" -> "Network Settings" and change your network to `testnet`
 1. Go to the Receive Screen and check the QR Code.
 1. Click on the address to copy it.
 1. Click on New address and check that a new address was generated. The QRCode must update.
@@ -51,23 +64,22 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Make sure the copied address, the shared address and the parsed QR Code image are the same.
 
 ### Send Tests
-1. Go to the Send Screen and check whether the camera loads correctly.
-1. Click on Manual Info.
-1. Type any random text and click Next. It must show an error message.
+1. Go to the Send Screen. It opens on the address input, "SEND TOKENS", with a QR code icon at the top right and a field that says "Paste or type address".
+1. Tap the QR code icon and check whether the camera loads correctly. Scan the QR code of an address: the address input shows it.
+1. Replace it with any random text: Next stays disabled.
 1. Enter the address `Wdf7xQtKDNefhd6KTS68Vna1u4wUAyHjLQ` (or an address from your other wallet) and click Next.
 1. Click on the HTR to change the token. Then, select HTR.
 1. Type 100 HTR, click Next, and check the insufficient funds error.
-1. Type 2 HTR, click Next, and check the send summary.
+1. Type 2 HTR, click Next, and check the send summary: "Transaction summary" over the card, To, Network Fee with "No fee", and the Total in bold.
 1. Click on Send and type a wrong PIN Code.
-1. Finally, type a correct PIN Code and check the confirmation.
+1. Finally, type a correct PIN Code and check the confirmation. Dismiss it: back on the Dashboard, open Send again, and it starts at an empty address input.
 1. When back on the Dashboard screen, check the camera is turned off. Point it to a valid QR Code and it should not trigger a "Send Transaction" flow.
 
 ### Transaction History Tests
 1. Verify Dashboard displays HTR token by default
 1. Check balance display
-1. Tap to expand balance details (Available and Locked when expanded)
+1. Tap the balance: it doesn't expand. It shows the available balance, under "Available Balance", and no Locked balance
 1. Verify network name is shown
-1. Tap again to collapse
 1. See the HTR History. Your balance should be 8.00 HTR.
 1. Check that you have two transactions.
 1. Verify positive balances are in green
@@ -169,11 +181,10 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Go to the Send Screen and enter the address of another test wallet.
 1. Change the token to FBT and continue.
 1. Type 100 FBT (this number should be exactly the amount used to create the token, the idea is to have no change).
-1. Check the network fee badge, it should be `0.01 HTR`
-1. Check the network fee tooltip, it should show the fee token message and a `Read more` link.
-1. Open the link and check if it's the fee tokens rfc.
+1. Check the Fees row, it should be `0.01 HTR`. Tap it: it expands into Network fee, `0.01 HTR`.
+1. Tap the info icon of the Fees row: the "Transaction fees" sheet shows.
 1. Back to the amount screen and type 50 FBT (less than the total amount used to create the token)
-1. Check if the network fee changed to `0.02 HTR` meaning we have a change output
+1. Check if the fees changed to `0.02 HTR` meaning we have a change output
 1. send it
 
 #### Sending a fee token without enough htr to cover network fee
@@ -221,6 +232,20 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Use the words saved before.
 1. Click on Start the wallet, and wait for it to be initialized. Validate your transactions are loaded.
 
+#### Import tokens (imported wallet with tokens)
+1. In the Tokens Screen you should see the import tokens banner
+1. Go to "Settings" -> Import tokens
+1. You should see the message "No tokens available to import", click in the button you should be redirected to the register token screen.
+1. The import tokens banner should be visible after a couple of seconds in the Tokens Screen.
+1. Select tokens to be registered, keep at least one unregistered. Complete the flow
+1. The tokens should appear in your Tokens Screen
+1. The banner should still open, close it.
+1. Go to "Settings" -> Import tokens -> import all of them
+1. Go to "Settings" -> Import tokens -> The nothing to import message should appear.
+1. Change the network to mainnet again
+1. The registered tokens should not be there
+1. Back to testnet, if you imported all the tokens, the banner should not show.
+
 # Fullnode Facade tests
 
 1. Go to Settings screen and copy the Unique app identifier
@@ -248,6 +273,12 @@ Tests the interaction of distributed apps with the Mobile Wallet. Some are actua
 
 ### Token Swap
 Tests the Token Swap feature. Follow the [Token Swap QA](QA_TOKEN_SWAP.md)
+
+### Address Mode
+Tests the single/multi address mode behavior and network-dependent defaults. Follow the [Address Mode QA](QA_ADDRESS_MODE.md)
+
+### Shielded Outputs
+Tests the shielded crypto provider, the Shielded Testnet preset and private funds in the balance. Follow the [Shielded Outputs QA](QA_SHIELDED.md)
 
 # Development Environment tests
 The following tests are executed only if for the development environment, with access to source code and building.

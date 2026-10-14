@@ -9,6 +9,7 @@ import {
   Connection,
   HathorWallet,
   HathorWalletServiceWallet,
+  HistorySyncMode,
   Network,
   SCANNING_POLICY,
   constants as hathorLibConstants,
@@ -42,8 +43,17 @@ import {
   ADDRESS_MODE,
   addressModeKey,
   networkSettingsKeyMap,
+  AMOUNT_FORMAT_KEY,
 } from '../constants';
-import { STORE } from '../store';
+import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../store';
+import { makePasskeyPrivateKeyProvider, makePasskeyTxSigner } from '../passkey/passkeySigner';
+import {
+  facadeSupportsExternalSigner,
+  isWalletServiceRegistered,
+  markWalletServiceRegistered,
+  passkeyFullTokenHook,
+  startFailureMeansUnregistered,
+} from '../passkey/walletServiceRegistration';
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
@@ -77,6 +87,10 @@ import {
   setFullNodeNetworkName,
   setAddressMode,
   tokenImportFetchRequested,
+  setAmountFormat,
+  privacyDefaultModeSet,
+  startWalletRequested,
+  shieldedCapabilityUpdate,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -90,10 +104,18 @@ import {
   progressiveRetryRequest,
 } from './helpers';
 import { monitorFeatureFlags } from './featureToggle';
+import { registerShieldedCryptoProvider } from './shieldedProvider';
 import {
   getAllAddresses,
   getFirstAddress,
+  normalizeAmountFormat,
 } from '../utils';
+import {
+  isShieldedEnvironment,
+  isShieldedNetwork,
+  shouldRegisterShieldedProvider,
+} from '../shielded/gating';
+import { normalizePrivacyDefaultMode } from '../utils/privacy';
 import { logger } from '../logger';
 
 const log = logger('wallet');
@@ -115,13 +137,23 @@ export const EXPIRE_WS_IGNORE_FLAG = 24 * 60 * 60 * 1000; // 24 hours
  * tx on addresses with index > 0 during the first connection, it changes to
  * GAP_LIMIT. We sync after wallet.start (see startWallet).
  *
+ * A wallet with a shielded chain always gets MULTI: wallet-lib's check of addresses past index 0
+ * (hasTxOutsideFirstAddress) only looks at the legacy chain, so in SINGLE the private funds
+ * received past index 0 would drop out of the balance.
+ *
  * @param {object} opts
  * @param {boolean} opts.singleAddressFeatureEnabled
  * @param {string|null} opts.storedAddressMode  ADDRESS_MODE.SINGLE, ADDRESS_MODE.MULTI, or null
+ * @param {boolean} [opts.shieldedChainActive] Whether the start registers the shielded crypto
+ *   provider, which gives the wallet its shielded chain
  * @returns {string} ADDRESS_MODE.SINGLE or ADDRESS_MODE.MULTI
  */
-export function decideAddressMode({ singleAddressFeatureEnabled, storedAddressMode }) {
-  if (!singleAddressFeatureEnabled) {
+export function decideAddressMode({
+  singleAddressFeatureEnabled,
+  storedAddressMode,
+  shieldedChainActive = false,
+}) {
+  if (!singleAddressFeatureEnabled || shieldedChainActive) {
     return ADDRESS_MODE.MULTI;
   }
   if (storedAddressMode === ADDRESS_MODE.MULTI) {
@@ -170,6 +202,13 @@ export function* isWalletServiceEnabled() {
 
   // At this point, the networkSettings have already been set by startWallet.
   const networkSettings = yield select(getNetworkSettings);
+  if (isShieldedNetwork(networkSettings)) {
+    // The shielded testnet runs on the fullnode facade only, even when a custom network gives a
+    // wallet-service URL: the wallet-service facade has no shielded support, so the wallet's
+    // private funds would disappear there.
+    yield put(setUseWalletService(false));
+    return false;
+  }
   if (walletServiceEnabled && isEmpty(networkSettings.walletServiceUrl)) {
     // In case of an empty value for walletServiceUrl, it means the user
     // doesn't intend to use the Wallet Service. Therefore, we need to force
@@ -181,11 +220,52 @@ export function* isWalletServiceEnabled() {
   return walletServiceEnabled;
 }
 
+/**
+ * `requestPassword` for a passkey wallet on the wallet-service facade. A passkey wallet has no PIN,
+ * so this must never run: with an external signer and an xpub, wallet-lib renews tokens read-only
+ * and signs through the passkey. Reject (and log) instead of showing a PIN screen that can't work.
+ */
+export function passkeyRequestPassword() {
+  log.error('wallet-lib requested a PIN for a passkey wallet; refusing.');
+  return Promise.reject(new Error('A PIN was requested for a passkey wallet.'));
+}
+
+/**
+ * Loads the default privacy mode the device keeps into the redux state: the mode a send starts
+ * in. A wallet reset keeps it, and a device with none saved gets DEFAULT_PRIVACY_MODE.
+ */
+export function* loadPrivacyDefaultMode() {
+  const stored = STORE.getItem(PRIVACY_DEFAULT_MODE_KEY);
+  yield put(privacyDefaultModeSet(normalizePrivacyDefaultMode(stored)));
+}
+
 export function* startWallet(action) {
+  // Default the payload: passkey start paths (onboarding + unlock) dispatch startWalletRequested()
+  // with no argument and read everything from the persisted walletMeta below, so action.payload is
+  // undefined there — destructuring it directly would throw before startup. PIN callers still pass
+  // { words, pin }.
   const {
     words,
     pin,
-  } = action.payload;
+  } = action.payload ?? {};
+
+  // Passkey (xpub-only) wallets carry no seed and no PIN: the saga re-reads the persisted
+  // metadata instead of trusting action payloads with sensitive data.
+  const walletMeta = STORE.getWalletMeta();
+  const isPasskeyWallet = walletMeta?.walletType === 'passkey';
+
+  // A passkey wallet boots read-only from this xpub; if it is missing/corrupted, fail fast with a
+  // clear message instead of handing `{ xpub: undefined }` to HathorWallet and surfacing an opaque
+  // wallet-lib error later. (makePasskeyTxSigner guards the same case at sign time via
+  // PasskeyMetadataMissingError.) The xpub is this wallet's ONLY persisted identity, so a missing
+  // one is storage corruption, not a network error — report it to Sentry explicitly, since this
+  // throw otherwise lands in the global saga errorHandler which never captures and only renders the
+  // generic "error connecting to the server" screen.
+  if (isPasskeyWallet && !walletMeta?.xpub) {
+    const xpubError = new Error('Passkey wallet metadata is missing its xpub.');
+    yield put(onExceptionCaptured(xpubError, false));
+    throw xpubError;
+  }
 
   // clean memory storage and metadata before starting the wallet.
   // This should be cleaned when stopping the wallet,
@@ -193,6 +273,11 @@ export function* startWallet(action) {
   const storage = STORE.getStorage();
   yield call([storage.store, storage.store.cleanMetadata]); // clean metadata on memory
   yield call([storage, storage.cleanStorage], true); // clean transaction history
+
+  // startWallet re-runs on every unlock, so re-apply the persisted amount format
+  // onto the freshly-initialized redux state (which defaults to Expanded).
+  const storedAmountFormat = normalizeAmountFormat(STORE.getItem(AMOUNT_FORMAT_KEY));
+  yield put(setAmountFormat(storedAmountFormat));
 
   // As this is a core setting for the wallet, it should be loaded first.
   // Network settings either from store or redux state
@@ -216,6 +301,10 @@ export function* startWallet(action) {
     networkSettings = yield select(getNetworkSettings);
   }
 
+  // startWallet re-runs on every unlock and reload, a wallet reset's new wallet included, so it
+  // loads the default privacy mode the device keeps.
+  yield call(loadPrivacyDefaultMode);
+
   // Refresh the unleash client context so feature toggles reflect the current
   // network. Required after wallet reset, since onResetWalletSuccess preserves
   // state.featureToggles to avoid re-initialization, leaving stale values from
@@ -223,7 +312,17 @@ export function* startWallet(action) {
   yield call(monitorFeatureFlags, 0, false);
 
   const uniqueDeviceId = getUniqueId();
-  const useWalletService = yield call(isWalletServiceEnabled);
+  const walletServiceEnabled = yield call(isWalletServiceEnabled);
+  // Passkey wallets run on the wallet-service facade only when it can serve them: the wallet must
+  // already exist there (registration needs the words once — see walletServiceRegistration.js;
+  // starting an unregistered wallet would poll for a minute and fail) and the bundled wallet-lib
+  // must support an external signer on that facade. Otherwise they stay on the fullnode facade.
+  // Push notifications work on both (see pushNotification.js loadWallet).
+  const useWalletService = isPasskeyWallet
+    ? walletServiceEnabled
+      && isWalletServiceRegistered(networkSettings.walletServiceUrl)
+      && facadeSupportsExternalSigner()
+    : walletServiceEnabled;
   const usePushNotification = yield call(isPushNotificationEnabled);
 
   yield put(setUseWalletService(useWalletService));
@@ -239,9 +338,17 @@ export function* startWallet(action) {
     SINGLE_ADDRESS_FEATURE_TOGGLE,
   );
   const storedAddressMode = STORE.getItem(addressModeKey(networkSettings.network));
+  // The start that registers the shielded crypto provider gives the wallet a shielded chain,
+  // which keeps it in multi-address mode.
+  const shieldedChainActive = shouldRegisterShieldedProvider({
+    networkSettings,
+    useWalletService,
+    isPasskeyWallet,
+  });
   const attemptedAddressMode = decideAddressMode({
     singleAddressFeatureEnabled,
     storedAddressMode,
+    shieldedChainActive,
   });
 
   const singleAddressMode = attemptedAddressMode === ADDRESS_MODE.SINGLE;
@@ -260,13 +367,29 @@ export function* startWallet(action) {
     config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
     config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
 
-    wallet = new HathorWalletServiceWallet({
-      requestPassword: () => showPinScreenForResult(dispatch),
-      seed: words,
-      network,
-      storage,
-      singleAddressMode,
-    });
+    if (isPasskeyWallet) {
+      // Xpub-only on the facade: browsing uses read-only tokens. Each send's passkey ceremony also
+      // derives the auth key and mints a full token for that send (onRootKey), so the auth key is
+      // never stored and a send still costs one Face ID.
+      wallet = new HathorWalletServiceWallet({
+        requestPassword: passkeyRequestPassword,
+        xpub: walletMeta.xpub,
+        network,
+        storage,
+        singleAddressMode,
+      });
+      wallet.setExternalTxSigningMethod(makePasskeyTxSigner({
+        onRootKey: passkeyFullTokenHook(wallet),
+      }));
+    } else {
+      wallet = new HathorWalletServiceWallet({
+        requestPassword: () => showPinScreenForResult(dispatch),
+        seed: words,
+        network,
+        storage,
+        singleAddressMode,
+      });
+    }
   } else {
     const connection = new Connection({
       network: networkSettings.network,
@@ -277,7 +400,9 @@ export function* startWallet(action) {
     // We will save the access data on the persistent async storage
     // To allow starting the wallet again
     const walletConfig = {
-      seed: words,
+      // Passkey wallets start read-only from the stored xpub; the seed only ever exists
+      // ephemerally inside the passkey signer during a signature ceremony.
+      ...(isPasskeyWallet ? { xpub: walletMeta.xpub } : { seed: words }),
       storage,
       connection,
       beforeReloadCallback: () => {
@@ -291,6 +416,31 @@ export function* startWallet(action) {
         },
     };
     wallet = new HathorWallet(walletConfig);
+    if (isPasskeyWallet) {
+      // Register the external signer before the first send/sign: it flips isSignedExternally so the
+      // read-only guards allow sending, with signatures produced by the passkey ceremony instead of
+      // a stored key. wallet-lib re-checks isReadonly() per operation, so ordering relative to
+      // start() is not enforced — we do it here, before start(), as a safe convention.
+      wallet.setExternalTxSigningMethod(makePasskeyTxSigner());
+    }
+
+    // Only the polling sync watches the addresses shielded outputs are paid to. It is already
+    // wallet-lib's default: set it so that a change of default can't hide private receives.
+    wallet.setHistorySyncMode(HistorySyncMode.POLLING_HTTP_API);
+
+    // The provider must be set before start(), which loads and decodes the shielded history.
+    // On the shielded testnet it is registered whether or not the shielded UI flag is on.
+    if (shouldRegisterShieldedProvider({ networkSettings, useWalletService, isPasskeyWallet })) {
+      yield call(registerShieldedCryptoProvider, wallet);
+    }
+  }
+
+  if (isPasskeyWallet && typeof wallet.setExternalPrivateKeyMethod === 'function') {
+    // Message and oracle-data signing get the address key from the passkey too: the Reown flow
+    // authorizes each signature with one ceremony (authorizePasskeyPrivateKey) and this provider
+    // hands that key to wallet-lib. On a wallet-lib without external private-key provider support
+    // this is skipped, and the Reown saga keeps rejecting those requests.
+    wallet.setExternalPrivateKeyMethod(makePasskeyPrivateKeyProvider());
   }
 
   // Extra wallet configuration based on customNetwork
@@ -315,10 +465,17 @@ export function* startWallet(action) {
   try {
     // XXX: This comes as undefined when the facade is the wallet-service.
     // We need to update this when we start returning something there.
-    const serverInfo = yield call(wallet.start.bind(wallet), {
-      pinCode: pin,
-      password: pin,
-    });
+    // The xpub-only (passkey) start takes no pinCode/password — there is nothing to decrypt. On the
+    // wallet-service facade it is startReadOnly(): the wallet already exists there (registered).
+    let serverInfo;
+    if (isPasskeyWallet && useWalletService) {
+      serverInfo = yield call([wallet, wallet.startReadOnly]);
+    } else {
+      serverInfo = yield call(
+        wallet.start.bind(wallet),
+        isPasskeyWallet ? {} : { pinCode: pin, password: pin },
+      );
+    }
 
     yield put(setServerInfo(serverInfo));
 
@@ -372,6 +529,13 @@ export function* startWallet(action) {
       // This might be a temporary issue on the wallet-service side, we should
       // store the timestamp of when this flag was set, so we're able to expire it
       yield call(() => AsyncStorage.setItem(IGNORE_WS_TOGGLE_FLAG, `${new Date().getTime()}`));
+
+      if (isPasskeyWallet && startFailureMeansUnregistered(e)) {
+        // The wallet-service no longer knows this wallet (e.g. a reset service): forget the
+        // registration so the next unlock ceremony registers it again. A transient failure keeps
+        // it: the fallback flag above already covers that.
+        yield call(markWalletServiceRegistered, networkSettings.walletServiceUrl, false);
+      }
     }
 
     yield put(startWalletFailed());
@@ -391,6 +555,17 @@ export function* startWallet(action) {
     }
   }
 
+  // The listener above gets every capability change from now on. Read the capability once the
+  // wallet is ready too, as the event fires only when the capability changes.
+  if (typeof wallet.getShieldedCapability === 'function') {
+    try {
+      const capability = yield call([wallet, wallet.getShieldedCapability]);
+      yield put(shieldedCapabilityUpdate(capability));
+    } catch (e) {
+      log.error('Failed to read the shielded capability.', e);
+    }
+  }
+
   // After connection, confirm the actual scan policy. The wallet-lib changes
   // SINGLE_ADDRESS → GAP_LIMIT during the first connection if it finds tx on
   // addresses with index > 0. Persist the *real* mode here — single point of
@@ -401,7 +576,11 @@ export function* startWallet(action) {
     : ADDRESS_MODE.MULTI;
 
   yield put(setAddressMode(finalAddressMode));
-  STORE.setItem(addressModeKey(networkSettings.network), finalAddressMode);
+  // A mode the shielded chain forced is not the user's: the shielded testnet's network is
+  // 'testnet', so it would overwrite the mode stored for the public testnet.
+  if (!shieldedChainActive) {
+    STORE.setItem(addressModeKey(networkSettings.network), finalAddressMode);
+  }
 
   try {
     yield call(loadTokens);
@@ -424,6 +603,66 @@ export function* startWallet(action) {
   // So, if a new START_WALLET_REQUESTED action is dispatched or a RELOAD_WALLET_REQUESTED
   // is dispatched, we need to cleanup all attached forks (that will cause the event
   // listeners to be cleaned).
+  yield call(waitForWalletRestart, action);
+}
+
+/**
+ * Stops the fullnode-facade wallet that a reload or a failed start drops, keeping its storage
+ * (cleanStorage: false): the next start builds its own. Without it, the dropped wallet keeps its
+ * websocket open and its shielded scan key in memory. A wallet that is already stopped, as after
+ * a network change, and a wallet-service wallet are left as they are. A stop that fails is
+ * logged, and the caller goes on.
+ *
+ * @param {Object|null} wallet The wallet the app drops
+ */
+export function* stopDroppedWallet(wallet) {
+  if (!(wallet instanceof HathorWallet) || wallet.walletStopped) {
+    return;
+  }
+  try {
+    yield call([wallet, wallet.stop], { cleanStorage: false });
+  } catch (e) {
+    log.error('Failed to stop the wallet the app drops.', e);
+  }
+}
+
+/**
+ * The PIN that a reload starts the wallet with: the PIN of the last start request, or of a
+ * WALLET_PIN_CHANGED after it. A PIN change or a safe-biometry switch re-encrypts the access data,
+ * and start() decrypts it with the PIN it is given. The PIN is kept here, never in the redux state,
+ * and a wallet reset clears it.
+ */
+let restartPin;
+
+/**
+ * Keeps restartPin up to date. It runs as long as the app does: a PIN change can land while a
+ * start is still loading, before waitForWalletRestart runs.
+ */
+export function* trackRestartPin() {
+  yield takeEvery(
+    [types.START_WALLET_REQUESTED, types.WALLET_PIN_CHANGED, types.RESET_WALLET],
+    (action) => {
+      switch (action.type) {
+        case types.WALLET_PIN_CHANGED:
+          restartPin = action.payload;
+          break;
+        case types.RESET_WALLET:
+          restartPin = null;
+          break;
+        default:
+          restartPin = action.payload?.pin;
+      }
+    },
+  );
+}
+
+/**
+ * Waits for the request that ends the running wallet: a new start, a wallet reset or a reload.
+ * A reload stops the running wallet, then dispatches the start action again, with restartPin.
+ *
+ * @param {Object} action The START_WALLET_REQUESTED action that started the running wallet
+ */
+export function* waitForWalletRestart(action) {
   const { reload } = yield race({
     start: take([
       types.START_WALLET_REQUESTED,
@@ -433,8 +672,13 @@ export function* startWallet(action) {
   });
 
   if (reload) {
-    // Yield the same action again to reload the wallet
-    yield put(action);
+    const wallet = yield select((state) => state.wallet);
+    yield call(stopDroppedWallet, wallet);
+    // Yield the start action again to reload the wallet. The start action of a passkey wallet has
+    // no PIN.
+    yield put(action.payload?.pin === undefined
+      ? action
+      : startWalletRequested({ ...action.payload, pin: restartPin }));
   }
 }
 
@@ -616,7 +860,14 @@ export function* handleTx(action) {
   // need a list of tokens and addresses involved in the transaction from both the
   // inputs and outputs.
   const { inputs, outputs } = tx;
-  const data = [...inputs, ...outputs];
+  // Shielded outputs are not in tx.outputs. The wallet's own are the ones it decoded: their value
+  // is set, along with their token and address. Ownership is never decoded.address, which every
+  // shielded output carries. The wallet's shielded inputs are already in tx.inputs with their
+  // token and address.
+  const ownShieldedOutputs = (tx.shielded_outputs ?? []).filter(
+    (shieldedOutput) => shieldedOutput.value !== undefined,
+  );
+  const data = [...inputs, ...outputs, ...ownShieldedOutputs];
 
   // tokenAddressesMap should be an object { [tokenUid]: Set(addresses) }
   // txAddresses should be a Set with all addresses involved in the tx
@@ -740,6 +991,13 @@ export function* setupWalletListeners(wallet) {
       type: 'WALLET_NEW_TX',
       data,
     }));
+    // What the wallet can do with shielded outputs. start() emits it once, and the wallet emits
+    // it again whenever it changes.
+    const onShieldedCapability = (capability) => emitter({
+      type: types.SHIELDED_CAPABILITY_UPDATE,
+      data: capability,
+    });
+    wallet.on('shielded-capability', onShieldedCapability);
 
     return () => {
       // XXX: Is this cleanup working?
@@ -750,6 +1008,7 @@ export function* setupWalletListeners(wallet) {
       wallet.removeListener('reload-data', listener);
       wallet.removeListener('update-tx', listener);
       wallet.removeListener('new-tx', listener);
+      wallet.removeListener('shielded-capability', onShieldedCapability);
     };
   });
 
@@ -887,16 +1146,30 @@ export function* onStartWalletFailed() {
     wallet.conn.removeAllListeners();
   }
 
+  yield call(stopDroppedWallet, wallet);
+
   // Remove the wallet from redux so we can retry the
   // startWallet on the next PIN unlock
   yield put(setWallet(null));
 }
 
+/**
+ * Puts the wallet's current legacy address as the shared address (lastSharedAddress). In the
+ * shielded environment the shielded saga puts it instead: the wallet's current shielded
+ * address, or none while it can't be read, never the legacy one.
+ */
 export function* refreshSharedAddress() {
+  if (yield select(isShieldedEnvironment)) {
+    return;
+  }
   const wallet = yield select((state) => state.wallet);
 
   const { address, index } = yield call(() => wallet.getCurrentAddress());
 
+  // The shielded UI may have turned on during the read.
+  if (yield select(isShieldedEnvironment)) {
+    return;
+  }
   yield put(sharedAddressUpdate(address, index));
 }
 
@@ -952,6 +1225,7 @@ export function* fetchFirstWalletAddress() {
 
 export function* saga() {
   yield all([
+    fork(trackRestartPin),
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),

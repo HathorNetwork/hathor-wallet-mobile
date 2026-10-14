@@ -147,6 +147,39 @@ const ADDRESS_MODE_KEY_PREFIX = 'wallet:address_mode:';
 export const addressModeKey = (network) => `${ADDRESS_MODE_KEY_PREFIX}${network}`;
 
 /**
+ * What a send hides:
+ * - PUBLIC: nothing, the amount and the token are visible;
+ * - HIDE_AMOUNT: the amount (an amount-shielded output);
+ * - PRIVATE: the amount and the token (a fully shielded output).
+ *
+ * A default mode can be stored as a user preference, so keep these values stable.
+ */
+export const PRIVACY_MODE = {
+  PUBLIC: 'public',
+  HIDE_AMOUNT: 'hide_amount',
+  PRIVATE: 'private',
+};
+
+/**
+ * The privacy mode a send starts in, until the user saves another default in Settings, under
+ * Privacy.
+ */
+export const DEFAULT_PRIVACY_MODE = PRIVACY_MODE.PUBLIC;
+
+/**
+ * Amount display format (wallet-wide, network-independent).
+ */
+export const AMOUNT_FORMAT = {
+  EXPANDED: 'expanded',
+  COMPRESSED: 'compressed',
+};
+
+export const AMOUNT_FORMAT_DEFAULT = AMOUNT_FORMAT.EXPANDED;
+
+// 'wallet:' prefix: STORE.clearItems(true) sweeps it on resetWallet, so it resets to Expanded.
+export const AMOUNT_FORMAT_KEY = 'wallet:amount_format';
+
+/**
  * this is the message key for localization of new transaction when show amount is enabled
  */
 export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED = 'new_transaction_received_description_with_tokens';
@@ -197,6 +230,17 @@ export const SAFE_BIOMETRY_MODE_FEATURE_TOGGLE = 'safe-biometry-mode.rollout'
 export const TOKEN_SWAP_FEATURE_TOGGLE = 'token-swap.rollout';
 export const FBT_FEATURE_TOGGLE = 'fee-based-tokens.rollout';
 export const SINGLE_ADDRESS_FEATURE_TOGGLE = 'single-address-mobile.rollout';
+export const PASSKEY_ONBOARDING_FEATURE_TOGGLE = 'passkey-onboarding.rollout';
+export const AMOUNT_FORMAT_FEATURE_TOGGLE = 'amount-format-mobile.rollout';
+/**
+ * Shows the shielded outputs UI, the Shielded Testnet preset included. It is off by default: the
+ * Unleash proxy leaves out the flags it doesn't enable, so a flag it doesn't return reads as off,
+ * and Unleash turns it on only where it targets it, such as the `testnet-shielded-outputs`
+ * network. The UI's own gates also keep the rest of the shielded UI to the shielded testnet. It
+ * doesn't decide where the shielded crypto provider is registered: on the shielded testnet it is
+ * registered either way.
+ */
+export const SHIELDED_OUTPUTS_FEATURE_TOGGLE = 'shielded-outputs.rollout';
 
 /**
  * Default feature toggle values.
@@ -216,7 +260,26 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [TOKEN_SWAP_FEATURE_TOGGLE]: false,
   [FBT_FEATURE_TOGGLE]: false,
   [SINGLE_ADDRESS_FEATURE_TOGGLE]: false,
+  [PASSKEY_ONBOARDING_FEATURE_TOGGLE]: false,
+  [AMOUNT_FORMAT_FEATURE_TOGGLE]: false,
+  [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false,
 };
+
+/**
+ * Passkey (PRF) onboarding config (passkey PRF secret -> BIP39 seed).
+ *
+ * PASSKEY_RP_ID MUST be a domain Hathor controls with the Associated Domains entitlement
+ * (`webcredentials:<PASSKEY_RP_ID>`), a hosted
+ * https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association and a hosted
+ * https://<PASSKEY_RP_ID>/.well-known/assetlinks.json — otherwise passkey create/get fail on device.
+ *
+ * It is PERMANENT, like the PRF salt: a passkey belongs to one RP ID, so changing it leaves every
+ * existing passkey wallet unreachable. It is the web wallet's domain so that the web wallet can
+ * open the same passkey wallets; for the same reason, every site under this domain can ask for
+ * the passkey, so nothing outside Hathor's control may be hosted under it.
+ */
+export const PASSKEY_RP_ID = 'wallet.hathor.network';
+export const PASSKEY_RP_NAME = 'Hathor Wallet';
 
 // Project id configured in https://walletconnect.com
 export const REOWN_PROJECT_ID = '8264fff563181da658ce64ee80e80458';
@@ -263,6 +326,31 @@ export const PRE_SETTINGS_MAINNET = {
   explorerUrl: EXPLORER_MAINNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_MAINNET_URL,
   txMiningServiceUrl: TX_MINING_SERVICE_MAINNET_URL,
+};
+
+/**
+ * The shielded testnet: a testnet whose nodes report the network name
+ * 'testnet-shielded-outputs'. It shares its genesis with the public testnet, so the network name
+ * is what tells them apart. It has no wallet-service.
+ */
+export const STAGE_SHIELDED_TESTNET = 'testnet';
+export const NETWORK_SHIELDED_TESTNET = 'testnet';
+export const FULL_NETWORK_SHIELDED_TESTNET = 'testnet-shielded-outputs';
+export const NODE_SERVER_SHIELDED_TESTNET_URL = 'https://node1.shielded-outputs.testnet.hathor.network/v1a/';
+export const EXPLORER_SHIELDED_TESTNET_URL = 'https://explorer.shielded-outputs.testnet.hathor.network/';
+export const EXPLORER_SERVICE_SHIELDED_TESTNET_URL = 'https://explorer-service.shielded-outputs.testnet.hathor.network/';
+export const TX_MINING_SERVICE_SHIELDED_TESTNET_URL = 'https://txmining.shielded-outputs.testnet.hathor.network/';
+
+export const PRE_SETTINGS_SHIELDED_TESTNET = {
+  stage: STAGE_SHIELDED_TESTNET,
+  network: NETWORK_SHIELDED_TESTNET,
+  fullNetwork: FULL_NETWORK_SHIELDED_TESTNET,
+  walletServiceUrl: null,
+  walletServiceWsUrl: null,
+  nodeUrl: NODE_SERVER_SHIELDED_TESTNET_URL,
+  explorerUrl: EXPLORER_SHIELDED_TESTNET_URL,
+  explorerServiceUrl: EXPLORER_SERVICE_SHIELDED_TESTNET_URL,
+  txMiningServiceUrl: TX_MINING_SERVICE_SHIELDED_TESTNET_URL,
 };
 
 /**
@@ -394,3 +482,44 @@ export const NODE_RATE_LIMIT_CONF = {
  * Accepted slippage (in %) when swapping tokens.
  */
 export const TOKEN_SWAP_SLIPPAGE = 0.5;
+
+/**
+ * Where the shielded crypto provider of the running wallet stands:
+ * - UNREGISTERED: no provider was registered, as on every network but the shielded testnet, on
+ *   the wallet-service facade and for passkey wallets;
+ * - READY: it passed its self-test and was registered before start();
+ * - FAILED: it failed to load or failed its self-test, so the wallet runs transparent-only.
+ */
+export const SHIELDED_PROVIDER_STATUS = {
+  UNREGISTERED: 'unregistered',
+  READY: 'ready',
+  FAILED: 'failed',
+};
+
+/**
+ * What asks to unlock the shielded view key of the running wallet with a PIN entry: the lock
+ * screen, the user from a locked private balance, or a private send.
+ */
+export const SHIELDED_UNLOCK_SOURCE = {
+  LOCK_SCREEN: 'lock-screen',
+  USER: 'user',
+  SEND: 'send',
+};
+
+/**
+ * How long a sensitive copy, such as a privacy key or the unblinding values of a tx, stays in the
+ * clipboard, in milliseconds.
+ */
+export const SENSITIVE_CLIPBOARD_CLEAR_MS = 60 * 1000;
+
+/**
+ * How long a sensitive copy's button says that it copied, in milliseconds: far less than the
+ * clipboard keeps the copy.
+ */
+export const SENSITIVE_COPY_FEEDBACK_MS = 1500;
+
+/**
+ * The explorers that read the unblinding values of a tx from the #unblind= fragment of its link:
+ * only the shielded testnet's explorer has the parser.
+ */
+export const UNBLIND_EXPLORER_URLS = [EXPLORER_SHIELDED_TESTNET_URL];

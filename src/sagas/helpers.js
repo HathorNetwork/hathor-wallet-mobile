@@ -214,6 +214,20 @@ export async function getRegisteredNanoContracts(wallet) {
 }
 
 /**
+ * Get the genesis block hash from serverInfo in redux state.
+ *
+ * The genesis block hash uniquely identifies a network (mainnet, testnet or a
+ * custom one), so it is used as the partition key for per-network snapshots of
+ * registered entries (tokens, nano contracts).
+ *
+ * @param {{ genesis_block_hash?: string }} [serverInfo] serverInfo redux state
+ * @returns {string|null} The genesis block hash or null when unavailable
+ */
+export function getGenesisHash(serverInfo) {
+  return serverInfo?.genesis_block_hash || null;
+}
+
+/**
  * Flat registered tokens to uid.
  * @param {{ tokens: Object }} Map of registered tokens by uid
  * @returns {string[]} Array of token uid

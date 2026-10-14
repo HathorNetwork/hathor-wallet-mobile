@@ -14,6 +14,7 @@ import {
   networkChanged,
   setFullNodeNetworkName,
   saveTokensForNetwork,
+  saveNanoContractsForNetwork,
 } from '../actions';
 import {
   NETWORK_MAINNET,
@@ -275,12 +276,22 @@ export function* persistNetworkSettings(action) {
     return;
   }
 
-  // Ask the tokens saga to save current tokens before we wipe them
+  // Ask the tokens and nano contract sagas to snapshot their current
+  // registered entries before we wipe storage. Both snapshots are keyed by the
+  // network's genesis hash so they can be restored when the wallet returns to
+  // this network. We wait for both concurrently so a single 5s timeout applies.
   yield put(saveTokensForNetwork());
-  yield race({
-    saved: take(types.TOKENS_SAVED_FOR_NETWORK),
-    timeout: delay(5000),
-  });
+  yield put(saveNanoContractsForNetwork());
+  yield all([
+    race({
+      saved: take(types.TOKENS_SAVED_FOR_NETWORK),
+      timeout: delay(5000),
+    }),
+    race({
+      saved: take(types.NANO_CONTRACTS_SAVED_FOR_NETWORK),
+      timeout: delay(5000),
+    }),
+  ]);
 
   const wallet = yield select((state) => state.wallet);
 
@@ -295,7 +306,19 @@ export function* persistNetworkSettings(action) {
   // We might not have a wallet object because this method can be called to connect
   // to mainnet after a network loading error (before the wallet object is created)
   if (wallet) {
-    wallet.stop({ cleanStorage: true, cleanAddresses: true, cleanTokens: true });
+    // Wait for the stop to finish before cleaning storage and reloading: it clears the old
+    // wallet's storage and connection asynchronously, and left running it would overlap with
+    // the cleanup below and the new wallet's start. A failed stop must not block the network
+    // switch, so log it and carry on.
+    try {
+      yield call([wallet, wallet.stop], {
+        cleanStorage: true,
+        cleanAddresses: true,
+        cleanTokens: true,
+      });
+    } catch (err) {
+      log.error('Error while stopping the wallet to change network settings.', err);
+    }
   }
 
   // Clean transaction history, addresses and registered tokens from local storage as well

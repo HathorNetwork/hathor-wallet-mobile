@@ -17,7 +17,7 @@ import { t } from 'ttag';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
-import { startWalletRequested, unlockScreen } from '../actions';
+import { onExceptionCaptured, startWalletRequested, unlockScreen } from '../actions';
 import { PIN_SIZE } from '../constants';
 import { COLORS } from '../styles/themes';
 
@@ -31,6 +31,7 @@ const mapDispatchToProps = (dispatch) => ({
     words,
     pin
   })),
+  onExceptionCaptured: (error) => dispatch(onExceptionCaptured(error, false)),
 });
 
 class ChoosePinScreen extends React.Component {
@@ -86,6 +87,13 @@ class ChoosePinScreen extends React.Component {
       this.props.unlockScreen();
       this.props.startWalletRequested(this.words, this.state.pin1);
       NavigationService.resetToMain();
+    }).catch((error) => {
+      // initStorage rejects if clearing stale passkey metadata fails (e.g. device storage full) or
+      // the access data can't be generated; report it instead of silently staying on this screen.
+      // Persisting the access data itself is fire-and-forget (HybridStore.saveAccessData), so a
+      // failed write there is only logged and doesn't reach this catch.
+      console.error(error);
+      this.props.onExceptionCaptured(error);
     });
   }
 

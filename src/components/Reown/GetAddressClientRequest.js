@@ -50,7 +50,7 @@ const AddressItem = ({ item, isSelected, onSelectItem }) => {
           isSelected && styles.addressItemSelected
         ]}
       >
-        <View>
+        <View style={styles.addressItemContent}>
           <TextValue>{item.address}</TextValue>
           <TextLabel>{t`index`} {item.index}</TextLabel>
         </View>
@@ -262,6 +262,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderRadius: 8,
     marginBottom: 4,
+  },
+  // The row lays its content out in a line: shrinking to the row, the address wraps instead of
+  // running past it, as a new address of 95 characters would.
+  addressItemContent: {
+    flexShrink: 1,
   },
   addressItemSelected: {
     backgroundColor: COLORS.primaryOpacity10,
