@@ -16,6 +16,7 @@ import { ShieldPadlockIcon } from '../Icons/ShieldPadlock.icon';
 import { EyeIcon } from '../Icons/Eye.icon';
 import { shieldedReprocessRequested } from '../../actions';
 import { splitAvailableBalance } from '../../shielded/balance';
+import { isUnlockableLock } from '../../shielded/gating';
 import {
   SHIELDED_UNLOCK_PROGRESS,
   isShieldedUnlockInProgress,
@@ -36,11 +37,6 @@ const SPLIT_LEVELS = ['watch', 'view', 'full'];
  */
 const NONE_LEVEL = 'none';
 const NOT_STARTED_REASON = 'not-started';
-
-/**
- * The lock cause of a stored scan key that no PIN can unlock.
- */
-const CORRUPT_KEY_CAUSE = 'corrupt-key';
 
 /**
  * How many private outputs are locked, a count over the whole wallet.
@@ -100,7 +96,9 @@ export default function ShieldedBalanceSplit({
         )}
         <Text style={styles.hint}>{t`Private transfers are not available for this wallet.`}</Text>
         {unlock.status === SHIELDED_UNLOCK_PROGRESS.FAILED && (
-          <Text style={styles.failed}>{t`Could not unlock your private balance.`}</Text>
+          <Text style={styles.failed}>
+            {unlock.message ?? t`Could not unlock your private balance.`}
+          </Text>
         )}
       </View>
     );
@@ -115,7 +113,7 @@ export default function ShieldedBalanceSplit({
   const publicStr = renderHomeValue(split.publicAvailable, isNFT, decimalPlaces, amountFormat);
 
   const locked = capability.level === 'watch';
-  const unlockable = locked && capability.cause !== CORRUPT_KEY_CAUSE;
+  const unlockable = isUnlockableLock(capability);
   const count = locked ? capability.undecoded.locked : 0;
   const unreadable = capability.undecoded.error > 0;
   const inProgress = isShieldedUnlockInProgress(unlock);

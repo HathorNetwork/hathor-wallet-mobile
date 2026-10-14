@@ -844,9 +844,12 @@ export const shieldedCapabilityUpdate = (capability) => ({
  * its shielded outputs locked: it started with a PIN that no longer decrypts the key, or the
  * unlock at start failed. No reducer handles it, so the PIN never enters the redux state.
  *
+ * A passkey wallet's request carries no PIN: the shielded saga unlocks it with the scan key a
+ * passkey ceremony derives (see passkey/shieldedKeys.js), and that key never enters an action.
+ *
  * @param {Object} payload
- * @param {string} payload.pinCode The PIN, or the safe-biometry password, that decrypts the
- *   wallet's access data now
+ * @param {string} [payload.pinCode] The PIN, or the safe-biometry password, that decrypts the
+ *   wallet's access data now; absent for a passkey wallet
  * @param {string} payload.source One of SHIELDED_UNLOCK_SOURCE
  */
 export const shieldedViewUnlockRequested = ({ pinCode, source }) => ({
@@ -1992,10 +1995,12 @@ export const shieldedReceiveAddressUpdate = ({
  * @param {string} payload.status One of SHIELDED_UNLOCK_PROGRESS
  * @param {string|null} [payload.errorCode] The code of the ShieldedKeyError that refused the
  *   unlock
+ * @param {string|null} [payload.message] What the user is told about a failure, when it is not the
+ *   generic one (e.g. a passkey that opens another wallet)
  */
-export const shieldedUnlockStatusUpdate = ({ status, errorCode = null }) => ({
+export const shieldedUnlockStatusUpdate = ({ status, errorCode = null, message = null }) => ({
   type: types.SHIELDED_UNLOCK_STATUS_UPDATE,
-  payload: { status, errorCode },
+  payload: { status, errorCode, message },
 });
 
 /**

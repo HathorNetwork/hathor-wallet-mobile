@@ -6,6 +6,17 @@
  */
 
 import { jest, describe, test, expect, afterEach } from '@jest/globals';
+
+// A passkey wallet's ceremony, and the keys it derives: each test sets them.
+jest.mock('../../src/passkey/passkeySigner', () => ({
+  ...jest.requireActual('../../src/passkey/passkeySigner'),
+  withPasskeyWords: jest.fn(),
+}));
+jest.mock('../../src/passkey/shieldedKeys', () => ({
+  derivePasskeyShieldedKeys: jest.fn(),
+}));
+
+/* eslint-disable import/first */
 import React from 'react';
 import { AppState, Clipboard, TouchableOpacity } from 'react-native';
 import { act, create } from 'react-test-renderer';
@@ -34,6 +45,10 @@ import {
 } from '../../src/constants';
 import { PortalProvider } from '../../src/components/Portal';
 import ExportPrivacyKeys from '../../src/screens/ExportPrivacyKeys';
+import { STORE } from '../../src/store';
+import { PasskeyCancelledError, withPasskeyWords } from '../../src/passkey/passkeySigner';
+import { derivePasskeyShieldedKeys } from '../../src/passkey/shieldedKeys';
+/* eslint-enable import/first */
 
 const PIN = '135790';
 // Stand-ins for the spend xpub and the scan xpriv: the screen only shows and copies them.
@@ -528,11 +543,95 @@ describe('ExportPrivacyKeys', () => {
   test.each([
     ['a scan key no PIN can unlock', capability('watch', { cause: 'corrupt-key' })],
     ['shielded keys that do not match', capability('none', { reason: 'integrity', cause: 'key-mismatch' })],
+    ['a scan key given at start that does not match', capability('watch', { cause: 'key-mismatch' })],
   ])('offers no export for %s', async (_label, level) => {
     const { texts, titles, pinScreenCalls } = await render({ level });
 
     expect(texts()).toContain(UNAVAILABLE);
     expect(titles()).not.toContain('Unlock private balance');
     expect(pinScreenCalls()).toEqual([]);
+  });
+});
+
+describe('ExportPrivacyKeys of a passkey wallet', () => {
+  const WORDS = 'passkey words';
+
+  const passkeyWallet = () => {
+    jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(true);
+    withPasskeyWords.mockImplementation(async (fn) => fn(WORDS));
+    derivePasskeyShieldedKeys.mockReturnValue({
+      shieldedXpubs: { scanXpubkey: 'xpub-scan', spendXpubkey: SPEND_XPUB },
+      scanXPrivKey: SCAN_XPRIV,
+    });
+  };
+
+  afterEach(() => {
+    withPasskeyWords.mockReset();
+    derivePasskeyShieldedKeys.mockReset();
+  });
+
+  // The ceremony takes the PIN's place: it derives the keys from the wallet's root.
+  test('shows the keys a passkey ceremony derives, without a PIN screen', async () => {
+    passkeyWallet();
+    const wallet = fakeWallet();
+    const { texts, pinScreenCalls, onAppState } = await render({ wallet });
+    await act(async () => { onAppState('active'); });
+
+    expect(pinScreenCalls()).toEqual([]);
+    expect(withPasskeyWords).toHaveBeenCalledTimes(1);
+    expect(derivePasskeyShieldedKeys).toHaveBeenCalledWith(WORDS);
+    expect(texts()).toEqual(expect.arrayContaining([SPEND_MASKED, SCAN_MASKED]));
+    expect(wallet.storage.getScanXPrivKey).not.toHaveBeenCalled();
+  });
+
+  test('goes back to the privacy settings when the user dismisses the ceremony', async () => {
+    passkeyWallet();
+    withPasskeyWords.mockRejectedValue(new PasskeyCancelledError());
+    const { navigation, pinScreenCalls, texts } = await render();
+
+    expect(pinScreenCalls()).toEqual([]);
+    expect(navigation.dispatch).toHaveBeenCalledTimes(1);
+    expect(closedFromStack(navigation)).toEqual(StackActions.pop(1));
+    expect(texts()).not.toContain(SPEND_MASKED);
+  });
+
+  test('shows the message of a ceremony that fails', async () => {
+    passkeyWallet();
+    withPasskeyWords.mockRejectedValue(new Error('This passkey opens a different wallet.'));
+    const { navigation, texts } = await render();
+
+    expect(texts()).toContain('This passkey opens a different wallet.');
+    expect(navigation.dispatch).not.toHaveBeenCalled();
+  });
+
+  // A dismissed ceremony closes the export: one that ends after the export went away must not
+  // close the screen under it.
+  test('closes nothing when the ceremony ends after the screen went away', async () => {
+    passkeyWallet();
+    let dismiss;
+    withPasskeyWords.mockImplementation(() => new Promise((_resolve, reject) => {
+      dismiss = () => reject(new PasskeyCancelledError());
+    }));
+    const { navigation } = await render();
+    expect(withPasskeyWords).toHaveBeenCalledTimes(1);
+
+    await act(async () => { mounted.unmount(); });
+    mounted = null;
+    await act(async () => { dismiss(); });
+
+    expect(navigation.dispatch).not.toHaveBeenCalled();
+    expect(navigation.goBack).not.toHaveBeenCalled();
+  });
+
+  test('runs the ceremony only once the locked private balance is unlocked', async () => {
+    passkeyWallet();
+    const { store, texts } = await render({ level: capability('watch', { cause: 'not-supplied' }) });
+
+    expect(texts()).toContain(UNLOCK_FIRST);
+    expect(withPasskeyWords).not.toHaveBeenCalled();
+
+    await act(async () => { store.dispatch(shieldedCapabilityUpdate(capability('full'))); });
+
+    expect(withPasskeyWords).toHaveBeenCalledTimes(1);
   });
 });

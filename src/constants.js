@@ -493,7 +493,7 @@ export const TOKEN_SWAP_SLIPPAGE = 0.5;
 /**
  * Where the shielded crypto provider of the running wallet stands:
  * - UNREGISTERED: no provider was registered, as on every network but the shielded testnet, on
- *   the wallet-service facade and for passkey wallets;
+ *   the wallet-service facade and for passkey wallets without shielded keys;
  * - READY: it passed its self-test and was registered before start();
  * - FAILED: it failed to load or failed its self-test, so the wallet runs transparent-only.
  */
@@ -504,8 +504,8 @@ export const SHIELDED_PROVIDER_STATUS = {
 };
 
 /**
- * What asks to unlock the shielded view key of the running wallet with a PIN entry: the lock
- * screen, the user from a locked private balance, or a private send.
+ * What asks to unlock the shielded view key of the running wallet with a PIN entry, or a passkey
+ * ceremony: the lock screen, the user from a locked private balance, or a private send.
  */
 export const SHIELDED_UNLOCK_SOURCE = {
   LOCK_SCREEN: 'lock-screen',

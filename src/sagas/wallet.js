@@ -48,6 +48,12 @@ import {
 import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../store';
 import { makePasskeyPrivateKeyProvider, makePasskeyTxSigner } from '../passkey/passkeySigner';
 import {
+  clearPasskeyScanKey,
+  getPasskeyScanKey,
+  getPasskeyShieldedXpubs,
+  syncPasskeyShieldedAccessData,
+} from '../passkey/shieldedKeys';
+import {
   facadeSupportsExternalSigner,
   isWalletServiceRegistered,
   markWalletServiceRegistered,
@@ -253,6 +259,9 @@ export function* startWallet(action) {
   // metadata instead of trusting action payloads with sensitive data.
   const walletMeta = STORE.getWalletMeta();
   const isPasskeyWallet = walletMeta?.walletType === 'passkey';
+  // The shielded xpubs a passkey ceremony derived and stored (see passkey/shieldedKeys.js), or
+  // null: a passkey wallet without them runs without shielded support.
+  const passkeyShieldedXpubs = isPasskeyWallet ? getPasskeyShieldedXpubs(walletMeta) : null;
 
   // A passkey wallet boots read-only from this xpub; if it is missing/corrupted, fail fast with a
   // clear message instead of handing `{ xpub: undefined }` to HathorWallet and surfacing an opaque
@@ -344,6 +353,7 @@ export function* startWallet(action) {
     networkSettings,
     useWalletService,
     isPasskeyWallet,
+    passkeyShieldedKeys: Boolean(passkeyShieldedXpubs),
   });
   const attemptedAddressMode = decideAddressMode({
     singleAddressFeatureEnabled,
@@ -415,13 +425,24 @@ export function* startWallet(action) {
           gapLimit: hathorLibConstants.GAP_LIMIT,
         },
     };
+    if (isPasskeyWallet) {
+      // wallet-lib builds the shielded chain from the access data, which must carry the shielded
+      // xpubs before start(). A failure is reported, and the wallet starts without them.
+      try {
+        yield call(syncPasskeyShieldedAccessData, storage, walletMeta);
+      } catch (e) {
+        log.error('Failed to put the shielded xpubs on the passkey access data.', e);
+        yield put(onExceptionCaptured(e, false));
+      }
+    }
     wallet = new HathorWallet(walletConfig);
     if (isPasskeyWallet) {
       // Register the external signer before the first send/sign: it flips isSignedExternally so the
       // read-only guards allow sending, with signatures produced by the passkey ceremony instead of
       // a stored key. wallet-lib re-checks isReadonly() per operation, so ordering relative to
-      // start() is not enforced — we do it here, before start(), as a safe convention.
-      wallet.setExternalTxSigningMethod(makePasskeyTxSigner());
+      // start() is not enforced — we do it here, before start(), as a safe convention. The signer
+      // also signs the inputs that spend shielded outputs, on the shielded spend chain.
+      wallet.setExternalTxSigningMethod(makePasskeyTxSigner(), { shieldedSpend: true });
     }
 
     // Only the polling sync watches the addresses shielded outputs are paid to. It is already
@@ -430,7 +451,7 @@ export function* startWallet(action) {
 
     // The provider must be set before start(), which loads and decodes the shielded history.
     // On the shielded testnet it is registered whether or not the shielded UI flag is on.
-    if (shouldRegisterShieldedProvider({ networkSettings, useWalletService, isPasskeyWallet })) {
+    if (shieldedChainActive) {
       yield call(registerShieldedCryptoProvider, wallet);
     }
   }
@@ -471,10 +492,10 @@ export function* startWallet(action) {
     if (isPasskeyWallet && useWalletService) {
       serverInfo = yield call([wallet, wallet.startReadOnly]);
     } else {
-      serverInfo = yield call(
-        wallet.start.bind(wallet),
-        isPasskeyWallet ? {} : { pinCode: pin, password: pin },
-      );
+      const startOptions = isPasskeyWallet
+        ? passkeyStartOptions(shieldedChainActive)
+        : { pinCode: pin, password: pin };
+      serverInfo = yield call(wallet.start.bind(wallet), startOptions);
     }
 
     yield put(setServerInfo(serverInfo));
@@ -627,6 +648,19 @@ export function* stopDroppedWallet(wallet) {
 }
 
 /**
+ * The fullnode-facade start options of a passkey wallet: the scan key held for the session, when
+ * the wallet gets a shielded chain, in place of the PIN that unlocks a seed wallet's. Without it
+ * the wallet starts with its shielded outputs locked, and a passkey ceremony unlocks them.
+ *
+ * @param {boolean} shieldedChainActive Whether the start registers the shielded crypto provider
+ * @returns {Object}
+ */
+function passkeyStartOptions(shieldedChainActive) {
+  const scanXPrivKey = shieldedChainActive ? getPasskeyScanKey() : null;
+  return scanXPrivKey ? { shieldedScanXPrivKey: scanXPrivKey } : {};
+}
+
+/**
  * The PIN that a reload starts the wallet with: the PIN of the last start request, or of a
  * WALLET_PIN_CHANGED after it. A PIN change or a safe-biometry switch re-encrypts the access data,
  * and start() decrypts it with the PIN it is given. The PIN is kept here, never in the redux state,
@@ -636,7 +670,8 @@ let restartPin;
 
 /**
  * Keeps restartPin up to date. It runs as long as the app does: a PIN change can land while a
- * start is still loading, before waitForWalletRestart runs.
+ * start is still loading, before waitForWalletRestart runs. A wallet reset also drops the scan key
+ * a passkey wallet holds for its restarts (see passkey/shieldedKeys.js).
  */
 export function* trackRestartPin() {
   yield takeEvery(
@@ -648,6 +683,7 @@ export function* trackRestartPin() {
           break;
         case types.RESET_WALLET:
           restartPin = null;
+          clearPasskeyScanKey();
           break;
         default:
           restartPin = action.payload?.pin;

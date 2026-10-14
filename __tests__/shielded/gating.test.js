@@ -24,6 +24,7 @@ import {
   isShieldedNetwork,
   isShieldedNetworkName,
   selectShieldedCapability,
+  isUnlockableLock,
   shouldRegisterShieldedProvider,
 } from '../../src/shielded/gating';
 
@@ -164,7 +165,7 @@ describe('shouldRegisterShieldedProvider', () => {
     }
   });
 
-  test('never registers on the wallet-service facade or for a passkey wallet', () => {
+  test('never registers on the wallet-service facade or for a passkey wallet without shielded keys', () => {
     expect(shouldRegisterShieldedProvider({
       networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
       useWalletService: true,
@@ -175,6 +176,54 @@ describe('shouldRegisterShieldedProvider', () => {
       useWalletService: false,
       isPasskeyWallet: true,
     })).toBe(false);
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      useWalletService: false,
+      isPasskeyWallet: true,
+      passkeyShieldedKeys: false,
+    })).toBe(false);
+  });
+
+  // A passkey wallet gets its shielded keys from a passkey ceremony before start(): it decides by
+  // the shielded xpubs it stores.
+  test('registers for a passkey wallet with shielded keys, on the fullnode facade only', () => {
+    const passkeyWallet = { isPasskeyWallet: true, passkeyShieldedKeys: true };
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      useWalletService: false,
+      ...passkeyWallet,
+    })).toBe(true);
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      useWalletService: true,
+      ...passkeyWallet,
+    })).toBe(false);
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_TESTNET,
+      useWalletService: false,
+      ...passkeyWallet,
+    })).toBe(false);
+  });
+});
+
+describe('isUnlockableLock', () => {
+  const watch = (cause) => ({ level: 'watch', reason: 'locked', cause });
+
+  test.each(['not-supplied', 'wrong-pin', 'error'])('holds for a lock with the cause %s', (cause) => {
+    expect(isUnlockableLock(watch(cause))).toBe(true);
+  });
+
+  test.each(['corrupt-key', 'key-mismatch'])('fails for a lock with the cause %s', (cause) => {
+    expect(isUnlockableLock(watch(cause))).toBe(false);
+  });
+
+  test.each([
+    ['none', { level: 'none', reason: 'no-provider', cause: null }],
+    ['view', { level: 'view', reason: 'no-spend-authority', cause: null }],
+    ['full', { level: 'full', reason: null, cause: null }],
+    ['no capability', null],
+  ])('fails at %s', (_label, capability) => {
+    expect(isUnlockableLock(capability)).toBe(false);
   });
 });
 

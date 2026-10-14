@@ -54,6 +54,13 @@ describe('canSendPrivately', () => {
     expect(canSendPrivately(state({ shielded: { capability: corrupt } }))).toBe(false);
   });
 
+  // A passkey wallet started with a scan key that isn't the key of its stored scan xpub: the same
+  // passkey gives the same key again.
+  test('fails for a locked wallet whose scan key given at start does not match', () => {
+    const mismatch = capability('watch', { reason: 'locked', cause: 'key-mismatch' });
+    expect(canSendPrivately(state({ shielded: { capability: mismatch } }))).toBe(false);
+  });
+
   test.each([
     ['view', capability('view', { reason: 'no-spend-authority' })],
     ['none, with keys that do not match', capability('none', { reason: 'integrity', cause: 'key-mismatch' })],

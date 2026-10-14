@@ -26,6 +26,7 @@ import { setAddressMode, reloadWalletRequested, onExceptionCaptured } from '../a
 import { getNetworkSettings } from '../sagas/helpers';
 import { WALLET_STATUS } from '../sagas/wallet';
 import { shouldRegisterShieldedProvider } from '../shielded/gating';
+import { getPasskeyShieldedXpubs } from '../passkey/shieldedKeys';
 import { logger } from '../logger';
 
 const log = logger('AddressMode');
@@ -69,6 +70,7 @@ export default function AddressMode({ navigation }) {
     networkSettings,
     useWalletService,
     isPasskeyWallet: STORE.isPasskeyWallet(),
+    passkeyShieldedKeys: getPasskeyShieldedXpubs() !== null,
   });
 
   const [selectedMode, setSelectedMode] = useState(currentMode);

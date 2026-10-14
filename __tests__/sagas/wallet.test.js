@@ -28,12 +28,14 @@ jest.mock('@hathor/wallet-lib', () => {
       this.record('setShieldedCryptoProvider');
     }
 
-    setExternalTxSigningMethod() {
+    setExternalTxSigningMethod(method, options) {
       this.record('setExternalTxSigningMethod');
+      this.externalTxSigningOptions = options;
     }
 
-    start() {
+    start(options) {
       this.record('start');
+      this.startOptions = options;
       return MockHathorWallet.onStart(this);
     }
 
@@ -67,6 +69,15 @@ jest.mock('../../src/sagas/shieldedProvider', () => ({
   registerShieldedCryptoProvider: jest.fn(),
 }));
 
+// The passkey wallet's shielded keys: its stored xpubs are read from the metadata the test sets,
+// and the scan key held for the session is set by each test.
+jest.mock('../../src/passkey/shieldedKeys', () => ({
+  getPasskeyShieldedXpubs: jest.fn((walletMeta) => walletMeta?.shieldedXpubs ?? null),
+  getPasskeyScanKey: jest.fn(() => null),
+  syncPasskeyShieldedAccessData: jest.fn(async () => false),
+  clearPasskeyScanKey: jest.fn(),
+}));
+
 // startWallet refreshes the Unleash client; these tests set the toggles in the state instead.
 jest.mock('../../src/sagas/featureToggle', () => ({
   ...jest.requireActual('../../src/sagas/featureToggle'),
@@ -88,6 +99,12 @@ import {
 } from '../../src/sagas/wallet';
 import { registerShieldedCryptoProvider } from '../../src/sagas/shieldedProvider';
 import {
+  clearPasskeyScanKey,
+  getPasskeyScanKey,
+  syncPasskeyShieldedAccessData,
+} from '../../src/passkey/shieldedKeys';
+import {
+  onExceptionCaptured,
   reloadWalletRequested,
   resetWallet,
   setUseWalletService,
@@ -150,6 +167,9 @@ describe('startWallet saga', () => {
 const WORDS = 'seed words';
 const PIN = '111111';
 const PASSKEY_META = { walletType: 'passkey', xpub: 'xpub-passkey-wallet' };
+const PASSKEY_SHIELDED_XPUBS = { scanXpubkey: 'xpub-scan', spendXpubkey: 'xpub-spend' };
+const PASSKEY_SHIELDED_META = { ...PASSKEY_META, shieldedXpubs: PASSKEY_SHIELDED_XPUBS };
+const PASSKEY_SCAN_KEY = 'xprv-scan-key';
 const PROVIDER = { name: 'mobile shielded crypto provider' };
 // The Customize form saves the network name the node reports, and may add a wallet-service.
 const CUSTOM_SHIELDED_NETWORK = {
@@ -292,6 +312,86 @@ describe('startWallet on the fullnode facade', () => {
 
     expect(registerShieldedCryptoProvider).not.toHaveBeenCalled();
     expect(log).toContain('setExternalTxSigningMethod');
+    expect(log).toContain('start');
+  });
+});
+
+describe('startWallet for a passkey wallet with shielded keys', () => {
+  beforeEach(() => {
+    HathorWallet.log = [];
+    HathorWallet.instances = [];
+    HathorWallet.onStart = () => new Promise(() => {});
+    registerShieldedCryptoProvider.mockReset();
+    registerShieldedCryptoProvider.mockImplementation(function* register(wallet) {
+      yield call([wallet, wallet.setShieldedCryptoProvider], PROVIDER);
+    });
+    getPasskeyScanKey.mockReset();
+    getPasskeyScanKey.mockReturnValue(null);
+    syncPasskeyShieldedAccessData.mockReset();
+    syncPasskeyShieldedAccessData.mockImplementation(async () => {
+      HathorWallet.log.push('syncPasskeyShieldedAccessData');
+      return true;
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test('registers the provider and starts with the scan key held for the session', async () => {
+    getPasskeyScanKey.mockReturnValue(PASSKEY_SCAN_KEY);
+
+    const { log, wallet } = await runUntilStart({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      walletMeta: PASSKEY_SHIELDED_META,
+    });
+
+    expect(registerShieldedCryptoProvider).toHaveBeenCalledWith(wallet);
+    expect(syncPasskeyShieldedAccessData)
+      .toHaveBeenCalledWith(expect.anything(), PASSKEY_SHIELDED_META);
+    expect(log.indexOf('syncPasskeyShieldedAccessData')).toBeGreaterThanOrEqual(0);
+    expect(log.indexOf('syncPasskeyShieldedAccessData')).toBeLessThan(log.indexOf('start'));
+    expect(log.indexOf('setShieldedCryptoProvider')).toBeLessThan(log.indexOf('start'));
+    expect(wallet.startOptions).toEqual({ shieldedScanXPrivKey: PASSKEY_SCAN_KEY });
+    // The signer signs the inputs that spend shielded outputs too: without it the wallet never
+    // reaches level full.
+    expect(wallet.externalTxSigningOptions).toEqual({ shieldedSpend: true });
+  });
+
+  // It starts with its shielded outputs locked, and a passkey ceremony unlocks them.
+  test('still registers the provider without a scan key, and starts without one', async () => {
+    const { wallet } = await runUntilStart({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      walletMeta: PASSKEY_SHIELDED_META,
+    });
+
+    expect(registerShieldedCryptoProvider).toHaveBeenCalledWith(wallet);
+    expect(wallet.startOptions).toEqual({});
+  });
+
+  test('passes no scan key where it gets no shielded chain', async () => {
+    getPasskeyScanKey.mockReturnValue(PASSKEY_SCAN_KEY);
+
+    const { wallet } = await runUntilStart({
+      networkSettings: PRE_SETTINGS_TESTNET,
+      walletMeta: PASSKEY_SHIELDED_META,
+    });
+
+    expect(registerShieldedCryptoProvider).not.toHaveBeenCalled();
+    expect(wallet.startOptions).toEqual({});
+  });
+
+  test('reports a failed access data sync, and starts the wallet anyway', async () => {
+    const failure = new Error('bad xpub');
+    syncPasskeyShieldedAccessData.mockRejectedValue(failure);
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { log, dispatched } = await runUntilStart({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      walletMeta: PASSKEY_SHIELDED_META,
+    });
+
+    expect(dispatched).toContainEqual(onExceptionCaptured(failure, false));
     expect(log).toContain('start');
   });
 });
@@ -593,6 +693,20 @@ describe('onStartWalletFailed', () => {
 describe('trackRestartPin', () => {
   // waitForWalletRestart reads the PIN that trackRestartPin keeps: a reload starts the wallet with
   // it.
+  test('drops the passkey scan key when the wallet is reset', async () => {
+    clearPasskeyScanKey.mockClear();
+    const channel = stdChannel();
+    const pinTracker = runSaga({ channel, dispatch: () => {} }, trackRestartPin);
+
+    channel.put(startWalletRequested());
+    channel.put(reloadWalletRequested());
+    expect(clearPasskeyScanKey).not.toHaveBeenCalled();
+    channel.put(resetWallet());
+    pinTracker.cancel();
+
+    expect(clearPasskeyScanKey).toHaveBeenCalledTimes(1);
+  });
+
   test('forgets the PIN when the wallet is reset', async () => {
     const startAction = startWalletRequested({ words: 'seed words', pin: '111111' });
     const channel = stdChannel();
