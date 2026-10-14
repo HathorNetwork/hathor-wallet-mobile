@@ -88,13 +88,21 @@ jest.mock('@hathor/wallet-lib', () => {
       return MockHathorWallet.onStart(this);
     }
 
-    startReadOnly() {
+    startReadOnly(...args) {
       this.record('startReadOnly');
+      this.startReadOnlyArgs = args;
       return MockHathorWallet.onStart(this);
     }
 
-    setExternalTxSigningMethod() {
+    setExternalTxSigningMethod(method, options) {
       this.record('setExternalTxSigningMethod');
+      this.externalTxSigningOptions = options;
+    }
+
+    setShieldedScanKey(xpriv) {
+      this.record('setShieldedScanKey');
+      this.scanKey = xpriv;
+      return MockHathorWalletServiceWallet.onSetShieldedScanKey(xpriv);
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -122,6 +130,7 @@ jest.mock('@hathor/wallet-lib', () => {
   }
   MockHathorWalletServiceWallet.instances = [];
   MockHathorWalletServiceWallet.shieldedEnabled = true;
+  MockHathorWalletServiceWallet.onSetShieldedScanKey = async () => {};
 
   return {
     ...actual,
@@ -142,6 +151,7 @@ jest.mock('../../src/passkey/shieldedKeys', () => ({
   getPasskeyScanKey: jest.fn(() => null),
   syncPasskeyShieldedAccessData: jest.fn(async () => false),
   clearPasskeyScanKey: jest.fn(),
+  supportsPasskeyShieldedWalletService: jest.fn(() => true),
 }));
 
 // startWallet refreshes the Unleash client; these tests set the toggles in the state instead.
@@ -159,6 +169,7 @@ import {
   HathorWalletServiceWallet,
   HistorySyncMode,
   SCANNING_POLICY,
+  errors as hathorErrors,
 } from '@hathor/wallet-lib';
 import {
   IGNORE_WS_TOGGLE_FLAG,
@@ -175,6 +186,7 @@ import { registerShieldedCryptoProvider } from '../../src/sagas/shieldedProvider
 import {
   clearPasskeyScanKey,
   getPasskeyScanKey,
+  supportsPasskeyShieldedWalletService,
   syncPasskeyShieldedAccessData,
 } from '../../src/passkey/shieldedKeys';
 import {
@@ -490,6 +502,8 @@ describe('startWallet on the wallet-service facade', () => {
     );
     expect(log.indexOf(`dispatch:${types.SET_FULLNODE_NETWORK_NAME}`))
       .toBeLessThan(log.indexOf(`dispatch:${types.SHIELDED_CAPABILITY_UPDATE}`));
+    // A seed wallet keeps the scan key its start() set: setting one would drop it.
+    expect(log).not.toContain('setShieldedScanKey');
   });
 
   test('starts again on the fullnode facade when the wallet-service registered no shielded keys', async () => {
@@ -541,25 +555,221 @@ describe('startWallet on the wallet-service facade', () => {
     expect(capabilityUpdates(dispatched)).toEqual([]);
   });
 
-  test('registers no provider and puts no capability for a passkey wallet on the shielded testnet', async () => {
+  test('starts a registered passkey wallet without shielded keys on the fullnode facade on the shielded testnet', async () => {
+    // Even with a scan key held for the session: the facade needs the shielded xpubs too.
+    getPasskeyScanKey.mockReturnValueOnce(PASSKEY_SCAN_KEY);
+    const { log } = await runUntilStart({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      walletMeta: {
+        ...PASSKEY_META,
+        walletServiceRegistrations: [PRE_SETTINGS_SHIELDED_TESTNET.walletServiceUrl],
+      },
+      featureToggles: WS_FLAG,
+    });
+
+    expect(HathorWalletServiceWallet.instances).toEqual([]);
+    expect(HathorWallet.instances).toHaveLength(1);
+    expect(log).not.toContain('startReadOnly');
+    expect(registerShieldedCryptoProvider).not.toHaveBeenCalled();
+  });
+});
+
+describe('startWallet for a passkey wallet with shielded keys on the wallet-service facade', () => {
+  const WS_FLAG = { [WALLET_SERVICE_FEATURE_TOGGLE]: true };
+  const REGISTERED_META = {
+    ...PASSKEY_SHIELDED_META,
+    walletServiceRegistrations: [PRE_SETTINGS_SHIELDED_TESTNET.walletServiceUrl],
+  };
+  const start = (options = {}, until = 'start') => runStartWallet({
+    networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+    walletMeta: REGISTERED_META,
+    featureToggles: WS_FLAG,
+    ...options,
+  }, until);
+
+  beforeEach(() => {
+    HathorWallet.log = [];
+    HathorWallet.instances = [];
+    HathorWallet.onStart = () => new Promise(() => {});
+    HathorWalletServiceWallet.instances = [];
+    HathorWalletServiceWallet.shieldedEnabled = true;
+    HathorWalletServiceWallet.onSetShieldedScanKey = async () => {};
+    registerShieldedCryptoProvider.mockReset();
+    registerShieldedCryptoProvider.mockImplementation(function* register(wallet) {
+      yield call([wallet, wallet.setShieldedCryptoProvider], PROVIDER);
+    });
+    getPasskeyScanKey.mockReset();
+    getPasskeyScanKey.mockReturnValue(PASSKEY_SCAN_KEY);
+    supportsPasskeyShieldedWalletService.mockReset();
+    supportsPasskeyShieldedWalletService.mockReturnValue(true);
+  });
+
+  afterEach(async () => {
+    jest.restoreAllMocks();
+    await AsyncStorage.clear();
+  });
+
+  const capabilityUpdates = (dispatched) => dispatched.filter(
+    (action) => action.type === types.SHIELDED_CAPABILITY_UPDATE,
+  );
+
+  test('starts read-only with the shielded xpubs, then hands it the scan key and puts the full capability', async () => {
     HathorWallet.onStart = async () => null;
 
-    const { log, dispatched } = await runStartWallet(
-      {
-        networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
-        walletMeta: {
-          ...PASSKEY_META,
-          walletServiceRegistrations: [PRE_SETTINGS_SHIELDED_TESTNET.walletServiceUrl],
-        },
-        featureToggles: WS_FLAG,
+    const { log, dispatched } = await start({}, `dispatch:${types.TOKEN_FETCH_BALANCE_REQUESTED}`);
+
+    expect(HathorWallet.instances).toEqual([]);
+    expect(HathorWalletServiceWallet.instances).toHaveLength(1);
+    const [wallet] = HathorWalletServiceWallet.instances;
+    expect(registerShieldedCryptoProvider).toHaveBeenCalledWith(wallet);
+    expect(log.indexOf('setShieldedCryptoProvider')).toBeLessThan(log.indexOf('startReadOnly'));
+    expect(wallet.startReadOnlyArgs).toEqual([{ shieldedXpubs: PASSKEY_SHIELDED_XPUBS }]);
+    // The signer signs the inputs that spend shielded outputs too.
+    expect(wallet.externalTxSigningOptions).toEqual({ shieldedSpend: true });
+    expect(wallet.scanKey).toBe(PASSKEY_SCAN_KEY);
+    expect(log.indexOf('startReadOnly')).toBeLessThan(log.indexOf('setShieldedScanKey'));
+    expect(log.indexOf('setShieldedScanKey'))
+      .toBeLessThan(log.indexOf(`dispatch:${types.SHIELDED_CAPABILITY_UPDATE}`));
+    const updates = capabilityUpdates(dispatched);
+    expect(updates).toHaveLength(1);
+    expect(updates[0].payload).toEqual(expect.objectContaining({ level: 'full' }));
+  });
+
+  test('starts read-only without shielded xpubs nor scan key away from the shielded testnet', async () => {
+    HathorWallet.onStart = async () => null;
+    const customNetwork = {
+      ...PRE_SETTINGS_TESTNET,
+      walletServiceUrl: 'https://wallet-service.example/',
+      walletServiceWsUrl: 'wss://ws.wallet-service.example/',
+    };
+
+    const { log } = await start({
+      networkSettings: customNetwork,
+      walletMeta: {
+        ...PASSKEY_SHIELDED_META,
+        walletServiceRegistrations: [customNetwork.walletServiceUrl],
       },
-      `dispatch:${types.TOKEN_FETCH_BALANCE_REQUESTED}`,
+    }, `dispatch:${types.TOKEN_FETCH_BALANCE_REQUESTED}`);
+
+    const [wallet] = HathorWalletServiceWallet.instances;
+    expect(wallet.startReadOnlyArgs).toEqual([]);
+    expect(registerShieldedCryptoProvider).not.toHaveBeenCalled();
+    expect(log).not.toContain('setShieldedScanKey');
+  });
+
+  // The facade has no locked state for a passkey ceremony to unlock later: the fullnode facade
+  // has, so the wallet starts there.
+  test('starts on the fullnode facade without a scan key held for the session', async () => {
+    getPasskeyScanKey.mockReturnValue(null);
+
+    await start();
+
+    expect(HathorWalletServiceWallet.instances).toEqual([]);
+    expect(HathorWallet.instances).toHaveLength(1);
+    expect(registerShieldedCryptoProvider).toHaveBeenCalledWith(HathorWallet.instances[0]);
+  });
+
+  test('starts on the fullnode facade on a wallet-lib that can\'t run it with shielded keys on the facade', async () => {
+    supportsPasskeyShieldedWalletService.mockReturnValue(false);
+
+    await start();
+
+    expect(HathorWalletServiceWallet.instances).toEqual([]);
+    expect(HathorWallet.instances).toHaveLength(1);
+  });
+
+  test('starts again on the fullnode facade when the wallet-service has no shielded keys for it', async () => {
+    HathorWalletServiceWallet.shieldedEnabled = false;
+    HathorWallet.onStart = async () => null;
+
+    const { log, dispatched } = await start({}, `dispatch:${types.START_WALLET_REQUESTED}`);
+
+    expect(log).not.toContain('setShieldedScanKey');
+    expect(log).toContain(`stop:${JSON.stringify({ cleanStorage: false })}`);
+    expect(await AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG)).toMatch(/^\d+$/);
+    expect(capabilityUpdates(dispatched)).toEqual([]);
+  });
+
+  test('starts again on the fullnode facade when the scan key is refused, without a report', async () => {
+    HathorWallet.onStart = async () => null;
+    HathorWalletServiceWallet.onSetShieldedScanKey = async () => {
+      throw new hathorErrors.ShieldedKeyError('shielded-key-mismatch', 'not the key of the scan xpub');
+    };
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { log, dispatched } = await start({}, `dispatch:${types.START_WALLET_REQUESTED}`);
+
+    expect(log).toContain('setShieldedScanKey');
+    expect(log).toContain(`stop:${JSON.stringify({ cleanStorage: false })}`);
+    expect(await AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG)).toMatch(/^\d+$/);
+    expect(capabilityUpdates(dispatched)).toEqual([]);
+    expect(dispatched.some((action) => action.type === types.EXCEPTION_CAPTURED)).toBe(false);
+  });
+
+  // A network change or a reset stopped it, and starts the next wallet: a fallback would put that
+  // one on the fullnode facade.
+  test('leaves a wallet that stopped before its scan key was set, without a fallback', async () => {
+    HathorWallet.onStart = async () => null;
+    HathorWalletServiceWallet.onSetShieldedScanKey = async () => {
+      throw new hathorErrors.ShieldedKeyError('shielded-not-started', 'The wallet is not started.');
+    };
+    const log = [];
+    const dispatched = [];
+    HathorWallet.log = log;
+    const task = runSaga(
+      {
+        channel: stdChannel(),
+        dispatch: (action) => { if (action?.type) dispatched.push(action); },
+        getState: stubStart({
+          networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+          walletMeta: REGISTERED_META,
+          featureToggles: WS_FLAG,
+        }),
+      },
+      startWallet,
+      startWalletRequested({ words: WORDS, pin: PIN }),
+    );
+    // The saga's forks keep it running: let it go on past the refused key before checking.
+    for (let i = 0; i < 20 && !log.includes('setShieldedScanKey'); i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((resolve) => { setImmediate(resolve); });
+    }
+    for (let i = 0; i < 20; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((resolve) => { setImmediate(resolve); });
+    }
+    task.cancel();
+
+    expect(log).toContain('setShieldedScanKey');
+    expect(log).not.toContain(`stop:${JSON.stringify({ cleanStorage: false })}`);
+    expect(await AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG)).toBeNull();
+    expect(dispatched.map((action) => action.type)).not.toContain(types.START_WALLET_REQUESTED);
+    expect(capabilityUpdates(dispatched)).toEqual([]);
+    expect(dispatched.some((action) => action.type === types.EXCEPTION_CAPTURED)).toBe(false);
+  });
+
+  test('reports an unexpected failure to set the scan key, and starts again on the fullnode facade', async () => {
+    HathorWallet.onStart = async () => null;
+    const failure = new Error('unexpected');
+    HathorWalletServiceWallet.onSetShieldedScanKey = async () => { throw failure; };
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { dispatched } = await start({}, `dispatch:${types.START_WALLET_REQUESTED}`);
+
+    expect(dispatched).toContainEqual(onExceptionCaptured(failure, false));
+    expect(capabilityUpdates(dispatched)).toEqual([]);
+  });
+
+  test('starts on the fullnode facade, without starting on the wallet-service, when the crypto provider failed', async () => {
+    const { log, dispatched } = await start(
+      { shielded: { providerStatus: SHIELDED_PROVIDER_STATUS.FAILED } },
+      `dispatch:${types.START_WALLET_REQUESTED}`,
     );
 
-    expect(HathorWalletServiceWallet.instances).toHaveLength(1);
-    expect(log).toContain('startReadOnly');
-    expect(registerShieldedCryptoProvider).not.toHaveBeenCalled();
-    expect(capabilityUpdates(dispatched)).toEqual([]);
+    expect(registerShieldedCryptoProvider).toHaveBeenCalledTimes(1);
+    expect(log).not.toContain('startReadOnly');
+    expect(await AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG)).toMatch(/^\d+$/);
+    expect(dispatched[dispatched.length - 1].type).toBe(types.START_WALLET_REQUESTED);
   });
 });
 
@@ -800,10 +1010,9 @@ function runningWallet() {
 
 // A wallet-service-facade wallet: it is not a HathorWallet.
 function walletServiceWallet() {
-  const { EventEmitter } = jest.requireActual('events');
-  const wallet = new EventEmitter();
-  wallet.conn = new EventEmitter();
+  const wallet = new HathorWalletServiceWallet({});
   wallet.stop = jest.fn(async () => {});
+  wallet.setShieldedScanKey = jest.fn(async () => {});
   return wallet;
 }
 
@@ -896,11 +1105,22 @@ describe('waitForWalletRestart', () => {
     expect(wallet.stop).not.toHaveBeenCalled();
   });
 
-  test('does not stop a wallet-service wallet', async () => {
+  test('does not stop a wallet-service wallet, and drops its scan key', async () => {
     const wallet = walletServiceWallet();
 
     expect(await run([reloadWalletRequested()], { wallet })).toEqual([startAction]);
     expect(wallet.stop).not.toHaveBeenCalled();
+    expect(wallet.setShieldedScanKey).toHaveBeenCalledWith(null);
+  });
+
+  test('reloads a wallet-service wallet of a wallet-lib without setShieldedScanKey', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const wallet = walletServiceWallet();
+    wallet.setShieldedScanKey = undefined;
+
+    expect(await run([reloadWalletRequested()], { wallet })).toEqual([startAction]);
+    expect(wallet.stop).not.toHaveBeenCalled();
+    expect(consoleError).not.toHaveBeenCalled();
   });
 
   test('logs a stop that fails and starts the wallet again', async () => {
@@ -971,6 +1191,15 @@ describe('onStartWalletFailed', () => {
 
     expect(dispatched).toEqual([setWallet(null)]);
     expect(wallet.stop).not.toHaveBeenCalled();
+  });
+
+  test('drops the scan key of a wallet-service wallet', async () => {
+    const wallet = walletServiceWallet();
+
+    const { task } = run(wallet);
+    await task.toPromise();
+
+    expect(wallet.setShieldedScanKey).toHaveBeenCalledWith(null);
   });
 });
 

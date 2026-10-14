@@ -14,6 +14,14 @@ jest.mock('../../src/store', () => ({
   },
 }));
 
+jest.mock('../../src/passkey/shieldedKeys', () => ({
+  supportsPasskeyShieldedWalletService: jest.fn(() => false),
+}));
+
+jest.mock('../../src/shielded/cryptoProvider', () => ({
+  loadShieldedCryptoProvider: jest.fn(async () => ({ provider: {} })),
+}));
+
 jest.mock('../../src/logger', () => {
   const log = {
     error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn(), log: jest.fn(),
@@ -26,6 +34,8 @@ import { HathorWalletServiceWallet, config, errors as hathorErrors } from '@hath
 import { STORE } from '../../src/store';
 import { logger } from '../../src/logger';
 import { PRE_SETTINGS_SHIELDED_TESTNET, WALLET_SERVICE_FEATURE_TOGGLE } from '../../src/constants';
+import { supportsPasskeyShieldedWalletService } from '../../src/passkey/shieldedKeys';
+import { loadShieldedCryptoProvider } from '../../src/shielded/cryptoProvider';
 import {
   completeWalletServiceRegistration,
   facadeSupportsExternalSigner,
@@ -51,6 +61,7 @@ const makeTempWallet = (order = []) => ({
   start: jest.fn(async () => { order.push('start'); }),
   stop: jest.fn(async () => { order.push('stop'); }),
   clearSensitiveData: jest.fn(),
+  isShieldedEnabled: jest.fn(() => true),
 });
 
 const WORDS = new Array(24).fill('abandon').join(' ');
@@ -71,6 +82,7 @@ const setFacadeSupport = (supported) => {
 beforeEach(() => {
   jest.clearAllMocks();
   STORE.getWalletMeta.mockReturnValue({ walletType: 'passkey', xpub: 'xpub' });
+  supportsPasskeyShieldedWalletService.mockReturnValue(false);
 });
 
 afterEach(() => {
@@ -132,11 +144,19 @@ describe('shouldRegisterOnWalletService', () => {
     expect(shouldRegisterOnWalletService(flagOn, NETWORK_SETTINGS)).toBe(false);
   });
 
-  test('never on the shielded testnet, which would get the passkey seed\'s scan key', () => {
+  // Registering hands the passkey seed's scan key to the wallet-service, which then counts the
+  // private funds: only when the app can run the wallet with them on the facade.
+  test('on the shielded testnet, only when the lib runs passkey wallets with shielded keys on the facade', () => {
     setFacadeSupport(true);
+    supportsPasskeyShieldedWalletService.mockReturnValue(false);
     expect(shouldRegisterOnWalletService(flagOn, PRE_SETTINGS_SHIELDED_TESTNET)).toBe(false);
     expect(walletServiceRegistrationForUnlock(flagOn, PRE_SETTINGS_SHIELDED_TESTNET))
       .toBeUndefined();
+
+    supportsPasskeyShieldedWalletService.mockReturnValue(true);
+    expect(shouldRegisterOnWalletService(flagOn, PRE_SETTINGS_SHIELDED_TESTNET)).toBe(true);
+    expect(walletServiceRegistrationForUnlock(flagOn, PRE_SETTINGS_SHIELDED_TESTNET))
+      .toEqual(expect.any(Function));
   });
 });
 
@@ -179,7 +199,7 @@ describe('prepareWalletServiceRegistration', () => {
 
     const registration = prepareWalletServiceRegistration(WORDS, NETWORK_SETTINGS);
 
-    expect(registration).toEqual({ tempWallet, walletServiceUrl: URL });
+    expect(registration).toEqual({ tempWallet, walletServiceUrl: URL, shieldedNetwork: false });
     const [options] = HathorWalletServiceWallet.mock.calls[0];
     expect(options).toMatchObject({ seed: WORDS, enableWs: false });
     expect(options.network.name).toBe(NETWORK_SETTINGS.network);
@@ -187,6 +207,14 @@ describe('prepareWalletServiceRegistration', () => {
     expect(setWsUrl).toHaveBeenCalledWith(NETWORK_SETTINGS.walletServiceWsUrl);
     // Starting talks to the wallet-service; it happens later, outside the passkey ceremony.
     expect(tempWallet.start).not.toHaveBeenCalled();
+  });
+
+  test('marks a registration on the shielded testnet', () => {
+    HathorWalletServiceWallet.mockImplementation(() => makeTempWallet());
+
+    const registration = prepareWalletServiceRegistration(WORDS, PRE_SETTINGS_SHIELDED_TESTNET);
+
+    expect(registration.shieldedNetwork).toBe(true);
   });
 });
 
@@ -204,6 +232,59 @@ describe('completeWalletServiceRegistration', () => {
     expect(password).toBe(pinCode);
     expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ walletServiceRegistrations: [URL] });
     expect(tempWallet.stop).toHaveBeenCalledWith({ cleanStorage: true });
+    expect(loadShieldedCryptoProvider).not.toHaveBeenCalled();
+  });
+
+  test('on the shielded testnet, loads the crypto provider before the start registers the keys', async () => {
+    const order = [];
+    const tempWallet = makeTempWallet(order);
+    loadShieldedCryptoProvider.mockImplementationOnce(async () => {
+      order.push('provider');
+      return { provider: {} };
+    });
+
+    await completeWalletServiceRegistration({
+      tempWallet,
+      walletServiceUrl: URL,
+      shieldedNetwork: true,
+    });
+
+    expect(order).toEqual(['provider', 'start', 'stop']);
+    expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ walletServiceRegistrations: [URL] });
+  });
+
+  // A passkey wallet only registers here, unlike a seed wallet that sends its keys at each start:
+  // recording it would keep it off the facade's shielded side for good.
+  test('on the shielded testnet, records nothing when the service did not register the shielded keys', async () => {
+    const order = [];
+    const tempWallet = makeTempWallet(order);
+    tempWallet.isShieldedEnabled.mockReturnValue(false);
+
+    await completeWalletServiceRegistration({
+      tempWallet,
+      walletServiceUrl: URL,
+      shieldedNetwork: true,
+    });
+
+    expect(order).toEqual(['start', 'stop']);
+    expect(tempWallet.stop).toHaveBeenCalledWith({ cleanStorage: true });
+    expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
+  });
+
+  // As for a seed wallet: the service would count private funds the app can't spend.
+  test('on the shielded testnet, registers nothing without a crypto provider', async () => {
+    const tempWallet = makeTempWallet();
+    loadShieldedCryptoProvider.mockResolvedValueOnce({ error: new Error('no native module') });
+
+    await expect(completeWalletServiceRegistration({
+      tempWallet,
+      walletServiceUrl: URL,
+      shieldedNetwork: true,
+    })).rejects.toThrow('no native module');
+
+    expect(tempWallet.start).not.toHaveBeenCalled();
+    expect(tempWallet.clearSensitiveData).toHaveBeenCalledTimes(1);
+    expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
   });
 });
 
@@ -222,7 +303,7 @@ describe('registration at unlock', () => {
     const onWords = walletServiceRegistrationForUnlock(flagOn, NETWORK_SETTINGS);
     const registration = onWords(WORDS);
 
-    expect(registration).toEqual({ tempWallet, walletServiceUrl: URL });
+    expect(registration).toEqual({ tempWallet, walletServiceUrl: URL, shieldedNetwork: false });
     expect(tempWallet.start).not.toHaveBeenCalled();
   });
 

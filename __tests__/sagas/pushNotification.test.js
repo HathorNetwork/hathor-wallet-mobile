@@ -432,7 +432,8 @@ describe('startWallet (passkey wallet)', () => {
     expect(params.seed).toBeUndefined();
     expect(params.requestPassword.name).toBe('passkeyRequestPassword');
     // The passkey signer is registered, and the wallet is started read-only (it's registered).
-    expect(facadeWallet.setExternalTxSigningMethod).toHaveBeenCalledWith(expect.any(Function));
+    expect(facadeWallet.setExternalTxSigningMethod)
+      .toHaveBeenCalledWith(expect.any(Function), { shieldedSpend: true });
     expect(step.value.payload.context).toBe(facadeWallet);
   });
 
@@ -456,7 +457,8 @@ describe('startWallet (passkey wallet)', () => {
 
     // Message and oracle signing get their key from the passkey provider.
     expect(facadeWallet.setExternalPrivateKeyMethod).toHaveBeenCalledWith(expect.any(Function));
-    expect(facadeWallet.setExternalTxSigningMethod).toHaveBeenCalledWith(expect.any(Function));
+    expect(facadeWallet.setExternalTxSigningMethod)
+      .toHaveBeenCalledWith(expect.any(Function), { shieldedSpend: true });
 
     // The send signer's ceremony mints the full token from the auth key of its root.
     const [{ onRootKey }] = signerSpy.mock.calls[0];

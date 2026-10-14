@@ -52,6 +52,7 @@ import {
   clearPasskeyScanKey,
   getPasskeyScanKey,
   getPasskeyShieldedXpubs,
+  supportsPasskeyShieldedWalletService,
   syncPasskeyShieldedAccessData,
 } from '../passkey/shieldedKeys';
 import {
@@ -336,10 +337,20 @@ export function* startWallet(action) {
   // starting an unregistered wallet would poll for a minute and fail) and the bundled wallet-lib
   // must support an external signer on that facade. Otherwise they stay on the fullnode facade.
   // Push notifications work on both (see pushNotification.js loadWallet).
+  // On the shielded testnet a passkey wallet also needs its shielded xpubs and the scan key held
+  // for the session, which the facade gets after start(): it has no locked state that a passkey
+  // ceremony could unlock later. Without them it runs on the fullnode facade, where its shielded
+  // outputs stay locked until a ceremony unlocks them.
+  const passkeyScanKey = isPasskeyWallet ? getPasskeyScanKey() : null;
   const useWalletService = isPasskeyWallet
     ? walletServiceEnabled
       && isWalletServiceRegistered(networkSettings.walletServiceUrl)
       && facadeSupportsExternalSigner()
+      && (!isShieldedNetwork(networkSettings) || (
+        supportsPasskeyShieldedWalletService()
+        && passkeyShieldedXpubs !== null
+        && passkeyScanKey !== null
+      ))
     : walletServiceEnabled;
   const usePushNotification = yield call(isPushNotificationEnabled);
 
@@ -388,7 +399,8 @@ export function* startWallet(action) {
     if (isPasskeyWallet) {
       // Xpub-only on the facade: browsing uses read-only tokens. Each send's passkey ceremony also
       // derives the auth key and mints a full token for that send (onRootKey), so the auth key is
-      // never stored and a send still costs one Face ID.
+      // never stored and a send still costs one Face ID. The signer also signs the inputs that
+      // spend shielded outputs, on the shielded spend chain.
       wallet = new HathorWalletServiceWallet({
         requestPassword: passkeyRequestPassword,
         xpub: walletMeta.xpub,
@@ -398,7 +410,7 @@ export function* startWallet(action) {
       });
       wallet.setExternalTxSigningMethod(makePasskeyTxSigner({
         onRootKey: passkeyFullTokenHook(wallet),
-      }));
+      }), { shieldedSpend: true });
     } else {
       wallet = new HathorWalletServiceWallet({
         requestPassword: () => showPinScreenForResult(dispatch),
@@ -407,18 +419,18 @@ export function* startWallet(action) {
         storage,
         singleAddressMode,
       });
-      // The provider must be set before start(), which registers the shielded keys with the
-      // wallet-service; the sends of a wallet with shielded keys need it to build their outputs
-      // and read the shielded ones they spend.
-      if (shieldedChainActive) {
-        yield call(registerShieldedCryptoProvider, wallet);
-        const providerStatus = yield select((state) => state.shielded?.providerStatus);
-        if (providerStatus === SHIELDED_PROVIDER_STATUS.FAILED) {
-          // Without a provider the wallet must not register its shielded keys: the service would
-          // count private funds it can't spend. It runs transparent-only on the fullnode facade.
-          yield call(fallBackToFullnodeFacade, action, null);
-          return;
-        }
+    }
+    // The provider must be set before start(), which registers a seed wallet's shielded keys with
+    // the wallet-service; the sends of a wallet with shielded keys need it to build their outputs
+    // and read the shielded ones they spend.
+    if (shieldedChainActive) {
+      yield call(registerShieldedCryptoProvider, wallet);
+      const providerStatus = yield select((state) => state.shielded?.providerStatus);
+      if (providerStatus === SHIELDED_PROVIDER_STATUS.FAILED) {
+        // Without a provider the wallet must not use its shielded keys: the service would count
+        // private funds it can't spend. It runs transparent-only on the fullnode facade.
+        yield call(fallBackToFullnodeFacade, action, null);
+        return;
       }
     }
   } else {
@@ -509,9 +521,14 @@ export function* startWallet(action) {
     // We need to update this when we start returning something there.
     // The xpub-only (passkey) start takes no pinCode/password — there is nothing to decrypt. On the
     // wallet-service facade it is startReadOnly(): the wallet already exists there (registered).
+    // With a shielded chain, it is given the shielded xpubs, and uses them once it checked that
+    // the wallet-service registered them.
     let serverInfo;
     if (isPasskeyWallet && useWalletService) {
-      serverInfo = yield call([wallet, wallet.startReadOnly]);
+      const startReadOnlyArgs = shieldedChainActive
+        ? [{ shieldedXpubs: passkeyShieldedXpubs }]
+        : [];
+      serverInfo = yield call([wallet, wallet.startReadOnly], ...startReadOnlyArgs);
     } else {
       const startOptions = isPasskeyWallet
         ? passkeyStartOptions(shieldedChainActive)
@@ -614,6 +631,27 @@ export function* startWallet(action) {
       yield call(fallBackToFullnodeFacade, action, wallet);
       return;
     }
+    if (isPasskeyWallet) {
+      // A seed wallet's start() keeps its scan key in memory; a passkey wallet gets the one held
+      // for the session, which its sends need to read the shielded outputs they spend.
+      try {
+        yield call([wallet, wallet.setShieldedScanKey], passkeyScanKey);
+      } catch (e) {
+        if (e instanceof errors.ShieldedKeyError && e.errorCode === 'shielded-not-started') {
+          // A network change or a reset stopped the wallet meanwhile, and starts the next one:
+          // falling back would put that one on the fullnode facade.
+          log.log('The passkey wallet stopped before its scan key was set.');
+          return;
+        }
+        // The key isn't the one of the shielded xpubs the start used.
+        log.error('Failed to set the scan key of the passkey wallet.', e);
+        if (!(e instanceof errors.ShieldedKeyError)) {
+          yield put(onExceptionCaptured(e, false));
+        }
+        yield call(fallBackToFullnodeFacade, action, wallet);
+        return;
+      }
+    }
     // A wallet-service facade wallet has no capability event: its capability is set at start()
     // and stays, so it is put once here.
     yield put(shieldedCapabilityUpdate(walletServiceShieldedCapability(wallet)));
@@ -663,12 +701,22 @@ export function* startWallet(action) {
  * Stops the fullnode-facade wallet that a reload or a failed start drops, keeping its storage
  * (cleanStorage: false): the next start builds its own. Without it, the dropped wallet keeps its
  * websocket open and its shielded scan key in memory. A wallet that is already stopped, as after
- * a network change, and a wallet-service wallet are left as they are. A stop that fails is
- * logged, and the caller goes on.
+ * a network change, is left as it is, and a wallet-service wallet only drops its scan key. A stop
+ * that fails is logged, and the caller goes on.
  *
  * @param {Object|null} wallet The wallet the app drops
  */
 export function* stopDroppedWallet(wallet) {
+  if (wallet instanceof HathorWalletServiceWallet) {
+    if (typeof wallet.setShieldedScanKey === 'function') {
+      try {
+        yield call([wallet, wallet.setShieldedScanKey], null);
+      } catch (e) {
+        log.error('Failed to drop the scan key of the wallet the app drops.', e);
+      }
+    }
+    return;
+  }
   if (!(wallet instanceof HathorWallet) || wallet.walletStopped) {
     return;
   }
@@ -680,8 +728,8 @@ export function* stopDroppedWallet(wallet) {
 }
 
 /**
- * Starts a seed wallet on the shielded testnet again on the fullnode facade, when the
- * wallet-service facade can't run its shielded side. It sets the flag a failed wallet-service start
+ * Starts a wallet on the shielded testnet again on the fullnode facade, when the wallet-service
+ * facade can't run its shielded side. It sets the flag a failed wallet-service start
  * sets, so the wallet-service is tried again once it expires.
  *
  * @param {Object} action The START_WALLET_REQUESTED action that started the wallet
