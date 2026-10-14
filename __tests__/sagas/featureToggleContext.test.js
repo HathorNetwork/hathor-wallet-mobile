@@ -7,8 +7,10 @@
 
 import { jest, describe, test, expect } from '@jest/globals';
 
-// What iOS reports for a 0.40.0-rc.1 build: its native version can't carry the rc suffix.
-jest.mock('react-native-version-number', () => ({ appVersion: '0.40.0', buildVersion: '0.1.0' }));
+// A native version that package.json never has, so the context can only carry the package.json
+// one if it reads it from there. (On iOS the native version can't carry a prerelease suffix: a
+// 0.40.0-rc.1 build reports 0.40.0.)
+jest.mock('react-native-version-number', () => ({ appVersion: 'native-version', buildVersion: '1' }));
 
 const mockClients = [];
 jest.mock('@hathor/unleash-client', () => {
@@ -59,7 +61,6 @@ describe('monitorFeatureFlags', () => {
       network: PRE_SETTINGS_TESTNET.fullNetwork,
       appVersion: packageJson.version,
     });
-    expect(context.properties.appVersion).not.toBe('0.40.0');
     expect(appName).toBe(`wallet-mobile-${Platform.OS}`);
   });
 });
