@@ -184,6 +184,41 @@ const AVAILABLE_METHODS = {
 const AVAILABLE_EVENTS = [];
 
 /**
+ * A nano contract ID is a 32-byte hash, 64 hex characters.
+ *
+ * htr_signOracleData signs sha256(nc_id || serialized data) with the oracle address's key, and an
+ * input signature of a transaction is the same kind of signature over a 32-byte digest. With a
+ * shorter nc_id, a dApp can pick nc_id and a one-character data so that their concatenation is
+ * the digest of a transaction it built, and the "oracle" signature then spends the address's
+ * funds. With exactly 32 bytes of nc_id, the signed value is always longer than a digest.
+ */
+const NANO_CONTRACT_ID_PATTERN = /^[0-9a-f]{64}$/i;
+
+/**
+ * Whether an htr_signOracleData request names a nano contract ID that wallet-lib reads as exactly
+ * 32 bytes. wallet-lib's hex decoding stops at the first invalid character instead of failing, so
+ * anything other than 64 hex characters is refused.
+ *
+ * @param {Object} request The RPC request
+ * @returns {boolean}
+ */
+function hasValidOracleNanoContractId(request) {
+  const ncId = request?.params?.nc_id;
+  return typeof ncId === 'string' && NANO_CONTRACT_ID_PATTERN.test(ncId);
+}
+
+/**
+ * The request has an nc_id that would let an oracle signature serve as a transaction's input
+ * signature (see NANO_CONTRACT_ID_PATTERN).
+ */
+class InvalidOracleNanoContractIdError extends Error {
+  constructor() {
+    super('htr_signOracleData requires nc_id to be a nano contract ID: 64 hex characters.');
+    this.name = 'InvalidOracleNanoContractIdError';
+  }
+}
+
+/**
  * Methods that sign with the private key of one of our addresses rather than a tx signature:
  * htr_signWithAddress (wallet.signMessageWithAddress) and htr_signOracleData
  * (nanoUtils.getOracleInputData). For passkey wallets the key comes from the passkey private-key
@@ -811,6 +846,35 @@ export function* processRequest(action) {
       return false;
     }
 
+    // Refused before the rpc handler, which accepts any nc_id string and would show the user only
+    // the oracle and the data before signing.
+    if (
+      params.request.method === AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA
+      && !hasValidOracleNanoContractId(params.request)
+    ) {
+      const error = new InvalidOracleNanoContractIdError();
+      log.error(`Rejecting ${params.request.method}: ${error.message}`);
+      const errorDetails = extractErrorDetails(error);
+      yield put(setReownError(errorDetails));
+      // The modal shows its generic message, and the error details have the reason.
+      yield put(setReownModal({
+        show: true,
+        type: ReownModalTypes.REQUEST_ERROR,
+      }));
+      yield call(() => walletKit.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: ERROR_CODES.INVALID_PAYLOAD,
+            message: error.message,
+          },
+        },
+      }));
+      return false;
+    }
+
     // wallet-lib validates shielded addresses, but outside the shielded environment this wallet
     // cannot pay, mint to or otherwise use them. Reject the request there before the rpc handler
     // builds a transaction for it, checking the addresses on the network of the wallet that would
@@ -1291,10 +1355,12 @@ const promptHandler = (dispatch, wallet) => (request, requestMetadata) =>
           data: accepted,
         });
 
+        // The prompt carries the oracle and the data; the contract the data is signed for is in
+        // the request's params, and the user sees it too.
         dispatch(showSignOracleDataModal(
           signOracleDataResponseTemplate(true),
           signOracleDataResponseTemplate(false),
-          request.data,
+          { ...request.data, ncId: request.params?.nc_id },
           requestMetadata,
         ));
       } break;
