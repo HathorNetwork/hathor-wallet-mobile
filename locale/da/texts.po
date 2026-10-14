@@ -57,25 +57,29 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:834
+#: src/models.js:107 src/utils.js:860
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:271
+#: src/utils.js:257
+msgid "This wallet does not support shielded addresses."
+msgstr ""
+
+#: src/utils.js:297
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
-#: src/utils.js:819
+#: src/utils.js:845
 msgid "CREATE DEPOSIT TOKEN"
 msgstr ""
 
-#: src/utils.js:821
+#: src/utils.js:847
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:90
 #: src/screens/CreateTokenDepositNotice.js:42
-#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:823
+#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:849
 msgid "CREATE TOKEN"
 msgstr "OPRET TOKEN"
 
@@ -286,36 +290,36 @@ msgstr ""
 msgid "Please double check the words you saved and start the process again."
 msgstr ""
 
-#: src/screens/ChangePin.js:113
+#: src/screens/ChangePin.js:118
 msgid "Incorrect PIN code."
 msgstr "Forkert PIN-kode."
 
-#: src/screens/ChangePin.js:149
+#: src/screens/ChangePin.js:154
 msgid "PIN codes don't match."
 msgstr "PIN-koder stemmer ikke overens."
 
 #.  Should never get here because we've done all the validations before
-#: src/screens/ChangePin.js:178
+#: src/screens/ChangePin.js:186
 msgid "Error while changing PIN"
 msgstr "Fejl under ændring af pinkode"
 
-#: src/screens/ChangePin.js:185
+#: src/screens/ChangePin.js:193
 msgid "Please enter your **current PIN**"
 msgstr "Indtast din **aktuelle PIN**"
 
-#: src/screens/ChangePin.js:198
+#: src/screens/ChangePin.js:206
 msgid "Please enter your **new PIN**"
 msgstr "Indtast din **PIN**"
 
-#: src/screens/ChangePin.js:211
+#: src/screens/ChangePin.js:219
 msgid "Please enter your **new PIN** again"
 msgstr "Indtast din **nye PIN** igen"
 
-#: src/screens/ChangePin.js:226
+#: src/screens/ChangePin.js:234
 msgid "New PIN recorded"
 msgstr "Ny PIN gemt"
 
-#: src/screens/ChangePin.js:236
+#: src/screens/ChangePin.js:244
 msgid "CHANGE PIN"
 msgstr "SKIFT PIN"
 
@@ -360,7 +364,7 @@ msgstr ""
 msgid "Import tokens"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:209
+#: src/components/PasskeyOnboardingButton.js:225
 #: src/screens/ConfirmImportScreen.js:130
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:80
 #: src/screens/Reown/SuccessFeedbackScreen.js:39
@@ -413,58 +417,58 @@ msgid ""
 "each future transaction of this token."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:155
+#: src/screens/CreateTokenConfirm.js:157
 msgid "Creating token"
 msgstr "Opretter token"
 
-#: src/screens/CreateTokenConfirm.js:161
+#: src/screens/CreateTokenConfirm.js:163
 msgid "Building the transaction"
 msgstr ""
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:179
+#: src/screens/CreateTokenConfirm.js:181
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Indtast din 6-cifrede pin for at oprette din token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:180
+#: src/screens/CreateTokenConfirm.js:182
 msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:182 src/screens/SendConfirmScreen.js:200
-#: src/screens/TokenSwapReview.js:263
+#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:210
+#: src/screens/TokenSwapReview.js:265
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:223
+#: src/screens/CreateTokenConfirm.js:225
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:240
+#: src/screens/CreateTokenConfirm.js:242
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:254
+#: src/screens/CreateTokenConfirm.js:256
 msgid "Token name"
 msgstr "Token navn"
 
-#: src/screens/CreateTokenConfirm.js:260 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:262 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Token symbol"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:267
+#: src/screens/CreateTokenConfirm.js:269
 msgid "Deposit"
 msgstr "Indsæt"
 
-#: src/screens/CreateTokenConfirm.js:275
+#: src/screens/CreateTokenConfirm.js:277
 msgid "Network fee"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:284
+#: src/screens/CreateTokenConfirm.js:286
 msgid "Create token"
 msgstr "Opret token"
 
@@ -726,7 +730,7 @@ msgstr "Indtast dine seed-ord adskilt med mellemrum"
 #: src/components/Reown/SendTransactionRequest.js:550
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:176
-#: src/screens/PinScreen.js:283 src/screens/TokenSwapLoadingScreen.js:90
+#: src/screens/PinScreen.js:289 src/screens/TokenSwapLoadingScreen.js:90
 msgid "Try again"
 msgstr ""
 
@@ -748,8 +752,8 @@ msgstr "**${ props.loadedData.addresses } adresser** fundet"
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:182
-#: src/screens/PinScreen.js:318 src/screens/Settings.js:186
+#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:199
+#: src/screens/PinScreen.js:324 src/screens/Settings.js:186
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
@@ -803,45 +807,45 @@ msgstr ""
 msgid "Scan the nano contract ID QR code"
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:77
+#: src/screens/PasskeyLockScreen.js:94
 msgid "Unlock cancelled."
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:93
+#: src/screens/PasskeyLockScreen.js:110
 msgid "Could not verify your passkey. Please try again."
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:146
+#: src/screens/PasskeyLockScreen.js:163
 #, javascript-format
 msgid "Unlock with the passkey \"${ passkeyLabel }\""
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:147
+#: src/screens/PasskeyLockScreen.js:164
 msgid "Unlock with your passkey"
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:167
+#: src/screens/PasskeyLockScreen.js:184
 msgid "Unlock"
 msgstr ""
 
-#: src/screens/PinScreen.js:272
+#: src/screens/PinScreen.js:278
 msgid "Incorrect PIN Code. Try again."
 msgstr "Forkert PIN-kode. Prøv igen."
 
-#: src/screens/PinScreen.js:76
+#: src/screens/PinScreen.js:78
 msgid "Enter your PIN Code "
 msgstr "Indtast din pinkode "
 
-#: src/screens/PinScreen.js:77
+#: src/screens/PinScreen.js:79
 msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:176
+#: src/screens/PinScreen.js:315 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr "Annuller"
 
-#: src/screens/PinScreen.js:349 src/screens/PinScreen.js:353
+#: src/screens/PinScreen.js:355 src/screens/PinScreen.js:359
 msgid "Biometry failed or canceled."
 msgstr "Biometri mislykkedes eller blev annulleret."
 
@@ -991,36 +995,36 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr "Nulstil wallet"
 
-#: src/screens/Security.js:145
+#: src/screens/Security.js:150
 msgid "Disable biometry"
 msgstr "Deaktiver biometri"
 
-#: src/screens/Security.js:146
+#: src/screens/Security.js:151
 msgid "Disabling biometry"
 msgstr "Deaktiverer biometri"
 
-#: src/screens/Security.js:158 src/screens/Security.js:170
+#: src/screens/Security.js:163 src/screens/Security.js:175
 msgid "Enter your 6-digit pin to enable biometry"
 msgstr "Indtast din 6-cifrede pin for at aktivere biometri"
 
-#: src/screens/Security.js:183
+#: src/screens/Security.js:188
 msgid "No biometry supported"
 msgstr "Ingen biometri understøttet"
 
-#: src/screens/Security.js:183
+#: src/screens/Security.js:188
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Brug ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:195
+#: src/screens/Security.js:200
 msgid "SECURITY"
 msgstr "SIKKERHED"
 
-#: src/screens/Security.js:221
+#: src/screens/Security.js:226
 msgid "Change PIN"
 msgstr "Skift pinkode"
 
-#: src/screens/Security.js:226
+#: src/screens/Security.js:231
 msgid "Lock wallet"
 msgstr "Lås wallet"
 
@@ -1043,101 +1047,107 @@ msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:291
+#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:301
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:362
+#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:364
 msgid "No fee"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:55
+#: src/screens/SendConfirmScreen.js:60
 msgid "Insufficient HTR to cover the network fee."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:58
+#: src/screens/SendConfirmScreen.js:63
 msgid "Insufficient balance to send this transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:60
+#: src/screens/SendConfirmScreen.js:66
+msgid ""
+"This amount needs more inputs than a transaction can hold. Try sending a "
+"smaller amount."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:68
 msgid "Failed to process transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:218
+#: src/screens/SendConfirmScreen.js:189 src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:198
-#: src/screens/TokenSwapReview.js:261
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:208
+#: src/screens/TokenSwapReview.js:263
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:199
-#: src/screens/TokenSwapReview.js:262
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:209
+#: src/screens/TokenSwapReview.js:264
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
-#: src/screens/SendConfirmScreen.js:239
+#: src/screens/SendConfirmScreen.js:249
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendConfirmScreen.js:262
+#: src/screens/SendConfirmScreen.js:272
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:265
+#: src/screens/SendConfirmScreen.js:275
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:268
+#: src/screens/SendConfirmScreen.js:278
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:270
+#: src/screens/SendConfirmScreen.js:280
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:275
+#: src/screens/SendConfirmScreen.js:285
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:297
+#: src/screens/SendConfirmScreen.js:307
 msgid "Building your transaction"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:315
+#: src/screens/SendConfirmScreen.js:325
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:331
+#: src/screens/SendConfirmScreen.js:341
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:353
+#: src/screens/SendConfirmScreen.js:363
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:356
+#: src/screens/SendConfirmScreen.js:366
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:361
+#: src/screens/SendConfirmScreen.js:371
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:369
+#: src/screens/SendConfirmScreen.js:379
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:376
+#: src/screens/SendConfirmScreen.js:386
 msgid "Send"
 msgstr "Send"
 
@@ -1228,25 +1238,25 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:273
+#: src/screens/TokenSwapReview.js:275
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:279
+#: src/screens/TokenSwapReview.js:281
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:297
+#: src/screens/TokenSwapReview.js:299
 msgid "Your swap was successful"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:358
+#: src/screens/TokenSwapReview.js:360
 msgid "Network Fee"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:370
+#: src/screens/TokenSwapReview.js:372
 msgid "SWAP"
 msgstr ""
 
@@ -1684,29 +1694,29 @@ msgstr ""
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/pushNotification.js:77
+#: src/sagas/pushNotification.js:88
 msgid "Transaction"
 msgstr "Transaktion"
 
-#: src/sagas/pushNotification.js:78
+#: src/sagas/pushNotification.js:89
 msgid "Open"
 msgstr "Åben"
 
-#: src/sagas/wallet.js:952
+#: src/sagas/wallet.js:1051
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:966
+#: src/sagas/wallet.js:1065
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:976
+#: src/sagas/wallet.js:1075
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:992
+#: src/sagas/wallet.js:1091
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -1891,54 +1901,54 @@ msgstr ""
 msgid "No internet connection"
 msgstr "Ingen internetforbindelse"
 
-#: src/components/PasskeyOnboardingButton.js:124
+#: src/components/PasskeyOnboardingButton.js:140
 msgid "Passkey unavailable"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:138
+#: src/components/PasskeyOnboardingButton.js:154
 msgid "Hathor Wallet"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:151
+#: src/components/PasskeyOnboardingButton.js:167
 msgid "Passkey"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:158
+#: src/components/PasskeyOnboardingButton.js:174
 msgid "Continue with passkey"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:163
-#: src/components/PasskeyOnboardingButton.js:203
+#: src/components/PasskeyOnboardingButton.js:179
+#: src/components/PasskeyOnboardingButton.js:219
 msgid "Working…"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:163
+#: src/components/PasskeyOnboardingButton.js:179
 msgid "Sign in with passkey"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:169
+#: src/components/PasskeyOnboardingButton.js:185
 msgid "Create passkey wallet"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:177
+#: src/components/PasskeyOnboardingButton.js:193
 msgid ""
 "Your wallet is protected by this passkey. Keep it backed up in your password "
 "manager so you don't lose access."
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:182
+#: src/components/PasskeyOnboardingButton.js:198
 msgid "Name your wallet"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:184
+#: src/components/PasskeyOnboardingButton.js:200
 msgid "This name identifies the passkey when you sign in later."
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:191
+#: src/components/PasskeyOnboardingButton.js:207
 msgid "e.g. Savings"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:203
+#: src/components/PasskeyOnboardingButton.js:219
 msgid "Create"
 msgstr ""
 
@@ -2026,7 +2036,7 @@ msgid "New tokens"
 msgstr ""
 
 #: src/components/Reown/ReownPendingOverlay.js:364
-#: src/components/Reown/RequestErrorModal.js:56
+#: src/components/Reown/RequestErrorModal.js:54
 #: src/components/TokenImportBanner.js:63
 msgid "Dismiss"
 msgstr ""
@@ -2507,7 +2517,7 @@ msgstr ""
 msgid "Review details"
 msgstr ""
 
-#: src/components/Reown/RequestErrorModal.js:30
+#: src/components/Reown/RequestErrorModal.js:34
 msgid "An error occurred while processing the request."
 msgstr ""
 

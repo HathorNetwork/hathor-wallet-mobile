@@ -252,7 +252,30 @@ export const str2jsx = (text, fnMap) => {
 };
 
 /**
+ * Message shown when a shielded address reaches a flow of this wallet.
+ */
+export const shieldedAddressNotSupportedText = t`This wallet does not support shielded addresses.`;
+
+/**
+ * Checks if an address is a shielded address of the given network: the 71-byte format that
+ * carries a scan and a spend public key.
+ *
+ * @param {string} address Address in base58
+ * @param {Object} network Instance of Network object from the wallet-lib
+ *
+ * @return {boolean} false for legacy addresses and for anything that is not a valid address
+ * @throws When the check fails for any other reason, so that no caller takes the failure for a
+ *   legacy address
+ */
+export const isShieldedAddress = (address, network) => (
+  typeof address === 'string' && new hathorLib.Address(address, { network }).isShielded()
+);
+
+/**
    * Validates an address
+   *
+   * Shielded addresses are valid for wallet-lib, but this wallet cannot use them, so they are
+   * reported as invalid.
    *
    * @param {string} address Address in base58
    * @param {Object} network Instance of Network object from the wallet-lib
@@ -263,6 +286,9 @@ export const validateAddress = (address, network) => {
   try {
     const addressObj = new hathorLib.Address(address, { network });
     addressObj.validateAddress();
+    if (addressObj.isShielded()) {
+      return { isValid: false, message: shieldedAddressNotSupportedText };
+    }
     return { isValid: true };
   } catch (e) {
     if (e instanceof TypeError) {

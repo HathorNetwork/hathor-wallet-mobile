@@ -45,10 +45,15 @@ function NoFee() {
   );
 }
 
+// wallet-lib's errors for a send that needs more inputs than a transaction can hold. The one
+// thrown while selecting UTXOs can tell the user to consolidate the wallet's UTXOs, which this
+// app has no way to do.
+const INPUT_LIMIT_ERROR = /inputs, more than the \d+ a transaction can hold|Transaction has \d+ inputs and can have at most/;
+
 // Translates wallet-lib error messages to user-friendly text. The UTXO
 // patterns apply during build (auto-selection in prepare-tx); other errors
 // (auth, signing, mining) fall through to the original lib message.
-function mapTxError(err) {
+export function mapTxError(err) {
   const msg = err?.message || '';
   const htrUid = hathorLib.constants.NATIVE_TOKEN_UID;
   if (msg.includes(`No UTXOs available for the token ${htrUid}`)) {
@@ -56,6 +61,9 @@ function mapTxError(err) {
   }
   if (msg.includes('No UTXOs available for the token')) {
     return t`Insufficient balance to send this transaction.`;
+  }
+  if (INPUT_LIMIT_ERROR.test(msg)) {
+    return t`This amount needs more inputs than a transaction can hold. Try sending a smaller amount.`;
   }
   return msg || t`Failed to process transaction.`;
 }

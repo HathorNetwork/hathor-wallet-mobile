@@ -71,6 +71,7 @@ export const types = {
   TOKEN_INVALIDATE_HISTORY: 'TOKEN_INVALIDATE_HISTORY',
   ON_START_WALLET_LOCK: 'ON_START_WALLET_LOCK',
   RELOAD_WALLET_REQUESTED: 'RELOAD_WALLET_REQUESTED',
+  WALLET_PIN_CHANGED: 'WALLET_PIN_CHANGED',
   START_WALLET_REQUESTED: 'START_WALLET_REQUESTED',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
@@ -790,6 +791,18 @@ export const tokenInvalidateBalance = (tokenId) => ({
 
 export const reloadWalletRequested = () => ({
   type: types.RELOAD_WALLET_REQUESTED,
+});
+
+/**
+ * The access data of the running wallet was re-encrypted: a PIN change, or a switch between the
+ * PIN and the safe-biometry password. The saga that reloads the wallet uses the new one.
+ * The PIN is not stored in the redux state.
+ *
+ * @param {string} pin The PIN or password that now decrypts the access data
+ */
+export const walletPinChanged = (pin) => ({
+  type: types.WALLET_PIN_CHANGED,
+  payload: pin,
 });
 
 export const networkChanged = () => ({
