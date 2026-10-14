@@ -125,7 +125,14 @@ import {
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { STORE } from '../store';
-import { consumePasskeySigningCancelled } from '../passkey/passkeySigner';
+import {
+  canSignWithPasskeyPrivateKey,
+  clearPasskeyPrivateKeyAuthorization,
+  consumePasskeySigningCancelled,
+  passkeyConsentForRequest,
+} from '../passkey/passkeySigner';
+import { passkeyFullTokenHook } from '../passkey/walletServiceRegistration';
+import { isShieldedAddress, shieldedAddressNotSupportedText } from '../utils';
 import { logger } from '../logger';
 
 const log = logger('reown');
@@ -174,6 +181,17 @@ const AVAILABLE_METHODS = {
 const AVAILABLE_EVENTS = [];
 
 /**
+ * Methods that sign with the private key of one of our addresses rather than a tx signature:
+ * htr_signWithAddress (wallet.signMessageWithAddress) and htr_signOracleData
+ * (nanoUtils.getOracleInputData). For passkey wallets the key comes from the passkey private-key
+ * provider, authorized by one ceremony at the PIN step (see promptHandler).
+ */
+const PASSKEY_PRIVATE_KEY_METHODS = [
+  AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE,
+  AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA,
+];
+
+/**
  * Those are the only ones we are currently using, extracted from
  * https://docs.walletconnect.com/2.0/specs/clients/sign/error-codes
  */
@@ -186,6 +204,157 @@ const ERROR_CODES = {
   INVALID_PAYLOAD: 5003,
   INTERNAL_ERROR: 5004,
 };
+
+/**
+ * How many levels deep the arguments of a nano contract method may nest: `args` is one level, and
+ * each list, tuple, dict or SignedData value in it is one more. The argument types of nano
+ * contract methods nest only a few levels.
+ */
+const MAX_NANO_ARGUMENT_DEPTH = 32;
+
+/**
+ * The arguments of a nano contract request nest deeper than MAX_NANO_ARGUMENT_DEPTH levels.
+ */
+class NanoArgumentsTooDeepError extends Error {
+  constructor() {
+    super(`Nano contract arguments nest deeper than ${MAX_NANO_ARGUMENT_DEPTH} levels.`);
+    this.name = 'NanoArgumentsTooDeepError';
+  }
+}
+
+/**
+ * The length of the longest shielded address: it is 71 bytes, at most 97 base58 characters, and
+ * any longer string decodes to 72 bytes or more.
+ */
+const MAX_SHIELDED_ADDRESS_LENGTH = 97;
+
+/**
+ * An address field of a dApp request holds a string longer than any address: a shielded address
+ * is the longest kind, at MAX_SHIELDED_ADDRESS_LENGTH characters.
+ */
+class AddressTooLongError extends Error {
+  constructor() {
+    super(`An address of the request is longer than ${MAX_SHIELDED_ADDRESS_LENGTH} characters.`);
+    this.name = 'AddressTooLongError';
+  }
+}
+
+/**
+ * Lists the strings in the arguments of a nano contract method, the keys of objects included.
+ * An argument of type Address is one of them, alone or inside a list, tuple, dict or SignedData
+ * argument.
+ *
+ * The dApp decides how deep the arguments nest, so they are read from a worklist instead of by
+ * recursion, and only MAX_NANO_ARGUMENT_DEPTH levels deep.
+ *
+ * @param {unknown} args The `args` of a nano contract request, as the dApp sent them
+ * @returns {string[]}
+ * @throws {NanoArgumentsTooDeepError} When the arguments nest deeper than MAX_NANO_ARGUMENT_DEPTH
+ *   levels
+ */
+function getNanoArgumentStrings(args) {
+  const strings = [];
+  // Each item is a value and the number of arrays and objects it is in.
+  const worklist = [[args, 0]];
+  while (worklist.length > 0) {
+    const [value, depth] = worklist.pop();
+    if (typeof value === 'string') {
+      strings.push(value);
+    } else if (value !== null && typeof value === 'object') {
+      if (depth >= MAX_NANO_ARGUMENT_DEPTH) {
+        throw new NanoArgumentsTooDeepError();
+      }
+      // The items of a list, or the keys and values of an object.
+      const items = Array.isArray(value) ? value : Object.entries(value).flat();
+      // Pushed in reverse, so the strings are listed in the order they appear in.
+      for (let i = items.length - 1; i >= 0; i -= 1) {
+        worklist.push([items[i], depth + 1]);
+      }
+    }
+  }
+  return strings;
+}
+
+const isNonEmptyString = (value) => typeof value === 'string' && value !== '';
+
+/**
+ * Lists the strings of a dApp request that can carry an address, read from its raw params, in
+ * two groups:
+ * - `fields`: the addresses it pays, mints or sends change and authorities to, and the addresses
+ *   of its nano contract actions. These must be addresses.
+ * - `others`: the strings of its nano contract method arguments, the oracle, and the address that
+ *   filters UTXOs. These can also hold other data.
+ *
+ * @param {Object} request The JSON-RPC request from the dApp, with `method` and `params`
+ * @returns {{ fields: string[], others: string[] }} The non-empty strings of each group
+ * @throws {NanoArgumentsTooDeepError} When its nano contract arguments nest deeper than
+ *   MAX_NANO_ARGUMENT_DEPTH levels
+ */
+function getRequestAddressStrings(request) {
+  const params = request?.params ?? {};
+  const actionAddresses = (actions) => (Array.isArray(actions) ? actions : [])
+    .flatMap((action) => [action?.address, action?.changeAddress, action?.authorityAddress]);
+
+  let fields = [];
+  let others = [];
+  switch (request?.method) {
+    case AVAILABLE_METHODS.HATHOR_SEND_TRANSACTION:
+      fields = [
+        ...(Array.isArray(params.outputs) ? params.outputs : []).map((output) => output?.address),
+        params.changeAddress,
+      ];
+      break;
+    case AVAILABLE_METHODS.HATHOR_CREATE_TOKEN:
+      fields = [
+        params.address,
+        params.change_address,
+        params.mint_authority_address,
+        params.melt_authority_address,
+      ];
+      break;
+    case AVAILABLE_METHODS.HATHOR_SEND_NANO_TX:
+      fields = actionAddresses(params.actions);
+      others = getNanoArgumentStrings(params.args);
+      break;
+    case AVAILABLE_METHODS.HATHOR_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: {
+      const createTokenOptions = params.createTokenOptions ?? {};
+      fields = [
+        params.address,
+        createTokenOptions.mintAddress,
+        createTokenOptions.changeAddress,
+        createTokenOptions.mintAuthorityAddress,
+        createTokenOptions.meltAuthorityAddress,
+        ...actionAddresses(params.data?.actions),
+      ];
+      others = getNanoArgumentStrings(params.data?.args);
+      break;
+    }
+    case AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA:
+      others = [params.oracle];
+      break;
+    case AVAILABLE_METHODS.HATHOR_GET_UTXOS:
+      others = [params.filterAddress];
+      break;
+    default:
+      break;
+  }
+  return { fields: fields.filter(isNonEmptyString), others: others.filter(isNonEmptyString) };
+}
+
+/**
+ * Lists the addresses in a dApp request, read from its raw params: the addresses it pays, mints
+ * or sends change and authorities to, the addresses of its nano contract actions, the strings of
+ * its nano contract method arguments, the oracle, and the address that filters UTXOs.
+ *
+ * @param {Object} request The JSON-RPC request from the dApp, with `method` and `params`
+ * @returns {string[]} The non-empty strings found where the request can carry an address
+ * @throws {NanoArgumentsTooDeepError} When its nano contract arguments nest deeper than
+ *   MAX_NANO_ARGUMENT_DEPTH levels
+ */
+export function getRequestAddresses(request) {
+  const { fields, others } = getRequestAddressStrings(request);
+  return [...fields, ...others];
+}
 
 /**
  * Converts tokenDetails Map to plain object and stores unregistered tokens
@@ -611,15 +780,15 @@ export function* processRequest(action) {
       chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
     };
 
-    // These two methods each need the stored private key at one of our addresses, which bypasses
-    // the external tx signer: htr_signWithAddress signs via wallet.signMessageWithAddress, and
-    // htr_signOracleData signs via nanoUtils.getOracleInputData. Neither is possible for an
-    // xpub-only passkey wallet, so reject cleanly instead of crashing inside the rpc-handler.
-    const passkeyUnsupportedMethods = [
-      AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE,
-      AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA,
-    ];
-    if (STORE.isPasskeyWallet() && passkeyUnsupportedMethods.includes(params.request.method)) {
+    // These two methods sign with the private key of one of our addresses, which a passkey wallet
+    // only has through the passkey private-key provider. A wallet-lib without external private-key
+    // provider support can't service them, so reject cleanly instead of failing inside the
+    // rpc-handler.
+    if (
+      STORE.isPasskeyWallet()
+      && PASSKEY_PRIVATE_KEY_METHODS.includes(params.request.method)
+      && !canSignWithPasskeyPrivateKey(wallet)
+    ) {
       log.debug(`Rejecting ${params.request.method}: not supported for passkey wallets.`);
       yield call(() => walletKit.respondSessionRequest({
         topic: payload.topic,
@@ -632,6 +801,85 @@ export function* processRequest(action) {
             // retry that can never succeed, unlike USER_REJECTED_METHOD (5002).
             code: ERROR_CODES.UNAUTHORIZED_METHODS,
             message: 'This operation is not supported for passkey wallets.',
+          },
+        },
+      }));
+      return false;
+    }
+
+    // wallet-lib validates shielded addresses, but this wallet cannot pay, mint to or otherwise
+    // use them. Reject the request before the rpc handler builds a transaction for it, checking
+    // the addresses on the network of the wallet that would build it.
+    let hasShieldedAddress = false;
+    try {
+      const { fields, others } = getRequestAddressStrings(params.request);
+      // No address is longer than a shielded one. A longer string in an address field is
+      // rejected here: the rpc handler would base58-decode it while preparing the transaction,
+      // before any prompt, in time quadratic in its length.
+      if (fields.some((address) => address.length > MAX_SHIELDED_ADDRESS_LENGTH)) {
+        throw new AddressTooLongError();
+      }
+      const requestAddresses = [...fields, ...others];
+      if (requestAddresses.length > 0) {
+        const network = wallet.getNetworkObject();
+        // Decoding base58 takes time quadratic in the length of the string, and the dApp decides
+        // how long its strings are. A string longer than a shielded address is not decoded.
+        hasShieldedAddress = requestAddresses.some(
+          (address) => address.length <= MAX_SHIELDED_ADDRESS_LENGTH
+            && isShieldedAddress(address, network),
+        );
+      }
+    } catch (e) {
+      // The error handling around the rpc handler below doesn't cover this check, and
+      // WalletConnect holds back the later requests of every dApp until this one is answered.
+      log.error(`Rejecting ${params.request.method}: its addresses could not be checked.`, e);
+      // Arguments nested too deep and an address longer than any address are errors of the
+      // request. Any other failure is the wallet's: it is answered with INTERNAL_ERROR, as the
+      // unexpected errors of the rpc handler are, and reported.
+      const isInvalidPayload = e instanceof NanoArgumentsTooDeepError
+        || e instanceof AddressTooLongError;
+      if (!isInvalidPayload) {
+        yield put(onExceptionCaptured(e));
+      }
+      const errorDetails = extractErrorDetails(e);
+      yield put(setReownError(errorDetails));
+      // The modal shows its generic message, and the error details have the reason.
+      yield put(setReownModal({
+        show: true,
+        type: ReownModalTypes.REQUEST_ERROR,
+      }));
+      yield call(() => walletKit.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: isInvalidPayload ? ERROR_CODES.INVALID_PAYLOAD : ERROR_CODES.INTERNAL_ERROR,
+            message: errorDetails.message,
+          },
+        },
+      }));
+      return false;
+    }
+
+    if (hasShieldedAddress) {
+      log.debug(`Rejecting ${params.request.method}: it has a shielded address.`);
+      yield put(setReownError());
+      yield put(setReownModal({
+        show: true,
+        type: ReownModalTypes.REQUEST_ERROR,
+        data: {
+          errorMessage: shieldedAddressNotSupportedText,
+        },
+      }));
+      yield call(() => walletKit.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: ERROR_CODES.INVALID_PAYLOAD,
+            message: 'Shielded addresses are not supported.',
           },
         },
       }));
@@ -652,7 +900,7 @@ export function* processRequest(action) {
         params.request,
         wallet,
         data,
-        promptHandler(dispatch),
+        promptHandler(dispatch, wallet),
       );
 
       switch (response.type) {
@@ -949,6 +1197,10 @@ export function* processRequest(action) {
     // For rejections, errors, and read-only ops, return false
     return successScreenWillSignal;
   } finally {
+    // A passkey authorization is for one signature: drop it if the request didn't use it. In the
+    // finally so it also runs when the saga is cancelled (e.g. a wallet reset or network change
+    // between the consent and the signing), not just on success or a thrown error.
+    clearPasskeyPrivateKeyAuthorization();
     yield cancel(pendingPollTask);
   }
 }
@@ -990,7 +1242,7 @@ export function* processRequest(action) {
  * @example
  * const handler = promptHandler(dispatch);
  */
-const promptHandler = (dispatch) => (request, requestMetadata) =>
+const promptHandler = (dispatch, wallet) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
     switch (request.type) {
@@ -1133,13 +1385,27 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         // — the lib's signing entry points are PIN-optional when an external tx-signing method
         // is registered.
         if (STORE.isPasskeyWallet()) {
-          resolve({
-            type: TriggerResponseTypes.PinRequestResponse,
-            data: {
-              accepted: true,
-              pinCode: '',
-            }
-          });
+          // Message and oracle-data signing take an address key, not a tx signature: they're
+          // authorized with the passkey right here, before the rpc-handler signs. For oracle data
+          // on the wallet-service facade, the same ceremony also mints the full auth token its
+          // ownership check (isAddressMine) needs, so it's still one Face ID. Message signing
+          // makes no wallet-service call, so it doesn't need one.
+          let consent;
+          try {
+            consent = await passkeyConsentForRequest({
+              needsPrivateKey: PASSKEY_PRIVATE_KEY_METHODS.includes(request.method),
+              onRootKey: request.method === AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA
+                ? passkeyFullTokenHook(wallet)
+                : undefined,
+            });
+          } catch (e) {
+            // Wrong or deleted passkey, a ceremony already open...: show it as a request error.
+            reject(e);
+            break;
+          }
+          // When the sheet was dismissed, the signing-cancel flag is set, so processRequest
+          // retries the request (the consent modal shows again), like a cancelled PIN screen.
+          resolve({ type: TriggerResponseTypes.PinRequestResponse, data: consent });
           break;
         }
 

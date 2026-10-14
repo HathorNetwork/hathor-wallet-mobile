@@ -23,12 +23,17 @@ import checkIcon from '../assets/images/icCheckBig.png';
 import { PIN_SIZE } from '../constants';
 import { changePin } from '../utils';
 import { COLORS } from '../styles/themes';
+import { walletPinChanged } from '../actions';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
 });
 
-class ChangePin extends React.Component {
+const mapDispatchToProps = (dispatch) => ({
+  walletPinChanged: (pin) => dispatch(walletPinChanged(pin)),
+});
+
+export class ChangePin extends React.Component {
   style = ({ ...baseStyle,
     ...StyleSheet.create({
       pinView: {
@@ -166,12 +171,15 @@ class ChangePin extends React.Component {
   }
 
   executeChangePin = () => {
+    const { pin1, pin2 } = this.state;
     changePin(
       this.props.wallet,
-      this.state.pin1,
-      this.state.pin2,
+      pin1,
+      pin2,
     ).then((success) => {
       if (success) {
+        // A reload of the wallet must start it with the new PIN.
+        this.props.walletPinChanged(pin2);
         this.setState({ done: true });
       } else {
         // Should never get here because we've done all the validations before
@@ -245,4 +253,4 @@ class ChangePin extends React.Component {
   }
 }
 
-export default connect(mapStateToProps)(ChangePin);
+export default connect(mapStateToProps, mapDispatchToProps)(ChangePin);

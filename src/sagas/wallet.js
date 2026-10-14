@@ -45,11 +45,12 @@ import {
   AMOUNT_FORMAT_KEY,
 } from '../constants';
 import { STORE } from '../store';
-import { makePasskeyTxSigner } from '../passkey/passkeySigner';
+import { makePasskeyPrivateKeyProvider, makePasskeyTxSigner } from '../passkey/passkeySigner';
 import {
   facadeSupportsExternalSigner,
   isWalletServiceRegistered,
   markWalletServiceRegistered,
+  passkeyFullTokenHook,
   startFailureMeansUnregistered,
 } from '../passkey/walletServiceRegistration';
 import {
@@ -86,6 +87,7 @@ import {
   setAddressMode,
   tokenImportFetchRequested,
   setAmountFormat,
+  startWalletRequested,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -328,11 +330,8 @@ export function* startWallet(action) {
         storage,
         singleAddressMode,
       });
-      const facadeWallet = wallet;
       wallet.setExternalTxSigningMethod(makePasskeyTxSigner({
-        onRootKey: (root) => facadeWallet.refreshFullAuthToken(
-          HathorWalletServiceWallet.deriveAuthPrivateKey(root),
-        ),
+        onRootKey: passkeyFullTokenHook(wallet),
       }));
     } else {
       wallet = new HathorWalletServiceWallet({
@@ -376,6 +375,14 @@ export function* startWallet(action) {
       // start() is not enforced — we do it here, before start(), as a safe convention.
       wallet.setExternalTxSigningMethod(makePasskeyTxSigner());
     }
+  }
+
+  if (isPasskeyWallet && typeof wallet.setExternalPrivateKeyMethod === 'function') {
+    // Message and oracle-data signing get the address key from the passkey too: the Reown flow
+    // authorizes each signature with one ceremony (authorizePasskeyPrivateKey) and this provider
+    // hands that key to wallet-lib. On a wallet-lib without external private-key provider support
+    // this is skipped, and the Reown saga keeps rejecting those requests.
+    wallet.setExternalPrivateKeyMethod(makePasskeyPrivateKeyProvider());
   }
 
   // Extra wallet configuration based on customNetwork
@@ -523,6 +530,46 @@ export function* startWallet(action) {
   // So, if a new START_WALLET_REQUESTED action is dispatched or a RELOAD_WALLET_REQUESTED
   // is dispatched, we need to cleanup all attached forks (that will cause the event
   // listeners to be cleaned).
+  yield call(waitForWalletRestart, action);
+}
+
+/**
+ * The PIN that a reload starts the wallet with: the PIN of the last start request, or of a
+ * WALLET_PIN_CHANGED after it. A PIN change or a safe-biometry switch re-encrypts the access data,
+ * and start() decrypts it with the PIN it is given. The PIN is kept here, never in the redux state,
+ * and a wallet reset clears it.
+ */
+let restartPin;
+
+/**
+ * Keeps restartPin up to date. It runs as long as the app does: a PIN change can land while a
+ * start is still loading, before waitForWalletRestart runs.
+ */
+export function* trackRestartPin() {
+  yield takeEvery(
+    [types.START_WALLET_REQUESTED, types.WALLET_PIN_CHANGED, types.RESET_WALLET],
+    (action) => {
+      switch (action.type) {
+        case types.WALLET_PIN_CHANGED:
+          restartPin = action.payload;
+          break;
+        case types.RESET_WALLET:
+          restartPin = null;
+          break;
+        default:
+          restartPin = action.payload?.pin;
+      }
+    },
+  );
+}
+
+/**
+ * Waits for the request that ends the running wallet: a new start, a wallet reset or a reload.
+ * A reload dispatches the start action again, with restartPin.
+ *
+ * @param {Object} action The START_WALLET_REQUESTED action that started the running wallet
+ */
+export function* waitForWalletRestart(action) {
   const { reload } = yield race({
     start: take([
       types.START_WALLET_REQUESTED,
@@ -532,8 +579,11 @@ export function* startWallet(action) {
   });
 
   if (reload) {
-    // Yield the same action again to reload the wallet
-    yield put(action);
+    // Yield the start action again to reload the wallet. The start action of a passkey wallet has
+    // no PIN.
+    yield put(action.payload?.pin === undefined
+      ? action
+      : startWalletRequested({ ...action.payload, pin: restartPin }));
   }
 }
 
@@ -1051,6 +1101,7 @@ export function* fetchFirstWalletAddress() {
 
 export function* saga() {
   yield all([
+    fork(trackRestartPin),
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
