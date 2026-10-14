@@ -27,6 +27,8 @@ import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { getCreateTokenTitle } from '../utils';
+import { isShieldedEnvironment } from '../shielded/gating';
+import { newAddressErrorText } from '../shielded/newAddress';
 
 const TokenTypeInfoBox = ({ tokenVersion }) => {
   let infoText = t`You chose to create a **Deposit-Based Token**, which requires a 1% HTR deposit.`;
@@ -64,6 +66,9 @@ const CreateTokenConfirm = () => {
   const useWalletService = useSelector((state) => state.useWalletService);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+  // In the shielded environment the wallet's address, which the token is minted to, is its new
+  // address.
+  const shieldedEnvironment = useSelector(isShieldedEnvironment);
 
   const dispatch = useDispatch();
   const dispatchUpdateSelectedToken = (token) => dispatch(updateSelectedToken(token));
@@ -138,7 +143,18 @@ const CreateTokenConfirm = () => {
       // ceremony) happens inside prepareCreateNewToken, AFTER the address was marked as used, so
       // fetching a fresh one per attempt would burn an address on every cancel.
       if (!tokenAddressRef.current) {
-        const current = await wallet.getCurrentAddress({ markAsUsed: true });
+        let current;
+        try {
+          current = await wallet.getCurrentAddress(
+            { markAsUsed: true },
+            { legacy: !shieldedEnvironment },
+          );
+        } catch (e) {
+          // wallet-lib gives out no new address while the scan key is locked, nor without a
+          // shielded chain. No legacy address stands in for it: the user is told why.
+          const message = newAddressErrorText(e);
+          throw message ? new Error(message) : e;
+        }
         tokenAddressRef.current = current.address;
       }
       const address = tokenAddressRef.current;

@@ -11,6 +11,7 @@ jest.mock('@hathor/hathor-rpc-handler', () => ({
 
 /* eslint-disable import/first */
 import { runSaga } from 'redux-saga';
+import { Network } from '@hathor/wallet-lib';
 import {
   handleRpcRequest,
   RpcResponseTypes,
@@ -66,9 +67,16 @@ const oracleRequest = (params) => ({
 
 let task;
 
+// processRequest also checks the request's addresses on the wallet's network.
+const wallet = { getNetworkObject: () => new Network('testnet') };
+
 async function run(request) {
   task = runSaga(
-    { dispatch, getState: () => ({ wallet: {} }), effectMiddlewares: [stubMiddleware] },
+    {
+      dispatch,
+      getState: () => ({ wallet, networkSettings: { network: 'testnet' } }),
+      effectMiddlewares: [stubMiddleware],
+    },
     processRequest,
     { payload: { id: REQUEST_ID, topic: TOPIC, params: { request } } },
   );

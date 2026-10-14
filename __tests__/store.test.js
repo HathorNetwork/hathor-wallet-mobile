@@ -1,7 +1,8 @@
 import { jest, describe, test, expect, afterEach } from '@jest/globals';
 import { walletUtils } from '@hathor/wallet-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import AsyncStorageStore, { WALLET_META_KEY } from '../src/store';
+import AsyncStorageStore, { PRIVACY_DEFAULT_MODE_KEY, WALLET_META_KEY } from '../src/store';
+import { PRIVACY_MODE } from '../src/constants';
 
 // A promise the test settles by hand, to check what a caller does while a native write is pending.
 const deferred = () => {
@@ -177,5 +178,22 @@ describe('AsyncStorageStore durable writes', () => {
     jest.spyOn(AsyncStorage, 'setItem').mockRejectedValueOnce(failure);
 
     await expect(store.updateWalletMeta({ credentialId: 'cred-1' })).rejects.toBe(failure);
+  });
+});
+
+describe('the default privacy mode in the store', () => {
+  test('is kept under one key for the device, whatever the network', () => {
+    expect(PRIVACY_DEFAULT_MODE_KEY).toBe('asyncstorage:privacyDefaultMode');
+  });
+
+  test('survives a wallet reset', async () => {
+    const store = new AsyncStorageStore();
+    await store.setItemAsync(PRIVACY_DEFAULT_MODE_KEY, PRIVACY_MODE.PRIVATE);
+
+    await store.resetWallet();
+
+    expect(store.getItem(PRIVACY_DEFAULT_MODE_KEY)).toBe(PRIVACY_MODE.PRIVATE);
+    expect(JSON.parse(await AsyncStorage.getItem(PRIVACY_DEFAULT_MODE_KEY)))
+      .toBe(PRIVACY_MODE.PRIVATE);
   });
 });

@@ -39,6 +39,8 @@ import {
   setTokens,
 } from '../actions';
 import { STORE } from '../store';
+import { isShieldedAvailable } from '../shielded/gating';
+import { getPrivateAvailableBalance } from '../shielded/balance';
 import { logger } from '../logger';
 
 const log = logger('tokens-saga');
@@ -156,10 +158,12 @@ function* fetchTokenBalanceConsumer(fetchTokenBalanceChannel) {
  * 2. For force=true requests, implements retry logic to handle eventual consistency
  *    with the wallet-service backend
  * 3. Properly cleans up pending request tracking on completion
+ * 4. Where the shielded UI shows the balance split, also reads the private part of the
+ *    available balance (privateAvailable), or null when that read fails
  *
  * @param {Object} action - The action containing tokenId and force flag
  */
-function* fetchTokenBalance(action) {
+export function* fetchTokenBalance(action) {
   const { tokenId } = action;
 
   // Get the current force value from pending requests (may have been upgraded)
@@ -214,6 +218,17 @@ function* fetchTokenBalance(action) {
 
       // Balance fetched successfully (or changed, or no more retries)
       break;
+    }
+
+    // The private part of the available balance, for the balance split. A failure leaves it
+    // null instead of undefined, so the screen doesn't ask for this balance again.
+    if (yield select(isShieldedAvailable)) {
+      try {
+        balance.privateAvailable = yield call(getPrivateAvailableBalance, wallet, tokenId);
+      } catch (e) {
+        log.error('Failed to read the private part of the token balance.', e);
+        balance.privateAvailable = null;
+      }
     }
 
     log.debug(`Success fetching token balance for token ${tokenId}.`);

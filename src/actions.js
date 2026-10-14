@@ -71,6 +71,10 @@ export const types = {
   TOKEN_INVALIDATE_HISTORY: 'TOKEN_INVALIDATE_HISTORY',
   ON_START_WALLET_LOCK: 'ON_START_WALLET_LOCK',
   RELOAD_WALLET_REQUESTED: 'RELOAD_WALLET_REQUESTED',
+  WALLET_PIN_CHANGED: 'WALLET_PIN_CHANGED',
+  SHIELDED_PROVIDER_UPDATE: 'SHIELDED_PROVIDER_UPDATE',
+  SHIELDED_CAPABILITY_UPDATE: 'SHIELDED_CAPABILITY_UPDATE',
+  SHIELDED_VIEW_UNLOCK_REQUESTED: 'SHIELDED_VIEW_UNLOCK_REQUESTED',
   START_WALLET_REQUESTED: 'START_WALLET_REQUESTED',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
@@ -105,6 +109,7 @@ export const types = {
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   SET_ADDRESS_MODE: 'SET_ADDRESS_MODE',
   SET_AMOUNT_FORMAT: 'SET_AMOUNT_FORMAT',
+  PRIVACY_DEFAULT_MODE_SET: 'PRIVACY_DEFAULT_MODE_SET',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
   // Feature Toggle actions
@@ -280,6 +285,12 @@ export const types = {
   // Token Icons — URLs piggyback on the existing metadata fetch
   TOKEN_ICONS_LOADED: 'TOKEN_ICONS_LOADED',
   TOKEN_ICON_UPDATED: 'TOKEN_ICON_UPDATED',
+
+  // Shielded outputs: the private receive address
+  SHIELDED_RECEIVE_ADDRESS_UPDATE: 'SHIELDED_RECEIVE_ADDRESS_UPDATE',
+  // Shielded outputs: the unlock and the retry the user asks for
+  SHIELDED_UNLOCK_STATUS_UPDATE: 'SHIELDED_UNLOCK_STATUS_UPDATE',
+  SHIELDED_REPROCESS_REQUESTED: 'SHIELDED_REPROCESS_REQUESTED',
 };
 
 /**
@@ -792,6 +803,57 @@ export const reloadWalletRequested = () => ({
   type: types.RELOAD_WALLET_REQUESTED,
 });
 
+/**
+ * The access data of the running wallet was re-encrypted: a PIN change, or a switch between the
+ * PIN and the safe-biometry password. The saga that reloads the wallet uses the new one.
+ * The PIN is not stored in the redux state.
+ *
+ * @param {string} pin The PIN or password that now decrypts the access data
+ */
+export const walletPinChanged = (pin) => ({
+  type: types.WALLET_PIN_CHANGED,
+  payload: pin,
+});
+
+/**
+ * The shielded crypto provider of the starting wallet was registered, or failed to load, in which
+ * case the wallet starts without one.
+ *
+ * @param {Object} payload
+ * @param {string} payload.status One of SHIELDED_PROVIDER_STATUS
+ * @param {string|null} [payload.error] Why the provider failed
+ */
+export const shieldedProviderUpdate = ({ status, error = null }) => ({
+  type: types.SHIELDED_PROVIDER_UPDATE,
+  payload: { status, error },
+});
+
+/**
+ * What the running wallet can do with shielded outputs, as getShieldedCapability() returns it and
+ * the 'shielded-capability' event carries it. It holds no key material.
+ *
+ * @param {Object} capability The wallet's IShieldedCapability
+ */
+export const shieldedCapabilityUpdate = (capability) => ({
+  type: types.SHIELDED_CAPABILITY_UPDATE,
+  payload: capability,
+});
+
+/**
+ * A PIN entry that can unlock the shielded view key of the running wallet, when the wallet holds
+ * its shielded outputs locked: it started with a PIN that no longer decrypts the key, or the
+ * unlock at start failed. No reducer handles it, so the PIN never enters the redux state.
+ *
+ * @param {Object} payload
+ * @param {string} payload.pinCode The PIN, or the safe-biometry password, that decrypts the
+ *   wallet's access data now
+ * @param {string} payload.source One of SHIELDED_UNLOCK_SOURCE
+ */
+export const shieldedViewUnlockRequested = ({ pinCode, source }) => ({
+  type: types.SHIELDED_VIEW_UNLOCK_REQUESTED,
+  payload: { pinCode, source },
+});
+
 export const networkChanged = () => ({
   type: types.NETWORK_CHANGED,
 });
@@ -999,6 +1061,15 @@ export const setAddressMode = (mode) => ({
 export const setAmountFormat = (format) => ({
   type: types.SET_AMOUNT_FORMAT,
   payload: format,
+});
+
+/**
+ * Set the default privacy mode: the mode a send starts in.
+ * @param {string} mode One of PRIVACY_MODE
+ */
+export const privacyDefaultModeSet = (mode) => ({
+  type: types.PRIVACY_DEFAULT_MODE_SET,
+  payload: mode,
 });
 
 /**
@@ -1886,4 +1957,51 @@ export const tokenImportDismissBanner = () => ({
 
 export const tokenImportResetStatus = () => ({
   type: types.TOKEN_IMPORT_RESET_STATUS,
+});
+
+/**
+ * The private (shielded) receive address of the running wallet, or why it can't give one out.
+ * It holds a receive address at most, never key material.
+ *
+ * @param {Object} payload
+ * @param {string} payload.status One of SHIELDED_RECEIVE_STATUS
+ * @param {string|null} [payload.address] The current shielded address, when the status is ready
+ * @param {number|null} [payload.index] Its index on the shielded chain
+ * @param {string|null} [payload.reason] Why the status is locked or unavailable
+ */
+export const shieldedReceiveAddressUpdate = ({
+  status,
+  address = null,
+  index = null,
+  reason = null,
+}) => ({
+  type: types.SHIELDED_RECEIVE_ADDRESS_UPDATE,
+  payload: {
+    status,
+    address,
+    index,
+    reason,
+  },
+});
+
+/**
+ * Where the unlock of a locked private balance, or the retry of private funds that couldn't be
+ * read, stands. It never carries the PIN.
+ *
+ * @param {Object} payload
+ * @param {string} payload.status One of SHIELDED_UNLOCK_PROGRESS
+ * @param {string|null} [payload.errorCode] The code of the ShieldedKeyError that refused the
+ *   unlock
+ */
+export const shieldedUnlockStatusUpdate = ({ status, errorCode = null }) => ({
+  type: types.SHIELDED_UNLOCK_STATUS_UPDATE,
+  payload: { status, errorCode },
+});
+
+/**
+ * The user asks to process the running wallet's history again, to retry the private outputs it
+ * failed to decode.
+ */
+export const shieldedReprocessRequested = () => ({
+  type: types.SHIELDED_REPROCESS_REQUESTED,
 });

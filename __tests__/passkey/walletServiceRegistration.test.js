@@ -32,6 +32,7 @@ import {
   finishWalletServiceRegistration,
   isWalletServiceRegistered,
   markWalletServiceRegistered,
+  passkeyFullTokenHook,
   prepareWalletServiceRegistration,
   registerOnWalletService,
   shouldRegisterOnWalletService,
@@ -255,6 +256,27 @@ describe('registration at unlock', () => {
   test('finishing nothing is a no-op', () => {
     expect(() => finishWalletServiceRegistration(null)).not.toThrow();
     expect(() => finishWalletServiceRegistration(undefined)).not.toThrow();
+  });
+});
+
+describe('passkeyFullTokenHook', () => {
+  afterEach(() => {
+    delete HathorWalletServiceWallet.deriveAuthPrivateKey;
+  });
+
+  test('is undefined for a wallet without auth tokens (the fullnode facade)', () => {
+    expect(passkeyFullTokenHook({})).toBeUndefined();
+    expect(passkeyFullTokenHook(undefined)).toBeUndefined();
+  });
+
+  test('on the wallet-service facade, mints a full token from the auth key of the root', async () => {
+    HathorWalletServiceWallet.deriveAuthPrivateKey = jest.fn(() => 'auth-key');
+    const wallet = { refreshFullAuthToken: jest.fn(async () => {}) };
+
+    await passkeyFullTokenHook(wallet)('root-key');
+
+    expect(HathorWalletServiceWallet.deriveAuthPrivateKey).toHaveBeenCalledWith('root-key');
+    expect(wallet.refreshFullAuthToken).toHaveBeenCalledWith('auth-key');
   });
 });
 

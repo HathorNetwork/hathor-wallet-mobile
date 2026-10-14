@@ -25,8 +25,10 @@ import {
   startWalletRequested,
   resetOnLockScreen,
   onExceptionCaptured,
+  walletPinChanged,
+  shieldedViewUnlockRequested,
 } from '../actions';
-import { PIN_SIZE } from '../constants';
+import { PIN_SIZE, SHIELDED_UNLOCK_SOURCE } from '../constants';
 import { COLORS } from '../styles/themes';
 import { SAFE_BIOMETRY_FEATURE_FLAG_KEY, STORE } from '../store';
 import baseStyle from '../styles/init';
@@ -54,9 +56,11 @@ const mapDispatchToProps = (dispatch) => ({
   onStartWalletLock: () => dispatch(onStartWalletLock()),
   startWalletRequested: (payload) => dispatch(startWalletRequested(payload)),
   onExceptionCaptured: (error, isFatal) => dispatch(onExceptionCaptured(error, isFatal)),
+  walletPinChanged: (pin) => dispatch(walletPinChanged(pin)),
+  shieldedViewUnlockRequested: (payload) => dispatch(shieldedViewUnlockRequested(payload)),
 });
 
-class PinScreen extends React.Component {
+export class PinScreen extends React.Component {
   static defaultProps = { isLockScreen: false };
 
   constructor(props) {
@@ -158,6 +162,18 @@ class PinScreen extends React.Component {
 
           const words = await STORE.getWalletWords(actualPin);
           this.props.startWalletRequested({ words, pin: actualPin });
+        } else {
+          if (actualPin !== pin) {
+            // The biometry migration re-encrypted the running wallet's access data, so a reload
+            // of the wallet must start it with the new password or PIN.
+            this.props.walletPinChanged(actualPin);
+          }
+          // A wallet that started with a PIN that no longer decrypts its shielded view key holds
+          // its shielded outputs locked: the saga unlocks them with this PIN, if they are.
+          this.props.shieldedViewUnlockRequested({
+            pinCode: actualPin,
+            source: SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN,
+          });
         }
         this.props.unlockScreen();
       } catch (e) {
