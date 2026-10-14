@@ -1,0 +1,26 @@
+diff --git a/node_modules/react-native/Libraries/Text/Text.js b/node_modules/react-native/Libraries/Text/Text.js
+index e327b65..7ceb7d5 100644
+--- a/node_modules/react-native/Libraries/Text/Text.js
++++ b/node_modules/react-native/Libraries/Text/Text.js
+@@ -168,6 +168,21 @@ const Text: component(
+     const _nativeID = id ?? nativeID;
+ 
+     const hasTextAncestor = useContext(TextAncestor);
++    // Hathor patch: on Android (New Architecture), a Text without fontWeight, fontFamily or
++    // fontStyle is measured with the plain default typeface but drawn with the theme's default
++    // font. When the two differ (an OEM system font, a font scale, the "Bold text" setting), the
++    // drawn text is wider than the measured box and its last characters are cut. An explicit
++    // weight makes both use the same typeface. Nested Texts are left alone so they keep
++    // inheriting their parent's weight.
++    if (
++      Platform.OS === 'android' &&
++      !hasTextAncestor &&
++      processedStyle?.fontWeight == null &&
++      processedStyle?.fontFamily == null &&
++      processedStyle?.fontStyle == null
++    ) {
++      _style = [{fontWeight: '400'}, _style];
++    }
+     if (hasTextAncestor) {
+       if (isPressable) {
+         return (

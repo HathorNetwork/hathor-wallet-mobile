@@ -28,7 +28,7 @@ import { HathorList } from '../components/HathorList';
 import {
   Strong, str2jsx, renderValue, isTokenNFT, getDisplayAmountFormat, renderHomeValue,
 } from '../utils';
-import { DEFAULT_TOKEN, IS_MULTI_TOKEN } from '../constants';
+import { DEFAULT_TOKEN, IS_MULTI_TOKEN, SHRINK_TEXT_TO_FIT } from '../constants';
 import { fetchMoreHistory, tokenFetchBalanceRequested, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
 import ShieldedBalanceSplit from '../components/Shielded/ShieldedBalanceSplit';
@@ -613,7 +613,7 @@ class BalanceView extends React.Component {
       <View style={style.center}>
         <Text
           style={style.balanceAvailable}
-          adjustsFontSizeToFit
+          adjustsFontSizeToFit={SHRINK_TEXT_TO_FIT}
           minimumFontScale={0.5}
           numberOfLines={1}
         >

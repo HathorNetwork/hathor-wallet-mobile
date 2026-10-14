@@ -24,6 +24,7 @@ import BackdropModal from './BackdropModal';
 import TxFeesRow from './TxFeesRow';
 import AuditUnblindingRows from './AuditUnblindingRows';
 import { getTxFees } from '../shielded/fees';
+import { SHRINK_TEXT_TO_FIT } from '../constants';
 
 class TxDetailsModal extends Component {
   /**
@@ -177,7 +178,7 @@ class BalanceView extends Component {
       <View style={this.style.view}>
         <Text
           style={this.style.balance}
-          adjustsFontSizeToFit
+          adjustsFontSizeToFit={SHRINK_TEXT_TO_FIT}
           minimumFontScale={0.5}
           numberOfLines={1}
         >

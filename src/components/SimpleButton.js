@@ -8,7 +8,7 @@ import React from 'react';
 import {
   Image, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
-import { PRIMARY_COLOR } from '../constants';
+import { PRIMARY_COLOR, SHRINK_TEXT_TO_FIT } from '../constants';
 /**
  * Simple button component.
  *
@@ -21,8 +21,8 @@ import { PRIMARY_COLOR } from '../constants';
  * @property {Object} [containerStyle] - The style object for the container of the button.
  * @property {Function} onPress - The function to be called when the button is pressed.
  * @property {Object} children - The children component to be rendered.
- * @property {boolean} [adjustsFontSizeToFit=true] - Whether the font size should automatically
- *   adjust to fit.
+ * @property {boolean} [adjustsFontSizeToFit=SHRINK_TEXT_TO_FIT] - Whether the font size should
+ *   automatically adjust to fit. By default only on iOS (see SHRINK_TEXT_TO_FIT).
  *
  * @param {Props} props - The props for the SimpleButton component.
  */
@@ -35,7 +35,7 @@ const SimpleButton = ({
   containerStyle,
   onPress,
   children,
-  adjustsFontSizeToFit = true
+  adjustsFontSizeToFit = SHRINK_TEXT_TO_FIT
 }) => {
   const renderTitle = () => {
     if (title) {
