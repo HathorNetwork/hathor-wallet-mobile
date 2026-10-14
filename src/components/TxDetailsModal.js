@@ -22,6 +22,7 @@ import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
 import BackdropModal from './BackdropModal';
 import TxFeesRow from './TxFeesRow';
+import AuditUnblindingRows from './AuditUnblindingRows';
 import { getTxFees } from '../shielded/fees';
 
 class TxDetailsModal extends Component {
@@ -140,6 +141,7 @@ class TxDetailsModal extends Component {
             )}
             <ListItem title={t`Transaction ID`} text={txIdComponent} />
             <PublicExplorerListButton txId={tx.txId} />
+            <AuditUnblindingRows txId={tx.txId} />
           </View>
         </ScrollView>
       </BackdropModal>

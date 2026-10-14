@@ -45,7 +45,7 @@ import {
   networkSettingsKeyMap,
   AMOUNT_FORMAT_KEY,
 } from '../constants';
-import { STORE } from '../store';
+import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../store';
 import { makePasskeyPrivateKeyProvider, makePasskeyTxSigner } from '../passkey/passkeySigner';
 import {
   facadeSupportsExternalSigner,
@@ -88,6 +88,7 @@ import {
   setAddressMode,
   tokenImportFetchRequested,
   setAmountFormat,
+  privacyDefaultModeSet,
   startWalletRequested,
   shieldedCapabilityUpdate,
 } from '../actions';
@@ -114,6 +115,7 @@ import {
   isShieldedNetwork,
   shouldRegisterShieldedProvider,
 } from '../shielded/gating';
+import { normalizePrivacyDefaultMode } from '../utils/privacy';
 import { logger } from '../logger';
 
 const log = logger('wallet');
@@ -228,6 +230,15 @@ export function passkeyRequestPassword() {
   return Promise.reject(new Error('A PIN was requested for a passkey wallet.'));
 }
 
+/**
+ * Loads the default privacy mode the device keeps into the redux state: the mode a send starts
+ * in. A wallet reset keeps it, and a device with none saved gets DEFAULT_PRIVACY_MODE.
+ */
+export function* loadPrivacyDefaultMode() {
+  const stored = STORE.getItem(PRIVACY_DEFAULT_MODE_KEY);
+  yield put(privacyDefaultModeSet(normalizePrivacyDefaultMode(stored)));
+}
+
 export function* startWallet(action) {
   // Default the payload: passkey start paths (onboarding + unlock) dispatch startWalletRequested()
   // with no argument and read everything from the persisted walletMeta below, so action.payload is
@@ -289,6 +300,10 @@ export function* startWallet(action) {
   } else {
     networkSettings = yield select(getNetworkSettings);
   }
+
+  // startWallet re-runs on every unlock and reload, a wallet reset's new wallet included, so it
+  // loads the default privacy mode the device keeps.
+  yield call(loadPrivacyDefaultMode);
 
   // Refresh the unleash client context so feature toggles reflect the current
   // network. Required after wallet reset, since onResetWalletSuccess preserves

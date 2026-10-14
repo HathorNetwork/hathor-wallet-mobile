@@ -190,8 +190,9 @@ msgstr ""
 
 #: src/components/Shielded/ShieldedBalanceSplit.js:101
 #: src/components/Shielded/ShieldedBalanceSplit.js:157
-#: src/screens/SendConfirmScreen.js:198 src/screens/SendConfirmScreen.js:230
-#: src/shielded/newAddress.js:36 src/shielded/receiveState.js:154
+#: src/screens/ExportPrivacyKeys.js:90 src/screens/SendConfirmScreen.js:198
+#: src/screens/SendConfirmScreen.js:230 src/shielded/newAddress.js:36
+#: src/shielded/receiveState.js:154
 msgid "Private transfers are not available for this wallet."
 msgstr ""
 
@@ -426,7 +427,7 @@ msgid "You are about to add these tokens to your wallet:"
 msgstr ""
 
 #: src/components/TokenImportBanner.js:77
-#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:131
+#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:157
 msgid "Import tokens"
 msgstr ""
 
@@ -438,7 +439,7 @@ msgid "Back"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:125
+#: src/screens/SendAmountInput.js:129
 msgid "Invalid amount"
 msgstr ""
 
@@ -467,7 +468,7 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:151
-#: src/screens/SendAmountInput.js:247
+#: src/screens/SendAmountInput.js:251
 msgid "Next"
 msgstr "Næste"
 
@@ -671,6 +672,91 @@ msgstr "Tokens"
 msgid "Nano Contracts"
 msgstr ""
 
+#: src/screens/ExportPrivacyKeys.js:71
+msgid ""
+"This wallet has no shielded keys. They are only present on wallets created "
+"after the shielded outputs feature was enabled."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:78
+msgid "Unlock your private balance to export the privacy keys."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:153
+msgid "Hide"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:153
+msgid "Show full key"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:158
+msgid "Copied"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:158
+msgid "Copy"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:260
+msgid "Wallet not ready"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:302
+msgid "Enter your 6-digit PIN to export the audit keys"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:330
+msgid "EXPORT PRIVACY KEYS"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:338
+msgid "Read this before sharing"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:340
+msgid ""
+"These two keys give an auditor read-only access to every shielded output "
+"your wallet receives — they can identify every incoming shielded transaction "
+"and decrypt the amount and token of each one."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:343
+msgid ""
+"They do NOT allow spending. Whoever holds them cannot move your funds, sign "
+"transactions on your behalf, or access transparent (non-shielded) balances."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:346
+msgid ""
+"Treat them like any other private wallet data. Share them only with auditors "
+"you trust, and over a secure channel."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:353
+msgid "Deriving keys…"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:366
+msgid "Spend public key (xpub)"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:368
+msgid ""
+"Path m/44'/280'/2'/0. Lets the auditor derive every receiving spend-side "
+"address and find your incoming shielded outputs on-chain."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:374
+msgid "Scan private key (xpriv)"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:376
+msgid ""
+"Path m/44'/280'/1'/0. Lets the auditor decrypt the value and token of every "
+"shielded output your wallet receives. Used only for ECDH; never for signing."
+msgstr ""
+
 #: src/screens/ImportTokensScreen.js:135
 msgid "No tokens available to import"
 msgstr ""
@@ -683,7 +769,7 @@ msgstr ""
 msgid "You can register a new one manually."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:123
+#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:149
 msgid "Register a token"
 msgstr "Registrer en token"
 
@@ -820,7 +906,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:199
-#: src/screens/PinScreen.js:334 src/screens/Settings.js:186
+#: src/screens/PinScreen.js:334 src/screens/Settings.js:223
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
@@ -912,7 +998,28 @@ msgstr "Annuller"
 msgid "Biometry failed or canceled."
 msgstr "Biometri mislykkedes eller blev annulleret."
 
-#: src/screens/PushNotification.js:58 src/screens/Settings.js:149
+#: src/screens/PrivacySettings.js:69
+msgid "PRIVACY SETTINGS"
+msgstr ""
+
+#: src/screens/PrivacySettings.js:77
+msgid ""
+"You can change your default anytime, or switch per transaction when sending."
+msgstr ""
+
+#: src/screens/PrivacySettings.js:80
+msgid "TRANSACTION DEFAULTS"
+msgstr ""
+
+#: src/screens/PrivacySettings.js:89
+msgid "AUDIT"
+msgstr ""
+
+#: src/screens/PrivacySettings.js:94
+msgid "Export privacy keys"
+msgstr ""
+
+#: src/screens/PushNotification.js:58 src/screens/Settings.js:182
 msgid "Push Notification"
 msgstr ""
 
@@ -1107,28 +1214,28 @@ msgstr "Adresse, der skal sendes til"
 msgid "Paste or type address"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:130
+#: src/screens/SendAmountInput.js:134
 msgid "Insufficient funds"
 msgstr "Utilstrækkelige midler"
 
-#: src/screens/SendAmountInput.js:140
+#: src/screens/SendAmountInput.js:144
 msgid ""
 "The selected privacy mode requires a shielded address as the recipient. The "
 "address you entered is not shielded — change the address or switch to Public."
 msgstr ""
 
-#: src/screens/SendAmountInput.js:153
+#: src/screens/SendAmountInput.js:157
 #, javascript-format
 msgid "A private send can be at most ${ max } ${ symbol }."
 msgstr ""
 
-#: src/screens/SendAmountInput.js:184
+#: src/screens/SendAmountInput.js:188
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:198 src/screens/SendConfirmScreen.js:490
+#: src/screens/SendAmountInput.js:202 src/screens/SendConfirmScreen.js:490
 #, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
@@ -1296,51 +1403,55 @@ msgstr "SEND"
 msgid "Scan the QR code"
 msgstr "Scan QR-koden"
 
-#: src/screens/Settings.js:110
+#: src/screens/Settings.js:136
 msgid "You are connected to"
 msgstr "Du er tilsluttet til"
 
-#: src/screens/Settings.js:119
+#: src/screens/Settings.js:145
 msgid "General Settings"
 msgstr ""
 
-#: src/screens/Settings.js:138
+#: src/screens/Settings.js:164
 msgid "Create a new token"
 msgstr "Opret en ny token"
 
-#: src/screens/Settings.js:143
+#: src/screens/Settings.js:169
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:156
+#: src/screens/Settings.js:175
 msgid "Reown"
 msgstr ""
 
-#: src/screens/Settings.js:163
+#: src/screens/Settings.js:189
 msgid "Advanced Settings"
 msgstr ""
 
-#: src/screens/Settings.js:167
+#: src/screens/Settings.js:193
 msgid "Network Settings"
 msgstr ""
 
-#: src/screens/Settings.js:174
+#: src/screens/Settings.js:201
 msgid "Address Mode"
 msgstr ""
 
-#: src/screens/Settings.js:181
+#: src/screens/Settings.js:209
 msgid "Amount format"
 msgstr ""
 
-#: src/screens/Settings.js:194
+#: src/screens/Settings.js:217
+msgid "Privacy"
+msgstr ""
+
+#: src/screens/Settings.js:232
 msgid "About"
 msgstr "Om"
 
-#: src/screens/Settings.js:202
+#: src/screens/Settings.js:240
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:215
+#: src/screens/Settings.js:253
 msgid "Connected to"
 msgstr "Forbundet til"
 
@@ -1831,21 +1942,21 @@ msgstr "Transaktion"
 msgid "Open"
 msgstr "Åben"
 
-#: src/sagas/wallet.js:1160
+#: src/sagas/wallet.js:1175
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1174
+#: src/sagas/wallet.js:1189
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1184
+#: src/sagas/wallet.js:1199
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:1200
+#: src/sagas/wallet.js:1215
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -1940,9 +2051,17 @@ msgid ""
 "registration. Do you want to do it now?"
 msgstr ""
 
-#: src/components/CopyClipboard.js:55
+#: src/components/AuditUnblindingRows.js:104
+msgid "View in Explorer unblinded"
+msgstr ""
+
+#: src/components/AuditUnblindingRows.js:111 src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
 msgstr "Kopieret til udklipsholder!"
+
+#: src/components/AuditUnblindingRows.js:111
+msgid "Copy unblinding values"
+msgstr ""
 
 #: src/components/GlobalErrorModal.js:46
 msgid ""
@@ -2081,35 +2200,47 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:38
+#: src/components/PrivacyModeCard.js:50
 msgid "Private"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:39
-msgid "Token and amount hidden"
-msgstr ""
-
-#: src/components/PrivacyModeCard.js:45
-msgid "Hide amount"
-msgstr ""
-
-#: src/components/PrivacyModeCard.js:46
-msgid "Token visible, amount hidden"
-msgstr ""
-
 #: src/components/PrivacyModeCard.js:52
-msgid "Public"
+msgid "Token and amount hidden on all new transactions"
 msgstr ""
 
 #: src/components/PrivacyModeCard.js:53
+msgid "Token and amount hidden"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:59
+msgid "Hide amount"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:61
+msgid "Token visible, amount hidden on all new transactions"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:62
+msgid "Token visible, amount hidden"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:68
+msgid "Public"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:70
+msgid "Token and amount visible on all new transactions"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:71
 msgid "Token and amount visible"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:83
+#: src/components/PrivacyModeCard.js:107
 msgid "No privacy fees"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:86
+#: src/components/PrivacyModeCard.js:110
 #, javascript-format
 msgid "Fee: ${ fee } HTR per output"
 msgstr ""
@@ -2118,7 +2249,7 @@ msgstr ""
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:132
+#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:133
 msgid "Date & Time"
 msgstr "Dato & Tid"
 
@@ -2239,7 +2370,7 @@ msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
-#: src/components/TxDetailsModal.js:141
+#: src/components/TxDetailsModal.js:142
 msgid "Transaction ID"
 msgstr ""
 

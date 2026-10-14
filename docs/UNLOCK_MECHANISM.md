@@ -87,3 +87,12 @@ This document describes what happens with the app and the lib during the wallet 
 1. Private outputs whose decode failed in a way a retry may fix are counted in the capability's `undecoded.error`. A retry dispatches `shieldedReprocessRequested()`
 1. The shielded saga calls `wallet.reprocessShieldedOutputs()`, which processes the whole history again in a walk, then fetches the balances again. Its progress is `decoding` until the walk ends, then `idle`
 1. A wallet that is connecting or stopped refuses with `shielded-not-ready` or `shielded-not-started`. The walk of its next connection retries the outputs, so the refusal is only logged
+
+## Exporting the privacy keys
+
+1. The export (`ExportPrivacyKeys`, from Settings, under Privacy) asks for the PIN as soon as it opens, where `state.shielded.capability` is at level `view` or `full`. At level `watch` with a cause a PIN can fix, it offers `ShieldedUnlockAction` instead, and asks for the PIN once the wallet is unlocked
+1. It opens `PinScreen` (`canCancel`) with no PIN or key in the params. Its callback gets the PIN, or the password safe biometry reads from the keychain. When `PinScreen` closes without calling back (Cancel, Android's back, a failed biometry), the export closes too (`closeScreen`), back to the privacy settings
+1. If the shielded UI stops being available meanwhile, `PinScreen` closes with the export and the privacy settings under it (`closeScreen`), and the callback never runs
+1. The callback reads `wallet.getShieldedCapability()` again, and stops unless the level is `view` or `full`: the wallet checked its scan key against its shielded xpub when it unlocked it. Then it reads `storage.getSpendXPubKey()` and `storage.getScanXPrivKey(pinCode)`, which decrypts the scan key with the PIN
+1. A PIN change, turning safe biometry on or off, and the biometry migration all go through `storage.changePin`, which re-encrypts the scan key with the rest of the access data, so the password the callback gets decrypts it
+1. The PIN goes from the callback to wallet-lib only, and the keys stay in the screen's state: no action, log or navigation param carries either

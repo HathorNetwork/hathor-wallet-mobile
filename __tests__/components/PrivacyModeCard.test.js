@@ -16,7 +16,7 @@ import { setServerInfo } from '../../src/actions';
 import { PRIVACY_MODE } from '../../src/constants';
 import { PortalProvider } from '../../src/components/Portal';
 import TextFmt from '../../src/components/TextFmt';
-import PrivacyModeCard from '../../src/components/PrivacyModeCard';
+import PrivacyModeCard, { PRIVACY_MODE_CARD_VARIANT } from '../../src/components/PrivacyModeCard';
 import PrivacyModeSelector from '../../src/components/PrivacyModeSelector';
 import TransactionPrivacyModal from '../../src/components/TransactionPrivacyModal';
 
@@ -194,5 +194,43 @@ describe('PrivacyModeSelector', () => {
     );
 
     expect(texts()).toEqual(['Private', 'Token and amount hidden']);
+  });
+});
+
+describe('PrivacyModeCard for the default privacy mode', () => {
+  test('says the default applies to all new transactions, with each fee', async () => {
+    const { texts } = await render(
+      <PrivacyModeCard
+        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
+        onSelect={jest.fn()}
+        variant={PRIVACY_MODE_CARD_VARIANT.DEFAULT}
+      />,
+      { decimalPlaces: 4 },
+    );
+
+    expect(texts()).toEqual([
+      'Private',
+      'Token and amount hidden on all new transactions',
+      'Fee: 0.0002 HTR per output',
+      'Hide amount',
+      'Token visible, amount hidden on all new transactions',
+      'Fee: 0.0001 HTR per output',
+      'Public',
+      'Token and amount visible on all new transactions',
+      'No privacy fees',
+    ]);
+  });
+
+  test("keeps a send's copy for the per-send variant", async () => {
+    const { texts } = await render(
+      <PrivacyModeCard
+        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
+        onSelect={jest.fn()}
+        variant={PRIVACY_MODE_CARD_VARIANT.PER_SEND}
+      />,
+    );
+
+    expect(texts()).toContain('Token visible, amount hidden');
+    expect(texts().join('\n')).not.toContain('new transactions');
   });
 });

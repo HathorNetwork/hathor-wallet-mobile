@@ -24,6 +24,7 @@ import {
   TOKEN_IMPORT_MODAL_STATE,
   AMOUNT_FORMAT_DEFAULT,
   SHIELDED_PROVIDER_STATUS,
+  DEFAULT_PRIVACY_MODE,
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -307,6 +308,11 @@ const initialState = {
   lastSharedIndex: null,
   addressMode: null,
   amountFormat: AMOUNT_FORMAT_DEFAULT,
+  /**
+   * The mode a send starts in: the default the user saved on the device in Settings, under
+   * Privacy, which every wallet start loads, or else DEFAULT_PRIVACY_MODE.
+   */
+  privacyDefaultMode: DEFAULT_PRIVACY_MODE,
   reown: {
     client: null,
     modal: {
@@ -734,6 +740,8 @@ export const reducer = (state = initialState, action) => {
       return onSetAddressMode(state, action);
     case types.SET_AMOUNT_FORMAT:
       return onSetAmountFormat(state, action);
+    case types.PRIVACY_DEFAULT_MODE_SET:
+      return onPrivacyDefaultModeSet(state, action);
     case types.SET_UNLEASH_CLIENT:
       return onSetUnleashClient(state, action);
     case types.SET_FEATURE_TOGGLES:
@@ -1601,6 +1609,14 @@ const onSetAddressMode = (state, action) => ({
 const onSetAmountFormat = (state, action) => ({
   ...state,
   amountFormat: action.payload,
+});
+
+/**
+ * @param {string} action.payload The default privacy mode, one of PRIVACY_MODE
+ */
+const onPrivacyDefaultModeSet = (state, action) => ({
+  ...state,
+  privacyDefaultMode: action.payload,
 });
 
 /**

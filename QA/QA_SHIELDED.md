@@ -18,7 +18,7 @@ The token screen's balance and the tx details follow the original shielded redes
 1. Repeat with the flag on.
 
 ### The Shielded Testnet preset
-1. With the flag off, go to Settings -> Developer Settings -> Network Settings and accept the risk disclaimer. Only Mainnet and Testnet are offered.
+1. With the flag off, go to Settings -> Advanced Settings -> Network Settings and accept the risk disclaimer. Only Mainnet and Testnet are offered.
 1. Turn the flag on and reopen the screen. A third card, Shielded Testnet, shows `https://node1.shielded-outputs.testnet.hathor.network/v1a/`.
 1. Tap it. The wallet reloads on the shielded testnet and the success modal shows.
 1. Change network to Testnet and back to the Shielded Testnet: both reloads succeed.
@@ -115,6 +115,11 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 1. With the flag off, open the same txs: Fees shows the whole fee, and expands into Network fee alone.
 1. On Mainnet and Testnet, with the wallet on the fullnode facade, open a send of a fee-based token: Fees shows its fee, and expands into Network fee alone. On the wallet-service facade there's no Fees row: the tx that wallet-lib reads there has no fees.
 
+### Settings and the other lists
+1. On any network, open Settings. Each card has a thin ring around it, and its top and bottom corners are round, whichever rows the flags show. The section titles line up with the cards' left edge, and the last row of a card has no line under it.
+1. On Mainnet, with Reown and push notifications available, General Settings lists Reown right after Security, and Push Notification last.
+1. Security, Push Notification, the Reown sessions, and the history of a token without transactions show their cards with the same ring.
+
 ### Single-address mode on the Shielded Testnet
 1. With the single-address flag on and Single Address chosen on the Testnet, switch to the Shielded Testnet. The wallet starts in multi-address mode.
 1. Open Settings -> Address Mode: Single Address is disabled, with "Single address mode is not available on this network."
@@ -174,3 +179,43 @@ This needs a start with a PIN that doesn't decrypt the scan key, as in "A start 
 
 ### Timings of private sends on a low-end Android device
 On the Shielded Testnet, record the time from Next on the amount screen to the confirmation's summary, for a Hide amount send and for a Private send of a custom token, and compare it with a public send.
+
+### The default privacy mode
+With the flag on, on the Shielded Testnet:
+1. Open Settings. Advanced Settings shows Privacy after Amount format and before Reset wallet.
+1. Tap it. Privacy Settings says "You can change your default anytime, or switch per transaction when sending." Under "TRANSACTION DEFAULTS" it offers Private ("Token and amount hidden on all new transactions", "Fee: 0.02 HTR per output"), Hide amount ("Token visible, amount hidden on all new transactions", "Fee: 0.01 HTR per output") and Public ("Token and amount visible on all new transactions", "No privacy fees"), and Public is on. Under "AUDIT", "Export privacy keys" is a row with a chevron.
+1. Switch Private on. Start a send to a private address: the amount screen starts in Private. Start a send to a public address: it starts in Private too, and Next says "The selected privacy mode requires a shielded address as the recipient. The address you entered is not shielded — change the address or switch to Public."
+1. Open the privacy sheet of the send to the private address: it says "You can change your default on advanced settings". Pick Hide amount and tap DONE: the send goes in Hide amount, and the default stays Private.
+1. Kill and reopen the app: a send starts in Private.
+1. Change the network to Testnet, where Settings shows no Privacy, then back to the Shielded Testnet: the default is still Private.
+1. Reset the wallet and restore it on the Shielded Testnet: the default is still Private, since it belongs to the device.
+1. In a debug build, start the wallet locked, as in "A start that leaves the private funds locked": Privacy still shows, and so does its screen.
+1. With Privacy Settings open, turn the flag off: the screen goes back to Settings, which no longer offers Privacy.
+1. Settings shows no Privacy with the flag off, on Mainnet and Testnet, on the wallet-service facade, for a passkey wallet, and, in a debug build, when the provider's self-test fails.
+1. Switch Public back on before the other tests, which start sends in Public.
+
+### Exporting the privacy keys
+With the flag on, on the Shielded Testnet:
+1. In Privacy Settings, under AUDIT, tap "Export privacy keys": the export opens, and its PIN screen comes up over it at once, saying "Enter your 6-digit PIN to export the audit keys".
+1. Cancel the PIN screen: the export closes too, back to Privacy Settings. On Android, do the same with the back button.
+1. Open the export again and enter the PIN: "Read this before sharing" shows with its three paragraphs, then "Spend public key (xpub)" and "Scan private key (xpriv)" with their paths and what they let the auditor do, each masked to its first 12 and last 8 characters. A long press on a key selects its text as it shows, masked.
+1. Tap "Show full key" on the scan key: the whole key shows, and the button says Hide. Tap Hide: the key is masked again.
+1. Tap Copy on the scan key: it says "Copied" for a second and a half. Paste it in another app: it is the whole key, masked or not. A wallet-lib script with the same seed reads the same keys with `storage.getSpendXPubKey()` and `storage.getScanXPrivKey(pin)`.
+1. Wait a minute and paste again: the clipboard is empty. Copy again, send the app to the background at once, and come back after more than a minute: the clipboard is empty.
+1. Without tapping Copy, show the scan key in full, long-press it and copy it with the system's menu: the clipboard has the whole key, and it is still there a minute later, since only Copy clears the clipboard after it. Note it for the security review.
+1. With the keys shown, one of them in full, open the app switcher. On iOS, its snapshot of the app shows no key. On Android, the recents thumbnail can still show the keys, the full one included, since Android takes it before the screen hides them: note it for the security review. Come back: the keys show again, masked.
+1. With the keys shown, leave the app in the background for more than 30 seconds, then unlock it: the keys still show.
+1. Repeat the export with safe biometry on: the keychain prompt comes up instead of the PIN, and the keys are the same.
+1. In a debug build, start the wallet locked: the export opens without its PIN screen, says "Unlock your private balance to export the privacy keys." and offers "Unlock private balance". Once the balance is unlocked, the export's PIN screen comes up.
+1. With a wallet whose record has no shielded keys, the export says "This wallet has no shielded keys. They are only present on wallets created after the shielded outputs feature was enabled." and asks for no PIN.
+1. In a debug build, make wallet-lib's `storage.getScanXPrivKey` throw an `Error` with a message, then export the keys: after the PIN, the export shows that message, and no key.
+1. With the export's PIN screen open, turn the flag off: the PIN screen, the export and Privacy Settings close together, back to Settings, which no longer offers Privacy. In a debug build that starts the wallet locked, do the same from the PIN screen of "Unlock private balance".
+1. On Android 13 and later, the system's clipboard overlay previews the start of a copied key: note it for the security review, and whether the keyboard keeps the key in its clipboard history after the clear.
+
+### Unblinding rows in the tx details
+1. Open the details of a private receive and of a private send: they show no unblinding row, since this wallet-lib build has no encoder of the unblinding values, and they open without an error.
+1. With a QA-only wallet-lib build that exports `shielded.encodeShieldedUnblindingPayload`, open the details of a private receive: "View in Explorer unblinded" and "Copy unblinding values" show under Public Explorer. The details of a private send show them too.
+1. Tap "View in Explorer unblinded": the explorer opens at once at the tx, with the amounts and tokens of the wallet's own private outputs: those it received, its change, and those the tx spends. The output paid to another wallet stays blinded.
+1. Tap "Copy unblinding values": the row says "Copied to clipboard!" for a second and a half. Paste the values into the explorer's unblinding panel: it shows the same amounts and tokens. A minute later the clipboard is empty.
+1. On a custom network with another explorer, only "Copy unblinding values" shows.
+1. With the private balance locked, or the flag off, no row shows.

@@ -19,7 +19,7 @@ import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
 import { Network } from '@hathor/wallet-lib';
 
-import { DEFAULT_PRIVACY_MODE, IS_MULTI_TOKEN, PRIVACY_MODE } from '../constants';
+import { IS_MULTI_TOKEN, PRIVACY_MODE } from '../constants';
 import {
   getKeyboardAvoidingViewTopDistance,
   renderValue,
@@ -54,6 +54,8 @@ const SendAmountInput = () => {
   const capability = useSelector(selectShieldedCapability);
   const unlock = useSelector(selectShieldedUnlock);
   const networkName = useSelector((state) => state.networkSettings.network);
+  // The default the user saved on the device, which a send starts in.
+  const privacyDefaultMode = useSelector((state) => state.privacyDefaultMode);
 
   const navigation = useNavigation();
   const params = useParams();
@@ -62,14 +64,16 @@ const SendAmountInput = () => {
   const [amountValue, setAmountValue] = useState(null);
   const [token, setToken] = useState(selectedToken);
   const [error, setError] = useState(null);
-  // The mode of the send: it starts at the default, and the privacy sheet changes it for this
-  // send only.
-  const [chosenPrivacyMode, setChosenPrivacyMode] = useState(DEFAULT_PRIVACY_MODE);
+  // The mode the user picked in the privacy sheet, if any: it changes the mode for this send only.
+  const [chosenPrivacyMode, setChosenPrivacyMode] = useState(null);
   const [isPrivacyModalShown, setIsPrivacyModalShown] = useState(false);
   const inputRef = useRef(null);
 
-  // Where the wallet can't send privately, the send is public.
-  const privacyMode = privateSendsAvailable ? chosenPrivacyMode : PRIVACY_MODE.PUBLIC;
+  // A send starts in the default saved on the device. Where the wallet can't send privately, the
+  // send is public.
+  const privacyMode = privateSendsAvailable
+    ? (chosenPrivacyMode ?? privacyDefaultMode)
+    : PRIVACY_MODE.PUBLIC;
 
   // The available balance leaves out the private outputs the wallet holds locked. Where a PIN
   // can unlock them (private sends are available at level watch only then), the screen says how

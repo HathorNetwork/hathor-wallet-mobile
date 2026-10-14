@@ -161,7 +161,8 @@ export const PRIVACY_MODE = {
 };
 
 /**
- * The privacy mode a send starts in.
+ * The privacy mode a send starts in, until the user saves another default in Settings, under
+ * Privacy.
  */
 export const DEFAULT_PRIVACY_MODE = PRIVACY_MODE.PUBLIC;
 
@@ -504,3 +505,21 @@ export const SHIELDED_UNLOCK_SOURCE = {
   USER: 'user',
   SEND: 'send',
 };
+
+/**
+ * How long a sensitive copy, such as a privacy key or the unblinding values of a tx, stays in the
+ * clipboard, in milliseconds.
+ */
+export const SENSITIVE_CLIPBOARD_CLEAR_MS = 60 * 1000;
+
+/**
+ * How long a sensitive copy's button says that it copied, in milliseconds: far less than the
+ * clipboard keeps the copy.
+ */
+export const SENSITIVE_COPY_FEEDBACK_MS = 1500;
+
+/**
+ * The explorers that read the unblinding values of a tx from the #unblind= fragment of its link:
+ * only the shielded testnet's explorer has the parser.
+ */
+export const UNBLIND_EXPLORER_URLS = [EXPLORER_SHIELDED_TESTNET_URL];

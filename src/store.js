@@ -35,6 +35,10 @@ export const FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY = 'asyncstorage:featureToggle
 // App-level wallet metadata: { walletType, passkeyLabel, xpub, credentialId?, createdAt }.
 // Only present for passkey (xpub-only) wallets; absent means a regular seed+PIN wallet.
 export const WALLET_META_KEY = 'asyncstorage:walletMeta';
+// The default privacy mode of new sends, one of PRIVACY_MODE, which Settings, under Privacy,
+// saves. It belongs to the device, not to the wallet or the network: it is in neither list
+// below, and has no 'wallet:' prefix, so a wallet reset keeps it.
+export const PRIVACY_DEFAULT_MODE_KEY = 'asyncstorage:privacyDefaultMode';
 
 export const walletKeys = [
   ACCESS_DATA_KEY,
