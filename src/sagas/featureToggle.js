@@ -6,7 +6,6 @@
  */
 
 import { Platform } from 'react-native';
-import VersionNumber from 'react-native-version-number';
 import UnleashClient, { FetchTogglesStatus } from '@hathor/unleash-client';
 import { get } from 'lodash';
 
@@ -37,6 +36,10 @@ import {
 import { disableFeaturesIfNeeded } from './helpers';
 import { logger } from '../logger';
 import { STORE, FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY } from '../store';
+// The app's version as package.json has it, the same on both platforms. The native version isn't:
+// iOS can't carry a prerelease suffix, so a 0.40.0-rc.1 build reports 0.40.0 there, and Unleash
+// couldn't tell a release candidate from the release.
+import { version as appVersion } from '../../package.json';
 
 const MAX_RETRIES = 5;
 
@@ -106,8 +109,6 @@ export function* monitorFeatureFlags(currentRetry = 0, createRoutine = true) {
     const networkSettingsState = yield select((state) => state.networkSettings);
     ({ stage, fullNetwork } = networkSettingsState);
   }
-  const { appVersion } = VersionNumber;
-
   const options = {
     userId: getUniqueId(),
     properties: {
