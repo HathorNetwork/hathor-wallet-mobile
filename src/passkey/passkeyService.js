@@ -344,6 +344,7 @@ async function getNewPasskeyAssertion(Passkey, buildRequest) {
       if (e?.code !== 'NoCredentials') throw e;
     }
   }
+  log.log('New passkey still not listed after the silent retries; falling back to the regular prompt');
   return callPasskey(() => Passkey.get(buildRequest()));
 }
 

@@ -370,6 +370,13 @@ describe('createWalletWordsFromPasskey on Android, right after creating the pass
     expect(new Set(challenges).size).toBe(6);
   });
 
+  test('wraps a failure of the regular assertion like any other native error', async () => {
+    mockPasskey.getImmediate.mockRejectedValue(notReady);
+    mockPasskey.get.mockRejectedValue({ error: 'TimedOut', message: 'The request timed out.' });
+
+    await expect(createOnAndroid()).rejects.toMatchObject({ name: 'PasskeyNativeError', code: 'TimedOut' });
+  });
+
   // Once the passkey is found, Android shows the biometric prompt. Any answer other than "not
   // listed yet" is final: retrying would prompt the user again after they cancelled.
   test('passes a user cancel straight through without retrying', async () => {
