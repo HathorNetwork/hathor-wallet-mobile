@@ -73,6 +73,14 @@ This document describes what happens with the app and the lib during the wallet 
 1. A later PIN entry, at the lock screen for example, replaces a running unlock, which goes back to `idle`
 1. `ShieldedUnlockAction` shows a spinner while the status is `unlocking` or `decoding`, and says when the unlock failed
 1. An unlock that finds the wallet's scan key doesn't match its shielded xpub fails with `shielded-key-mismatch`, and wallet-lib stops using the record's shielded keys: the level drops to `none`, reason `integrity`, and no PIN fixes it. The token screen then shows no unlock: it says that private transfers aren't available for this wallet, with the locked count and the failure
+1. The send amount screen (`SendAmountInput`) checks the amount against the available balance, which leaves out the private outputs the wallet holds locked. Where private sends are available and a PIN can unlock them, it shows how many there are and `ShieldedUnlockAction`, as the token screen does, so that a send that needs them can unlock them first
+
+## Unlocking before a private send
+
+1. A private send needs the wallet at level `full`. Where a PIN can unlock a locked wallet (level `watch`, any cause but `corrupt-key`), the send confirmation (`SendConfirmScreen`) asks to unlock it instead of building the send
+1. "Unlock private balance" opens `PinScreen` (`canCancel`). Its callback calls the same helper as the lock screen and Receive, `unlockShieldedViewIfLocked(wallet, pinCode)`, directly from the screen, which must wait for the end of the walk before it builds: the shielded saga isn't involved
+1. On `unlocked`, the screen waits for `reprocessed`, then builds the send once the wallet is ready, at level `full`. On `failed`, it says "Could not unlock your private balance." The capability event of the unlock and of the walk's end updates `state.shielded.capability` and refreshes the balances, as for any other unlock
+1. The PIN goes from the PIN screen's callback to wallet-lib only: no action carries it, and the send keeps no PIN
 
 ## Retrying private funds that couldn't be read
 

@@ -122,3 +122,24 @@ export function isShieldedEnabled(state) {
   const level = selectShieldedCapability(state)?.level;
   return isShieldedAvailable(state) && (level === 'view' || level === 'full');
 }
+
+/**
+ * Whether the wallet can send privately, now or once the user unlocks its private balance with
+ * the PIN: shielded support is available and the capability level is 'full', or 'watch' with a
+ * cause a PIN can fix. A private send needs 'full': it may spend the wallet's private outputs,
+ * and its private change must be decoded as soon as it is sent. No PIN fixes a locked wallet
+ * whose stored scan key is corrupt ('corrupt-key').
+ *
+ * @param {Object} state Redux state
+ * @returns {boolean}
+ */
+export function canSendPrivately(state) {
+  if (!isShieldedAvailable(state)) {
+    return false;
+  }
+  const capability = selectShieldedCapability(state);
+  if (capability?.level === 'full') {
+    return true;
+  }
+  return capability?.level === 'watch' && capability.cause !== 'corrupt-key';
+}

@@ -6,7 +6,7 @@
  */
 
 import { jest, describe, it, expect, afterEach } from '@jest/globals';
-import { Address, Network } from '@hathor/wallet-lib';
+import { Address, Network, helpersUtils } from '@hathor/wallet-lib';
 import { validateAddress, isShieldedAddress, shieldedAddressNotSupportedText } from '../../src/utils';
 
 afterEach(() => {
@@ -79,5 +79,83 @@ describe('isShieldedAddress', () => {
       throw new TypeError('unexpected failure');
     });
     expect(() => isShieldedAddress(ADDRESSES.testnet.shielded, network)).toThrow('unexpected failure');
+  });
+});
+
+const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+function base58Encode(bytes) {
+  let value = BigInt(`0x${Buffer.from(bytes).toString('hex')}`);
+  let encoded = '';
+  while (value > 0n) {
+    encoded = BASE58_ALPHABET[Number(value % 58n)] + encoded;
+    value /= 58n;
+  }
+  for (const byte of bytes) {
+    if (byte !== 0) {
+      break;
+    }
+    encoded = `1${encoded}`;
+  }
+  return encoded;
+}
+
+// The compressed form of x = 5, which has no point on secp256k1: 5^3 + 7 is not a square
+// modulo the field prime.
+const OFF_CURVE_KEY = Buffer.concat([Buffer.from([0x02]), Buffer.alloc(31), Buffer.from([5])]);
+
+/**
+ * A shielded address with the checksum of its bytes, but one of its two public keys (version
+ * 1 byte, scan key 33 bytes, spend key 33 bytes) replaced by a point off the curve.
+ */
+function withOffCurveKey(address, network, key) {
+  const bytes = new Address(address, { network }).decode();
+  const offset = key === 'scan' ? 1 : 34;
+  const body = Buffer.concat([
+    bytes.subarray(0, offset),
+    OFF_CURVE_KEY,
+    bytes.subarray(offset + 33, 67),
+  ]);
+  return base58Encode(Buffer.concat([body, helpersUtils.getChecksum(body)]));
+}
+
+describe('validateAddress where the wallet sends privately', () => {
+  const network = new Network('testnet');
+  const allowShielded = { allowShielded: true };
+
+  it('accepts a shielded address of the network', () => {
+    expect(validateAddress(ADDRESSES.testnet.shielded, network, allowShielded))
+      .toEqual({ isValid: true });
+  });
+
+  it('still accepts P2PKH and P2SH addresses', () => {
+    expect(validateAddress(ADDRESSES.testnet.p2pkh, network, allowShielded))
+      .toEqual({ isValid: true });
+    expect(validateAddress(ADDRESSES.testnet.p2sh, network, allowShielded))
+      .toEqual({ isValid: true });
+  });
+
+  it.each(['scan', 'spend'])('rejects a shielded address whose %s key is off the curve', (key) => {
+    const address = withOffCurveKey(ADDRESSES.testnet.shielded, network, key);
+    // The checksum is right, so only the curve check finds it.
+    expect(() => new Address(address, { network }).validateAddress()).not.toThrow();
+
+    expect(validateAddress(address, network, allowShielded))
+      .toEqual({ isValid: false, message: 'Invalid address' });
+  });
+
+  it('rejects a shielded address of another network', () => {
+    expect(validateAddress(ADDRESSES.mainnet.shielded, network, allowShielded))
+      .toEqual({ isValid: false, message: 'Invalid address' });
+  });
+
+  it('keeps the shielded address message without the option', () => {
+    const address = withOffCurveKey(ADDRESSES.testnet.shielded, network, 'scan');
+    expect(validateAddress(address, network)).toEqual({
+      isValid: false,
+      message: shieldedAddressNotSupportedText,
+    });
+    expect(validateAddress(ADDRESSES.testnet.shielded, network, { allowShielded: false }))
+      .toEqual({ isValid: false, message: shieldedAddressNotSupportedText });
   });
 });

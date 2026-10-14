@@ -22,6 +22,11 @@ import { Address, Network } from '@hathor/wallet-lib';
 import { handleRpcRequest } from '@hathor/hathor-rpc-handler';
 import { processRequest } from '../../src/sagas/reown';
 import { types } from '../../src/actions';
+import {
+  FULL_NETWORK_SHIELDED_TESTNET,
+  SHIELDED_OUTPUTS_FEATURE_TOGGLE,
+  SHIELDED_PROVIDER_STATUS,
+} from '../../src/constants';
 import { shieldedAddressNotSupportedText } from '../../src/utils';
 /* eslint-enable import/first */
 
@@ -190,7 +195,20 @@ const stubMiddleware = (next) => (effect) => {
   return next(effect);
 };
 
-async function runProcessRequest(request, { walletNetwork = 'testnet', settingsNetwork = 'testnet' } = {}) {
+// The state of a seed wallet on the shielded testnet, on the fullnode facade, with the flag on and
+// a ready provider: the shielded environment.
+const SHIELDED_ENVIRONMENT = {
+  featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: true },
+  useWalletService: false,
+  fullNodeNetworkName: FULL_NETWORK_SHIELDED_TESTNET,
+  shielded: { providerStatus: SHIELDED_PROVIDER_STATUS.READY },
+};
+
+async function runProcessRequest(request, {
+  walletNetwork = 'testnet',
+  settingsNetwork = 'testnet',
+  state = {},
+} = {}) {
   const dispatched = [];
   // Mirrors redux-thunk: processRequest grabs `dispatch` by putting a function.
   const dispatch = (action) => {
@@ -204,7 +222,7 @@ async function runProcessRequest(request, { walletNetwork = 'testnet', settingsN
   const task = runSaga(
     {
       dispatch,
-      getState: () => ({ wallet, networkSettings: { network: settingsNetwork } }),
+      getState: () => ({ wallet, networkSettings: { network: settingsNetwork }, ...state }),
       effectMiddlewares: [stubMiddleware],
     },
     processRequest,
@@ -270,6 +288,53 @@ describe('processRequest with shielded addresses', () => {
       params: { network: 'testnet', outputs: [{ address: SHIELDED, value: '5' }] },
     };
     await runProcessRequest(request, { walletNetwork: 'testnet', settingsNetwork: 'mainnet' });
+
+    expect(handleRpcRequest).not.toHaveBeenCalled();
+    expect(walletKit.respondSessionRequest).toHaveBeenCalledWith(expect.objectContaining({
+      response: expect.objectContaining({
+        error: { code: INVALID_PAYLOAD, message: expect.any(String) },
+      }),
+    }));
+  });
+});
+
+describe('processRequest with shielded addresses in the shielded environment', () => {
+  test.each(ADDRESS_FIELDS)('passes a shielded address in the %s to the rpc handler', async (_field, buildRequest) => {
+    handleRpcRequest.mockResolvedValue({ type: 'test-response' });
+
+    const dispatched = await runProcessRequest(buildRequest(SHIELDED), {
+      state: SHIELDED_ENVIRONMENT,
+    });
+
+    expect(handleRpcRequest).toHaveBeenCalledTimes(1);
+    expect(walletKit.respondSessionRequest).toHaveBeenCalledWith(expect.objectContaining({
+      response: expect.objectContaining({ result: { type: 'test-response' } }),
+    }));
+    expect(dispatched).not.toContainEqual(expect.objectContaining({
+      type: types.SET_REOWN_MODAL,
+      payload: expect.objectContaining({ data: { errorMessage: shieldedAddressNotSupportedText } }),
+    }));
+  });
+
+  // Outside it, the request is rejected before the rpc handler sees it.
+  test.each([
+    ['the flag is off', { ...SHIELDED_ENVIRONMENT, featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false } }],
+    ['on the wallet-service facade', {
+      ...SHIELDED_ENVIRONMENT,
+      useWalletService: true,
+      shielded: { providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED },
+    }],
+    ['on another network', {
+      ...SHIELDED_ENVIRONMENT,
+      fullNodeNetworkName: 'testnet',
+      shielded: { providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED },
+    }],
+  ])('rejects a shielded address when %s', async (_label, state) => {
+    const request = {
+      method: 'htr_sendTransaction',
+      params: { network: 'testnet', outputs: [{ address: SHIELDED, value: '5' }] },
+    };
+    await runProcessRequest(request, { state });
 
     expect(handleRpcRequest).not.toHaveBeenCalled();
     expect(walletKit.respondSessionRequest).toHaveBeenCalledWith(expect.objectContaining({
@@ -371,5 +436,23 @@ describe('processRequest with strings too long to be addresses', () => {
         data: { errorMessage: shieldedAddressNotSupportedText },
       },
     });
+  });
+
+  test('rejects a 40,000-character address in the shielded environment too', async () => {
+    const decode = jest.spyOn(Address.prototype, 'decode');
+    const request = {
+      method: 'htr_sendTransaction',
+      params: { network: 'testnet', outputs: [{ address: LONG_STRING, value: '5' }] },
+    };
+
+    await runProcessRequest(request, { state: SHIELDED_ENVIRONMENT });
+
+    expect(decodedLengths(decode)).not.toContain(LONG_STRING.length);
+    expect(handleRpcRequest).not.toHaveBeenCalled();
+    expect(walletKit.respondSessionRequest).toHaveBeenCalledWith(expect.objectContaining({
+      response: expect.objectContaining({
+        error: { code: INVALID_PAYLOAD, message: expect.any(String) },
+      }),
+    }));
   });
 });

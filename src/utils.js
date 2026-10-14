@@ -274,20 +274,28 @@ export const isShieldedAddress = (address, network) => (
 /**
    * Validates an address
    *
-   * Shielded addresses are valid for wallet-lib, but this wallet cannot use them, so they are
-   * reported as invalid.
+   * Shielded addresses are valid for wallet-lib, but this wallet can only pay them in the
+   * shielded environment, so elsewhere they are reported as invalid. Where it can, both public
+   * keys a shielded address carries must be points of the curve: no output paid to it could be
+   * built or spent otherwise.
    *
    * @param {string} address Address in base58
    * @param {Object} network Instance of Network object from the wallet-lib
+   * @param {Object} [options]
+   * @param {boolean} [options.allowShielded=false] Whether a shielded address of the network is
+   *   valid
    *
    * @return {Object} boolean indicating if address is valid and possibly an error message
    */
-export const validateAddress = (address, network) => {
+export const validateAddress = (address, network, { allowShielded = false } = {}) => {
   try {
     const addressObj = new hathorLib.Address(address, { network });
     addressObj.validateAddress();
     if (addressObj.isShielded()) {
-      return { isValid: false, message: shieldedAddressNotSupportedText };
+      if (!allowShielded) {
+        return { isValid: false, message: shieldedAddressNotSupportedText };
+      }
+      addressObj.parseShielded();
     }
     return { isValid: true };
   } catch (e) {
