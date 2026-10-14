@@ -461,6 +461,56 @@ export const renderValue = (
   return formatted;
 };
 
+// Amount display sizing: amounts can reach ~28 chars, so computeAmountFontFit
+// shrinks the font before wrapping.
+export const AMOUNT_FONT_BASE_SIZE = 32;
+export const AMOUNT_FONT_MIN_SIZE = 20;
+export const AMOUNT_MAX_LINES = 3;
+
+// Glyph width as a fraction of fontSize, used to estimate text width instead of
+// measuring it: a prior hidden-<Text> measurer crashed (Folly F14Set, iOS 26.1 +
+// Fabric). Biased high so the amount shrinks a hair early rather than clipping.
+const AMOUNT_GLYPH_RATIO = 0.68;
+
+/**
+ * Shrink-first-then-wrap sizing ladder for the amount display.
+ *
+ * Given the displayed length and the width available on a single line, it:
+ *   1. keeps the base size while the text fits on one line;
+ *   2. shrinks the font (base -> floor) to keep the text on one line as it grows;
+ *   3. once even the floor size can't fit the text on one line, pins the font at
+ *      the floor and reports `wraps: true` so the caller lets it flow across up
+ *      to AMOUNT_MAX_LINES lines (and, on the Send screen, drops the token box
+ *      below the amount).
+ *
+ * Because the font is already at the floor when `wraps` flips to true, callers
+ * that switch layout at that point (Send) see no font-size jump at the switch.
+ *
+ * @param {number} textLength Length of the displayed amount (value or placeholder)
+ * @param {number} availableWidth Single-line width available for the amount, in px
+ * @param {number} [baseFontSize] Starting (largest) font size; defaults to the amount base
+ * @param {number} [minFontSize] Floor font size below which it wraps instead of shrinking
+ * @return {{ fontSize: number, wraps: boolean }}
+ */
+export const computeAmountFontFit = (
+  textLength,
+  availableWidth,
+  baseFontSize = AMOUNT_FONT_BASE_SIZE,
+  minFontSize = AMOUNT_FONT_MIN_SIZE,
+) => {
+  if (!availableWidth || availableWidth <= 0 || !textLength) {
+    return { fontSize: baseFontSize, wraps: false };
+  }
+  const oneLineFontSize = availableWidth / (textLength * AMOUNT_GLYPH_RATIO);
+  if (oneLineFontSize >= baseFontSize) {
+    return { fontSize: baseFontSize, wraps: false };
+  }
+  if (oneLineFontSize >= minFontSize) {
+    return { fontSize: Math.floor(oneLineFontSize), wraps: false };
+  }
+  return { fontSize: minFontSize, wraps: true };
+};
+
 /**
  * Home display precision rule: cap the shown fractional digits by the value's
  * integer magnitude — < 1 -> 8, 1-999 -> 4, 1000-9999 -> 3, >= 10000 -> 2.

@@ -25,6 +25,7 @@ import IconTabBar from '../icon-font';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
+import AmountDisplay from '../components/AmountDisplay';
 import OfflineBar from '../components/OfflineBar';
 import { HathorList } from '../components/HathorList';
 import {
@@ -531,11 +532,9 @@ class BalanceView extends React.Component {
     },
     balanceLocked: {
       marginTop: 24,
-      fontSize: 18,
       fontWeight: 'bold',
     },
     balanceAvailable: {
-      fontSize: 32,
       fontWeight: 'bold',
     },
     text1: {
@@ -571,23 +570,13 @@ class BalanceView extends React.Component {
     const { style } = this;
     return (
       <View style={style.center}>
-        <Text
-          style={style.balanceAvailable}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
+        <AmountDisplay style={style.balanceAvailable}>
           {`${availableStr} ${token.symbol}`}
-        </Text>
+        </AmountDisplay>
         <Text style={style.text1}>{t`Available Balance`}</Text>
-        <Text
-          style={style.balanceLocked}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
+        <AmountDisplay style={style.balanceLocked} baseFontSize={18} minFontSize={12}>
           {`${lockedStr} ${token.symbol}`}
-        </Text>
+        </AmountDisplay>
         <Text style={style.text1}>{t`Locked`}</Text>
         <Image style={style.expandButton} source={chevronUp} width={12} height={7} />
       </View>
@@ -605,14 +594,9 @@ class BalanceView extends React.Component {
     const { style } = this;
     return (
       <View style={style.center}>
-        <Text
-          style={style.balanceAvailable}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
+        <AmountDisplay style={style.balanceAvailable}>
           {`${availableStr} ${token.symbol}`}
-        </Text>
+        </AmountDisplay>
         <Text style={style.text1}>{t`Available Balance`}</Text>
         <Image style={style.expandButton} source={chevronDown} width={12} height={7} />
       </View>

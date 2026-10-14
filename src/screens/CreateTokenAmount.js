@@ -198,6 +198,7 @@ const CreateTokenAmount = () => {
                 decimalPlaces={decimalPlaces}
                 onAmountUpdate={onAmountChange}
                 value={amountText}
+                style={{ alignSelf: 'stretch' }}
               />
               {error && (
                 <Text style={{ color: COLORS.errorTextColor, marginTop: 8, textAlign: 'center' }}>
