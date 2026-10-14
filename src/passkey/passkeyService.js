@@ -328,7 +328,7 @@ async function registerPasskey(userName) {
 // So the assertion that follows creation asks with getImmediate after each of these delays: it
 // fails silently with NoCredentials while the passkey isn't listed yet. If it never is, the regular
 // get still runs, so a security key or another device remains possible.
-const NEW_PASSKEY_RETRY_DELAYS_MS = [250, 500, 1000, 2000];
+const NEW_PASSKEY_RETRY_DELAYS_MS = [250, 500, 1000, 2000, 4000];
 
 const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 

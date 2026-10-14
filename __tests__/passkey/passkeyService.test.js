@@ -126,6 +126,17 @@ describe('signInWalletWordsFromPasskey', () => {
     expect(result.credentialId).toBe('cred-1');
   });
 
+  // The silent retry only applies right after creation: the passkey being signed in with already
+  // exists, so Android gets a single regular assertion.
+  test('asks with a single regular assertion on Android', async () => {
+    mockPasskey.get.mockResolvedValue(assertion());
+
+    await withPlatformOS('android', () => signInWalletWordsFromPasskey({ credentialId: 'cred-1' }));
+
+    expect(mockPasskey.get).toHaveBeenCalledTimes(1);
+    expect(mockPasskey.getImmediate).not.toHaveBeenCalled();
+  });
+
   test('rejects an assertion without user verification before deriving anything', async () => {
     mockPasskey.get.mockResolvedValue(assertion({
       response: { authenticatorData: authData(FLAG_UP), userHandle: userHandleFor('Savings') },
@@ -239,18 +250,6 @@ describe('createWalletWordsFromPasskey', () => {
     expect(mockPasskey.getImmediate).not.toHaveBeenCalled();
   });
 
-  test('uses the regular create call on Android', async () => {
-    const created = { id: 'cred-new', clientExtensionResults: { prf: { enabled: true } } };
-    mockPasskey.create.mockResolvedValue(created);
-    // On Android the PRF assertion after creation goes through getImmediate (see below).
-    mockPasskey.getImmediate.mockResolvedValue(assertion({ id: 'cred-new' }));
-
-    await withPlatformOS('android', () => createWalletWordsFromPasskey('Savings'));
-
-    expect(mockPasskey.create).toHaveBeenCalledTimes(1);
-    expect(mockPasskey.createPlatformKey).not.toHaveBeenCalled();
-  });
-
   test('creates the credential, then derives the wallet from a verified assertion', async () => {
     const created = { id: 'cred-new', clientExtensionResults: { prf: { enabled: true } } };
     mockPasskey.create.mockResolvedValue(created);
@@ -292,6 +291,50 @@ describe('createWalletWordsFromPasskey on Android, right after creating the pass
     });
   }
 
+  test('uses the regular create call on Android', async () => {
+    mockPasskey.getImmediate.mockResolvedValue(assertion({ id: 'cred-new' }));
+
+    await createOnAndroid();
+
+    expect(mockPasskey.create).toHaveBeenCalledTimes(1);
+    expect(mockPasskey.createPlatformKey).not.toHaveBeenCalled();
+  });
+
+  // runAllTimersAsync fires timers whatever their length, so the waits get their own test: with no
+  // wait, every attempt runs before the passkey is listed and the user ends up in the chooser.
+  test('waits 250, 500, 1000, 2000 and 4000 ms before each silent attempt', async () => {
+    mockPasskey.getImmediate.mockRejectedValue(notReady);
+    mockPasskey.get.mockResolvedValue(assertion({ id: 'cred-new' }));
+
+    await withPlatformOS('android', async () => {
+      const pending = createWalletWordsFromPasskey('Savings');
+      pending.catch(() => {});
+      const delays = [250, 500, 1000, 2000, 4000];
+      for (const [attempt, delayMs] of delays.entries()) {
+        // eslint-disable-next-line no-await-in-loop
+        await jest.advanceTimersByTimeAsync(delayMs - 1);
+        expect(mockPasskey.getImmediate).toHaveBeenCalledTimes(attempt);
+        // eslint-disable-next-line no-await-in-loop
+        await jest.advanceTimersByTimeAsync(1);
+        expect(mockPasskey.getImmediate).toHaveBeenCalledTimes(attempt + 1);
+      }
+      await pending;
+    });
+
+    expect(mockPasskey.get).toHaveBeenCalledTimes(1);
+  });
+
+  // A PRF read without user verification returns a different secret, so the new wallet could never
+  // be derived again by sign-in, which requires it.
+  test('rejects an assertion without user verification', async () => {
+    mockPasskey.getImmediate.mockResolvedValue(assertion({
+      id: 'cred-new',
+      response: { authenticatorData: authData(FLAG_UP), userHandle: userHandleFor('Savings') },
+    }));
+
+    await expect(createOnAndroid()).rejects.toThrow(/did not verify your identity/);
+  });
+
   test('retries until the new passkey is available, without opening the chooser', async () => {
     mockPasskey.getImmediate
       .mockRejectedValueOnce(notReady)
@@ -316,11 +359,15 @@ describe('createWalletWordsFromPasskey on Android, right after creating the pass
     const result = await createOnAndroid();
 
     expect(result.words.split(' ')).toHaveLength(24);
-    // Four silent attempts, one per retry delay, then the regular prompt, which can still offer a
+    // Five silent attempts, one per retry delay, then the regular prompt, which can still offer a
     // security key or another device.
-    expect(mockPasskey.getImmediate).toHaveBeenCalledTimes(4);
+    expect(mockPasskey.getImmediate).toHaveBeenCalledTimes(5);
     expect(mockPasskey.get).toHaveBeenCalledTimes(1);
     expect(mockPasskey.get.mock.calls[0][0].allowCredentials).toEqual([{ type: 'public-key', id: 'cred-new' }]);
+    // Each attempt is a new request with its own challenge.
+    const challenges = [...mockPasskey.getImmediate.mock.calls, ...mockPasskey.get.mock.calls]
+      .map(([request]) => request.challenge);
+    expect(new Set(challenges).size).toBe(6);
   });
 
   // Once the passkey is found, Android shows the biometric prompt. Any answer other than "not
