@@ -24,7 +24,7 @@ import {
   PRE_SETTINGS_TESTNET,
   PRE_SETTINGS_SHIELDED_TESTNET,
 } from '../../constants';
-import { getShieldedFeatureToggle } from '../../shielded/gating';
+import { getShieldedNetworkPresetFeatureToggle } from '../../shielded/gating';
 import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
 import { feedbackSucceedText, feedbackFailedText, feedbackLoadingText, hasFailed, isLoading, hasSucceeded } from './helper';
 import errorIcon from '../../assets/images/icErrorBig.png';
@@ -84,7 +84,7 @@ export const NetworkPreSettingsNav = Symbol('NetworkPreSettings').toString();
 export function NetworkPreSettingsScreen({ navigation }) {
   const dispatch = useDispatch();
   const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
-  const shieldedFeatureEnabled = useSelector(getShieldedFeatureToggle);
+  const shieldedPresetEnabled = useSelector(getShieldedNetworkPresetFeatureToggle);
   const setMainnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_MAINNET));
   const setTestnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_TESTNET));
   const setShieldedTestnetNetwork = () => dispatch(
@@ -134,7 +134,7 @@ export function NetworkPreSettingsScreen({ navigation }) {
       <View style={styles.content}>
         <CustomNetwork title='Mainnet' url={PRE_SETTINGS_MAINNET.nodeUrl} onPress={setMainnetNetwork} />
         <CustomNetwork title='Testnet' url={PRE_SETTINGS_TESTNET.nodeUrl} onPress={setTestnetNetwork} />
-        {shieldedFeatureEnabled && (
+        {shieldedPresetEnabled && (
           <CustomNetwork
             title='Shielded Testnet'
             url={PRE_SETTINGS_SHIELDED_TESTNET.nodeUrl}
