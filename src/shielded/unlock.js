@@ -6,6 +6,7 @@
  */
 
 import { errors } from '@hathor/wallet-lib';
+import { getWalletShieldedCapability } from './capability';
 
 /**
  * What unlockShieldedViewIfLocked did.
@@ -35,8 +36,9 @@ const CORRUPT_KEY_CAUSE = 'corrupt-key';
  * unlocked, without waiting for the walk that decodes the locked outputs: `reprocessed`
  * resolves with the capability when that walk ends, and never rejects.
  *
- * A wallet without a shielded capability, such as a wallet-service facade wallet, is skipped with a
- * null capability. A wallet at another level is left as it is, and so is a locked wallet whose
+ * A wallet that has no view key to unlock, such as a wallet-service facade wallet, whose scan key
+ * is unlocked at start(), is skipped with its capability (getWalletShieldedCapability). A wallet
+ * at another level is left as it is, and so is a locked wallet whose
  * cause is 'corrupt-key', which no PIN can unlock: a try would only run the PIN check and the
  * decrypt again, and fail. A PIN can fix the other causes ('not-supplied', 'wrong-pin' and
  * 'error'). When wallet-lib refuses the unlock, it returns the ShieldedKeyError's code, one of the
@@ -52,11 +54,10 @@ const CORRUPT_KEY_CAUSE = 'corrupt-key';
  * >}
  */
 export async function unlockShieldedViewIfLocked(wallet, pinCode) {
-  if (typeof wallet.getShieldedCapability !== 'function') {
-    return { status: SHIELDED_UNLOCK_STATUS.SKIPPED, capability: null };
-  }
-  const current = await wallet.getShieldedCapability();
-  if (current.level !== 'watch' || current.cause === CORRUPT_KEY_CAUSE) {
+  const current = await getWalletShieldedCapability(wallet);
+  if (typeof wallet.unlockShieldedView !== 'function'
+    || current.level !== 'watch'
+    || current.cause === CORRUPT_KEY_CAUSE) {
     return { status: SHIELDED_UNLOCK_STATUS.SKIPPED, capability: current };
   }
 

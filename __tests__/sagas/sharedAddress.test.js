@@ -67,7 +67,6 @@ describe('refreshSharedAddress', () => {
       network: 'testnet',
       providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
     }],
-    ['the wallet runs on the wallet-service facade', { flag: true, useWalletService: true }],
   ])('shares the wallet\'s current legacy address while %s', async (_label, options) => {
     const { wallet, dispatched, task, finishRead } = run(options);
 
@@ -78,8 +77,11 @@ describe('refreshSharedAddress', () => {
     expect(dispatched).toEqual([sharedAddressUpdate(LEGACY_ADDRESS, 2)]);
   });
 
-  test('leaves the shared address to the shielded saga in the shielded environment', async () => {
-    const { wallet, dispatched, task } = run({ flag: true });
+  test.each([
+    ['the fullnode facade', { flag: true }],
+    ['the wallet-service facade', { flag: true, useWalletService: true }],
+  ])('leaves the shared address to the shielded saga in the shielded environment, on %s', async (_label, options) => {
+    const { wallet, dispatched, task } = run(options);
 
     await task.toPromise();
 

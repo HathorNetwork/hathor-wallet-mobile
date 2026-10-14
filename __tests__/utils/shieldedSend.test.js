@@ -5,9 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { jest, describe, test, expect } from '@jest/globals';
+import { jest, describe, test, expect, afterEach } from '@jest/globals';
 import { EventEmitter } from 'events';
-import { constants, shielded } from '@hathor/wallet-lib';
+import {
+  SendTransactionWalletService,
+  constants,
+  errors,
+  shielded,
+} from '@hathor/wallet-lib';
+import SendTransaction from '@hathor/wallet-lib/lib/new/sendTransaction';
 import { PRIVACY_MODE } from '../../src/constants';
 import {
   MAX_PRIVATE_AMOUNT,
@@ -52,6 +58,10 @@ describe('privacyModeToShieldedMode', () => {
 describe('buildSendOutput', () => {
   const ADDRESS = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   test('writes no shieldedMode key for a public output', () => {
     for (const shieldedMode of [null, undefined]) {
       const output = buildSendOutput({
@@ -79,6 +89,84 @@ describe('buildSendOutput', () => {
       shieldedMode: 2,
     });
     expect(typeof output.value).toBe('bigint');
+  });
+
+  test('carries the shielded mode under the shielded key on the wallet-service facade', () => {
+    for (const mode of [
+      shielded.ShieldedOutputMode.AMOUNT_SHIELDED,
+      shielded.ShieldedOutputMode.FULLY_SHIELDED,
+    ]) {
+      const output = buildSendOutput({
+        address: ADDRESS,
+        amount: 100n,
+        tokenUid: '00',
+        shieldedMode: mode,
+        walletService: true,
+      });
+      expect(output).toEqual({ address: ADDRESS, value: 100n, token: '00', shielded: mode });
+      expect('shieldedMode' in output).toBe(false);
+    }
+  });
+
+  test('writes no shielded key for a public output on the wallet-service facade', () => {
+    const output = buildSendOutput({
+      address: ADDRESS,
+      amount: 100n,
+      tokenUid: '00',
+      shieldedMode: null,
+      walletService: true,
+    });
+    expect(output).toEqual({ address: ADDRESS, value: 100n, token: '00' });
+  });
+
+  test('makes the wallet-service facade hand its send engine a private output, which a shieldedMode key would not', async () => {
+    // A wallet with registered shielded keys builds every send with the fullnode facade's engine,
+    // which gets the outputs the facade converts: a stand-in for its prepareTx records them.
+    const engineOutputs = [];
+    jest.spyOn(SendTransaction.prototype, 'prepareTx').mockImplementation(function prepareTx() {
+      engineOutputs.push(this.outputs);
+      return Promise.reject(new Error('prepared'));
+    });
+    const wallet = { isShieldedEnabled: () => true };
+    const mode = shielded.ShieldedOutputMode.AMOUNT_SHIELDED;
+    const output = buildSendOutput({
+      address: ADDRESS,
+      amount: 100n,
+      tokenUid: '00',
+      shieldedMode: mode,
+      walletService: true,
+    });
+
+    await expect(new SendTransactionWalletService(wallet, { outputs: [output] }).prepareTx())
+      .rejects.toThrow('prepared');
+    await expect(new SendTransactionWalletService(wallet, {
+      outputs: [{ address: ADDRESS, value: 100n, token: '00', shieldedMode: mode }],
+    }).prepareTx()).rejects.toThrow('prepared');
+
+    expect(engineOutputs).toHaveLength(2);
+    expect(engineOutputs[0]).toEqual([expect.objectContaining({ shieldedMode: mode })]);
+    // The facade drops a shieldedMode key: the output would go out public.
+    expect(engineOutputs[1][0].shieldedMode).toBeUndefined();
+  });
+
+  test('routes a send with a private output of a wallet without registered shielded keys to the shared engine', () => {
+    // A wallet whose shielded keys the service didn't register builds a send the legacy way,
+    // all public, unless an output asks to be shielded.
+    const wallet = { isShieldedEnabled: () => false };
+    const output = buildSendOutput({
+      address: ADDRESS,
+      amount: 100n,
+      tokenUid: '00',
+      shieldedMode: shielded.ShieldedOutputMode.AMOUNT_SHIELDED,
+      walletService: true,
+    });
+    const send = new SendTransactionWalletService(wallet, { outputs: [output] });
+    expect(send.usesSharedEngine()).toBe(true);
+
+    const ignored = new SendTransactionWalletService(wallet, {
+      outputs: [{ ...output, shielded: undefined, shieldedMode: output.shielded }],
+    });
+    expect(ignored.usesSharedEngine()).toBe(false);
   });
 });
 
@@ -187,6 +275,18 @@ describe('mapShieldedSendError', () => {
       .toBeNull();
     expect(mapShieldedSendError(null)).toBeNull();
     expect(mapShieldedSendError({})).toBeNull();
+  });
+
+  test('maps the wallet-service refusal of a send that spends private funds', () => {
+    const error = new errors.SendTxError('The wallet-service does not accept shielded inputs yet, so shielded utxos cannot be spent.');
+    expect(mapShieldedSendError(error))
+      .toBe('Private transfers are not available for this wallet.');
+  });
+
+  test('maps a wallet whose shielded keys the wallet-service did not register', () => {
+    const error = new errors.ShieldedKeyError('shielded-no-keys', 'The wallet record has no shielded keys.');
+    expect(mapShieldedSendError(error))
+      .toBe('Private transfers are not available for this wallet.');
   });
 
   test('maps by the message alone where the error lost its type', () => {

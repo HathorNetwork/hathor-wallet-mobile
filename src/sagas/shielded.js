@@ -38,6 +38,7 @@ import { getRegisteredTokenUids } from './helpers';
 import { WALLET_STATUS } from './wallet';
 import { isShieldedEnvironment, selectShieldedCapability } from '../shielded/gating';
 import { SHIELDED_UNLOCK_STATUS, unlockShieldedViewIfLocked } from '../shielded/unlock';
+import { getWalletShieldedCapability } from '../shielded/capability';
 import {
   RECEIVE_REASON_ERROR,
   SHIELDED_RECEIVE_INITIAL_STATE,
@@ -138,11 +139,11 @@ export function createLoadedCapability() {
  * level 'view' or 'full', its current shielded address. It throws the errors the receive state
  * doesn't expect.
  *
- * @param {HathorWallet} wallet A started fullnode-facade wallet
+ * @param {HathorWallet|HathorWalletServiceWallet} wallet A started wallet
  * @returns {Promise<Object>} The receive state: status, address, index and reason
  */
 export async function readShieldedReceive(wallet) {
-  const capability = await wallet.getShieldedCapability();
+  const capability = await getWalletShieldedCapability(wallet);
   const fromCapability = receiveStateFromCapability(capability);
   if (fromCapability) {
     return { ...SHIELDED_RECEIVE_INITIAL_STATE, ...fromCapability };
@@ -430,6 +431,8 @@ export function* onShieldedViewUnlockRequested(loaded, action) {
  * progress as decoding until the walk ends, then idle. A wallet that is connecting or stopped
  * refuses ('shielded-not-ready' or 'shielded-not-started'), and the walk of its next connection
  * retries them, so the refusal is only logged. An error nothing expects goes to the error modal.
+ * A wallet that can't process its history again, as on the wallet-service facade, where the
+ * service decodes the private outputs, is skipped.
  *
  * @param {ReturnType<createLoadedCapability>} loaded
  */
@@ -440,7 +443,9 @@ export function* onShieldedReprocessRequested(loaded) {
       wallet: state.wallet,
       providerStatus: state.shielded?.providerStatus,
     }));
-    if (!wallet || providerStatus !== SHIELDED_PROVIDER_STATUS.READY) {
+    if (!wallet
+      || providerStatus !== SHIELDED_PROVIDER_STATUS.READY
+      || typeof wallet.reprocessShieldedOutputs !== 'function') {
       return;
     }
 

@@ -54,6 +54,7 @@ import {
   waitForWalletReady,
 } from '../utils/shieldedSend';
 import { isShieldedEnvironment } from '../shielded/gating';
+import { getWalletShieldedCapability } from '../shielded/capability';
 import { SHIELDED_UNLOCK_STATUS, unlockShieldedViewIfLocked } from '../shielded/unlock';
 import { logger } from '../logger';
 import errorIcon from '../assets/images/icErrorBig.png';
@@ -125,8 +126,8 @@ const SendConfirmScreen = () => {
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const networkName = useSelector((state) => state.networkSettings.network);
-  // A provider is registered only for seed wallets on the fullnode facade, on the shielded
-  // testnet, whether or not the shielded UI shows.
+  // A provider is registered only for seed wallets on the shielded testnet, whether or not the
+  // shielded UI shows.
   const providerReady = useSelector(
     (state) => state.shielded?.providerStatus === SHIELDED_PROVIDER_STATUS.READY,
   );
@@ -181,10 +182,12 @@ const SendConfirmScreen = () => {
    * the exact fee the user pays, shown before the user authorizes the send. A public output to a
    * private address pays the P2PKH address of its spend key.
    *
-   * Where the shielded crypto provider is registered, the send is built with the wallet: it
-   * waits for the wallet to be ready, which a reconnect or a decode walk delays, and once the
-   * send is pushed the wallet decodes its own private change, if any, without waiting for the
-   * node. Elsewhere it is built from the storage, as it always was.
+   * On the fullnode facade, where the shielded crypto provider is registered, the send is built
+   * with the wallet: it waits for the wallet to be ready, which a reconnect or a decode walk
+   * delays, and once the send is pushed the wallet decodes its own private change, if any,
+   * without waiting for the node. Elsewhere it is built from the storage, as it always was. On
+   * the wallet-service facade the service decodes the private outputs, and the send of a wallet
+   * with shielded keys is built by the same engine as on the fullnode facade.
    */
   const build = async () => {
     try {
@@ -192,17 +195,31 @@ const SendConfirmScreen = () => {
 
       let sendTransaction;
       if (useWalletService) {
-        // The wallet-service facade has no private sends, and would pay a private address with
-        // a script that no key can spend.
-        if (shieldedMode !== null) {
-          failBuild(t`Private transfers are not available for this wallet.`);
-          return;
+        const toShieldedAddress = isShieldedAddress(address, new hathorLib.Network(networkName));
+        if (shieldedMode !== null || toShieldedAddress) {
+          // A private send, or a send to a private address, needs a wallet whose shielded keys
+          // the wallet-service registered, where the shielded UI shows. Elsewhere a private
+          // address would be paid with a script that no key can spend.
+          const capability = showsPrivacyFee
+            ? await getWalletShieldedCapability(wallet)
+            : null;
+          if (unmountedRef.current) {
+            return;
+          }
+          if (capability?.level !== 'full') {
+            failBuild(shieldedMode !== null
+              ? t`Private transfers are not available for this wallet.`
+              : shieldedAddressNotSupportedText);
+            return;
+          }
         }
-        if (isShieldedAddress(address, new hathorLib.Network(networkName))) {
-          failBuild(shieldedAddressNotSupportedText);
-          return;
-        }
-        const outputs = [{ address, value: amount, token: token.uid }];
+        const outputs = [buildSendOutput({
+          address,
+          amount,
+          tokenUid: token.uid,
+          shieldedMode,
+          walletService: true,
+        })];
         sendTransaction = new hathorLib.SendTransactionWalletService(wallet, { outputs });
       } else {
         if (providerReady) {
@@ -217,7 +234,7 @@ const SendConfirmScreen = () => {
         if (shieldedMode !== null) {
           // A private send can spend the wallet's private outputs, and must decode its own
           // private change once it is sent: it needs the wallet at level full.
-          const capability = await wallet.getShieldedCapability();
+          const capability = await getWalletShieldedCapability(wallet);
           if (unmountedRef.current) {
             return;
           }
