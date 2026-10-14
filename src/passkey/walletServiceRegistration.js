@@ -28,6 +28,7 @@ import {
   errors as hathorErrors,
 } from '@hathor/wallet-lib';
 import { STORE } from '../store';
+import { isShieldedNetwork } from '../shielded/gating';
 import { WALLET_SERVICE_FEATURE_TOGGLE } from '../constants';
 import { logger } from '../logger';
 
@@ -133,6 +134,9 @@ export function markWalletServiceRegistered(walletServiceUrl, registered = true)
 /**
  * Whether a passkey wallet should register on the wallet-service now: the wallet-service flag is
  * on, there is a wallet-service URL, the bundled lib supports the facade, and it isn't registered.
+ * Never on the shielded testnet: registering from the words would hand the passkey seed's scan key
+ * to the wallet-service, which would then count private funds the app neither shows nor spends
+ * for a passkey wallet.
  *
  * @param {Object} featureToggles `state.featureToggles`
  * @param {Object} networkSettings `state.networkSettings`
@@ -140,6 +144,7 @@ export function markWalletServiceRegistered(walletServiceUrl, registered = true)
 export function shouldRegisterOnWalletService(featureToggles, networkSettings) {
   return get(featureToggles, WALLET_SERVICE_FEATURE_TOGGLE, false)
     && !!networkSettings?.walletServiceUrl
+    && !isShieldedNetwork(networkSettings)
     && facadeSupportsExternalSigner()
     && !isWalletServiceRegistered(networkSettings.walletServiceUrl);
 }

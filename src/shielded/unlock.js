@@ -6,6 +6,7 @@
  */
 
 import { errors } from '@hathor/wallet-lib';
+import { getWalletShieldedCapability } from './capability';
 import { isUnlockableLock } from './gating';
 
 /**
@@ -30,13 +31,13 @@ export const SHIELDED_UNLOCK_STATUS = {
  * waiting for the walk that decodes the locked outputs: `reprocessed` resolves with the capability
  * when that walk ends, and never rejects.
  *
- * A wallet without a shielded capability, such as a wallet-service facade wallet, is skipped with a
- * null capability. A wallet at another level is left as it is, and so is a locked wallet whose
- * lock no unlock can fix (cause 'corrupt-key' or 'key-mismatch', see isUnlockableLock): a try
- * would only check the key again, and fail. An unlock can fix the other causes ('not-supplied',
- * 'wrong-pin' and 'error'). When wallet-lib refuses the unlock, it returns the ShieldedKeyError's
- * code, one of the 'shielded-*' strings (such as 'shielded-wrong-pin' or 'shielded-corrupt-key').
- * Any other error is thrown.
+ * A wallet that has no view key to unlock, such as a wallet-service facade wallet, whose scan key
+ * is unlocked at start(), is skipped with its capability (getWalletShieldedCapability). A wallet
+ * at another level is left as it is, and so is a locked wallet whose lock no unlock can fix (cause
+ * 'corrupt-key' or 'key-mismatch', see isUnlockableLock): a try would only check the key again,
+ * and fail. An unlock can fix the other causes ('not-supplied', 'wrong-pin' and 'error'). When
+ * wallet-lib refuses the unlock, it returns the ShieldedKeyError's code, one of the 'shielded-*'
+ * strings (such as 'shielded-wrong-pin' or 'shielded-corrupt-key'). Any other error is thrown.
  *
  * @param {HathorWallet|HathorWalletServiceWallet} wallet A started wallet
  * @param {{ pinCode: string }|{ scanXPrivKey: string }} input wallet-lib's ShieldedViewKeyInput:
@@ -48,11 +49,8 @@ export const SHIELDED_UNLOCK_STATUS = {
  * >}
  */
 export async function unlockShieldedViewIfLocked(wallet, input) {
-  if (typeof wallet.getShieldedCapability !== 'function') {
-    return { status: SHIELDED_UNLOCK_STATUS.SKIPPED, capability: null };
-  }
-  const current = await wallet.getShieldedCapability();
-  if (!isUnlockableLock(current)) {
+  const current = await getWalletShieldedCapability(wallet);
+  if (typeof wallet.unlockShieldedView !== 'function' || !isUnlockableLock(current)) {
     return { status: SHIELDED_UNLOCK_STATUS.SKIPPED, capability: current };
   }
 

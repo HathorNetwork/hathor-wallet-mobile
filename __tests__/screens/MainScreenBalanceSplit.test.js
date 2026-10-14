@@ -163,7 +163,6 @@ describe('the balance split on the token screen', () => {
       network: 'testnet',
       providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
     }],
-    ['the wallet runs on the wallet-service facade', { useWalletService: true }],
     ['the crypto provider could not be loaded', {
       providerStatus: SHIELDED_PROVIDER_STATUS.FAILED,
     }],

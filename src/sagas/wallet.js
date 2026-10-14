@@ -44,6 +44,7 @@ import {
   addressModeKey,
   networkSettingsKeyMap,
   AMOUNT_FORMAT_KEY,
+  SHIELDED_PROVIDER_STATUS,
 } from '../constants';
 import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../store';
 import { makePasskeyPrivateKeyProvider, makePasskeyTxSigner } from '../passkey/passkeySigner';
@@ -121,6 +122,8 @@ import {
   isShieldedNetwork,
   shouldRegisterShieldedProvider,
 } from '../shielded/gating';
+import { walletServiceShieldedCapability } from '../shielded/capability';
+import { migrateShieldedTestnetPreset } from '../shielded/preset';
 import { normalizePrivacyDefaultMode } from '../utils/privacy';
 import { logger } from '../logger';
 
@@ -172,13 +175,20 @@ export function decideAddressMode({
 }
 
 /**
- * Returns the value of the PUSH_NOTIFICATION_FEATURE_TOGGLE feature flag
+ * Returns the value of the PUSH_NOTIFICATION_FEATURE_TOGGLE feature flag, off on the shielded
+ * testnet: registering the device starts a wallet-service wallet, which hands the wallet's scan key
+ * to the wallet-service even on the fullnode facade, and the service writes the amounts of private
+ * receives into the notifications.
  * @returns {Generator<unknown, boolean>}
  */
 export function* isPushNotificationEnabled() {
   const pushEnabled = yield call(checkForFeatureFlag, PUSH_NOTIFICATION_FEATURE_TOGGLE);
+  if (!pushEnabled) {
+    return false;
+  }
 
-  return pushEnabled;
+  const networkSettings = yield select(getNetworkSettings);
+  return !isShieldedNetwork(networkSettings);
 }
 
 /**
@@ -208,13 +218,6 @@ export function* isWalletServiceEnabled() {
 
   // At this point, the networkSettings have already been set by startWallet.
   const networkSettings = yield select(getNetworkSettings);
-  if (isShieldedNetwork(networkSettings)) {
-    // The shielded testnet runs on the fullnode facade only, even when a custom network gives a
-    // wallet-service URL: the wallet-service facade has no shielded support, so the wallet's
-    // private funds would disappear there.
-    yield put(setUseWalletService(false));
-    return false;
-  }
   if (walletServiceEnabled && isEmpty(networkSettings.walletServiceUrl)) {
     // In case of an empty value for walletServiceUrl, it means the user
     // doesn't intend to use the Wallet Service. Therefore, we need to force
@@ -292,7 +295,13 @@ export function* startWallet(action) {
   // Network settings either from store or redux state
   let networkSettings;
   // Custom network settings are persisted in the app storage
-  const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
+  let customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
+  const migratedNetwork = migrateShieldedTestnetPreset(customNetwork);
+  if (migratedNetwork) {
+    // The shielded testnet preset saved before it had a wallet-service: save its URLs now.
+    STORE.setItem(networkSettingsKeyMap.networkSettings, migratedNetwork);
+    customNetwork = migratedNetwork;
+  }
   if (customNetwork) {
     networkSettings = customNetwork;
     // On custom network settings one may use a different
@@ -351,7 +360,6 @@ export function* startWallet(action) {
   // which keeps it in multi-address mode.
   const shieldedChainActive = shouldRegisterShieldedProvider({
     networkSettings,
-    useWalletService,
     isPasskeyWallet,
     passkeyShieldedKeys: Boolean(passkeyShieldedXpubs),
   });
@@ -399,6 +407,19 @@ export function* startWallet(action) {
         storage,
         singleAddressMode,
       });
+      // The provider must be set before start(), which registers the shielded keys with the
+      // wallet-service; the sends of a wallet with shielded keys need it to build their outputs
+      // and read the shielded ones they spend.
+      if (shieldedChainActive) {
+        yield call(registerShieldedCryptoProvider, wallet);
+        const providerStatus = yield select((state) => state.shielded?.providerStatus);
+        if (providerStatus === SHIELDED_PROVIDER_STATUS.FAILED) {
+          // Without a provider the wallet must not register its shielded keys: the service would
+          // count private funds it can't spend. It runs transparent-only on the fullnode facade.
+          yield call(fallBackToFullnodeFacade, action, null);
+          return;
+        }
+      }
     }
   } else {
     const connection = new Connection({
@@ -585,6 +606,17 @@ export function* startWallet(action) {
     } catch (e) {
       log.error('Failed to read the shielded capability.', e);
     }
+  } else if (shieldedChainActive) {
+    if (!wallet.isShieldedEnabled()) {
+      // The wallet-service didn't register the shielded keys (no shielded support, or it failed
+      // to load the shielded side): it doesn't track the wallet's private funds, which would
+      // disappear from the balance.
+      yield call(fallBackToFullnodeFacade, action, wallet);
+      return;
+    }
+    // A wallet-service facade wallet has no capability event: its capability is set at start()
+    // and stays, so it is put once here.
+    yield put(shieldedCapabilityUpdate(walletServiceShieldedCapability(wallet)));
   }
 
   // After connection, confirm the actual scan policy. The wallet-lib changes
@@ -645,6 +677,27 @@ export function* stopDroppedWallet(wallet) {
   } catch (e) {
     log.error('Failed to stop the wallet the app drops.', e);
   }
+}
+
+/**
+ * Starts a seed wallet on the shielded testnet again on the fullnode facade, when the
+ * wallet-service facade can't run its shielded side. It sets the flag a failed wallet-service start
+ * sets, so the wallet-service is tried again once it expires.
+ *
+ * @param {Object} action The START_WALLET_REQUESTED action that started the wallet
+ * @param {HathorWalletServiceWallet|null} wallet The started wallet-service wallet, if any
+ */
+export function* fallBackToFullnodeFacade(action, wallet) {
+  log.log('The wallet-service facade has no shielded support for this wallet; starting it on the fullnode facade.');
+  yield call(() => AsyncStorage.setItem(IGNORE_WS_TOGGLE_FLAG, `${new Date().getTime()}`));
+  if (wallet) {
+    try {
+      yield call([wallet, wallet.stop], { cleanStorage: false });
+    } catch (e) {
+      log.error('Failed to stop the wallet-service wallet.', e);
+    }
+  }
+  yield put(action);
 }
 
 /**
@@ -905,6 +958,21 @@ export function* handleTx(action) {
   );
   const data = [...inputs, ...outputs, ...ownShieldedOutputs];
 
+  // On the wallet-service facade a tx's shielded outputs carry no value or token: the service
+  // decodes them, and only their on-chain spend address tells whether they are the wallet's.
+  // When the wallet registered its shielded keys, its balance counts them whether or not the
+  // shielded UI shows, so a tx that pays one of them refreshes every registered token, as which
+  // token it pays may be hidden.
+  const useWalletService = yield select((state) => state.useWalletService);
+  const shieldedSpendAddresses = new Set();
+  if (useWalletService && wallet.isShieldedEnabled()) {
+    for (const shieldedOutput of tx.shielded_outputs ?? []) {
+      if (shieldedOutput.decoded?.address) {
+        shieldedSpendAddresses.add(shieldedOutput.decoded.address);
+      }
+    }
+  }
+
   // tokenAddressesMap should be an object { [tokenUid]: Set(addresses) }
   // txAddresses should be a Set with all addresses involved in the tx
   const [tokenAddressesMap, txAddresses] = data.reduce((acc, io) => {
@@ -957,8 +1025,9 @@ export function* handleTx(action) {
   let txWalletAddresses = null;
   try {
     // This might be a nano contract transaction with no inputs or outputs.
-    if (txAddresses.size > 0) {
-      const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
+    const addressesToCheck = new Set([...txAddresses, ...shieldedSpendAddresses]);
+    if (addressesToCheck.size > 0) {
+      const request = async () => wallet.checkAddressesMine.bind(wallet)([...addressesToCheck]);
       txWalletAddresses = yield call(progressiveRetryRequest, request);
     }
   } catch (error) {
@@ -967,8 +1036,14 @@ export function* handleTx(action) {
     return;
   }
 
-  const tokensToDownload = [];
+  const paysShieldedToWallet = [...shieldedSpendAddresses].some(
+    (address) => get(txWalletAddresses, address, false),
+  );
+  const tokensToDownload = paysShieldedToWallet ? [...registeredUids] : [];
   for (const [tokenUid, addresses] of Object.entries(tokenAddressesMap)) {
+    if (tokensToDownload.includes(tokenUid)) {
+      continue;
+    }
     for (const [address] of addresses.entries()) {
       // txWalletAddresses should always have the address we requested, but we should double check
       // here using lodash just in case

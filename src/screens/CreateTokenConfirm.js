@@ -145,9 +145,11 @@ const CreateTokenConfirm = () => {
       if (!tokenAddressRef.current) {
         let current;
         try {
+          // The wallet-service facade creates the token on the address as given, and a shielded
+          // address has no on-chain script of its own: there it gets a legacy address.
           current = await wallet.getCurrentAddress(
             { markAsUsed: true },
-            { legacy: !shieldedEnvironment },
+            { legacy: !shieldedEnvironment || useWalletService },
           );
         } catch (e) {
           // wallet-lib gives out no new address while the scan key is locked, nor without a

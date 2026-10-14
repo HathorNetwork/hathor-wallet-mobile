@@ -28,6 +28,7 @@ import {
   isUnlockableLock,
   selectShieldedCapability,
 } from '../shielded/gating';
+import { getWalletShieldedCapability } from '../shielded/capability';
 import { STORE } from '../store';
 import { PasskeyCancelledError, withPasskeyWords } from '../passkey/passkeySigner';
 import { derivePasskeyShieldedKeys } from '../passkey/shieldedKeys';
@@ -257,7 +258,7 @@ export default function ExportPrivacyKeys({ navigation, route }) {
         fail(t`Wallet not ready`);
         return;
       }
-      const current = await wallet.getShieldedCapability();
+      const current = await getWalletShieldedCapability(wallet);
       if (!mounted.current) {
         return;
       }
