@@ -21,8 +21,10 @@
  * IMPORTANT — on-device prerequisites:
  *   - iOS: Associated Domains entitlement `webcredentials:<PASSKEY_RP_ID>` + a hosted
  *     https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association. Without it, create/get fail.
- *   - Android: a hosted https://<PASSKEY_RP_ID>/.well-known/assetlinks.json granting
- *     `delegate_permission/common.get_login_creds` to this package and its signing certificates.
+ *   - Android: a hosted https://<PASSKEY_RP_ID>/.well-known/assetlinks.json granting both
+ *     `delegate_permission/common.handle_all_urls` and `delegate_permission/common.get_login_creds`
+ *     to this package and its signing certificates. With get_login_creds alone, Google Play
+ *     services rejected creation on a test device with "RP ID cannot be validated".
  */
 
 import { Platform } from 'react-native';
@@ -321,14 +323,41 @@ async function registerPasskey(userName) {
   return result?.id ?? result?.rawId; // credentialId
 }
 
+// Google Password Manager can't list a passkey for a moment after creating it: an assertion sent
+// straight away finds no credential and Android opens its "another device / security key" chooser.
+// So the assertion that follows creation asks with getImmediate after each of these delays: it
+// fails silently with NoCredentials while the passkey isn't listed yet. If it never is, the regular
+// get still runs, so a security key or another device remains possible.
+const NEW_PASSKEY_RETRY_DELAYS_MS = [250, 500, 1000, 2000, 4000];
+
+const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+
+/** Android: assert with a passkey created moments ago, waiting until the platform can find it. */
+async function getNewPasskeyAssertion(Passkey, buildRequest) {
+  for (const delayMs of NEW_PASSKEY_RETRY_DELAYS_MS) {
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(delayMs);
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      return await callPasskey(() => Passkey.getImmediate(buildRequest()));
+    } catch (e) {
+      if (e?.code !== 'NoCredentials') throw e;
+    }
+  }
+  log.log('New passkey still not listed after the silent retries; falling back to the regular prompt');
+  return callPasskey(() => Passkey.get(buildRequest()));
+}
+
 /**
  * Assert with the passkey to obtain the PRF secret (many platforms only return PRF on get()).
  * Also surfaces the userHandle (= user.id) when the platform returns it, so callers can
  * recover the wallet label encoded at registration. userHandle is optional on both platforms.
+ *
+ * Pass `justCreated` when the credential was registered moments ago (see getNewPasskeyAssertion).
  */
-async function getPrfViaAssertion(credentialId) {
+async function getPrfViaAssertion(credentialId, { justCreated = false } = {}) {
   const Passkey = getPasskey();
-  const result = await callPasskey(() => Passkey.get({
+  const buildRequest = () => ({
     challenge: toB64Url(randomBytes(32)),
     rpId: PASSKEY_RP_ID,
     // 'required' — must match registration: PRF/hmac-secret returns a different secret without UV,
@@ -338,7 +367,10 @@ async function getPrfViaAssertion(credentialId) {
     // iOS wants binary PRF inputs as a Uint8Array (it arrives as a Dictionary and is decoded
     // byte-by-byte); a base64url string throws DecodingError.typeMismatch. Pass the raw bytes.
     extensions: { prf: { eval: { first: PRF_SALT } } },
-  }));
+  });
+  const result = justCreated && Platform.OS === 'android'
+    ? await getNewPasskeyAssertion(Passkey, buildRequest)
+    : await callPasskey(() => Passkey.get(buildRequest()));
   assertUserVerified(result?.response?.authenticatorData);
   return {
     prf: digPrfFirst(result),
@@ -367,7 +399,8 @@ function wordsFromPrf(prf32) {
  */
 export async function createWalletWordsFromPasskey(userName = 'Hathor Wallet') {
   const credentialId = await registerPasskey(userName); // enables PRF on the new passkey
-  const { prf } = await getPrfViaAssertion(credentialId); // Face ID again to evaluate PRF
+  // Face ID again to evaluate PRF
+  const { prf } = await getPrfViaAssertion(credentialId, { justCreated: true });
   return { ...wordsFromPrf(prf), label: userName, credentialId: credentialId ?? null };
 }
 
