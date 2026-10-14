@@ -6,11 +6,12 @@ Run these tests on iOS and Android release builds. The shielded UI stays behind 
 
 ### Before you start
 1. Set up a wallet that can send shielded outputs on the Shielded Testnet, for example a wallet-lib script with `@hathor/ct-crypto-node`, and fund it from the faucet.
-1. This app shows no shielded address yet. To pay the mobile wallet privately, restore its seed in a wallet-lib script with a crypto provider and read its shielded address, for example with `getCurrentAddress({}, { legacy: false })`.
+1. With the flag on, Receive shows the wallet's new (shielded) address. With the flag off, the app shows none: to pay the mobile wallet privately, restore its seed in a wallet-lib script with a crypto provider and read its shielded address, for example with `getCurrentAddress({}, { legacy: false })`.
 1. On Unleash, the flag targets the network the wallet reports as `network`: `testnet-shielded-outputs` for the Shielded Testnet. With the flag on only there, the Shielded Testnet preset doesn't show on Mainnet or Testnet. Reach the Shielded Testnet through a custom network with `https://node1.shielded-outputs.testnet.hathor.network/v1a/`, whose node reports `testnet-shielded-outputs`. To check the preset itself, also turn the flag on for your device on Testnet.
 1. Read the app's logs: on iOS with `log stream --predicate 'process == "HathorMobile"'` on the simulator, or Console.app for a device; on Android with `adb logcat ReactNativeJS:V`. Release builds on iOS only log errors.
 
-### Mainnet and Testnet are unchanged
+### Mainnet and Testnet have no shielded features
+The token screen's balance and the tx details follow the original shielded redesign on every network (see the general QA). The steps below check that nothing shielded runs there.
 1. With the flag off, unlock a wallet on Mainnet, then on Testnet.
 1. Check the logs: there's no `[shielded-provider]` line.
 1. The loading screen finds the same addresses, in the same time, as a build on wallet-lib 3.1.1 with the same seed: no shielded address is derived or subscribed.
@@ -51,13 +52,13 @@ A start whose PIN doesn't decrypt the shielded scan key doesn't fail: the wallet
 1. With the single-address flag on, on Mainnet, watch the app's websocket connections to the node with a proxy (for example mitmproxy).
 1. Switch the Address Mode in Settings. The wallet reloads, the old websocket closes, and one stays open.
 1. Check that the balance, the history and the Receive screen are right after the reload.
-1. Repeat on the Shielded Testnet.
+1. Repeat on the Shielded Testnet, which has no single-address mode: reload the wallet with a network change to Testnet and back instead. After each reload, the old websocket closes and one stays open.
 
 ### Reload, stop and failed start
 1. Address Mode switch: covered above.
 1. Network change: switch between Mainnet, Testnet and the Shielded Testnet. Each reload finishes with the right balances.
 1. Wallet-service disable: with the wallet on the wallet-service facade (Mainnet or Testnet), turn the wallet-service flag off. The wallet reloads on the fullnode facade.
-1. PIN change, then reload: change the PIN, then switch the Address Mode. The wallet reloads without an error.
+1. PIN change, then reload: change the PIN, then switch the Address Mode. The wallet reloads without an error. On the Shielded Testnet, which has no single-address mode, change the network to Testnet and back instead: the private funds stay in the balance.
 1. Failed start: turn the network off, kill the app, open it and unlock. The start fails and shows the error screen. Turn the network on and retry: the wallet loads, and only one websocket is open.
 
 ### Timings on a low-end Android device
@@ -67,3 +68,57 @@ On the Shielded Testnet, with a wallet that has received several private outputs
 1. the time of a lock-screen unlock of a wallet whose private funds were locked.
 
 Compare them with the same wallet on Testnet.
+
+### The new address on Receive
+With the flag on, on the Shielded Testnet:
+1. Open Receive. It shows the wallet's new address alone, with its QR code, copy, New address and Share. There's no Public/Private toggle, and the legacy address never shows.
+1. Share sends "Here is my address: " and the address.
+1. Tap New address: the address and its QR code change to the next new address.
+1. In a debug build, the redux state's `lastSharedAddress` is the address Receive shows.
+1. From the sending wallet, pay an amount-shielded output to that address: the balance, the history and Receive update without a reload. Repeat with a fully shielded output, then with a shielded output of a custom token the wallet has registered.
+1. Turn the network off and on, then kill and reopen the app: the private funds are still in the balance.
+1. With Receive open, turn the flag off: Receive shows the legacy address, with its New address, as before, and `lastSharedAddress` is that address. Turn the flag on again: the new address shows again.
+
+### The private part of the balance
+1. With the flag on, open HTR. Under "Available Balance", the private part (a shield, "X private") and the public part (an eye, "Y public") add up to it. A tap on the balance expands nothing: the screen has no Locked balance.
+1. Receive a private output: the private part grows without a reload.
+1. Start a send of public funds and check that the parts still add up while it is pending and once it is confirmed.
+1. With the token screen open, turn the flag off, then on: the parts disappear, then show again.
+1. Open a custom token that holds funds on the Shielded Testnet. With its screen open, change the network in Settings to Testnet, then back to the Shielded Testnet. Once the wallet loads, the token's balance is right on its screen and on the Dashboard, and its parts add up to it.
+1. With the flag off, the screen shows the available balance alone, which the private funds still count in, with no Locked balance to expand. Mainnet and Testnet show it the same way.
+
+### Unlocking a locked private balance
+This needs a start with a PIN that doesn't decrypt the scan key, as in "A start that leaves the private funds locked" above.
+1. The token screen counts the locked private outputs ("2 private outputs are locked") and offers "Unlock private balance". Receive says "Private receiving is locked" and offers the same action.
+1. Tap it and cancel the PIN screen: nothing changes.
+1. Tap it and enter the PIN: a spinner shows until the private funds are decoded, then the parts of the balance show them, and Receive shows the new address.
+1. Repeat from Receive, and with safe biometry on.
+1. In a debug build, make `wallet.unlockShieldedView` throw a `ShieldedKeyError` with the code `shielded-wrong-pin`: the action says "Could not unlock your private balance." and offers the unlock again.
+1. In a debug build, make wallet-lib's `unlockScanKeyWithPin` throw a `ShieldedKeyError` with the code `shielded-key-mismatch`, then unlock from the token screen. The level drops to `none`: the token screen keeps the count of locked private outputs, says "Private transfers are not available for this wallet." and "Could not unlock your private balance.", and offers no unlock. Receive says "Private receiving is unavailable".
+
+### When private receiving is unavailable
+1. In a debug build, make the provider's self-test fail. Receive says "Private receiving is unavailable" and "Private transfers could not be loaded on this device.", never the legacy address, and the token screen shows no private part.
+1. In a debug build, make `getPrivateAvailableBalance` throw: the balance still loads, without the parts, and the logs show `[tokens-saga] Failed to read the private part of the token balance.` once.
+1. In a debug build, make `wallet.getCurrentAddress({}, { legacy: false })` throw an unexpected error while a global you can clear from the debugger is set. Receive says "Private receiving is unavailable" and "Could not load your private address.", and offers Retry, and `lastSharedAddress` is null. Tap Retry: it fails the same way. Clear the global and tap Retry: the new address shows.
+
+### Private funds that couldn't be read
+1. In a debug build, make a decode fail with an error a retry can fix (counted in the capability's `undecoded.error`). The token screen says "Some private funds could not be read." and offers Retry.
+1. Tap Retry: a spinner shows while the history is processed again, then the funds show in the balance.
+
+### The tx details and their fees
+1. On any network, open a tx's details. Under the amount, they say what the tx did with the token, as "Sent HTR", "Received HTR" or "You sent HTR to yourself", and list Date & Time, Transaction ID and Public Explorer. There are no Token, Description or Fee Model rows, and a nano contract tx has no nano contract rows.
+1. With the flag on, have a dApp connected through Reown send with `htr_sendTransaction` an amount the public funds can't cover, so the send spends private funds. Its private change shows in the balance without a reload.
+1. Open that send's details: Fees shows between Date & Time and Transaction ID. Tap it: it expands into Network fee and Privacy fee, which add up to the explorer's fee for the tx.
+1. Open a received tx with shielded outputs: Fees shows the fees its sender paid.
+1. Open a send of a fee-based token: Fees shows its network fee.
+1. With the private balance locked, open the send that spent private funds: Fees still expands into Network fee and Privacy fee.
+1. With the flag off, open the same txs: Fees shows the whole fee, and expands into Network fee alone.
+1. On Mainnet and Testnet, with the wallet on the fullnode facade, open a send of a fee-based token: Fees shows its fee, and expands into Network fee alone. On the wallet-service facade there's no Fees row: the tx that wallet-lib reads there has no fees.
+
+### Single-address mode on the Shielded Testnet
+1. With the single-address flag on and Single Address chosen on the Testnet, switch to the Shielded Testnet. The wallet starts in multi-address mode.
+1. Open Settings -> Address Mode: Single Address is disabled, with "Single address mode is not available on this network."
+1. Switch back to the Testnet: the wallet starts in single-address mode, as chosen.
+
+### More timings on a low-end Android device
+On the Shielded Testnet, record the time from the PIN entry of "Unlock private balance" to the private part of the balance, and the time a token screen with many private UTXOs takes to show its parts.

@@ -25,6 +25,7 @@ import { ADDRESS_MODE, addressModeKey } from '../constants';
 import { setAddressMode, reloadWalletRequested, onExceptionCaptured } from '../actions';
 import { getNetworkSettings } from '../sagas/helpers';
 import { WALLET_STATUS } from '../sagas/wallet';
+import { shouldRegisterShieldedProvider } from '../shielded/gating';
 import { logger } from '../logger';
 
 const log = logger('AddressMode');
@@ -59,8 +60,16 @@ export default function AddressMode({ navigation }) {
   const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
   const currentMode = useSelector((state) => state.addressMode);
-  const network = useSelector((state) => getNetworkSettings(state).network);
+  const networkSettings = useSelector(getNetworkSettings);
+  const { network } = networkSettings;
+  const useWalletService = useSelector((state) => state.useWalletService);
   const walletStartState = useSelector((state) => state.walletStartState);
+  // The start keeps a wallet that gets a shielded chain in multi-address mode.
+  const shieldedChainActive = shouldRegisterShieldedProvider({
+    networkSettings,
+    useWalletService,
+    isPasskeyWallet: STORE.isPasskeyWallet(),
+  });
 
   const [selectedMode, setSelectedMode] = useState(currentMode);
   const [hasTxOutside, setHasTxOutside] = useState(false);
@@ -128,7 +137,7 @@ export default function AddressMode({ navigation }) {
     }
   }, [selectedMode, wallet, dispatch, isSaveDisabled, saving, network]);
 
-  const singleDisabled = hasTxOutside;
+  const singleDisabled = hasTxOutside || shieldedChainActive;
 
   if (checking) {
     return (
@@ -189,7 +198,9 @@ export default function AddressMode({ navigation }) {
           <View style={styles.warningBanner}>
             <Text style={styles.warningIcon}>⚠</Text>
             <Text style={styles.warningText}>
-              {t`You can't switch to single address mode because other addresses in your wallet are already in use.`}
+              {shieldedChainActive
+                ? t`Single address mode is not available on this network.`
+                : t`You can't switch to single address mode because other addresses in your wallet are already in use.`}
             </Text>
           </View>
         )}

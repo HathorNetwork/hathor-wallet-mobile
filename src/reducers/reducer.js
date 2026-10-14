@@ -28,6 +28,8 @@ import {
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
+import { SHIELDED_RECEIVE_INITIAL_STATE } from '../shielded/receiveState';
+import { SHIELDED_UNLOCK_INITIAL_STATE } from '../shielded/unlockState';
 
 /**
  * The shielded state of the running wallet: whether its shielded crypto provider was
@@ -44,6 +46,16 @@ export const SHIELDED_INITIAL_STATE = {
    * canSpend, historyComplete and the undecoded counts), or null until the wallet reports it.
    */
   capability: null,
+  /**
+   * The wallet's private receive address, or where it stands (status, address, index and
+   * reason; see SHIELDED_RECEIVE_STATUS). It stays idle while the shielded UI is off.
+   */
+  receive: SHIELDED_RECEIVE_INITIAL_STATE,
+  /**
+   * Where the unlock or the retry the user asked for stands (status and errorCode; see
+   * SHIELDED_UNLOCK_PROGRESS). It never holds the PIN.
+   */
+  unlock: SHIELDED_UNLOCK_INITIAL_STATE,
 };
 
 /**
@@ -836,6 +848,10 @@ export const reducer = (state = initialState, action) => {
       return onShieldedProviderUpdate(state, action);
     case types.SHIELDED_CAPABILITY_UPDATE:
       return onShieldedCapabilityUpdate(state, action);
+    case types.SHIELDED_RECEIVE_ADDRESS_UPDATE:
+      return onShieldedReceiveAddressUpdate(state, action);
+    case types.SHIELDED_UNLOCK_STATUS_UPDATE:
+      return onShieldedUnlockStatusUpdate(state, action);
 
     case types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS:
       return onTokenSwapFetchAllowedTokens(state);
@@ -2302,6 +2318,29 @@ export const onShieldedCapabilityUpdate = (state, { payload }) => ({
   shielded: {
     ...state.shielded,
     capability: payload,
+  },
+});
+
+/**
+ * @param {Object} action.payload The private receive state: status, address, index and reason
+ */
+export const onShieldedReceiveAddressUpdate = (state, { payload }) => ({
+  ...state,
+  shielded: {
+    ...state.shielded,
+    receive: payload,
+  },
+});
+
+/**
+ * @param {string} action.payload.status One of SHIELDED_UNLOCK_PROGRESS
+ * @param {string|null} action.payload.errorCode The code of the refusal, if any
+ */
+export const onShieldedUnlockStatusUpdate = (state, { payload }) => ({
+  ...state,
+  shielded: {
+    ...state.shielded,
+    unlock: payload,
   },
 });
 

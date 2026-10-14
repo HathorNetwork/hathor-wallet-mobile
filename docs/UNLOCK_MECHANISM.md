@@ -62,3 +62,20 @@ This document describes what happens with the app and the lib during the wallet 
 	1. A `ShieldedKeyError` (for example `shielded-wrong-pin`) is logged with its code, never with the PIN, and nothing is shown to the user
 1. Whenever `state.shielded.capability` changes in a way that can change the balances (its level, cause or history completeness, or fewer locked or failed outputs), the shielded saga waits 300 ms for the changes to settle, then fetches the balances of the registered tokens again, but only while the wallet is ready
 
+## Unlocking a locked private balance
+
+1. Where the shielded UI shows private funds that are locked, `ShieldedUnlockAction` offers "Unlock private balance". It opens `PinScreen` with `canCancel`
+1. The PIN screen's callback dispatches `shieldedViewUnlockRequested({ pinCode, source: 'user' })`, with the PIN, or the password safe biometry reads from the keychain. The PIN never goes to the navigation params or the redux state
+1. The shielded saga handles it as it handles the lock screen's request, and reports its progress in `state.shielded.unlock`:
+	1. `unlocking` while it unlocks the scan key
+	1. `decoding` until the walk that decodes the locked outputs ends and the balances are fetched again
+	1. then `idle`; or `failed`, with the `ShieldedKeyError`'s code in `errorCode` when wallet-lib refused. An error nothing expects also opens the error modal
+1. A later PIN entry, at the lock screen for example, replaces a running unlock, which goes back to `idle`
+1. `ShieldedUnlockAction` shows a spinner while the status is `unlocking` or `decoding`, and says when the unlock failed
+1. An unlock that finds the wallet's scan key doesn't match its shielded xpub fails with `shielded-key-mismatch`, and wallet-lib stops using the record's shielded keys: the level drops to `none`, reason `integrity`, and no PIN fixes it. The token screen then shows no unlock: it says that private transfers aren't available for this wallet, with the locked count and the failure
+
+## Retrying private funds that couldn't be read
+
+1. Private outputs whose decode failed in a way a retry may fix are counted in the capability's `undecoded.error`. A retry dispatches `shieldedReprocessRequested()`
+1. The shielded saga calls `wallet.reprocessShieldedOutputs()`, which processes the whole history again in a walk, then fetches the balances again. Its progress is `decoding` until the walk ends, then `idle`
+1. A wallet that is connecting or stopped refuses with `shielded-not-ready` or `shielded-not-started`. The walk of its next connection retries the outputs, so the refusal is only logged
