@@ -8,6 +8,7 @@
 import {
   FEATURE_TOGGLE_DEFAULTS,
   FULL_NETWORK_SHIELDED_TESTNET,
+  SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   SHIELDED_PROVIDER_STATUS,
 } from '../constants';
@@ -46,6 +47,20 @@ export function getShieldedFeatureToggle(state) {
   return Boolean(
     state.featureToggles?.[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
       ?? FEATURE_TOGGLE_DEFAULTS[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
+  );
+}
+
+/**
+ * Whether the flag that shows the Shielded Testnet preset in Network Settings is on. It is off
+ * when Unleash doesn't return it.
+ *
+ * @param {Object} state Redux state
+ * @returns {boolean}
+ */
+export function getShieldedNetworkPresetFeatureToggle(state) {
+  return Boolean(
+    state.featureToggles?.[SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]
+      ?? FEATURE_TOGGLE_DEFAULTS[SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]
   );
 }
 

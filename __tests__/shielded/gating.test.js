@@ -11,11 +11,13 @@ import {
   PRE_SETTINGS_MAINNET,
   PRE_SETTINGS_SHIELDED_TESTNET,
   PRE_SETTINGS_TESTNET,
+  SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   SHIELDED_PROVIDER_STATUS,
 } from '../../src/constants';
 import {
   getShieldedFeatureToggle,
+  getShieldedNetworkPresetFeatureToggle,
   isShieldedAvailable,
   isShieldedEnabled,
   isShieldedEnvironment,
@@ -108,6 +110,31 @@ describe('getShieldedFeatureToggle', () => {
     })).toBe(true);
     expect(getShieldedFeatureToggle({
       featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false },
+    })).toBe(false);
+  });
+});
+
+describe('getShieldedNetworkPresetFeatureToggle', () => {
+  test('is its own rollout flag, off by default', () => {
+    expect(SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE).toBe('shielded-outputs-network.rollout');
+    expect(FEATURE_TOGGLE_DEFAULTS[SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]).toBe(false);
+    expect(getShieldedNetworkPresetFeatureToggle({
+      featureToggles: { ...FEATURE_TOGGLE_DEFAULTS },
+    })).toBe(false);
+    expect(getShieldedNetworkPresetFeatureToggle({ featureToggles: {} })).toBe(false);
+  });
+
+  // The two flags are targeted apart: the preset has to show on the networks the user switches
+  // from, where the shielded outputs flag is off.
+  test('follows its own flag only, not the shielded outputs flag', () => {
+    expect(getShieldedNetworkPresetFeatureToggle({
+      featureToggles: { [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: true },
+    })).toBe(true);
+    expect(getShieldedNetworkPresetFeatureToggle({
+      featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: true },
+    })).toBe(false);
+    expect(getShieldedFeatureToggle({
+      featureToggles: { [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: true },
     })).toBe(false);
   });
 });
