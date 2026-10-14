@@ -125,7 +125,13 @@ import {
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { STORE } from '../store';
-import { consumePasskeySigningCancelled } from '../passkey/passkeySigner';
+import {
+  canSignWithPasskeyPrivateKey,
+  clearPasskeyPrivateKeyAuthorization,
+  consumePasskeySigningCancelled,
+  passkeyConsentForRequest,
+} from '../passkey/passkeySigner';
+import { passkeyFullTokenHook } from '../passkey/walletServiceRegistration';
 import { isShieldedAddress, shieldedAddressNotSupportedText } from '../utils';
 import { mapDappSendPrepareError } from '../utils/shieldedSend';
 import { isShieldedEnvironment } from '../shielded/gating';
@@ -176,6 +182,17 @@ const AVAILABLE_METHODS = {
   HATHOR_GET_WALLET_INFORMATION: 'htr_getWalletInformation',
 };
 const AVAILABLE_EVENTS = [];
+
+/**
+ * Methods that sign with the private key of one of our addresses rather than a tx signature:
+ * htr_signWithAddress (wallet.signMessageWithAddress) and htr_signOracleData
+ * (nanoUtils.getOracleInputData). For passkey wallets the key comes from the passkey private-key
+ * provider, authorized by one ceremony at the PIN step (see promptHandler).
+ */
+const PASSKEY_PRIVATE_KEY_METHODS = [
+  AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE,
+  AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA,
+];
 
 /**
  * Those are the only ones we are currently using, extracted from
@@ -767,15 +784,15 @@ export function* processRequest(action) {
       chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
     };
 
-    // These two methods each need the stored private key at one of our addresses, which bypasses
-    // the external tx signer: htr_signWithAddress signs via wallet.signMessageWithAddress, and
-    // htr_signOracleData signs via nanoUtils.getOracleInputData. Neither is possible for an
-    // xpub-only passkey wallet, so reject cleanly instead of crashing inside the rpc-handler.
-    const passkeyUnsupportedMethods = [
-      AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE,
-      AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA,
-    ];
-    if (STORE.isPasskeyWallet() && passkeyUnsupportedMethods.includes(params.request.method)) {
+    // These two methods sign with the private key of one of our addresses, which a passkey wallet
+    // only has through the passkey private-key provider. A wallet-lib without external private-key
+    // provider support can't service them, so reject cleanly instead of failing inside the
+    // rpc-handler.
+    if (
+      STORE.isPasskeyWallet()
+      && PASSKEY_PRIVATE_KEY_METHODS.includes(params.request.method)
+      && !canSignWithPasskeyPrivateKey(wallet)
+    ) {
       log.debug(`Rejecting ${params.request.method}: not supported for passkey wallets.`);
       yield call(() => walletKit.respondSessionRequest({
         topic: payload.topic,
@@ -890,7 +907,7 @@ export function* processRequest(action) {
         params.request,
         wallet,
         data,
-        promptHandler(dispatch),
+        promptHandler(dispatch, wallet),
       );
 
       switch (response.type) {
@@ -1202,6 +1219,10 @@ export function* processRequest(action) {
     // For rejections, errors, and read-only ops, return false
     return successScreenWillSignal;
   } finally {
+    // A passkey authorization is for one signature: drop it if the request didn't use it. In the
+    // finally so it also runs when the saga is cancelled (e.g. a wallet reset or network change
+    // between the consent and the signing), not just on success or a thrown error.
+    clearPasskeyPrivateKeyAuthorization();
     yield cancel(pendingPollTask);
   }
 }
@@ -1243,7 +1264,7 @@ export function* processRequest(action) {
  * @example
  * const handler = promptHandler(dispatch);
  */
-const promptHandler = (dispatch) => (request, requestMetadata) =>
+const promptHandler = (dispatch, wallet) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
     switch (request.type) {
@@ -1386,13 +1407,27 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         // — the lib's signing entry points are PIN-optional when an external tx-signing method
         // is registered.
         if (STORE.isPasskeyWallet()) {
-          resolve({
-            type: TriggerResponseTypes.PinRequestResponse,
-            data: {
-              accepted: true,
-              pinCode: '',
-            }
-          });
+          // Message and oracle-data signing take an address key, not a tx signature: they're
+          // authorized with the passkey right here, before the rpc-handler signs. For oracle data
+          // on the wallet-service facade, the same ceremony also mints the full auth token its
+          // ownership check (isAddressMine) needs, so it's still one Face ID. Message signing
+          // makes no wallet-service call, so it doesn't need one.
+          let consent;
+          try {
+            consent = await passkeyConsentForRequest({
+              needsPrivateKey: PASSKEY_PRIVATE_KEY_METHODS.includes(request.method),
+              onRootKey: request.method === AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA
+                ? passkeyFullTokenHook(wallet)
+                : undefined,
+            });
+          } catch (e) {
+            // Wrong or deleted passkey, a ceremony already open...: show it as a request error.
+            reject(e);
+            break;
+          }
+          // When the sheet was dismissed, the signing-cancel flag is set, so processRequest
+          // retries the request (the consent modal shows again), like a cancelled PIN screen.
+          resolve({ type: TriggerResponseTypes.PinRequestResponse, data: consent });
           break;
         }
 

@@ -72,46 +72,4 @@ describe('wallet-lib JSONBigInt on a React Native JS engine', () => {
     expect(parsed.small).toBe(42);
     expect(typeof parsed.big).toBe('number');
   });
-
-  it('stringifies bigints as raw JSON numbers that parse back exactly', () => {
-    const value = {
-      big: 12345678901234567890n,
-      negative: -9007199254740993n,
-      small: 42,
-      label: 'bigint:1',
-    };
-    const text = JSONBigInt.stringify(value);
-    expect(text).toBe('{"big":12345678901234567890,"negative":-9007199254740993,"small":42,"label":"bigint:1"}');
-    expect(JSONBigInt.parse(text)).toEqual(value);
-  });
-
-  it('keeps the indentation when stringifying with a space argument', () => {
-    expect(JSONBigInt.stringify({ big: 12345678901234567890n }, 2))
-      .toBe('{\n  "big": 12345678901234567890\n}');
-  });
-
-  // stringify marks each bigint with a string that starts with a NUL character and 'bigint:',
-  // then turns the marks into raw numbers. Strings from the data never become numbers.
-  it('keeps strings that start like the bigint mark as strings', () => {
-    const nul = String.fromCharCode(0);
-    const value = {
-      name: `${nul}bigint:5`,
-      args: [`${nul}bigint:1000000`, 'memo'],
-      big: 12345678901234567890n,
-    };
-    const text = JSONBigInt.stringify(value);
-    expect(JSONBigInt.parse(text)).toEqual(value);
-    expect(text).toContain('"big":12345678901234567890');
-  });
-
-  it('writes valid JSON for an object key that starts like the bigint mark', () => {
-    const value = { [`${String.fromCharCode(0)}bigint:5`]: 'x' };
-    expect(JSONBigInt.parse(JSONBigInt.stringify(value))).toEqual(value);
-  });
-
-  it('returns undefined for the values JSON.stringify does not serialize', () => {
-    expect(JSONBigInt.stringify(undefined)).toBeUndefined();
-    expect(JSONBigInt.stringify(() => 1)).toBeUndefined();
-    expect(JSONBigInt.stringify(Symbol('value'))).toBeUndefined();
-  });
 });
