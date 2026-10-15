@@ -509,12 +509,15 @@ describe('startWallet on the wallet-service facade', () => {
   test('starts again on the fullnode facade when the wallet-service registered no shielded keys', async () => {
     HathorWalletServiceWallet.shieldedEnabled = false;
     HathorWallet.onStart = async () => null;
+    const updateWalletMeta = jest.spyOn(STORE, 'updateWalletMeta').mockResolvedValue();
 
     const { log, dispatched } = await runStartWallet(
       { networkSettings: PRE_SETTINGS_SHIELDED_TESTNET, featureToggles: WS_FLAG },
       `dispatch:${types.START_WALLET_REQUESTED}`,
     );
 
+    // A seed wallet sends its shielded keys at every start: it has no registration to forget.
+    expect(updateWalletMeta).not.toHaveBeenCalled();
     expect(await AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG)).toMatch(/^\d+$/);
     expect(log).toContain(`stop:${JSON.stringify({ cleanStorage: false })}`);
     expect(capabilityUpdates(dispatched)).toEqual([]);
@@ -678,9 +681,10 @@ describe('startWallet for a passkey wallet with shielded keys on the wallet-serv
     expect(HathorWallet.instances).toHaveLength(1);
   });
 
-  test('starts again on the fullnode facade when the wallet-service has no shielded keys for it', async () => {
+  test('starts again on the fullnode facade when the wallet-service has no shielded keys for it, and forgets the registration', async () => {
     HathorWalletServiceWallet.shieldedEnabled = false;
     HathorWallet.onStart = async () => null;
+    const updateWalletMeta = jest.spyOn(STORE, 'updateWalletMeta').mockResolvedValue();
 
     const { log, dispatched } = await start({}, `dispatch:${types.START_WALLET_REQUESTED}`);
 
@@ -688,14 +692,17 @@ describe('startWallet for a passkey wallet with shielded keys on the wallet-serv
     expect(log).toContain(`stop:${JSON.stringify({ cleanStorage: false })}`);
     expect(await AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG)).toMatch(/^\d+$/);
     expect(capabilityUpdates(dispatched)).toEqual([]);
+    // So the next unlock ceremony registers it again, sending the shielded keys.
+    expect(updateWalletMeta).toHaveBeenCalledWith({ walletServiceRegistrations: [] });
   });
 
-  test('starts again on the fullnode facade when the scan key is refused, without a report', async () => {
+  test('starts again on the fullnode facade when the scan key is refused, without a report, and keeps the registration', async () => {
     HathorWallet.onStart = async () => null;
     HathorWalletServiceWallet.onSetShieldedScanKey = async () => {
       throw new hathorErrors.ShieldedKeyError('shielded-key-mismatch', 'not the key of the scan xpub');
     };
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    const updateWalletMeta = jest.spyOn(STORE, 'updateWalletMeta').mockResolvedValue();
 
     const { log, dispatched } = await start({}, `dispatch:${types.START_WALLET_REQUESTED}`);
 
@@ -704,6 +711,9 @@ describe('startWallet for a passkey wallet with shielded keys on the wallet-serv
     expect(await AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG)).toMatch(/^\d+$/);
     expect(capabilityUpdates(dispatched)).toEqual([]);
     expect(dispatched.some((action) => action.type === types.EXCEPTION_CAPTURED)).toBe(false);
+    // The wallet-service has the wallet's shielded xpubs: the key held here is the one that
+    // doesn't match, which registering again wouldn't change.
+    expect(updateWalletMeta).not.toHaveBeenCalled();
   });
 
   // A network change or a reset stopped it, and starts the next wallet: a fallback would put that

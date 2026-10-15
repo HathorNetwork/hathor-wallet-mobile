@@ -628,6 +628,12 @@ export function* startWallet(action) {
       // The wallet-service didn't register the shielded keys (no shielded support, or it failed
       // to load the shielded side): it doesn't track the wallet's private funds, which would
       // disappear from the balance.
+      if (isPasskeyWallet) {
+        // A seed wallet sends its shielded keys at every start, a passkey wallet only when it
+        // registers: forget the registration so the next unlock ceremony sends them again. The
+        // wallet-service attaches them to a wallet that has none, and takes the same keys again.
+        yield call(markWalletServiceRegistered, networkSettings.walletServiceUrl, false);
+      }
       yield call(fallBackToFullnodeFacade, action, wallet);
       return;
     }
