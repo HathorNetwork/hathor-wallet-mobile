@@ -187,21 +187,20 @@ describe('CreateTokenConfirm on the shielded testnet', () => {
     );
   });
 
-  test('mints to a legacy address of the wallet on the wallet-service facade, in the shielded environment', async () => {
-    // The facade creates the token on the address as given, and a shielded address has no
-    // on-chain script of its own.
+  test('mints to the new address of the wallet on the wallet-service facade, in the shielded environment', async () => {
+    // The facade pays a shielded address on its spend key, like the fullnode facade.
     const wallet = createWallet([PRIVATE_HTR]);
     wallet.validateAndRenewAuthToken = jest.fn(async () => {});
     const { renderer } = await render(wallet, { useWalletService: true });
 
     await createToken(renderer);
 
-    expect(wallet.getCurrentAddress).toHaveBeenCalledWith({ markAsUsed: true }, { legacy: true });
+    expect(wallet.getCurrentAddress).toHaveBeenCalledWith({ markAsUsed: true }, { legacy: false });
     expect(wallet.prepareCreateNewToken).toHaveBeenCalledWith(
       'Token',
       'TKN',
       10000n,
-      expect.objectContaining({ address: P2PKH }),
+      expect.objectContaining({ address: SHIELDED }),
     );
   });
 });
