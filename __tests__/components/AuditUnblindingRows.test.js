@@ -19,7 +19,12 @@ import { Alert, Clipboard, Linking } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
-import { TokenVersion, constants as hathorLibConstants, shielded } from '@hathor/wallet-lib';
+import {
+  HathorWalletServiceWallet,
+  TokenVersion,
+  constants as hathorLibConstants,
+  shielded,
+} from '@hathor/wallet-lib';
 import { reducer } from '../../src/reducers/reducer';
 import {
   networkSettingsUpdateState,
@@ -176,13 +181,25 @@ describe('AuditUnblindingRows', () => {
     expect(wallet.getTx).not.toHaveBeenCalled();
   });
 
-  test('renders nothing for a wallet without getShieldedUnblindingForTx, as on the wallet-service facade', async () => {
+  test('renders nothing for a wallet without getShieldedUnblindingForTx', async () => {
     const wallet = fakeWallet();
     delete wallet.getShieldedUnblindingForTx;
     const { titles } = await render({ wallet });
 
     expect(titles()).toEqual([]);
     expect(wallet.getTx).not.toHaveBeenCalled();
+  });
+
+  test('offers both rows on the wallet-service facade, read through its own method', async () => {
+    const read = jest.spyOn(HathorWalletServiceWallet.prototype, 'getShieldedUnblindingForTx')
+      .mockResolvedValue({ outputs: [OPENING], inputs: [] });
+    const wallet = Object.create(HathorWalletServiceWallet.prototype);
+    const { titles, press } = await render({ wallet });
+
+    expect(titles()).toEqual([VIEW, COPY]);
+    expect(read).toHaveBeenCalledWith(TX_ID);
+    await press(COPY);
+    expect(encoder).toHaveBeenCalledWith(TX_ID, [OPENING], []);
   });
 
   test('copies the values with the encoder of the wallet-lib build the app runs with', async () => {

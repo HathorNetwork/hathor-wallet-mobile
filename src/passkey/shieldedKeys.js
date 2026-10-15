@@ -23,9 +23,14 @@
  * A wallet-lib without the shielded derivers (deriveShieldedXpubs, deriveShieldedScanXPrivKey)
  * can't start a passkey wallet with shielded keys: then nothing here derives or reports any, and
  * passkey wallets run without shielded support, as before.
+ *
+ * On the wallet-service facade the service decodes the shielded outputs: it gets the scan key when
+ * the wallet registers there (see passkey/walletServiceRegistration.js), and the running wallet
+ * gets the scan key held here after its start (setShieldedScanKey), to read the shielded outputs
+ * its sends spend.
  */
 
-import { walletUtils } from '@hathor/wallet-lib';
+import { HathorWalletServiceWallet, walletUtils } from '@hathor/wallet-lib';
 import { NETWORK_MAINNET } from '../constants';
 import { STORE } from '../store';
 import { logger } from '../logger';
@@ -49,6 +54,17 @@ let scanKeyHolder = null;
 export function supportsPasskeyShielded() {
   return typeof walletUtils.deriveShieldedXpubs === 'function'
     && typeof walletUtils.deriveShieldedScanXPrivKey === 'function';
+}
+
+/**
+ * Whether the bundled wallet-lib can also run a passkey wallet with shielded keys on the
+ * wallet-service facade: start it read-only with its shielded xpubs, and hand it the scan key.
+ *
+ * @returns {boolean}
+ */
+export function supportsPasskeyShieldedWalletService() {
+  return supportsPasskeyShielded()
+    && typeof HathorWalletServiceWallet.prototype.setShieldedScanKey === 'function';
 }
 
 /**

@@ -23,7 +23,7 @@ jest.mock('../../src/passkey/passkeyService', () => ({
 }));
 
 /* eslint-disable import/first */
-import { walletUtils } from '@hathor/wallet-lib';
+import { HathorWalletServiceWallet, walletUtils } from '@hathor/wallet-lib';
 import { STORE } from '../../src/store';
 import { NETWORK_MAINNET } from '../../src/constants';
 import { signInWalletWordsFromPasskey } from '../../src/passkey/passkeyService';
@@ -36,6 +36,7 @@ import {
   holdPasskeyScanKey,
   rememberPasskeyShieldedKeys,
   supportsPasskeyShielded,
+  supportsPasskeyShieldedWalletService,
   syncPasskeyShieldedAccessData,
   unlockPasskeyShieldedKeys,
 } from '../../src/passkey/shieldedKeys';
@@ -112,6 +113,36 @@ describe('on a wallet-lib without the shielded derivers', () => {
 
     await expect(unlockPasskeyShieldedKeys()).rejects.toThrow('cannot derive the shielded keys');
     expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
+  });
+});
+
+describe('supportsPasskeyShieldedWalletService', () => {
+  const LIB_SET_SCAN_KEY = HathorWalletServiceWallet.prototype.setShieldedScanKey;
+
+  /** Sets the facade's setShieldedScanKey, or removes it (undefined). */
+  function setScanKeySetter(method) {
+    if (method) {
+      HathorWalletServiceWallet.prototype.setShieldedScanKey = method;
+    } else {
+      delete HathorWalletServiceWallet.prototype.setShieldedScanKey;
+    }
+  }
+
+  afterEach(() => {
+    setScanKeySetter(LIB_SET_SCAN_KEY);
+  });
+
+  test('needs the derivers and the facade\'s scan key setter', () => {
+    stubDerivers();
+    setScanKeySetter(jest.fn());
+    expect(supportsPasskeyShieldedWalletService()).toBe(true);
+
+    setScanKeySetter(undefined);
+    expect(supportsPasskeyShieldedWalletService()).toBe(false);
+
+    setScanKeySetter(jest.fn());
+    setDerivers({ deriveShieldedXpubs: undefined, deriveShieldedScanXPrivKey: undefined });
+    expect(supportsPasskeyShieldedWalletService()).toBe(false);
   });
 });
 

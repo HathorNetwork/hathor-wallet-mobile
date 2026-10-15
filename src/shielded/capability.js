@@ -26,9 +26,10 @@ function noneCapability(reason) {
 
 /**
  * The shielded capability of a wallet-service facade wallet, which has no
- * getShieldedCapability(). Its scan key is unlocked at start(), which registers the shielded keys
- * with the wallet-service, and the service decodes its shielded outputs, so it is never locked
- * and has nothing left undecoded:
+ * getShieldedCapability(). A seed wallet's start() registers the shielded keys with the
+ * wallet-service and keeps its scan key; a passkey wallet gets its scan key from
+ * setShieldedScanKey() after startReadOnly(), and runs on the fullnode facade when that fails. The
+ * service decodes its shielded outputs, so it is never locked and has nothing left undecoded:
  * - 'none' before the wallet is ready (reason 'not-started');
  * - 'none' when the service didn't register its shielded keys (reason 'no-shielded-keys'), as on a
  *   wallet-service without shielded support;
