@@ -32,6 +32,8 @@ import {
 } from './helpers';
 import { STORE } from '../store';
 import { isWalletServiceEnabled } from './wallet';
+import { monitorFeatureFlags } from './featureToggle';
+import { registerOnNetworkChange } from '../passkey/walletServiceRegistration';
 import { logger } from '../logger';
 
 const log = logger('network-settings-saga');
@@ -260,6 +262,31 @@ function invalidUrl(tryUrl) {
 }
 
 /**
+ * A passkey wallet runs on a wallet-service only once it is registered there, which needs a passkey
+ * ceremony. Before the wallet starts on the network switched to, register it on that network's
+ * wallet-service, so the start already runs on the wallet-service facade. It reads the feature
+ * toggles for that network first: they depend on it. Seed wallets register at every start and skip
+ * this.
+ *
+ * @param {Object} networkSettings The network settings switched to
+ */
+export function* registerPasskeyWalletOnNetworkChange(networkSettings) {
+  if (STORE.getWalletMeta()?.walletType !== 'passkey') {
+    return;
+  }
+  // The network settings are already persisted, which the feature toggle context reads.
+  yield call(monitorFeatureFlags, 0, false);
+  // Also off while a failed wallet-service start is ignored: the start would use the fullnode
+  // facade anyway, so a passkey prompt would gain nothing.
+  const walletServiceEnabled = yield call(isWalletServiceEnabled);
+  if (!walletServiceEnabled) {
+    return;
+  }
+  const featureToggles = yield select((state) => state.featureToggles);
+  yield call(registerOnNetworkChange, featureToggles, networkSettings);
+}
+
+/**
  * Saves the network custom settings in the application storage.
  * @param {object} action contains the payload with the network settings
  * already saved in the redux store.
@@ -269,7 +296,6 @@ export function* persistNetworkSettings(action) {
   const networkSettings = action.payload;
   try {
     STORE.setItem(networkSettingsKeyMap.networkSettings, networkSettings);
-    yield put(networkSettingsUpdateWaiting());
   } catch (err) {
     console.error('Error while persisting the custom network settings.', err);
     yield put(networkSettingsUpdateFailure());
@@ -324,6 +350,11 @@ export function* persistNetworkSettings(action) {
   // Clean transaction history, addresses and registered tokens from local storage as well
   const storage = STORE.getStorage();
   yield call([storage, storage.cleanStorage], true, true, true);
+
+  // The status stays LOADING until here, so the network settings screens keep their spinner while
+  // a passkey wallet registers, and no other network can be picked meanwhile.
+  yield call(registerPasskeyWalletOnNetworkChange, networkSettings);
+  yield put(networkSettingsUpdateWaiting());
 
   // This action should clean the tokens history on redux.
   // In addition, the reload also clean the in memory storage.

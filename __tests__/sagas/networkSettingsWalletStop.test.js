@@ -4,6 +4,7 @@ jest.mock('../../src/store', () => ({
   STORE: {
     setItem: jest.fn(),
     getStorage: jest.fn(),
+    getWalletMeta: jest.fn(),
   },
 }));
 
@@ -18,8 +19,18 @@ jest.mock('../../src/logger', () => {
 /* eslint-disable import/first */
 import { STORE } from '../../src/store';
 import { logger } from '../../src/logger';
-import { persistNetworkSettings } from '../../src/sagas/networkSettings';
-import { networkChanged, reloadWalletRequested } from '../../src/actions';
+import {
+  persistNetworkSettings,
+  registerPasskeyWalletOnNetworkChange,
+} from '../../src/sagas/networkSettings';
+import { monitorFeatureFlags } from '../../src/sagas/featureToggle';
+import { registerOnNetworkChange } from '../../src/passkey/walletServiceRegistration';
+import { isWalletServiceEnabled } from '../../src/sagas/wallet';
+import {
+  networkChanged,
+  networkSettingsUpdateWaiting,
+  reloadWalletRequested,
+} from '../../src/actions';
 /* eslint-enable import/first */
 
 const log = logger();
@@ -32,7 +43,7 @@ const isPut = (effect, action) => effect?.type === 'PUT'
 // i.e. where the running wallet gets stopped.
 const runToWalletStop = (wallet) => {
   const gen = persistNetworkSettings({ payload: SETTINGS });
-  let step = gen.next(); // put(networkSettingsUpdateWaiting())
+  let step = gen.next(); // put(saveTokensForNetwork())
   for (let i = 0; i < 20 && !isPut(step.value, networkChanged()); i += 1) {
     let answer;
     if (step.value?.type === 'ALL') answer = [{ saved: true }, { saved: true }]; // snapshots done
@@ -41,6 +52,18 @@ const runToWalletStop = (wallet) => {
   }
   expect(isPut(step.value, networkChanged())).toBe(true);
   return { gen, stopStep: gen.next() };
+};
+
+// After the storage is cleaned: the passkey registration for the new network, then the WAITING
+// status (the screens keep their LOADING spinner until here), then the reload that starts the
+// wallet there.
+const expectRegistrationThenReload = (gen) => {
+  const registerStep = gen.next().value;
+  expect(registerStep.type).toBe('CALL');
+  expect(registerStep.payload.fn).toBe(registerPasskeyWalletOnNetworkChange);
+  expect(registerStep.payload.args).toEqual([SETTINGS]);
+  expect(isPut(gen.next().value, networkSettingsUpdateWaiting())).toBe(true);
+  expect(isPut(gen.next().value, reloadWalletRequested())).toBe(true);
 };
 
 describe('persistNetworkSettings wallet stop', () => {
@@ -66,10 +89,10 @@ describe('persistNetworkSettings wallet stop', () => {
     ]);
     expect(wallet.stop).not.toHaveBeenCalled();
 
-    // Only once the stop has finished: clean storage, then reload.
+    // Only once the stop has finished: clean storage, register a passkey wallet, then reload.
     const cleanStep = gen.next().value;
     expect(cleanStep.payload.fn).toBe(storage.cleanStorage);
-    expect(isPut(gen.next().value, reloadWalletRequested())).toBe(true);
+    expectRegistrationThenReload(gen);
   });
 
   test('a failed wallet.stop is logged and does not block the network switch', () => {
@@ -81,13 +104,53 @@ describe('persistNetworkSettings wallet stop', () => {
     // Every logger in this file shares one mock, so check for the stop's own error.
     expect(log.error).toHaveBeenCalledWith(expect.any(String), stopError);
     expect(cleanStep.payload.fn).toBe(storage.cleanStorage);
-    expect(isPut(gen.next().value, reloadWalletRequested())).toBe(true);
+    expectRegistrationThenReload(gen);
   });
 
   test('without a wallet (e.g. after a network loading error) it just cleans and reloads', () => {
     const { stopStep, gen } = runToWalletStop(null);
 
     expect(stopStep.value.payload.fn).toBe(storage.cleanStorage);
-    expect(isPut(gen.next().value, reloadWalletRequested())).toBe(true);
+    expectRegistrationThenReload(gen);
+  });
+});
+
+describe('registerPasskeyWalletOnNetworkChange', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('a seed wallet registers at its start, so it skips this', () => {
+    STORE.getWalletMeta.mockReturnValue({ walletType: 'seed' });
+    const gen = registerPasskeyWalletOnNetworkChange(SETTINGS);
+
+    expect(gen.next().done).toBe(true);
+  });
+
+  test('a passkey wallet reads the toggles of the new network, then registers there', () => {
+    STORE.getWalletMeta.mockReturnValue({ walletType: 'passkey', xpub: 'xpub' });
+    const toggles = { 'wallet-service-mobile.rollout': true };
+    const gen = registerPasskeyWalletOnNetworkChange(SETTINGS);
+
+    const refreshStep = gen.next().value;
+    expect(refreshStep.payload.fn).toBe(monitorFeatureFlags);
+    expect(refreshStep.payload.args).toEqual([0, false]);
+    expect(gen.next().value.payload.fn).toBe(isWalletServiceEnabled);
+    expect(gen.next(true).value.type).toBe('SELECT');
+    const registerStep = gen.next(toggles).value;
+    expect(registerStep.payload.fn).toBe(registerOnNetworkChange);
+    expect(registerStep.payload.args).toEqual([toggles, SETTINGS]);
+    expect(gen.next(true).done).toBe(true);
+  });
+
+  // A failed wallet-service start is ignored for a while: the start would use the fullnode facade
+  // anyway, so no passkey prompt.
+  test('a passkey wallet does not register while the wallet-service is off for it', () => {
+    STORE.getWalletMeta.mockReturnValue({ walletType: 'passkey', xpub: 'xpub' });
+    const gen = registerPasskeyWalletOnNetworkChange(SETTINGS);
+
+    gen.next(); // monitorFeatureFlags
+    expect(gen.next().value.payload.fn).toBe(isWalletServiceEnabled);
+    expect(gen.next(false).done).toBe(true);
   });
 });
