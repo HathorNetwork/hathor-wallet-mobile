@@ -29,6 +29,7 @@ import { reducer } from '../../src/reducers/reducer';
 import {
   setFeatureToggles,
   setFullNodeNetworkName,
+  setUseWalletService,
   setWallet,
   shieldedProviderUpdate,
 } from '../../src/actions';
@@ -84,7 +85,7 @@ afterEach(async () => {
   jest.clearAllMocks();
 });
 
-async function render(wallet, { flag = true } = {}) {
+async function render(wallet, { flag = true, useWalletService = false } = {}) {
   jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(false);
   mockParams = {
     amount: 10000n,
@@ -97,6 +98,7 @@ async function render(wallet, { flag = true } = {}) {
     ...FEATURE_TOGGLE_DEFAULTS,
     [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag,
   }));
+  store.dispatch(setUseWalletService(useWalletService));
   store.dispatch(setFullNodeNetworkName(FULL_NETWORK_SHIELDED_TESTNET));
   store.dispatch(shieldedProviderUpdate({ status: SHIELDED_PROVIDER_STATUS.READY }));
   store.dispatch(setWallet(wallet));
@@ -182,6 +184,23 @@ describe('CreateTokenConfirm on the shielded testnet', () => {
       'TKN',
       10000n,
       expect.objectContaining({ address: P2PKH }),
+    );
+  });
+
+  test('mints to the new address of the wallet on the wallet-service facade, in the shielded environment', async () => {
+    // The facade pays a shielded address on its spend key, like the fullnode facade.
+    const wallet = createWallet([PRIVATE_HTR]);
+    wallet.validateAndRenewAuthToken = jest.fn(async () => {});
+    const { renderer } = await render(wallet, { useWalletService: true });
+
+    await createToken(renderer);
+
+    expect(wallet.getCurrentAddress).toHaveBeenCalledWith({ markAsUsed: true }, { legacy: false });
+    expect(wallet.prepareCreateNewToken).toHaveBeenCalledWith(
+      'Token',
+      'TKN',
+      10000n,
+      expect.objectContaining({ address: SHIELDED }),
     );
   });
 });

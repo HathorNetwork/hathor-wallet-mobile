@@ -30,8 +30,9 @@ import { copySensitive } from '../utils/sensitiveClipboard';
  *   the fragment gets the row: the shielded testnet's;
  * - "Copy unblinding values" copies them through the clipboard that clears itself.
  *
- * It renders nothing unless the wallet decodes its private outputs (isShieldedEnabled) and the
- * wallet-lib build has the encoder of the values, looked up as it renders. Then it reads the values
+ * It renders nothing unless the wallet decodes its private outputs (isShieldedEnabled), the
+ * wallet-lib build has the encoder of the values, looked up as it renders, and the wallet has
+ * getShieldedUnblindingForTx, which the wallet-service facade lacks. Then it reads the values
  * through getShieldedUnblindingForTx, which gives the openings of the wallet's own outputs only:
  * the private outputs it received or got as change in the tx, and its private outputs the tx
  * spends. The outputs the wallet paid to others are never among them. It shows the rows when there
@@ -47,7 +48,10 @@ export default function AuditUnblindingRows({ txId }) {
   const enabled = useSelector(isShieldedEnabled);
   const explorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
   const encoder = getUnblindingEncoder();
-  const active = enabled && encoder !== null && Boolean(wallet);
+  // A wallet-lib build gives the openings on the fullnode facade only, for now.
+  const active = enabled
+    && encoder !== null
+    && typeof wallet?.getShieldedUnblindingForTx === 'function';
 
   const [openings, setOpenings] = useState(null);
   const [copied, setCopied] = useState(false);

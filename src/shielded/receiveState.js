@@ -67,6 +67,23 @@ export const SHIELDED_RECEIVE_INITIAL_STATE = {
 const SHIELDED_ADDRESS_NOT_LOADED = /^Current shielded address is not loaded/;
 
 /**
+ * The start of the wallet-service facade's message for a wallet the service handed no unused
+ * shielded address.
+ */
+const NO_UNUSED_SHIELDED_ADDRESS = /^The wallet-service has no unused shielded address/;
+
+/**
+ * The start of the wallet-service facade's message for a shielded address asked of a wallet in
+ * single-address mode.
+ */
+const SHIELDED_SINGLE_ADDRESS = /^Shielded addresses are not supported in single-address mode/;
+
+/**
+ * The reason of a wallet in single-address mode, which gives out no shielded address.
+ */
+export const RECEIVE_REASON_SINGLE_ADDRESS = 'single-address';
+
+/**
  * The receive state a shielded capability gives, or null when the wallet gives out its current
  * shielded address, which must then be read: at level 'view' or 'full', when it watches the
  * addresses shielded outputs are paid to.
@@ -110,7 +127,11 @@ export function receiveStateFromCapability(capability) {
  *   loading;
  * - any other ShieldedKeyError: unavailable, with its code;
  * - the plain Error 'Current shielded address is not loaded…', while the shielded addresses
- *   aren't loaded: loading.
+ *   aren't loaded: loading;
+ * - on the wallet-service facade, the WalletError of a wallet the service handed no unused
+ *   shielded address: unavailable, as an address that couldn't be read;
+ * - on the wallet-service facade, the WalletError of a wallet in single-address mode:
+ *   unavailable.
  *
  * @param {unknown} error
  * @returns {{ status: string, reason: string|null }|null}
@@ -128,6 +149,12 @@ export function receiveStateFromError(error) {
   }
   if (error instanceof Error && SHIELDED_ADDRESS_NOT_LOADED.test(error.message)) {
     return { status: SHIELDED_RECEIVE_STATUS.LOADING, reason: null };
+  }
+  if (error instanceof Error && NO_UNUSED_SHIELDED_ADDRESS.test(error.message)) {
+    return { status: SHIELDED_RECEIVE_STATUS.UNAVAILABLE, reason: RECEIVE_REASON_ERROR };
+  }
+  if (error instanceof Error && SHIELDED_SINGLE_ADDRESS.test(error.message)) {
+    return { status: SHIELDED_RECEIVE_STATUS.UNAVAILABLE, reason: RECEIVE_REASON_SINGLE_ADDRESS };
   }
   return null;
 }

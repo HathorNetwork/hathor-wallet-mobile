@@ -185,10 +185,40 @@ describe('the private receive state', () => {
     expect(receiveUpdates()).toEqual([shieldedReceiveAddressUpdate(expected)]);
   });
 
+  test('reads the current shielded address of a wallet-service facade wallet, which has no getShieldedCapability', async () => {
+    const { wallet, deliver, receiveUpdates } = setup({ change: { useWalletService: true } });
+    delete wallet.getShieldedCapability;
+    wallet.isShieldedEnabled = jest.fn(() => true);
+    wallet.storage = { shieldedCryptoProvider: {} };
+
+    deliver(walletRefreshSharedAddress());
+    await wait(0);
+
+    expect(wallet.getCurrentAddress).toHaveBeenCalledWith({}, { legacy: false });
+    expect(receiveUpdates()).toEqual([shieldedReceiveAddressUpdate(READY_RECEIVE)]);
+  });
+
+  test('reads no address of a wallet-service facade wallet whose shielded keys the service did not register', async () => {
+    const { wallet, deliver, receiveUpdates } = setup({ change: { useWalletService: true } });
+    delete wallet.getShieldedCapability;
+    wallet.isShieldedEnabled = jest.fn(() => false);
+    wallet.storage = { shieldedCryptoProvider: {} };
+
+    deliver(walletRefreshSharedAddress());
+    await wait(0);
+
+    expect(wallet.getCurrentAddress).not.toHaveBeenCalled();
+    expect(receiveUpdates()).toEqual([
+      shieldedReceiveAddressUpdate(receive(UNAVAILABLE, { reason: 'no-shielded-keys' })),
+    ]);
+  });
+
   test.each([
     ['the scan key locked meanwhile', new errors.ShieldedKeyError('shielded-locked', 'locked'), receive(LOCKED)],
     ['no crypto provider', new errors.ShieldedKeyError('shielded-no-provider', 'no provider'), receive(UNAVAILABLE, { reason: 'shielded-no-provider' })],
     ['the shielded addresses not loaded yet', new Error('Current shielded address is not loaded (index=0). Derive at least one shielded address before calling getCurrentAddress.'), receive(LOADING)],
+    ['no unused shielded address from the wallet-service', new errors.WalletError('The wallet-service has no unused shielded address for this wallet.'), receive(UNAVAILABLE, { reason: 'error' })],
+    ['single-address mode on the wallet-service facade', new errors.WalletError('Shielded addresses are not supported in single-address mode.'), receive(UNAVAILABLE, { reason: 'single-address' })],
   ])('maps a refusal for %s', async (_label, error, expected) => {
     const { wallet, deliver, receiveUpdates } = setup();
     wallet.getCurrentAddress.mockRejectedValue(error);
@@ -217,7 +247,6 @@ describe('the private receive state', () => {
     ['the shielded UI flag is off', {
       featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false },
     }],
-    ['the wallet runs on the wallet-service facade', { useWalletService: true }],
     ['the node reports another network', { fullNodeNetworkName: 'testnet-india' }],
     ['no provider was tried for the wallet', {
       shielded: {

@@ -150,7 +150,6 @@ describe('the tx details of the token screen', () => {
 
   test.each([
     ['the shielded UI is off', { flag: false }],
-    ['the wallet runs on the wallet-service facade', { useWalletService: true }],
     ['the node reports Mainnet', {
       network: 'mainnet',
       providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,

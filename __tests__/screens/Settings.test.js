@@ -128,6 +128,12 @@ describe('Settings', () => {
     expect(navigation.navigate.mock.calls[0]).toEqual(['PrivacySettings']);
   });
 
+  test('offers it on the wallet-service facade', async () => {
+    const { titles } = await render({ useWalletService: true });
+
+    expect(titles()).toContain('Privacy');
+  });
+
   test('offers it while the private balance is locked', async () => {
     const { titles } = await render({ level: 'watch' });
 
@@ -137,7 +143,6 @@ describe('Settings', () => {
   test.each([
     ['with the flag off', { flag: false }],
     ['on another network', { networkName: 'testnet' }],
-    ['on the wallet-service facade', { useWalletService: true }],
     ['where no provider was registered, as for a passkey wallet', {
       providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
     }],

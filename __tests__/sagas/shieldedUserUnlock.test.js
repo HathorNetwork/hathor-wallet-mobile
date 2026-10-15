@@ -479,4 +479,15 @@ describe('the retry of private funds that could not be read', () => {
     expect(wallet.reprocessShieldedOutputs).not.toHaveBeenCalled();
     expect(dispatched).toEqual([]);
   });
+  test('does nothing for a wallet that cannot process its history again, as on the wallet-service facade', async () => {
+    const { wallet, deliver, dispatched } = setup({ start: IN_ERROR });
+    dispatched.length = 0;
+    delete wallet.reprocessShieldedOutputs;
+
+    deliver(shieldedReprocessRequested());
+    await wait(0);
+
+    expect(dispatched).toEqual([]);
+    expect(log.error).not.toHaveBeenCalled();
+  });
 });
