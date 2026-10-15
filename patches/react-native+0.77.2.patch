@@ -1,8 +1,34 @@
 diff --git a/node_modules/react-native/Libraries/Text/Text.js b/node_modules/react-native/Libraries/Text/Text.js
-index e327b65..7ceb7d5 100644
+index e327b65..0672d8f 100644
 --- a/node_modules/react-native/Libraries/Text/Text.js
 +++ b/node_modules/react-native/Libraries/Text/Text.js
-@@ -168,6 +168,21 @@ const Text: component(
+@@ -28,6 +28,25 @@ type TextForwardRef = React.ElementRef<
+   typeof NativeText | typeof NativeVirtualText,
+ >;
+ 
++// Hathor patch: the default font weight, 400 plus the system's font weight adjustment (+300 with
++// Android's "Bold text" setting), read once from the app's FontWeightAdjustment native module.
++// A change to the setting applies after the app restarts.
++const NativeModules = require('../BatchedBridge/NativeModules');
++let defaultFontWeight: ?string = null;
++function getDefaultFontWeight(): string {
++  if (defaultFontWeight == null) {
++    const nativeModule = NativeModules.FontWeightAdjustment;
++    const constants = nativeModule?.getConstants
++      ? nativeModule.getConstants()
++      : nativeModule;
++    const adjustment = Number(constants?.fontWeightAdjustment) || 0;
++    // React Native accepts the weights 100 to 900, in steps of 100.
++    const weight = Math.round((400 + adjustment) / 100) * 100;
++    defaultFontWeight = String(Math.min(900, Math.max(100, weight)));
++  }
++  return defaultFontWeight;
++}
++
+ /**
+  * Text is the fundamental component for displaying text.
+  *
+@@ -168,6 +187,22 @@ const Text: component(
      const _nativeID = id ?? nativeID;
  
      const hasTextAncestor = useContext(TextAncestor);
@@ -10,8 +36,9 @@ index e327b65..7ceb7d5 100644
 +    // fontStyle is measured with the plain default typeface but drawn with the theme's default
 +    // font. When the two differ (an OEM system font, a font scale, the "Bold text" setting), the
 +    // drawn text is wider than the measured box and its last characters are cut. An explicit
-+    // weight makes both use the same typeface. Nested Texts are left alone so they keep
-+    // inheriting their parent's weight.
++    // weight makes both use the same typeface; it includes the "Bold text" adjustment, so that
++    // setting still applies. Nested Texts are left alone so they keep inheriting their parent's
++    // weight.
 +    if (
 +      Platform.OS === 'android' &&
 +      !hasTextAncestor &&
@@ -19,7 +46,7 @@ index e327b65..7ceb7d5 100644
 +      processedStyle?.fontFamily == null &&
 +      processedStyle?.fontStyle == null
 +    ) {
-+      _style = [{fontWeight: '400'}, _style];
++      _style = [{fontWeight: getDefaultFontWeight()}, _style];
 +    }
      if (hasTextAncestor) {
        if (isPressable) {

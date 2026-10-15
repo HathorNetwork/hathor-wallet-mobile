@@ -11,14 +11,23 @@ import { create, act } from 'react-test-renderer';
 
 /**
  * The react-native patch in patches/ gives a top-level Text without fontWeight, fontFamily or
- * fontStyle an explicit fontWeight on Android, so it is measured and drawn with the same typeface.
+ * fontStyle an explicit fontWeight on Android, so it is measured and drawn with the same typeface:
+ * 400 plus the system's font weight adjustment, which the "Bold text" setting raises by 300.
  * The jest preset mocks Text, so these tests load the real (patched) one for the platform.
  */
-function loadText(os) {
+function loadText(os, fontWeightAdjustment) {
   let Text;
   jest.isolateModules(() => {
     // The isolated registry must share the renderer's React, or Text's hooks find no dispatcher.
     jest.doMock('react', () => React);
+    if (fontWeightAdjustment != null) {
+      // The app's native module, which the patch reads through NativeModules.
+      // eslint-disable-next-line global-require
+      const NativeModules = require('react-native/Libraries/BatchedBridge/NativeModules');
+      NativeModules.FontWeightAdjustment = {
+        getConstants: () => ({ fontWeightAdjustment }),
+      };
+    }
     // Both modules export with module.exports.
     jest.doMock('react-native/Libraries/Utilities/Platform', () => ({
       OS: os,
@@ -58,6 +67,20 @@ describe('react-native Text patch', () => {
     const Text = loadText('android');
     const [style] = nativeStyles(<Text>SEND</Text>);
     expect(flatten(style)).toEqual({ fontWeight: '400' });
+  });
+
+  test.each([
+    // Android's "Bold text" setting.
+    [300, '700'],
+    [0, '400'],
+    // Rounded to a weight React Native accepts, and kept within 100 to 900.
+    [250, '700'],
+    [1000, '900'],
+    [-1000, '100'],
+  ])('adds the system font weight adjustment %i to the default weight', (adjustment, weight) => {
+    const Text = loadText('android', adjustment);
+    const [style] = nativeStyles(<Text>HTR</Text>);
+    expect(flatten(style)).toEqual({ fontWeight: weight });
   });
 
   test.each([
