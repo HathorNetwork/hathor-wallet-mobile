@@ -54,11 +54,14 @@ function fakeWallet() {
 async function fetchBalance(wallet, {
   flag = true,
   providerStatus = SHIELDED_PROVIDER_STATUS.READY,
+  useWalletService = false,
+  force = true,
+  tokensBalance = {},
 } = {}) {
   const state = {
     wallet,
-    tokensBalance: {},
-    useWalletService: false,
+    tokensBalance,
+    useWalletService,
     fullNodeNetworkName: FULL_NETWORK_SHIELDED_TESTNET,
     featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: flag },
     shielded: { providerStatus, providerError: null, capability: null },
@@ -67,7 +70,7 @@ async function fetchBalance(wallet, {
   await runSaga(
     { dispatch: (action) => dispatched.push(action), getState: () => state },
     fetchTokenBalance,
-    tokenFetchBalanceRequested(HTR, true),
+    tokenFetchBalanceRequested(HTR, force),
   ).toPromise();
   return dispatched;
 }
@@ -110,5 +113,86 @@ describe('the private part of the available balance', () => {
       tokenFetchBalanceSuccess(HTR, { available: 10n, locked: 2n, privateAvailable: null }),
     ]);
     expect(log.error).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * A wallet-service facade wallet with 10 HTR available and 3 locked, 4 of the available and 1 of
+ * the locked in shielded outputs: the service splits each amount, and the totals include the
+ * shielded part.
+ */
+function fakeWalletServiceWallet() {
+  const split = {
+    unlocked: { transparent: 6n, shielded: 4n, total: 10n },
+    locked: { transparent: 2n, shielded: 1n, total: 3n },
+  };
+  return {
+    getBalance: jest.fn(async (_token, opts) => (opts?.split
+      ? [{ balance: split }]
+      : [{ balance: { unlocked: 10n, locked: 3n } }])),
+    storage: { selectUtxos: jest.fn() },
+  };
+}
+
+describe('the private part of the available balance on the wallet-service facade', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('comes with the balance, from the split the service reads', async () => {
+    const wallet = fakeWalletServiceWallet();
+
+    expect(await fetchBalance(wallet, { useWalletService: true, force: false })).toEqual([
+      tokenFetchBalanceSuccess(HTR, { available: 10n, locked: 3n, privateAvailable: 4n }),
+    ]);
+    expect(wallet.getBalance).toHaveBeenCalledTimes(1);
+    expect(wallet.getBalance).toHaveBeenCalledWith(HTR, { split: true });
+    // The facade's storage holds no UTXOs to sum.
+    expect(wallet.storage.selectUtxos).not.toHaveBeenCalled();
+  });
+
+  test('is zero for a token the wallet has no balance of', async () => {
+    const wallet = fakeWalletServiceWallet();
+    wallet.getBalance.mockResolvedValue([]);
+
+    expect(await fetchBalance(wallet, { useWalletService: true, force: false })).toEqual([
+      tokenFetchBalanceSuccess(HTR, { available: 0n, locked: 0n, privateAvailable: 0n }),
+    ]);
+  });
+
+  test('is null when the split cannot be read, and the balance still loads', async () => {
+    const wallet = fakeWalletServiceWallet();
+    wallet.getBalance.mockImplementation(async (_token, opts) => {
+      if (opts?.split) {
+        throw new Error('split refused');
+      }
+      return [{ balance: { unlocked: 10n, locked: 2n } }];
+    });
+
+    expect(await fetchBalance(wallet, { useWalletService: true, force: false })).toEqual([
+      tokenFetchBalanceSuccess(HTR, { available: 10n, locked: 2n, privateAvailable: null }),
+    ]);
+    expect(log.error).toHaveBeenCalledTimes(1);
+  });
+
+  test('a forced fetch takes a change of the private part alone as a change', async () => {
+    const wallet = fakeWalletServiceWallet();
+    // A private part that moved while the totals stayed, as a send of the wallet to itself.
+    const tokensBalance = {
+      [HTR]: { data: { available: 10n, locked: 3n, privateAvailable: 3n } },
+    };
+
+    expect(await fetchBalance(wallet, { useWalletService: true, tokensBalance })).toEqual([
+      tokenFetchBalanceSuccess(HTR, { available: 10n, locked: 3n, privateAvailable: 4n }),
+    ]);
+    expect(wallet.getBalance).toHaveBeenCalledTimes(1);
+  });
+
+  test('is not read on the wallet-service facade while the shielded UI flag is off', async () => {
+    const wallet = fakeWalletServiceWallet();
+
+    expect(await fetchBalance(wallet, { useWalletService: true, flag: false, force: false }))
+      .toEqual([tokenFetchBalanceSuccess(HTR, { available: 10n, locked: 3n })]);
+    expect(wallet.getBalance).toHaveBeenCalledWith(HTR);
   });
 });

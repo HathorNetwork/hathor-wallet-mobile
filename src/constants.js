@@ -338,7 +338,8 @@ export const PRE_SETTINGS_MAINNET = {
 /**
  * The shielded testnet: a testnet whose nodes report the network name
  * 'testnet-shielded-outputs'. It shares its genesis with the public testnet, so the network name
- * is what tells them apart. It has no wallet-service.
+ * is what tells them apart. Its wallet-service has shielded support: a seed wallet that starts on
+ * it registers its shielded keys there.
  */
 export const STAGE_SHIELDED_TESTNET = 'testnet';
 export const NETWORK_SHIELDED_TESTNET = 'testnet';
@@ -347,13 +348,15 @@ export const NODE_SERVER_SHIELDED_TESTNET_URL = 'https://node1.shielded-outputs.
 export const EXPLORER_SHIELDED_TESTNET_URL = 'https://explorer.shielded-outputs.testnet.hathor.network/';
 export const EXPLORER_SERVICE_SHIELDED_TESTNET_URL = 'https://explorer-service.shielded-outputs.testnet.hathor.network/';
 export const TX_MINING_SERVICE_SHIELDED_TESTNET_URL = 'https://txmining.shielded-outputs.testnet.hathor.network/';
+export const WALLET_SERVICE_SHIELDED_TESTNET_BASE_URL = 'https://wallet-service.shielded-outputs.testnet.hathor.network/';
+export const WALLET_SERVICE_SHIELDED_TESTNET_BASE_WS_URL = 'wss://ws.wallet-service.shielded-outputs.testnet.hathor.network/';
 
 export const PRE_SETTINGS_SHIELDED_TESTNET = {
   stage: STAGE_SHIELDED_TESTNET,
   network: NETWORK_SHIELDED_TESTNET,
   fullNetwork: FULL_NETWORK_SHIELDED_TESTNET,
-  walletServiceUrl: null,
-  walletServiceWsUrl: null,
+  walletServiceUrl: WALLET_SERVICE_SHIELDED_TESTNET_BASE_URL,
+  walletServiceWsUrl: WALLET_SERVICE_SHIELDED_TESTNET_BASE_WS_URL,
   nodeUrl: NODE_SERVER_SHIELDED_TESTNET_URL,
   explorerUrl: EXPLORER_SHIELDED_TESTNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_SHIELDED_TESTNET_URL,
@@ -492,8 +495,8 @@ export const TOKEN_SWAP_SLIPPAGE = 0.5;
 
 /**
  * Where the shielded crypto provider of the running wallet stands:
- * - UNREGISTERED: no provider was registered, as on every network but the shielded testnet, on
- *   the wallet-service facade and for passkey wallets;
+ * - UNREGISTERED: no provider was registered, as on every network but the shielded testnet and
+ *   for passkey wallets;
  * - READY: it passed its self-test and was registered before start();
  * - FAILED: it failed to load or failed its self-test, so the wallet runs transparent-only.
  */

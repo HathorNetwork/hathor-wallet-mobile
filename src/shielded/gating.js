@@ -65,9 +65,10 @@ export function getShieldedNetworkPresetFeatureToggle(state) {
 }
 
 /**
- * Whether a wallet start registers the shielded crypto provider: a seed wallet on the fullnode
- * facade, on the shielded testnet. It decides by wallet type, not by keys: a wallet created
- * before shielded outputs gets its shielded keys during start(), after the provider must be set.
+ * Whether a wallet start registers the shielded crypto provider: a seed wallet on the shielded
+ * testnet, on either facade. It decides by wallet type, not by keys: a wallet created before
+ * shielded outputs gets its shielded keys during start(), after the provider must be set. A
+ * passkey wallet registers no shielded keys, as it starts from its xpub alone.
  *
  * It ignores the flag, so the private funds a wallet received keep counting in its balance
  * while the shielded UI is hidden. Elsewhere no provider is registered, so wallet-lib does no
@@ -75,16 +76,14 @@ export function getShieldedNetworkPresetFeatureToggle(state) {
  *
  * @param {Object} params
  * @param {Object} params.networkSettings The selected network settings
- * @param {boolean} params.useWalletService Whether the wallet starts on the wallet-service facade
  * @param {boolean} params.isPasskeyWallet Whether it is a passkey wallet
  * @returns {boolean}
  */
 export function shouldRegisterShieldedProvider({
   networkSettings,
-  useWalletService,
   isPasskeyWallet,
 }) {
-  return isShieldedNetwork(networkSettings) && !useWalletService && !isPasskeyWallet;
+  return isShieldedNetwork(networkSettings) && !isPasskeyWallet;
 }
 
 /**
@@ -98,10 +97,10 @@ export function selectShieldedCapability(state) {
 }
 
 /**
- * Whether the app may show shielded UI at all: the flag is on, the wallet runs on the fullnode
- * facade, the fullnode reports the shielded testnet, and a crypto provider was registered for
- * the wallet or failed to load. A provider is only ever tried for seed wallets, so this also
- * rules out passkey wallets.
+ * Whether the app may show shielded UI at all: the flag is on, the network the wallet runs on (the
+ * fullnode's, or the wallet-service's) is the shielded testnet, and a crypto provider was
+ * registered for the wallet or failed to load. A provider is only ever tried for seed wallets, so
+ * this also rules out passkey wallets.
  *
  * @param {Object} state Redux state
  * @returns {boolean}
@@ -109,7 +108,6 @@ export function selectShieldedCapability(state) {
 export function isShieldedEnvironment(state) {
   const providerStatus = state.shielded?.providerStatus ?? SHIELDED_PROVIDER_STATUS.UNREGISTERED;
   return getShieldedFeatureToggle(state)
-    && !state.useWalletService
     && isShieldedNetworkName(state.fullNodeNetworkName)
     && providerStatus !== SHIELDED_PROVIDER_STATUS.UNREGISTERED;
 }

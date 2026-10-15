@@ -24,6 +24,7 @@ import ShieldedUnlockAction from '../components/Shielded/ShieldedUnlockAction';
 import { COLORS } from '../styles/themes';
 import { SENSITIVE_COPY_FEEDBACK_MS } from '../constants';
 import { isShieldedAvailable, selectShieldedCapability } from '../shielded/gating';
+import { getWalletShieldedCapability } from '../shielded/capability';
 import { closeScreen } from '../utils/navigation';
 import { copySensitive } from '../utils/sensitiveClipboard';
 
@@ -260,7 +261,7 @@ export default function ExportPrivacyKeys({ navigation, route }) {
         fail(t`Wallet not ready`);
         return;
       }
-      const current = await wallet.getShieldedCapability();
+      const current = await getWalletShieldedCapability(wallet);
       if (!mounted.current) {
         return;
       }

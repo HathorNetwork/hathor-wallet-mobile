@@ -45,13 +45,28 @@ describe('unlockShieldedViewIfLocked', () => {
     expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
   });
 
-  test('skips a wallet-service facade wallet, which has no shielded capability', async () => {
-    const wallet = { unlockShieldedView: jest.fn() };
+  test('skips a wallet-service facade wallet, whose scan key start() unlocked', async () => {
+    const wallet = {
+      isReady: () => true,
+      isShieldedEnabled: () => true,
+      storage: { shieldedCryptoProvider: {} },
+    };
 
     const result = await unlockShieldedViewIfLocked(wallet, PIN);
 
-    expect(result).toEqual({ status: SHIELDED_UNLOCK_STATUS.SKIPPED, capability: null });
-    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      status: SHIELDED_UNLOCK_STATUS.SKIPPED,
+      capability: expect.objectContaining({ level: 'full' }),
+    });
+  });
+
+  test('skips a wallet without unlockShieldedView, whatever its capability', async () => {
+    const wallet = fakeWallet('watch', { cause: 'not-supplied' });
+    delete wallet.unlockShieldedView;
+
+    const result = await unlockShieldedViewIfLocked(wallet, PIN);
+
+    expect(result.status).toBe(SHIELDED_UNLOCK_STATUS.SKIPPED);
   });
 
   test.each(['not-supplied', 'wrong-pin', 'error'])(

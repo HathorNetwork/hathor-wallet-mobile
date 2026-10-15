@@ -60,7 +60,73 @@ jest.mock('@hathor/wallet-lib', () => {
     }
   }
 
-  return { ...actual, HathorWallet: MockHathorWallet, Connection: MockConnection };
+  // The wallet-service-facade wallet: it records its calls in HathorWallet.log too. It has no
+  // getShieldedCapability nor setHistorySyncMode, as the wallet-lib one.
+  class MockHathorWalletServiceWallet extends EventEmitter {
+    constructor(config = {}) {
+      super();
+      this.config = config;
+      this.storage = config.storage;
+      this.conn = new EventEmitter();
+      MockHathorWalletServiceWallet.instances.push(this);
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    record(entry) {
+      MockHathorWallet.log.push(entry);
+    }
+
+    setShieldedCryptoProvider(provider) {
+      this.storage.shieldedCryptoProvider = provider;
+      this.record('setShieldedCryptoProvider');
+    }
+
+    start() {
+      this.record('start');
+      return MockHathorWallet.onStart(this);
+    }
+
+    startReadOnly() {
+      this.record('startReadOnly');
+      return MockHathorWallet.onStart(this);
+    }
+
+    setExternalTxSigningMethod() {
+      this.record('setExternalTxSigningMethod');
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    refreshFullAuthToken() {}
+
+    stop(options) {
+      this.record(`stop:${JSON.stringify(options)}`);
+      return Promise.resolve();
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    getVersionData() {
+      return Promise.resolve({ network: 'testnet-shielded-outputs' });
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    isShieldedEnabled() {
+      return MockHathorWalletServiceWallet.shieldedEnabled;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    isReady() {
+      return true;
+    }
+  }
+  MockHathorWalletServiceWallet.instances = [];
+  MockHathorWalletServiceWallet.shieldedEnabled = true;
+
+  return {
+    ...actual,
+    HathorWallet: MockHathorWallet,
+    HathorWalletServiceWallet: MockHathorWalletServiceWallet,
+    Connection: MockConnection,
+  };
 });
 
 jest.mock('../../src/sagas/shieldedProvider', () => ({
@@ -75,9 +141,17 @@ jest.mock('../../src/sagas/featureToggle', () => ({
 
 /* eslint-disable import/first */
 import { runSaga, stdChannel } from 'redux-saga';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { call, take } from 'redux-saga/effects';
-import { HathorWallet, HistorySyncMode, SCANNING_POLICY } from '@hathor/wallet-lib';
 import {
+  HathorWallet,
+  HathorWalletServiceWallet,
+  HistorySyncMode,
+  SCANNING_POLICY,
+} from '@hathor/wallet-lib';
+import {
+  IGNORE_WS_TOGGLE_FLAG,
+  isPushNotificationEnabled,
   isWalletServiceEnabled,
   onStartWalletFailed,
   saga,
@@ -102,7 +176,9 @@ import {
   PRE_SETTINGS_MAINNET,
   PRE_SETTINGS_SHIELDED_TESTNET,
   PRE_SETTINGS_TESTNET,
+  PUSH_NOTIFICATION_FEATURE_TOGGLE,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
+  SHIELDED_PROVIDER_STATUS,
   WALLET_SERVICE_FEATURE_TOGGLE,
   networkSettingsKeyMap,
 } from '../../src/constants';
@@ -162,21 +238,33 @@ const CUSTOM_SHIELDED_NETWORK = {
  * Stubs what startWallet reads before it starts the wallet: the stored network settings and
  * wallet metadata, a fresh storage, and the feature toggles in the state.
  */
-function stubStart({ networkSettings, walletMeta = null, featureToggles = {} }) {
+function stubStart({
+  networkSettings,
+  walletMeta = null,
+  featureToggles = {},
+  shielded = undefined,
+}) {
   jest.spyOn(STORE, 'getWalletMeta').mockReturnValue(walletMeta);
   jest.spyOn(STORE, 'getStorage').mockReturnValue({
     store: { cleanMetadata: jest.fn() },
     cleanStorage: jest.fn(),
     getScanningPolicy: jest.fn(async () => SCANNING_POLICY.GAP_LIMIT),
   });
+  // The network settings the app storage holds, which startWallet may save again.
+  let storedNetworkSettings = networkSettings;
   jest.spyOn(STORE, 'getItem').mockImplementation(
-    (key) => (key === networkSettingsKeyMap.networkSettings ? networkSettings : null),
+    (key) => (key === networkSettingsKeyMap.networkSettings ? storedNetworkSettings : null),
   );
-  jest.spyOn(STORE, 'setItem').mockImplementation(() => {});
+  jest.spyOn(STORE, 'setItem').mockImplementation((key, value) => {
+    if (key === networkSettingsKeyMap.networkSettings) {
+      storedNetworkSettings = value;
+    }
+  });
   return () => ({
     featureTogglesInitialized: true,
     featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, ...featureToggles },
-    networkSettings,
+    networkSettings: storedNetworkSettings,
+    shielded,
   });
 }
 
@@ -225,6 +313,7 @@ describe('startWallet on the fullnode facade', () => {
   beforeEach(() => {
     HathorWallet.log = [];
     HathorWallet.instances = [];
+    HathorWalletServiceWallet.instances = [];
     HathorWallet.onStart = () => new Promise(() => {});
     registerShieldedCryptoProvider.mockReset();
     registerShieldedCryptoProvider.mockImplementation(function* register(wallet) {
@@ -262,12 +351,13 @@ describe('startWallet on the fullnode facade', () => {
     expect(walletSet).toBeLessThan(start);
   });
 
-  test('registers it with the wallet-service flag on and a wallet-service URL', async () => {
+  test('registers it with the wallet-service flag on and no wallet-service URL', async () => {
     const { log } = await runUntilStart({
-      networkSettings: CUSTOM_SHIELDED_NETWORK,
+      networkSettings: { ...CUSTOM_SHIELDED_NETWORK, walletServiceUrl: '', walletServiceWsUrl: '' },
       featureToggles: { [WALLET_SERVICE_FEATURE_TOGGLE]: true },
     });
 
+    expect(HathorWalletServiceWallet.instances).toEqual([]);
     expect(registerShieldedCryptoProvider).toHaveBeenCalledTimes(1);
     expect(log).toContain('start');
   });
@@ -293,6 +383,190 @@ describe('startWallet on the fullnode facade', () => {
     expect(registerShieldedCryptoProvider).not.toHaveBeenCalled();
     expect(log).toContain('setExternalTxSigningMethod');
     expect(log).toContain('start');
+  });
+});
+
+describe('startWallet on the wallet-service facade', () => {
+  const WS_FLAG = { [WALLET_SERVICE_FEATURE_TOGGLE]: true };
+
+  beforeEach(() => {
+    HathorWallet.log = [];
+    HathorWallet.instances = [];
+    HathorWalletServiceWallet.instances = [];
+    HathorWalletServiceWallet.shieldedEnabled = true;
+    HathorWallet.onStart = () => new Promise(() => {});
+    registerShieldedCryptoProvider.mockReset();
+    registerShieldedCryptoProvider.mockImplementation(function* register(wallet) {
+      yield call([wallet, wallet.setShieldedCryptoProvider], PROVIDER);
+    });
+  });
+
+  afterEach(async () => {
+    jest.restoreAllMocks();
+    await AsyncStorage.clear();
+  });
+
+  const capabilityUpdates = (dispatched) => dispatched.filter(
+    (action) => action.type === types.SHIELDED_CAPABILITY_UPDATE,
+  );
+
+  test('registers the crypto provider on the shielded testnet before start(), without a history sync mode', async () => {
+    const { log } = await runUntilStart({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      featureToggles: WS_FLAG,
+    });
+
+    expect(HathorWallet.instances).toEqual([]);
+    expect(HathorWalletServiceWallet.instances).toHaveLength(1);
+    const [wallet] = HathorWalletServiceWallet.instances;
+    expect(registerShieldedCryptoProvider).toHaveBeenCalledWith(wallet);
+    expect(log.indexOf('setShieldedCryptoProvider')).toBeGreaterThanOrEqual(0);
+    expect(log.indexOf('setShieldedCryptoProvider')).toBeLessThan(log.indexOf('start'));
+    expect(log.some((entry) => entry.startsWith('setHistorySyncMode'))).toBe(false);
+    // The shielded chain keeps it in multi-address mode, which the facade needs for it.
+    expect(wallet.config.singleAddressMode).toBe(false);
+  });
+
+  test.each([
+    ['mainnet', PRE_SETTINGS_MAINNET],
+    ['the public testnet', PRE_SETTINGS_TESTNET],
+  ])('registers no provider on %s', async (_label, networkSettings) => {
+    const { log } = await runUntilStart({ networkSettings, featureToggles: WS_FLAG });
+
+    expect(HathorWalletServiceWallet.instances).toHaveLength(1);
+    expect(registerShieldedCryptoProvider).not.toHaveBeenCalled();
+    expect(log).not.toContain('setShieldedCryptoProvider');
+  });
+
+  test('saves the wallet-service URLs into the shielded testnet preset an older version saved, and starts on them', async () => {
+    const savedPreset = {
+      ...PRE_SETTINGS_SHIELDED_TESTNET,
+      walletServiceUrl: null,
+      walletServiceWsUrl: null,
+    };
+    const { log } = await runUntilStart({ networkSettings: savedPreset, featureToggles: WS_FLAG });
+
+    expect(STORE.setItem).toHaveBeenCalledWith(
+      networkSettingsKeyMap.networkSettings,
+      PRE_SETTINGS_SHIELDED_TESTNET,
+    );
+    expect(HathorWalletServiceWallet.instances).toHaveLength(1);
+    expect(registerShieldedCryptoProvider).toHaveBeenCalledTimes(1);
+    expect(log).toContain('start');
+  });
+
+  test('puts the full capability once the wallet is ready, when the wallet-service registered its shielded keys', async () => {
+    HathorWallet.onStart = async () => null;
+
+    const { log, dispatched } = await runStartWallet(
+      { networkSettings: PRE_SETTINGS_SHIELDED_TESTNET, featureToggles: WS_FLAG },
+      `dispatch:${types.TOKEN_FETCH_BALANCE_REQUESTED}`,
+    );
+
+    const updates = capabilityUpdates(dispatched);
+    expect(updates).toHaveLength(1);
+    expect(updates[0].payload).toEqual(
+      expect.objectContaining({ level: 'full', reason: null, canReceive: true }),
+    );
+    expect(log.indexOf(`dispatch:${types.SET_FULLNODE_NETWORK_NAME}`))
+      .toBeLessThan(log.indexOf(`dispatch:${types.SHIELDED_CAPABILITY_UPDATE}`));
+  });
+
+  test('starts again on the fullnode facade when the wallet-service registered no shielded keys', async () => {
+    HathorWalletServiceWallet.shieldedEnabled = false;
+    HathorWallet.onStart = async () => null;
+
+    const { log, dispatched } = await runStartWallet(
+      { networkSettings: PRE_SETTINGS_SHIELDED_TESTNET, featureToggles: WS_FLAG },
+      `dispatch:${types.START_WALLET_REQUESTED}`,
+    );
+
+    expect(await AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG)).toMatch(/^\d+$/);
+    expect(log).toContain(`stop:${JSON.stringify({ cleanStorage: false })}`);
+    expect(capabilityUpdates(dispatched)).toEqual([]);
+    expect(dispatched).not.toContainEqual(expect.objectContaining({
+      type: types.TOKEN_FETCH_BALANCE_REQUESTED,
+    }));
+    expect(dispatched[dispatched.length - 1]).toEqual(
+      startWalletRequested({ words: WORDS, pin: PIN }),
+    );
+  });
+
+  test('starts on the fullnode facade, without starting on the wallet-service, when the crypto provider failed', async () => {
+    const { log, dispatched } = await runStartWallet(
+      {
+        networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+        featureToggles: WS_FLAG,
+        shielded: { providerStatus: SHIELDED_PROVIDER_STATUS.FAILED },
+      },
+      `dispatch:${types.START_WALLET_REQUESTED}`,
+    );
+
+    expect(registerShieldedCryptoProvider).toHaveBeenCalledTimes(1);
+    expect(log).not.toContain('start');
+    expect(await AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG)).toMatch(/^\d+$/);
+    expect(dispatched[dispatched.length - 1]).toEqual(
+      startWalletRequested({ words: WORDS, pin: PIN }),
+    );
+  });
+
+  test('puts no capability on mainnet', async () => {
+    HathorWallet.onStart = async () => null;
+
+    const { dispatched } = await runStartWallet(
+      { networkSettings: PRE_SETTINGS_MAINNET, featureToggles: WS_FLAG },
+      `dispatch:${types.TOKEN_FETCH_BALANCE_REQUESTED}`,
+    );
+
+    expect(capabilityUpdates(dispatched)).toEqual([]);
+  });
+
+  test('registers no provider and puts no capability for a passkey wallet on the shielded testnet', async () => {
+    HathorWallet.onStart = async () => null;
+
+    const { log, dispatched } = await runStartWallet(
+      {
+        networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+        walletMeta: {
+          ...PASSKEY_META,
+          walletServiceRegistrations: [PRE_SETTINGS_SHIELDED_TESTNET.walletServiceUrl],
+        },
+        featureToggles: WS_FLAG,
+      },
+      `dispatch:${types.TOKEN_FETCH_BALANCE_REQUESTED}`,
+    );
+
+    expect(HathorWalletServiceWallet.instances).toHaveLength(1);
+    expect(log).toContain('startReadOnly');
+    expect(registerShieldedCryptoProvider).not.toHaveBeenCalled();
+    expect(capabilityUpdates(dispatched)).toEqual([]);
+  });
+});
+
+describe('isPushNotificationEnabled', () => {
+  const run = async ({ networkSettings, featureToggles }) => {
+    const state = {
+      featureTogglesInitialized: true,
+      featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, ...featureToggles },
+      networkSettings,
+    };
+    return runSaga({ getState: () => state }, isPushNotificationEnabled).toPromise();
+  };
+  const PUSH_FLAG = { [PUSH_NOTIFICATION_FEATURE_TOGGLE]: true };
+
+  test.each([
+    ['mainnet', PRE_SETTINGS_MAINNET],
+    ['the public testnet', PRE_SETTINGS_TESTNET],
+  ])('follows the flag on %s', async (_label, networkSettings) => {
+    expect(await run({ networkSettings, featureToggles: PUSH_FLAG })).toBe(true);
+    expect(await run({ networkSettings, featureToggles: {} })).toBe(false);
+  });
+
+  test.each([
+    ['the preset', PRE_SETTINGS_SHIELDED_TESTNET],
+    ['a custom network', CUSTOM_SHIELDED_NETWORK],
+  ])('is off on the shielded testnet, %s, whatever the flag', async (_label, networkSettings) => {
+    expect(await run({ networkSettings, featureToggles: PUSH_FLAG })).toBe(false);
   });
 });
 
@@ -379,9 +653,19 @@ describe('isWalletServiceEnabled', () => {
     return { result, dispatched };
   }
 
-  test('keeps the shielded testnet on the fullnode facade, whatever the flag and URL', async () => {
+  test('follows the flag on the shielded testnet with a wallet-service URL', async () => {
     const { result, dispatched } = await run({
       networkSettings: CUSTOM_SHIELDED_NETWORK,
+      featureToggles: { [WALLET_SERVICE_FEATURE_TOGGLE]: true },
+    });
+
+    expect(result).toBe(true);
+    expect(dispatched).toEqual([]);
+  });
+
+  test('keeps the shielded testnet on the fullnode facade without a wallet-service URL', async () => {
+    const { result, dispatched } = await run({
+      networkSettings: { ...CUSTOM_SHIELDED_NETWORK, walletServiceUrl: '', walletServiceWsUrl: '' },
       featureToggles: { [WALLET_SERVICE_FEATURE_TOGGLE]: true },
     });
 

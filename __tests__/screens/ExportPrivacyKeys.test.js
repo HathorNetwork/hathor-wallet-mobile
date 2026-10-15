@@ -71,6 +71,22 @@ function fakeWallet({ live = capability('full') } = {}) {
   };
 }
 
+/**
+ * A wallet-service facade wallet: it has no getShieldedCapability, and the shielded keys its
+ * wallet-service registered at start() decide its capability.
+ */
+function fakeWalletServiceWallet({ shieldedEnabled = true } = {}) {
+  return {
+    isReady: () => true,
+    isShieldedEnabled: () => shieldedEnabled,
+    storage: {
+      shieldedCryptoProvider: {},
+      getSpendXPubKey: jest.fn(async () => SPEND_XPUB),
+      getScanXPrivKey: jest.fn(async () => SCAN_XPRIV),
+    },
+  };
+}
+
 let mounted = null;
 
 afterEach(async () => {
@@ -523,6 +539,27 @@ describe('ExportPrivacyKeys', () => {
     expect(texts()).toContain(NO_SHIELDED_KEYS);
     expect(titles()).not.toContain('Unlock private balance');
     expect(pinScreenCalls()).toEqual([]);
+  });
+
+  test('reads the keys of a wallet-service facade wallet whose wallet-service registered them', async () => {
+    const wallet = fakeWalletServiceWallet();
+    const { texts, enterPin } = await render({ wallet });
+
+    await enterPin();
+
+    expect(wallet.storage.getScanXPrivKey).toHaveBeenCalledWith(PIN);
+    expect(texts()).toEqual(expect.arrayContaining([SPEND_MASKED, SCAN_MASKED]));
+  });
+
+  test('stops before it decrypts on a wallet-service facade wallet without registered shielded keys', async () => {
+    const wallet = fakeWalletServiceWallet({ shieldedEnabled: false });
+    const { texts, enterPin } = await render({ wallet });
+
+    await enterPin();
+
+    expect(wallet.storage.getScanXPrivKey).not.toHaveBeenCalled();
+    expect(texts()).toContain(NO_SHIELDED_KEYS);
+    expect(texts()).not.toContain(SPEND_MASKED);
   });
 
   test.each([

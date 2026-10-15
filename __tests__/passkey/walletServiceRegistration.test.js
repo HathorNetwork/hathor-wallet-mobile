@@ -25,7 +25,7 @@ jest.mock('../../src/logger', () => {
 import { HathorWalletServiceWallet, config, errors as hathorErrors } from '@hathor/wallet-lib';
 import { STORE } from '../../src/store';
 import { logger } from '../../src/logger';
-import { WALLET_SERVICE_FEATURE_TOGGLE } from '../../src/constants';
+import { PRE_SETTINGS_SHIELDED_TESTNET, WALLET_SERVICE_FEATURE_TOGGLE } from '../../src/constants';
 import {
   completeWalletServiceRegistration,
   facadeSupportsExternalSigner,
@@ -130,6 +130,13 @@ describe('shouldRegisterOnWalletService', () => {
 
   test('never on a wallet-lib without facade signing', () => {
     expect(shouldRegisterOnWalletService(flagOn, NETWORK_SETTINGS)).toBe(false);
+  });
+
+  test('never on the shielded testnet, which would get the passkey seed\'s scan key', () => {
+    setFacadeSupport(true);
+    expect(shouldRegisterOnWalletService(flagOn, PRE_SETTINGS_SHIELDED_TESTNET)).toBe(false);
+    expect(walletServiceRegistrationForUnlock(flagOn, PRE_SETTINGS_SHIELDED_TESTNET))
+      .toBeUndefined();
   });
 });
 

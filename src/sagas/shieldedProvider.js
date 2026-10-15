@@ -22,7 +22,7 @@ const log = logger('shielded-provider');
  * this session. The failure goes to the log and to state.shielded.providerError, with no alert
  * and nothing sent to Sentry.
  *
- * @param {HathorWallet} wallet A fullnode-facade wallet, before start()
+ * @param {HathorWallet|HathorWalletServiceWallet} wallet A wallet of either facade, before start()
  */
 export function* registerShieldedCryptoProvider(wallet) {
   let failure;

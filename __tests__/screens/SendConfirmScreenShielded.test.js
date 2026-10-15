@@ -357,6 +357,67 @@ describe('SendConfirmScreen with private sends', () => {
     expect(texts()).toContain('Private transfers are not available for this wallet.');
   });
 
+  // A seed wallet on the shielded testnet's wallet-service facade: it has no getShieldedCapability,
+  // and the service registered its shielded keys at start().
+  const createWalletServiceWallet = ({ shieldedEnabled = true } = {}) => {
+    const wallet = createWallet();
+    delete wallet.getShieldedCapability;
+    delete wallet.unlockShieldedView;
+    wallet.isShieldedEnabled = jest.fn(() => shieldedEnabled);
+    wallet.storage = { name: 'wallet storage', shieldedCryptoProvider: { name: 'provider' } };
+    return wallet;
+  };
+
+  test.each([
+    [PRIVACY_MODE.HIDE_AMOUNT, 1],
+    [PRIVACY_MODE.PRIVATE, 2],
+  ])('builds a %s send on the wallet-service facade with the mode under its shielded key', async (privacyMode, shieldedMode) => {
+    const wallet = createWalletServiceWallet();
+    await render(
+      { address: SHIELDED, amount: 100n, token: HTR, privacyMode },
+      { wallet, useWalletService: true },
+    );
+
+    expect(mockSends).toHaveLength(1);
+    const { facade, options } = mockSends[0];
+    expect(facade).toBe('wallet-service');
+    expect(options).toEqual({
+      wallet,
+      outputs: [{ address: SHIELDED, value: 100n, token: HTR.uid, shielded: shieldedMode }],
+    });
+    // The facade ignores a shieldedMode key, and would send the output public.
+    expect('shieldedMode' in options.outputs[0]).toBe(false);
+  });
+
+  test('pays a private address in public on the wallet-service facade, with no mode', async () => {
+    const wallet = createWalletServiceWallet();
+    await render(
+      { address: SHIELDED, amount: 100n, token: HTR, privacyMode: PRIVACY_MODE.PUBLIC },
+      { wallet, useWalletService: true },
+    );
+
+    expect(mockSends).toHaveLength(1);
+    expect(mockSends[0].facade).toBe('wallet-service');
+    expect(mockSends[0].options).toEqual({
+      wallet,
+      outputs: [{ address: SHIELDED, value: 100n, token: HTR.uid }],
+    });
+  });
+
+  test.each([
+    [PRIVACY_MODE.HIDE_AMOUNT, 'Private transfers are not available for this wallet.'],
+    [PRIVACY_MODE.PUBLIC, 'This wallet does not support shielded addresses.'],
+  ])('refuses a %s send to a private address on the wallet-service facade when the service did not register its shielded keys', async (privacyMode, message) => {
+    const wallet = createWalletServiceWallet({ shieldedEnabled: false });
+    const { texts } = await render(
+      { address: SHIELDED, amount: 100n, token: HTR, privacyMode },
+      { wallet, useWalletService: true },
+    );
+
+    expect(mockSends).toEqual([]);
+    expect(texts()).toContain(message);
+  });
+
   test('waits for the wallet to be ready before it builds', async () => {
     const wallet = createWallet();
     let ready = false;

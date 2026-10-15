@@ -176,6 +176,15 @@ describe('AuditUnblindingRows', () => {
     expect(wallet.getTx).not.toHaveBeenCalled();
   });
 
+  test('renders nothing for a wallet without getShieldedUnblindingForTx, as on the wallet-service facade', async () => {
+    const wallet = fakeWallet();
+    delete wallet.getShieldedUnblindingForTx;
+    const { titles } = await render({ wallet });
+
+    expect(titles()).toEqual([]);
+    expect(wallet.getTx).not.toHaveBeenCalled();
+  });
+
   test('copies the values with the encoder of the wallet-lib build the app runs with', async () => {
     getUnblindingEncoder.mockImplementation(realGetUnblindingEncoder);
     const { titles, press } = await render();

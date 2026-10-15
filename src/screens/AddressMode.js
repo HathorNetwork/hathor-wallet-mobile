@@ -62,12 +62,10 @@ export default function AddressMode({ navigation }) {
   const currentMode = useSelector((state) => state.addressMode);
   const networkSettings = useSelector(getNetworkSettings);
   const { network } = networkSettings;
-  const useWalletService = useSelector((state) => state.useWalletService);
   const walletStartState = useSelector((state) => state.walletStartState);
   // The start keeps a wallet that gets a shielded chain in multi-address mode.
   const shieldedChainActive = shouldRegisterShieldedProvider({
     networkSettings,
-    useWalletService,
     isPasskeyWallet: STORE.isPasskeyWallet(),
   });
 
