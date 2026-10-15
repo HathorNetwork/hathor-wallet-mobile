@@ -30,7 +30,8 @@ import {
 import { STORE } from '../store';
 import { isShieldedNetwork } from '../shielded/gating';
 import { loadShieldedCryptoProvider } from '../shielded/cryptoProvider';
-import { supportsPasskeyShieldedWalletService } from './shieldedKeys';
+import { rememberPasskeyShieldedKeys, supportsPasskeyShieldedWalletService } from './shieldedKeys';
+import { isExpectedPasskeyError, PasskeyCancelledError, withPasskeyWords } from './passkeySigner';
 import { WALLET_SERVICE_FEATURE_TOGGLE } from '../constants';
 import { logger } from '../logger';
 
@@ -281,4 +282,66 @@ export function finishWalletServiceRegistration(registration) {
   }
   completeWalletServiceRegistration(registration)
     .catch((e) => log.error('Passkey wallet-service registration failed at unlock', e));
+}
+
+/**
+ * How long a network change waits for the registration: creating the wallet on a wallet-service can
+ * take up to a minute, and the network change shows a spinner while it waits.
+ */
+export const NETWORK_CHANGE_REGISTRATION_WAIT_MS = 15000;
+
+/**
+ * Register the passkey wallet on the wallet-service of the network it is switching to, before the
+ * wallet starts there, so that start already runs on the wallet-service facade. Without it a
+ * network change starts the wallet on the fullnode facade, and only the next unlock registers it.
+ *
+ * It runs one passkey ceremony, as an unlock does, only when the wallet should register on that
+ * wallet-service (shouldRegisterOnWalletService). The ceremony also derives the shielded keys
+ * again, as the unlock does. It waits for the registration up to waitMs; a registration still
+ * running then finishes in the background, and the wallet runs on the wallet-service facade from
+ * its next start.
+ * It never throws: when the user cancels the ceremony or the registration fails, the wallet starts
+ * on the fullnode facade, and the next unlock registers it.
+ *
+ * @param {Object} featureToggles `state.featureToggles`, read for the network switched to
+ * @param {Object} networkSettings The network settings switched to
+ * @param {number} [waitMs] How long to wait for the registration after the ceremony
+ * @returns {Promise<boolean>} Whether the wallet-service of that network knows the wallet now
+ */
+export async function registerOnNetworkChange(
+  featureToggles,
+  networkSettings,
+  waitMs = NETWORK_CHANGE_REGISTRATION_WAIT_MS,
+) {
+  if (!shouldRegisterOnWalletService(featureToggles, networkSettings)) {
+    return isWalletServiceRegistered(networkSettings?.walletServiceUrl);
+  }
+  let timer;
+  try {
+    const registration = await withPasskeyWords(async (words) => {
+      rememberPasskeyShieldedKeys(words);
+      return prepareWalletServiceRegistration(words, networkSettings);
+    });
+    // After the ceremony, as at unlock: it never holds the passkey lock while the wallet-service
+    // creates the wallet.
+    const completion = completeWalletServiceRegistration(registration);
+    const finished = await Promise.race([
+      completion.then(() => true),
+      new Promise((resolve) => { timer = setTimeout(() => resolve(false), waitMs); }),
+    ]);
+    if (!finished) {
+      log.warn('The passkey wallet-service registration is still running; the wallet starts on the '
+        + 'fullnode facade.');
+      completion.catch((e) => log.error('Passkey wallet-service registration failed at network change', e));
+    }
+  } catch (e) {
+    if (e instanceof PasskeyCancelledError || isExpectedPasskeyError(e)) {
+      log.log('Passkey wallet-service registration skipped at network change:', e.message);
+    } else {
+      log.error('Passkey wallet-service registration failed at network change', e);
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+  return isWalletServiceRegistered(networkSettings.walletServiceUrl);
 }
