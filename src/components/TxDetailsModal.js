@@ -24,7 +24,7 @@ import BackdropModal from './BackdropModal';
 import TxFeesRow from './TxFeesRow';
 import AuditUnblindingRows from './AuditUnblindingRows';
 import { getTxFees } from '../shielded/fees';
-import { SHRINK_TEXT_TO_FIT } from '../constants';
+import FitText from './FitText';
 
 class TxDetailsModal extends Component {
   /**
@@ -176,14 +176,9 @@ class BalanceView extends Component {
     const balanceStr = renderValue(tx.balance, isNFT, decimalPlaces, amountFormat);
     return (
       <View style={this.style.view}>
-        <Text
-          style={this.style.balance}
-          adjustsFontSizeToFit={SHRINK_TEXT_TO_FIT}
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
+        <FitText style={this.style.balance}>
           {`${balanceStr} ${this.props.token.symbol}`}
-        </Text>
+        </FitText>
         <Text style={this.style.description}>{description}</Text>
       </View>
     );

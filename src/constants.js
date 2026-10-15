@@ -21,7 +21,7 @@ import {
  * Whether Text may shrink its font to fit (adjustsFontSizeToFit). Only on iOS: on Android (React
  * Native 0.77, New Architecture) the shrink compounds on every layout pass and ignores
  * minimumFontScale, so the text ends up far smaller than it needs to be. There it stays on one
- * line and is truncated instead.
+ * line and is truncated instead, or shrinks with FitText.
  */
 export const SHRINK_TEXT_TO_FIT = Platform.OS === 'ios';
 
