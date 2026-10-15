@@ -159,7 +159,6 @@ describe('ReceiveMyAddress outside the shielded environment', () => {
       network: 'testnet',
       providerStatus: SHIELDED_PROVIDER_STATUS.UNREGISTERED,
     }],
-    ['the wallet runs on the wallet-service facade', { useWalletService: true }],
   ])('shows no new address, nor where it stands, while %s', async (_label, options) => {
     const { qrValues, text, buttonTitles, actions } = await render({
       ...options,

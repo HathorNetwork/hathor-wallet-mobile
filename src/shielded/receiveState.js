@@ -7,6 +7,7 @@
 
 import { t } from 'ttag';
 import { ErrorMessages, errors } from '@hathor/wallet-lib';
+import { isUnlockableLock } from './gating';
 
 const {
   SHIELDED_LOCKED,
@@ -60,15 +61,27 @@ export const SHIELDED_RECEIVE_INITIAL_STATE = {
 };
 
 /**
- * The lock cause of a stored scan key that no PIN can unlock.
- */
-const CORRUPT_KEY_CAUSE = 'corrupt-key';
-
-/**
  * The start of the message wallet-lib throws for a current shielded address while the shielded
  * addresses aren't loaded.
  */
 const SHIELDED_ADDRESS_NOT_LOADED = /^Current shielded address is not loaded/;
+
+/**
+ * The start of the wallet-service facade's message for a wallet the service handed no unused
+ * shielded address.
+ */
+const NO_UNUSED_SHIELDED_ADDRESS = /^The wallet-service has no unused shielded address/;
+
+/**
+ * The start of the wallet-service facade's message for a shielded address asked of a wallet in
+ * single-address mode.
+ */
+const SHIELDED_SINGLE_ADDRESS = /^Shielded addresses are not supported in single-address mode/;
+
+/**
+ * The reason of a wallet in single-address mode, which gives out no shielded address.
+ */
+export const RECEIVE_REASON_SINGLE_ADDRESS = 'single-address';
 
 /**
  * The receive state a shielded capability gives, or null when the wallet gives out its current
@@ -77,8 +90,8 @@ const SHIELDED_ADDRESS_NOT_LOADED = /^Current shielded address is not loaded/;
  *
  * - 'none' before the wallet starts (reason 'not-started'): loading;
  * - 'none' for any other reason, such as 'no-provider': unavailable, with that reason;
- * - 'watch': locked, with the lock cause. The cause 'corrupt-key' is unavailable instead, as no
- *   PIN can unlock that key;
+ * - 'watch': locked, with the lock cause. The causes 'corrupt-key' and 'key-mismatch' are
+ *   unavailable instead, as no unlock fixes them (see isUnlockableLock);
  * - 'view' or 'full' without canReceive: unavailable.
  *
  * @param {Object|null} capability The wallet's IShieldedCapability
@@ -95,9 +108,9 @@ export function receiveStateFromCapability(capability) {
       : { status: SHIELDED_RECEIVE_STATUS.UNAVAILABLE, reason: RECEIVE_REASON_NOT_WATCHED };
   }
   if (level === 'watch') {
-    return cause === CORRUPT_KEY_CAUSE
-      ? { status: SHIELDED_RECEIVE_STATUS.UNAVAILABLE, reason: cause }
-      : { status: SHIELDED_RECEIVE_STATUS.LOCKED, reason: cause };
+    return isUnlockableLock(capability)
+      ? { status: SHIELDED_RECEIVE_STATUS.LOCKED, reason: cause }
+      : { status: SHIELDED_RECEIVE_STATUS.UNAVAILABLE, reason: cause };
   }
   if (reason === 'not-started') {
     return { status: SHIELDED_RECEIVE_STATUS.LOADING, reason: null };
@@ -114,7 +127,11 @@ export function receiveStateFromCapability(capability) {
  *   loading;
  * - any other ShieldedKeyError: unavailable, with its code;
  * - the plain Error 'Current shielded address is not loaded…', while the shielded addresses
- *   aren't loaded: loading.
+ *   aren't loaded: loading;
+ * - on the wallet-service facade, the WalletError of a wallet the service handed no unused
+ *   shielded address: unavailable, as an address that couldn't be read;
+ * - on the wallet-service facade, the WalletError of a wallet in single-address mode:
+ *   unavailable.
  *
  * @param {unknown} error
  * @returns {{ status: string, reason: string|null }|null}
@@ -132,6 +149,12 @@ export function receiveStateFromError(error) {
   }
   if (error instanceof Error && SHIELDED_ADDRESS_NOT_LOADED.test(error.message)) {
     return { status: SHIELDED_RECEIVE_STATUS.LOADING, reason: null };
+  }
+  if (error instanceof Error && NO_UNUSED_SHIELDED_ADDRESS.test(error.message)) {
+    return { status: SHIELDED_RECEIVE_STATUS.UNAVAILABLE, reason: RECEIVE_REASON_ERROR };
+  }
+  if (error instanceof Error && SHIELDED_SINGLE_ADDRESS.test(error.message)) {
+    return { status: SHIELDED_RECEIVE_STATUS.UNAVAILABLE, reason: RECEIVE_REASON_SINGLE_ADDRESS };
   }
   return null;
 }

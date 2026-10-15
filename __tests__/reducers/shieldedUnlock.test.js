@@ -34,6 +34,7 @@ describe('the progress of an unlock or a retry', () => {
     expect(SHIELDED_UNLOCK_INITIAL_STATE).toEqual({
       status: SHIELDED_UNLOCK_PROGRESS.IDLE,
       errorCode: null,
+      message: null,
     });
   });
 
@@ -44,10 +45,24 @@ describe('the progress of an unlock or a retry', () => {
     expect(decoding.shielded.unlock).toEqual({
       status: SHIELDED_UNLOCK_PROGRESS.DECODING,
       errorCode: null,
+      message: null,
     });
     expect(failed().shielded.unlock).toEqual({
       status: SHIELDED_UNLOCK_PROGRESS.FAILED,
       errorCode: 'shielded-wrong-pin',
+      message: null,
+    });
+  });
+
+  test('records what the user is told about a failure', () => {
+    const state = reducer(getInitialState(), shieldedUnlockStatusUpdate({
+      status: SHIELDED_UNLOCK_PROGRESS.FAILED,
+      message: 'This passkey opens a different wallet.',
+    }));
+    expect(state.shielded.unlock).toEqual({
+      status: SHIELDED_UNLOCK_PROGRESS.FAILED,
+      errorCode: null,
+      message: 'This passkey opens a different wallet.',
     });
   });
 
@@ -58,7 +73,7 @@ describe('the progress of an unlock or a retry', () => {
     }));
     expect(next.shielded).toEqual({
       ...state.shielded,
-      unlock: { status: SHIELDED_UNLOCK_PROGRESS.UNLOCKING, errorCode: null },
+      unlock: { status: SHIELDED_UNLOCK_PROGRESS.UNLOCKING, errorCode: null, message: null },
     });
   });
 

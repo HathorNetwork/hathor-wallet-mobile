@@ -11,17 +11,20 @@ import {
   PRE_SETTINGS_MAINNET,
   PRE_SETTINGS_SHIELDED_TESTNET,
   PRE_SETTINGS_TESTNET,
+  SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   SHIELDED_PROVIDER_STATUS,
 } from '../../src/constants';
 import {
   getShieldedFeatureToggle,
+  getShieldedNetworkPresetFeatureToggle,
   isShieldedAvailable,
   isShieldedEnabled,
   isShieldedEnvironment,
   isShieldedNetwork,
   isShieldedNetworkName,
   selectShieldedCapability,
+  isUnlockableLock,
   shouldRegisterShieldedProvider,
 } from '../../src/shielded/gating';
 
@@ -40,13 +43,13 @@ const customNetwork = (fullNetwork) => ({
 });
 
 describe('the Shielded Testnet preset', () => {
-  test('names the shielded testnet and has no wallet-service', () => {
+  test('names the shielded testnet and its wallet-service', () => {
     expect(PRE_SETTINGS_SHIELDED_TESTNET).toEqual({
       stage: 'testnet',
       network: 'testnet',
       fullNetwork: 'testnet-shielded-outputs',
-      walletServiceUrl: null,
-      walletServiceWsUrl: null,
+      walletServiceUrl: 'https://wallet-service.shielded-outputs.testnet.hathor.network/',
+      walletServiceWsUrl: 'wss://ws.wallet-service.shielded-outputs.testnet.hathor.network/',
       nodeUrl: 'https://node1.shielded-outputs.testnet.hathor.network/v1a/',
       explorerUrl: 'https://explorer.shielded-outputs.testnet.hathor.network/',
       explorerServiceUrl: 'https://explorer-service.shielded-outputs.testnet.hathor.network/',
@@ -112,6 +115,31 @@ describe('getShieldedFeatureToggle', () => {
   });
 });
 
+describe('getShieldedNetworkPresetFeatureToggle', () => {
+  test('is its own rollout flag, off by default', () => {
+    expect(SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE).toBe('shielded-outputs-network.rollout');
+    expect(FEATURE_TOGGLE_DEFAULTS[SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]).toBe(false);
+    expect(getShieldedNetworkPresetFeatureToggle({
+      featureToggles: { ...FEATURE_TOGGLE_DEFAULTS },
+    })).toBe(false);
+    expect(getShieldedNetworkPresetFeatureToggle({ featureToggles: {} })).toBe(false);
+  });
+
+  // The two flags are targeted apart: the preset has to show on the networks the user switches
+  // from, where the shielded outputs flag is off.
+  test('follows its own flag only, not the shielded outputs flag', () => {
+    expect(getShieldedNetworkPresetFeatureToggle({
+      featureToggles: { [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: true },
+    })).toBe(true);
+    expect(getShieldedNetworkPresetFeatureToggle({
+      featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: true },
+    })).toBe(false);
+    expect(getShieldedFeatureToggle({
+      featureToggles: { [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: true },
+    })).toBe(false);
+  });
+});
+
 describe('shouldRegisterShieldedProvider', () => {
   const seedWallet = { useWalletService: false, isPasskeyWallet: false };
 
@@ -137,17 +165,73 @@ describe('shouldRegisterShieldedProvider', () => {
     }
   });
 
-  test('never registers on the wallet-service facade or for a passkey wallet', () => {
+  test('registers for a seed wallet on the wallet-service facade on the shielded testnet', () => {
     expect(shouldRegisterShieldedProvider({
       networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
       useWalletService: true,
       isPasskeyWallet: false,
+    })).toBe(true);
+  });
+
+  test('never registers for a passkey wallet without shielded keys, on either facade', () => {
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      useWalletService: true,
+      isPasskeyWallet: true,
     })).toBe(false);
     expect(shouldRegisterShieldedProvider({
       networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
       useWalletService: false,
       isPasskeyWallet: true,
     })).toBe(false);
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      useWalletService: false,
+      isPasskeyWallet: true,
+      passkeyShieldedKeys: false,
+    })).toBe(false);
+  });
+
+  // A passkey wallet gets its shielded keys from a passkey ceremony before start(): it decides by
+  // the shielded xpubs it stores.
+  test('registers for a passkey wallet with shielded keys, on either facade', () => {
+    const passkeyWallet = { isPasskeyWallet: true, passkeyShieldedKeys: true };
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      useWalletService: false,
+      ...passkeyWallet,
+    })).toBe(true);
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      useWalletService: true,
+      ...passkeyWallet,
+    })).toBe(true);
+    expect(shouldRegisterShieldedProvider({
+      networkSettings: PRE_SETTINGS_TESTNET,
+      useWalletService: false,
+      ...passkeyWallet,
+    })).toBe(false);
+  });
+});
+
+describe('isUnlockableLock', () => {
+  const watch = (cause) => ({ level: 'watch', reason: 'locked', cause });
+
+  test.each(['not-supplied', 'wrong-pin', 'error'])('holds for a lock with the cause %s', (cause) => {
+    expect(isUnlockableLock(watch(cause))).toBe(true);
+  });
+
+  test.each(['corrupt-key', 'key-mismatch'])('fails for a lock with the cause %s', (cause) => {
+    expect(isUnlockableLock(watch(cause))).toBe(false);
+  });
+
+  test.each([
+    ['none', { level: 'none', reason: 'no-provider', cause: null }],
+    ['view', { level: 'view', reason: 'no-spend-authority', cause: null }],
+    ['full', { level: 'full', reason: null, cause: null }],
+    ['no capability', null],
+  ])('fails at %s', (_label, capability) => {
+    expect(isUnlockableLock(capability)).toBe(false);
   });
 });
 
@@ -193,7 +277,6 @@ describe('the shielded gates', () => {
   test.each([
     ['the flag is off', { featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false } }],
     ['Unleash does not return the flag', { featureToggles: {} }],
-    ['the wallet runs on the wallet-service facade', { useWalletService: true }],
     ['the node reports the public testnet', { fullNodeNetworkName: 'testnet-india' }],
     ['the node reports mainnet', { fullNodeNetworkName: 'mainnet' }],
     ['the network name is not known yet', { fullNodeNetworkName: null }],
@@ -204,6 +287,13 @@ describe('the shielded gates', () => {
     expect(isShieldedEnvironment(state(overrides))).toBe(false);
     expect(isShieldedAvailable(state(overrides))).toBe(false);
     expect(isShieldedEnabled(state(overrides))).toBe(false);
+  });
+
+  test('all pass for a seed wallet on the wallet-service facade on the shielded testnet', () => {
+    const onWalletService = state({ useWalletService: true });
+    expect(isShieldedEnvironment(onWalletService)).toBe(true);
+    expect(isShieldedAvailable(onWalletService)).toBe(true);
+    expect(isShieldedEnabled(onWalletService)).toBe(true);
   });
 
   test('only the environment passes when the provider failed its self-test', () => {

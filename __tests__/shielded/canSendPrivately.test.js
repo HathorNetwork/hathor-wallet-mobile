@@ -54,6 +54,13 @@ describe('canSendPrivately', () => {
     expect(canSendPrivately(state({ shielded: { capability: corrupt } }))).toBe(false);
   });
 
+  // A passkey wallet started with a scan key that isn't the key of its stored scan xpub: the same
+  // passkey gives the same key again.
+  test('fails for a locked wallet whose scan key given at start does not match', () => {
+    const mismatch = capability('watch', { reason: 'locked', cause: 'key-mismatch' });
+    expect(canSendPrivately(state({ shielded: { capability: mismatch } }))).toBe(false);
+  });
+
   test.each([
     ['view', capability('view', { reason: 'no-spend-authority' })],
     ['none, with keys that do not match', capability('none', { reason: 'integrity', cause: 'key-mismatch' })],
@@ -62,13 +69,16 @@ describe('canSendPrivately', () => {
     expect(canSendPrivately(state({ shielded: { capability: at } }))).toBe(false);
   });
 
+  test('passes at level full on the wallet-service facade', () => {
+    expect(canSendPrivately(state({ useWalletService: true }))).toBe(true);
+  });
+
   test('fails before the wallet reports a capability', () => {
     expect(canSendPrivately(state({ shielded: { capability: null } }))).toBe(false);
   });
 
   test.each([
     ['the flag is off', { featureToggles: { [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false } }],
-    ['the wallet runs on the wallet-service facade', { useWalletService: true }],
     ['the node reports another network', { fullNodeNetworkName: 'testnet-india' }],
     ['the provider failed its self-test', {
       shielded: { providerStatus: SHIELDED_PROVIDER_STATUS.FAILED },

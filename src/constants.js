@@ -233,14 +233,20 @@ export const SINGLE_ADDRESS_FEATURE_TOGGLE = 'single-address-mobile.rollout';
 export const PASSKEY_ONBOARDING_FEATURE_TOGGLE = 'passkey-onboarding.rollout';
 export const AMOUNT_FORMAT_FEATURE_TOGGLE = 'amount-format-mobile.rollout';
 /**
- * Shows the shielded outputs UI, the Shielded Testnet preset included. It is off by default: the
- * Unleash proxy leaves out the flags it doesn't enable, so a flag it doesn't return reads as off,
- * and Unleash turns it on only where it targets it, such as the `testnet-shielded-outputs`
- * network. The UI's own gates also keep the rest of the shielded UI to the shielded testnet. It
- * doesn't decide where the shielded crypto provider is registered: on the shielded testnet it is
- * registered either way.
+ * Shows the shielded outputs UI. It is off by default: the Unleash proxy leaves out the flags it
+ * doesn't enable, so a flag it doesn't return reads as off, and Unleash turns it on only where it
+ * targets it, such as the `testnet-shielded-outputs` network. The UI's own gates also keep the
+ * shielded UI to the shielded testnet. It doesn't decide where the shielded crypto provider is
+ * registered: on the shielded testnet it is registered either way.
  */
 export const SHIELDED_OUTPUTS_FEATURE_TOGGLE = 'shielded-outputs.rollout';
+/**
+ * Shows the Shielded Testnet preset in Network Settings, and nothing else. It is separate from
+ * SHIELDED_OUTPUTS_FEATURE_TOGGLE because the app reads flags with the network it is on: a flag
+ * targeted at the shielded testnet is off on the networks the user switches from, so it can't
+ * also show the way there. Off by default, like every flag Unleash doesn't return.
+ */
+export const SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE = 'shielded-outputs-network.rollout';
 
 /**
  * Default feature toggle values.
@@ -263,6 +269,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [PASSKEY_ONBOARDING_FEATURE_TOGGLE]: false,
   [AMOUNT_FORMAT_FEATURE_TOGGLE]: false,
   [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false,
+  [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: false,
 };
 
 /**
@@ -331,7 +338,8 @@ export const PRE_SETTINGS_MAINNET = {
 /**
  * The shielded testnet: a testnet whose nodes report the network name
  * 'testnet-shielded-outputs'. It shares its genesis with the public testnet, so the network name
- * is what tells them apart. It has no wallet-service.
+ * is what tells them apart. Its wallet-service has shielded support: a seed wallet that starts on
+ * it registers its shielded keys there.
  */
 export const STAGE_SHIELDED_TESTNET = 'testnet';
 export const NETWORK_SHIELDED_TESTNET = 'testnet';
@@ -340,13 +348,15 @@ export const NODE_SERVER_SHIELDED_TESTNET_URL = 'https://node1.shielded-outputs.
 export const EXPLORER_SHIELDED_TESTNET_URL = 'https://explorer.shielded-outputs.testnet.hathor.network/';
 export const EXPLORER_SERVICE_SHIELDED_TESTNET_URL = 'https://explorer-service.shielded-outputs.testnet.hathor.network/';
 export const TX_MINING_SERVICE_SHIELDED_TESTNET_URL = 'https://txmining.shielded-outputs.testnet.hathor.network/';
+export const WALLET_SERVICE_SHIELDED_TESTNET_BASE_URL = 'https://wallet-service.shielded-outputs.testnet.hathor.network/';
+export const WALLET_SERVICE_SHIELDED_TESTNET_BASE_WS_URL = 'wss://ws.wallet-service.shielded-outputs.testnet.hathor.network/';
 
 export const PRE_SETTINGS_SHIELDED_TESTNET = {
   stage: STAGE_SHIELDED_TESTNET,
   network: NETWORK_SHIELDED_TESTNET,
   fullNetwork: FULL_NETWORK_SHIELDED_TESTNET,
-  walletServiceUrl: null,
-  walletServiceWsUrl: null,
+  walletServiceUrl: WALLET_SERVICE_SHIELDED_TESTNET_BASE_URL,
+  walletServiceWsUrl: WALLET_SERVICE_SHIELDED_TESTNET_BASE_WS_URL,
   nodeUrl: NODE_SERVER_SHIELDED_TESTNET_URL,
   explorerUrl: EXPLORER_SHIELDED_TESTNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_SHIELDED_TESTNET_URL,
@@ -485,8 +495,8 @@ export const TOKEN_SWAP_SLIPPAGE = 0.5;
 
 /**
  * Where the shielded crypto provider of the running wallet stands:
- * - UNREGISTERED: no provider was registered, as on every network but the shielded testnet, on
- *   the wallet-service facade and for passkey wallets;
+ * - UNREGISTERED: no provider was registered, as on every network but the shielded testnet and
+ *   for passkey wallets without shielded keys;
  * - READY: it passed its self-test and was registered before start();
  * - FAILED: it failed to load or failed its self-test, so the wallet runs transparent-only.
  */
@@ -497,8 +507,8 @@ export const SHIELDED_PROVIDER_STATUS = {
 };
 
 /**
- * What asks to unlock the shielded view key of the running wallet with a PIN entry: the lock
- * screen, the user from a locked private balance, or a private send.
+ * What asks to unlock the shielded view key of the running wallet with a PIN entry, or a passkey
+ * ceremony: the lock screen, the user from a locked private balance, or a private send.
  */
 export const SHIELDED_UNLOCK_SOURCE = {
   LOCK_SCREEN: 'lock-screen',

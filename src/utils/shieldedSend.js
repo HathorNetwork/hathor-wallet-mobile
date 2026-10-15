@@ -54,26 +54,35 @@ export function privacyModeToShieldedMode(privacyMode) {
 }
 
 /**
- * The output that pays the recipient of a send. wallet-lib takes an output with a shieldedMode
- * key as a shielded one, whatever its value, so a public output has no such key: one that
- * holds undefined fails the build ("Invalid shieldedMode 'undefined'").
+ * The output that pays the recipient of a send. Each facade takes the shielded mode under its
+ * own key: the fullnode facade's SendTransaction under shieldedMode, the wallet-service facade's
+ * SendTransactionWalletService under shielded. The wallet-service facade ignores a shieldedMode
+ * key, and would send the output public.
+ *
+ * The fullnode facade takes an output with a shieldedMode key as a shielded one, whatever its
+ * value, so a public output has no such key: one that holds undefined fails the build ("Invalid
+ * shieldedMode 'undefined'"). A public output has no shielded key either.
  *
  * @param {Object} params
  * @param {string} params.address The recipient
  * @param {bigint} params.amount In base units
  * @param {string} params.tokenUid
  * @param {number|null} params.shieldedMode From privacyModeToShieldedMode
- * @returns {{ address: string, value: bigint, token: string, shieldedMode?: number }}
+ * @param {boolean} [params.walletService] Whether the send is built on the wallet-service facade
+ * @returns {{
+ *   address: string, value: bigint, token: string, shieldedMode?: number, shielded?: number,
+ * }}
  */
 export function buildSendOutput({
   address,
   amount,
   tokenUid,
   shieldedMode,
+  walletService = false,
 }) {
   const output = { address, value: amount, token: tokenUid };
   if (shieldedMode !== null && shieldedMode !== undefined) {
-    output.shieldedMode = shieldedMode;
+    output[walletService ? 'shielded' : 'shieldedMode'] = shieldedMode;
   }
   return output;
 }
@@ -117,8 +126,8 @@ export function waitForWalletReady(wallet) {
  *   shieldedMode the prepared tx gives them;
  * - network: the rest of the total;
  * - privateOutputs: how many shielded outputs it has.
- * A send without shielded outputs, as every send of the wallet-service facade, pays no privacy
- * fee.
+ * A send without shielded outputs pays no privacy fee. On both facades a send of a wallet with
+ * shielded keys is built by the same engine, which gives fullTxData its shielded outputs.
  *
  * @param {Object} sendTx A SendTransaction or SendTransactionWalletService, prepared
  * @returns {{ total: bigint, privacy: bigint, network: bigint, privateOutputs: number }}
@@ -179,6 +188,11 @@ const UNPAID_PRIVACY_FEE = [
 const SHIELDED_CHANGE_FEE = 'The amount includes the fee to shield the change';
 
 const SHIELDED_LOCKED = 'shielded-locked';
+const SHIELDED_NO_KEYS = 'shielded-no-keys';
+
+// The wallet-service facade's message for a tx proposal that spends private funds, which a
+// wallet-service that doesn't accept them yet refuses.
+const SHIELDED_INPUTS_UNSUPPORTED = 'The wallet-service does not accept shielded inputs yet';
 
 /**
  * Whether the error is of a wallet-lib error class. The class may be missing from the wallet-lib
@@ -205,6 +219,11 @@ function isErrorOf(error, ErrorClass) {
 export function mapShieldedSendError(error) {
   if (isErrorOf(error, errors.ShieldedKeyError) && error.errorCode === SHIELDED_LOCKED) {
     return t`Your private balance is locked. Unlock it to send privately.`;
+  }
+  // The wallet-service facade refuses a private send of a wallet whose shielded keys it didn't
+  // register.
+  if (isErrorOf(error, errors.ShieldedKeyError) && error.errorCode === SHIELDED_NO_KEYS) {
+    return t`Private transfers are not available for this wallet.`;
   }
   const message = typeof error?.message === 'string' ? error.message : '';
   const changeUnavailable = t`This wallet cannot receive the private change this transaction needs.`;
@@ -233,6 +252,9 @@ export function mapShieldedSendError(error) {
   }
   if (message.startsWith("The wallet's shielded change address could not be resolved")) {
     return t`The private change of this transaction could not be prepared. Try again.`;
+  }
+  if (message.startsWith(SHIELDED_INPUTS_UNSUPPORTED)) {
+    return t`Private transfers are not available for this wallet.`;
   }
   return null;
 }

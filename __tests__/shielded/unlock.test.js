@@ -10,6 +10,8 @@ import { errors } from '@hathor/wallet-lib';
 import { SHIELDED_UNLOCK_STATUS, unlockShieldedViewIfLocked } from '../../src/shielded/unlock';
 
 const PIN = '123456';
+const PIN_INPUT = { pinCode: PIN };
+const SCAN_KEY_INPUT = { scanXPrivKey: 'xprv-scan-key' };
 const capability = (level, overrides = {}) => ({
   level,
   reason: level === 'full' ? null : 'locked',
@@ -36,7 +38,7 @@ describe('unlockShieldedViewIfLocked', () => {
   test.each(['none', 'view', 'full'])('leaves a wallet at level %s as it is', async (level) => {
     const wallet = fakeWallet(level);
 
-    const result = await unlockShieldedViewIfLocked(wallet, PIN);
+    const result = await unlockShieldedViewIfLocked(wallet, PIN_INPUT);
 
     expect(result).toEqual({
       status: SHIELDED_UNLOCK_STATUS.SKIPPED,
@@ -45,13 +47,28 @@ describe('unlockShieldedViewIfLocked', () => {
     expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
   });
 
-  test('skips a wallet-service facade wallet, which has no shielded capability', async () => {
-    const wallet = { unlockShieldedView: jest.fn() };
+  test('skips a wallet-service facade wallet, whose scan key start() unlocked', async () => {
+    const wallet = {
+      isReady: () => true,
+      isShieldedEnabled: () => true,
+      storage: { shieldedCryptoProvider: {} },
+    };
+
+    const result = await unlockShieldedViewIfLocked(wallet, PIN_INPUT);
+
+    expect(result).toEqual({
+      status: SHIELDED_UNLOCK_STATUS.SKIPPED,
+      capability: expect.objectContaining({ level: 'full' }),
+    });
+  });
+
+  test('skips a wallet without unlockShieldedView, whatever its capability', async () => {
+    const wallet = fakeWallet('watch', { cause: 'not-supplied' });
+    delete wallet.unlockShieldedView;
 
     const result = await unlockShieldedViewIfLocked(wallet, PIN);
 
-    expect(result).toEqual({ status: SHIELDED_UNLOCK_STATUS.SKIPPED, capability: null });
-    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    expect(result.status).toBe(SHIELDED_UNLOCK_STATUS.SKIPPED);
   });
 
   test.each(['not-supplied', 'wrong-pin', 'error'])(
@@ -59,7 +76,7 @@ describe('unlockShieldedViewIfLocked', () => {
     async (cause) => {
       const wallet = fakeWallet('watch', { cause });
 
-      const result = await unlockShieldedViewIfLocked(wallet, PIN);
+      const result = await unlockShieldedViewIfLocked(wallet, PIN_INPUT);
 
       expect(wallet.unlockShieldedView).toHaveBeenCalledWith({ pinCode: PIN });
       expect(result.status).toBe(SHIELDED_UNLOCK_STATUS.UNLOCKED);
@@ -68,17 +85,32 @@ describe('unlockShieldedViewIfLocked', () => {
     },
   );
 
-  test('leaves a wallet locked with a corrupt key as it is: no PIN can unlock it', async () => {
-    const wallet = fakeWallet('watch', { cause: 'corrupt-key' });
+  // A passkey wallet unlocks with the scan key a passkey ceremony derived.
+  test('unlocks a locked wallet with the scan key it is given', async () => {
+    const wallet = fakeWallet('watch', { cause: 'not-supplied' });
 
-    const result = await unlockShieldedViewIfLocked(wallet, PIN);
+    const result = await unlockShieldedViewIfLocked(wallet, SCAN_KEY_INPUT);
 
-    expect(result).toEqual({
-      status: SHIELDED_UNLOCK_STATUS.SKIPPED,
-      capability: capability('watch', { cause: 'corrupt-key' }),
-    });
-    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    expect(wallet.unlockShieldedView).toHaveBeenCalledWith(SCAN_KEY_INPUT);
+    expect(result.status).toBe(SHIELDED_UNLOCK_STATUS.UNLOCKED);
   });
+
+  // 'key-mismatch': the scan key given at start isn't the key of the stored scan xpub, and the
+  // same root gives the same key again.
+  test.each(['corrupt-key', 'key-mismatch'])(
+    'leaves a wallet locked with the cause %s as it is: no unlock can fix it',
+    async (cause) => {
+      const wallet = fakeWallet('watch', { cause });
+
+      const result = await unlockShieldedViewIfLocked(wallet, SCAN_KEY_INPUT);
+
+      expect(result).toEqual({
+        status: SHIELDED_UNLOCK_STATUS.SKIPPED,
+        capability: capability('watch', { cause }),
+      });
+      expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    },
+  );
 
   test.each([
     'shielded-wrong-pin',
@@ -92,7 +124,7 @@ describe('unlockShieldedViewIfLocked', () => {
       new errors.ShieldedKeyError(errorCode, 'The shielded view key was not unlocked.'),
     );
 
-    expect(await unlockShieldedViewIfLocked(wallet, PIN))
+    expect(await unlockShieldedViewIfLocked(wallet, PIN_INPUT))
       .toEqual({ status: SHIELDED_UNLOCK_STATUS.FAILED, errorCode });
   });
 
@@ -101,6 +133,6 @@ describe('unlockShieldedViewIfLocked', () => {
     const storeError = new Error('store read failed');
     wallet.unlockShieldedView.mockRejectedValue(storeError);
 
-    await expect(unlockShieldedViewIfLocked(wallet, PIN)).rejects.toBe(storeError);
+    await expect(unlockShieldedViewIfLocked(wallet, PIN_INPUT)).rejects.toBe(storeError);
   });
 });

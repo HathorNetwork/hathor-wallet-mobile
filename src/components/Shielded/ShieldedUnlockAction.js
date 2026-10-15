@@ -21,12 +21,15 @@ import {
   selectShieldedUnlock,
 } from '../../shielded/unlockState';
 import { COLORS } from '../../styles/themes';
+import { STORE } from '../../store';
 
 /**
  * Unlocks a locked private balance: it asks for the PIN, and the shielded saga unlocks the
  * wallet's scan key with it. While an unlock or a retry decodes the private outputs, it shows a
  * spinner instead, and it says when the last unlock failed. The PIN goes from the PIN screen's
- * callback to the request's payload, never to the navigation params or the redux state.
+ * callback to the request's payload, never to the navigation params or the redux state. A
+ * passkey wallet has no PIN: the request goes without one, and the saga runs a passkey ceremony,
+ * whose failure can say why (e.g. a passkey that opens another wallet).
  *
  * @param {Object} props
  * @param {{ navigate: Function }} props.navigation Opens the PIN screen
@@ -44,6 +47,10 @@ export default function ShieldedUnlockAction({ navigation }) {
   }
 
   const askForPin = () => {
+    if (STORE.isPasskeyWallet()) {
+      dispatch(shieldedViewUnlockRequested({ source: SHIELDED_UNLOCK_SOURCE.USER }));
+      return;
+    }
     navigation.navigate('PinScreen', {
       cb: (pinCode) => dispatch(shieldedViewUnlockRequested({
         pinCode,
@@ -58,7 +65,9 @@ export default function ShieldedUnlockAction({ navigation }) {
   return (
     <View style={styles.wrapper}>
       {unlock.status === SHIELDED_UNLOCK_PROGRESS.FAILED && (
-        <Text style={styles.failed}>{t`Could not unlock your private balance.`}</Text>
+        <Text style={styles.failed}>
+          {unlock.message ?? t`Could not unlock your private balance.`}
+        </Text>
       )}
       <SimpleButton
         title={t`Unlock private balance`}

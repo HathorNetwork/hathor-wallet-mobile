@@ -28,6 +28,9 @@ import {
   errors as hathorErrors,
 } from '@hathor/wallet-lib';
 import { STORE } from '../store';
+import { isShieldedNetwork } from '../shielded/gating';
+import { loadShieldedCryptoProvider } from '../shielded/cryptoProvider';
+import { supportsPasskeyShieldedWalletService } from './shieldedKeys';
 import { WALLET_SERVICE_FEATURE_TOGGLE } from '../constants';
 import { logger } from '../logger';
 
@@ -133,6 +136,10 @@ export function markWalletServiceRegistered(walletServiceUrl, registered = true)
 /**
  * Whether a passkey wallet should register on the wallet-service now: the wallet-service flag is
  * on, there is a wallet-service URL, the bundled lib supports the facade, and it isn't registered.
+ * On the shielded testnet, only when the bundled lib can also run a passkey wallet with shielded
+ * keys on the facade (supportsPasskeyShieldedWalletService): registering from the words hands the
+ * passkey seed's scan key to the wallet-service, which then counts private funds that the app
+ * could otherwise neither show nor spend.
  *
  * @param {Object} featureToggles `state.featureToggles`
  * @param {Object} networkSettings `state.networkSettings`
@@ -140,6 +147,7 @@ export function markWalletServiceRegistered(walletServiceUrl, registered = true)
 export function shouldRegisterOnWalletService(featureToggles, networkSettings) {
   return get(featureToggles, WALLET_SERVICE_FEATURE_TOGGLE, false)
     && !!networkSettings?.walletServiceUrl
+    && (!isShieldedNetwork(networkSettings) || supportsPasskeyShieldedWalletService())
     && facadeSupportsExternalSigner()
     && !isWalletServiceRegistered(networkSettings.walletServiceUrl);
 }
@@ -153,7 +161,11 @@ export function shouldRegisterOnWalletService(featureToggles, networkSettings) {
  *
  * @param {string} words 24 seed words derived from the passkey
  * @param {Object} networkSettings `state.networkSettings`
- * @returns {{ tempWallet: HathorWalletServiceWallet, walletServiceUrl: string }}
+ * @returns {{
+ *   tempWallet: HathorWalletServiceWallet,
+ *   walletServiceUrl: string,
+ *   shieldedNetwork: boolean,
+ * }}
  */
 export function prepareWalletServiceRegistration(words, networkSettings) {
   config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
@@ -163,18 +175,43 @@ export function prepareWalletServiceRegistration(words, networkSettings) {
     network: new Network(networkSettings.network),
     enableWs: false,
   });
-  return { tempWallet, walletServiceUrl: networkSettings.walletServiceUrl };
+  return {
+    tempWallet,
+    walletServiceUrl: networkSettings.walletServiceUrl,
+    shieldedNetwork: isShieldedNetwork(networkSettings),
+  };
 }
 
 /**
  * Second half of a registration: start the prepared temp wallet, which creates the passkey wallet
  * on the wallet-service (`wallet/init`), record it, and stop the temp wallet.
  *
- * @param {{ tempWallet: HathorWalletServiceWallet, walletServiceUrl: string }} registration
+ * On the shielded testnet the start also registers the shielded keys, when the wallet-service
+ * supports them. As for a seed wallet, it never does without a working shielded crypto provider:
+ * the service would count private funds the app can't spend. Then nothing is registered, and the
+ * wallet stays on the fullnode facade. Nor is anything recorded when the start registered no
+ * shielded keys: a seed wallet sends them again at each start, but a passkey wallet only registers
+ * here, so it tries again at the next unlock instead of starting on a facade without them.
+ *
+ * @param {{
+ *   tempWallet: HathorWalletServiceWallet,
+ *   walletServiceUrl: string,
+ *   shieldedNetwork?: boolean,
+ * }} registration
  */
-export async function completeWalletServiceRegistration({ tempWallet, walletServiceUrl }) {
+export async function completeWalletServiceRegistration({
+  tempWallet,
+  walletServiceUrl,
+  shieldedNetwork = false,
+}) {
   const pin = makeEphemeralPin();
   try {
+    if (shieldedNetwork) {
+      const { error } = await loadShieldedCryptoProvider();
+      if (error) {
+        throw new Error(`No shielded crypto provider to register the wallet with: ${error.message ?? error}`);
+      }
+    }
     await tempWallet.start({ pinCode: pin, password: pin });
   } catch (e) {
     // Drop the seed now instead of waiting for the wallet to be garbage-collected.
@@ -182,6 +219,10 @@ export async function completeWalletServiceRegistration({ tempWallet, walletServ
     throw e;
   }
   try {
+    if (shieldedNetwork && tempWallet.isShieldedEnabled?.() !== true) {
+      log.warn('The wallet-service did not register the shielded keys of the passkey wallet; it registers again at the next unlock.');
+      return;
+    }
     await markWalletServiceRegistered(walletServiceUrl);
   } finally {
     // Close the temp wallet's connection and clear its in-memory history, utxos and tokens. Its

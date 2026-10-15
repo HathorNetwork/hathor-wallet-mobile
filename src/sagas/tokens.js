@@ -152,6 +152,40 @@ function* fetchTokenBalanceConsumer(fetchTokenBalanceChannel) {
 }
 
 /**
+ * Reads a token's balance on the wallet-service facade with its private part: the service splits
+ * each amount into its transparent and shielded parts, and the totals include both. When the
+ * split read fails, it reads the balance alone, with a null private part.
+ *
+ * @param {HathorWalletServiceWallet} wallet
+ * @param {string} tokenId
+ * @returns {Generator<unknown, Object>} The balance: available, locked and privateAvailable, which
+ *   is null when only the balance was read
+ */
+export function* fetchWalletServiceSplitBalance(wallet, tokenId) {
+  try {
+    const response = yield call([wallet, wallet.getBalance], tokenId, { split: true });
+    const token = get(response, 0, null);
+    if (!token) {
+      return { available: 0n, locked: 0n, privateAvailable: 0n };
+    }
+    return {
+      available: token.balance.unlocked.total,
+      locked: token.balance.locked.total,
+      privateAvailable: token.balance.unlocked.shielded,
+    };
+  } catch (e) {
+    log.error('Failed to read the private part of the token balance.', e);
+  }
+  const response = yield call([wallet, wallet.getBalance], tokenId);
+  const token = get(response, 0, { balance: { unlocked: 0n, locked: 0n } });
+  return {
+    available: token.balance.unlocked,
+    locked: token.balance.locked,
+    privateAvailable: null,
+  };
+}
+
+/**
  * Fetches the balance for a specific token.
  *
  * 1. Checks pendingBalanceRequests for the latest force value (supports force upgrade)
@@ -159,7 +193,8 @@ function* fetchTokenBalanceConsumer(fetchTokenBalanceChannel) {
  *    with the wallet-service backend
  * 3. Properly cleans up pending request tracking on completion
  * 4. Where the shielded UI shows the balance split, also reads the private part of the
- *    available balance (privateAvailable), or null when that read fails
+ *    available balance (privateAvailable), or null when that read fails. On the wallet-service
+ *    facade it comes with the balance, from fetchWalletServiceSplitBalance
  *
  * @param {Object} action - The action containing tokenId and force flag
  */
@@ -187,27 +222,36 @@ export function* fetchTokenBalance(action) {
     // before the backend has fully processed the transaction into its balance database
     let balance = null;
     const maxAttempts = force ? (BALANCE_FETCH_MAX_RETRIES - 1) : 0;
+    // On the wallet-service facade the service reads the private part along with the balance.
+    const splitOnWalletService = (yield select((state) => state.useWalletService))
+      && (yield select(isShieldedAvailable));
 
     for (let attempt = 0; attempt <= maxAttempts; attempt += 1) {
-      const response = yield call(wallet.getBalance.bind(wallet), tokenId);
-      const token = get(response, 0, {
-        balance: {
-          unlocked: 0n,
-          locked: 0n,
-        }
-      });
+      if (splitOnWalletService) {
+        balance = yield call(fetchWalletServiceSplitBalance, wallet, tokenId);
+      } else {
+        const response = yield call(wallet.getBalance.bind(wallet), tokenId);
+        const token = get(response, 0, {
+          balance: {
+            unlocked: 0n,
+            locked: 0n,
+          }
+        });
 
-      balance = {
-        available: token.balance.unlocked,
-        locked: token.balance.locked,
-      };
+        balance = {
+          available: token.balance.unlocked,
+          locked: token.balance.locked,
+        };
+      }
 
       // For forced fetches, check if balance actually changed
       // If it hasn't and we have retries left, wait and try again
       if (force && attempt < maxAttempts && tokenBalance?.data) {
         const previousBalance = tokenBalance.data;
         const balanceUnchanged = previousBalance.available === balance.available
-          && previousBalance.locked === balance.locked;
+          && previousBalance.locked === balance.locked
+          && (!splitOnWalletService
+            || previousBalance.privateAvailable === balance.privateAvailable);
 
         if (balanceUnchanged) {
           log.debug(`Balance unchanged for ${tokenId} on attempt ${attempt + 1}, retrying after delay...`);
@@ -222,7 +266,7 @@ export function* fetchTokenBalance(action) {
 
     // The private part of the available balance, for the balance split. A failure leaves it
     // null instead of undefined, so the screen doesn't ask for this balance again.
-    if (yield select(isShieldedAvailable)) {
+    if (!splitOnWalletService && (yield select(isShieldedAvailable))) {
       try {
         balance.privateAvailable = yield call(getPrivateAvailableBalance, wallet, tokenId);
       } catch (e) {

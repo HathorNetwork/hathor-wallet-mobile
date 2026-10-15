@@ -10,6 +10,12 @@ import { runSaga } from 'redux-saga';
 import { constants as hathorLibConstants } from '@hathor/wallet-lib';
 import { handleTx } from '../../src/sagas/wallet';
 import {
+  FEATURE_TOGGLE_DEFAULTS,
+  FULL_NETWORK_SHIELDED_TESTNET,
+  SHIELDED_OUTPUTS_FEATURE_TOGGLE,
+  SHIELDED_PROVIDER_STATUS,
+} from '../../src/constants';
+import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   tokenInvalidateHistory,
@@ -48,10 +54,30 @@ const undecodedShieldedOutput = (address) => ({
 });
 const transparent = (address, token, value) => ({ decoded: { type: 'P2PKH', address }, token, value });
 
-async function run(tx) {
+// The shielded environment of a wallet on the shielded testnet's wallet-service facade.
+const WALLET_SERVICE_ENVIRONMENT = {
+  useWalletService: true,
+  fullNodeNetworkName: FULL_NETWORK_SHIELDED_TESTNET,
+  featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: true },
+  shielded: { providerStatus: SHIELDED_PROVIDER_STATUS.READY, providerError: null },
+};
+
+// A shielded output as the wallet-service facade's 'new-tx' event delivers it: the service
+// decodes it, and the event carries no value nor token, only its on-chain spend address.
+const walletServiceShieldedOutput = (address) => ({
+  mode: 2,
+  decoded: { address },
+});
+
+// The shielded environment of a wallet on the shielded testnet's fullnode facade.
+const FULLNODE_ENVIRONMENT = { ...WALLET_SERVICE_ENVIRONMENT, useWalletService: false };
+
+async function run(tx, environment = {}, { shieldedEnabled = true } = {}) {
   const mine = new Set([WALLET_ADDRESS, WALLET_SPEND_ADDRESS]);
   const wallet = {
     isReady: () => true,
+    // Only the wallet-service facade's wallet has it: the fullnode facade's would throw here.
+    ...(environment.useWalletService ? { isShieldedEnabled: () => shieldedEnabled } : {}),
     getTxBalance: jest.fn(async () => ({})),
     checkAddressesMine: jest.fn(async (addresses) => Object.fromEntries(
       addresses.map((address) => [address, mine.has(address)]),
@@ -61,6 +87,7 @@ async function run(tx) {
     wallet,
     tokens: { [HTR]: { uid: HTR }, [TOKEN]: { uid: TOKEN } },
     tokenImport: { unregisteredTokens: {} },
+    ...environment,
   };
   const dispatched = [];
   await runSaga(
@@ -136,6 +163,25 @@ describe('handleTx with shielded outputs', () => {
     expect(wallet.checkAddressesMine).toHaveBeenCalledWith([OTHER_ADDRESS]);
   });
 
+  test('refreshes only the decoded token in the shielded environment, and checks no spend address', async () => {
+    const { dispatched, wallet } = await run({
+      tx_id: 'tx-private-receive-environment',
+      inputs: [transparent(OTHER_ADDRESS, HTR, 100n)],
+      outputs: [transparent(OTHER_ADDRESS, HTR, 58n)],
+      shielded_outputs: [
+        decodedShieldedOutput(WALLET_SPEND_ADDRESS, HTR, 40n),
+        undecodedShieldedOutput(OTHER_SPEND_ADDRESS),
+      ],
+    }, FULLNODE_ENVIRONMENT);
+
+    expect(dispatched).toEqual([
+      tokenFetchBalanceRequested(HTR, true),
+      tokenFetchHistoryRequested(HTR, true),
+      walletRefreshSharedAddress(),
+    ]);
+    expect(wallet.checkAddressesMine).toHaveBeenCalledWith([OTHER_ADDRESS, WALLET_SPEND_ADDRESS]);
+  });
+
   test('handles a transparent tx as before', async () => {
     const { dispatched } = await run({
       tx_id: 'tx-transparent',
@@ -148,5 +194,91 @@ describe('handleTx with shielded outputs', () => {
       tokenFetchHistoryRequested(HTR, true),
       walletRefreshSharedAddress(),
     ]);
+  });
+});
+
+describe('handleTx with shielded outputs on the wallet-service facade', () => {
+  const REFRESH_ALL = [
+    tokenFetchBalanceRequested(HTR, true),
+    tokenFetchHistoryRequested(HTR, true),
+    tokenFetchBalanceRequested(TOKEN, true),
+    tokenInvalidateHistory(TOKEN),
+    walletRefreshSharedAddress(),
+  ];
+
+  test('refreshes every registered token when a shielded output pays the wallet', async () => {
+    const { dispatched, wallet } = await run({
+      tx_id: 'tx-ws-private-receive',
+      inputs: [transparent(OTHER_ADDRESS, HTR, 100n)],
+      outputs: [transparent(OTHER_ADDRESS, HTR, 58n)],
+      shielded_outputs: [
+        walletServiceShieldedOutput(OTHER_SPEND_ADDRESS),
+        walletServiceShieldedOutput(WALLET_SPEND_ADDRESS),
+      ],
+    }, WALLET_SERVICE_ENVIRONMENT);
+
+    expect(dispatched).toEqual(REFRESH_ALL);
+    expect(wallet.checkAddressesMine).toHaveBeenCalledWith(
+      [OTHER_ADDRESS, OTHER_SPEND_ADDRESS, WALLET_SPEND_ADDRESS],
+    );
+  });
+
+  test('refreshes them for a receive with only shielded outputs', async () => {
+    const { dispatched } = await run({
+      tx_id: 'tx-ws-fully-private',
+      inputs: [],
+      outputs: [],
+      shielded_outputs: [walletServiceShieldedOutput(WALLET_SPEND_ADDRESS)],
+    }, WALLET_SERVICE_ENVIRONMENT);
+
+    expect(dispatched).toEqual(REFRESH_ALL);
+  });
+
+  test('refreshes no token for shielded outputs paid to others', async () => {
+    const { dispatched } = await run({
+      tx_id: 'tx-ws-foreign',
+      inputs: [transparent(OTHER_ADDRESS, HTR, 100n)],
+      outputs: [],
+      shielded_outputs: [walletServiceShieldedOutput(OTHER_SPEND_ADDRESS)],
+    }, WALLET_SERVICE_ENVIRONMENT);
+
+    expect(dispatched).toEqual([walletRefreshSharedAddress()]);
+  });
+
+  test('refreshes them with the shielded UI flag off, as the balance still counts them', async () => {
+    const { dispatched } = await run({
+      tx_id: 'tx-ws-flag-off',
+      inputs: [transparent(OTHER_ADDRESS, HTR, 100n)],
+      outputs: [],
+      shielded_outputs: [walletServiceShieldedOutput(WALLET_SPEND_ADDRESS)],
+    }, {
+      ...WALLET_SERVICE_ENVIRONMENT,
+      featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false },
+    });
+
+    expect(dispatched).toEqual(REFRESH_ALL);
+  });
+
+  test('refreshes each token once when the tx pays the wallet both publicly and privately', async () => {
+    const { dispatched } = await run({
+      tx_id: 'tx-ws-mixed-receive',
+      inputs: [transparent(OTHER_ADDRESS, HTR, 100n)],
+      outputs: [transparent(WALLET_ADDRESS, HTR, 30n), transparent(WALLET_ADDRESS, TOKEN, 5n)],
+      shielded_outputs: [walletServiceShieldedOutput(WALLET_SPEND_ADDRESS)],
+    }, WALLET_SERVICE_ENVIRONMENT);
+
+    expect(dispatched).toEqual(REFRESH_ALL);
+  });
+
+  test('checks no shielded output when the wallet registered no shielded keys', async () => {
+    const { dispatched, wallet } = await run({
+      tx_id: 'tx-ws-no-keys',
+      inputs: [transparent(OTHER_ADDRESS, HTR, 100n)],
+      outputs: [],
+      shielded_outputs: [walletServiceShieldedOutput(WALLET_SPEND_ADDRESS)],
+    }, WALLET_SERVICE_ENVIRONMENT, { shieldedEnabled: false });
+
+    expect(dispatched).toEqual([walletRefreshSharedAddress()]);
+    expect(wallet.checkAddressesMine).toHaveBeenCalledWith([OTHER_ADDRESS]);
   });
 });

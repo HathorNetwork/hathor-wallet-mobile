@@ -50,6 +50,7 @@ describe('receiveStateFromCapability', () => {
     ['a wallet that got no PIN', capability('watch', 'locked', 'not-supplied'), LOCKED, 'not-supplied'],
     ['a wallet whose unlock failed', capability('watch', 'locked', 'error'), LOCKED, 'error'],
     ['a wallet whose scan key is corrupt', capability('watch', 'locked', 'corrupt-key'), UNAVAILABLE, 'corrupt-key'],
+    ['a wallet started with a scan key that does not match', capability('watch', 'locked', 'key-mismatch'), UNAVAILABLE, 'key-mismatch'],
     [
       'a decoding wallet that does not watch its shielded addresses',
       capability('full', null, null, { canReceive: false }),
@@ -122,7 +123,7 @@ describe('receiveReasonText', () => {
   });
 
   test.each([
-    'needs-password', 'integrity', 'corrupt-key', RECEIVE_REASON_NOT_WATCHED, null,
+    'needs-password', 'integrity', 'corrupt-key', 'key-mismatch', RECEIVE_REASON_NOT_WATCHED, null,
   ])('says the wallet cannot use them for the reason %s', (reason) => {
     expect(receiveReasonText(reason)).toBe('Private transfers are not available for this wallet.');
   });

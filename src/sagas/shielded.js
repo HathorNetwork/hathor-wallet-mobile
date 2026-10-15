@@ -36,8 +36,13 @@ import {
 } from '../actions';
 import { getRegisteredTokenUids } from './helpers';
 import { WALLET_STATUS } from './wallet';
-import { isShieldedEnvironment, selectShieldedCapability } from '../shielded/gating';
+import {
+  isShieldedEnvironment,
+  isUnlockableLock,
+  selectShieldedCapability,
+} from '../shielded/gating';
 import { SHIELDED_UNLOCK_STATUS, unlockShieldedViewIfLocked } from '../shielded/unlock';
+import { getWalletShieldedCapability } from '../shielded/capability';
 import {
   RECEIVE_REASON_ERROR,
   SHIELDED_RECEIVE_INITIAL_STATE,
@@ -48,6 +53,9 @@ import {
   selectShieldedReceive,
 } from '../shielded/receiveState';
 import { SHIELDED_UNLOCK_PROGRESS } from '../shielded/unlockState';
+import { STORE } from '../store';
+import { isExpectedPasskeyError, PasskeyCancelledError } from '../passkey/passkeySigner';
+import { getPasskeyScanKey, unlockPasskeyShieldedKeys } from '../passkey/shieldedKeys';
 import { logger } from '../logger';
 
 const log = logger('shielded');
@@ -138,11 +146,11 @@ export function createLoadedCapability() {
  * level 'view' or 'full', its current shielded address. It throws the errors the receive state
  * doesn't expect.
  *
- * @param {HathorWallet} wallet A started fullnode-facade wallet
+ * @param {HathorWallet|HathorWalletServiceWallet} wallet A started wallet
  * @returns {Promise<Object>} The receive state: status, address, index and reason
  */
 export async function readShieldedReceive(wallet) {
-  const capability = await wallet.getShieldedCapability();
+  const capability = await getWalletShieldedCapability(wallet);
   const fromCapability = receiveStateFromCapability(capability);
   if (fromCapability) {
     return { ...SHIELDED_RECEIVE_INITIAL_STATE, ...fromCapability };
@@ -308,9 +316,11 @@ export function* onWalletBalancesLoaded(loaded) {
  *
  * @param {string} status One of SHIELDED_UNLOCK_PROGRESS
  * @param {string|null} [errorCode] The code of wallet-lib's refusal
+ * @param {string|null} [message] What the user is told about the failure, when it is not the
+ *   generic one
  */
-const unlockProgress = (status, errorCode = null) => put(
-  shieldedUnlockStatusUpdate({ status, errorCode }),
+const unlockProgress = (status, errorCode = null, message = null) => put(
+  shieldedUnlockStatusUpdate({ status, errorCode, message }),
 );
 
 /**
@@ -352,16 +362,51 @@ export function* refreshAfterUnlockWalk(loaded, wallet, reprocessed, reportsProg
 }
 
 /**
+ * What unlocks the shielded view key for an unlock request (wallet-lib's ShieldedViewKeyInput), or
+ * null when there is nothing to try. A seed wallet's request carries the PIN. A passkey wallet has
+ * none: at the lock screen, whose ceremony just derived it, it is the scan key held for the
+ * session; for the user, it runs a passkey ceremony, unless the wallet has no lock to fix.
+ *
+ * @param {Object} wallet The running wallet
+ * @param {{ pinCode?: string, source: string }} payload The request's payload
+ * @returns {Generator<*, ({ pinCode: string }|{ scanXPrivKey: string }|null)>}
+ * @throws the passkey ceremony's errors
+ */
+export function* shieldedViewKeyInput(wallet, payload) {
+  if (!STORE.isPasskeyWallet()) {
+    return { pinCode: payload.pinCode };
+  }
+  if (payload.source !== SHIELDED_UNLOCK_SOURCE.USER) {
+    const scanXPrivKey = getPasskeyScanKey();
+    return scanXPrivKey ? { scanXPrivKey } : null;
+  }
+  // A facade that can't report or unlock its shielded view (the wallet-service one) has nothing
+  // to unlock either.
+  if (typeof wallet.getShieldedCapability !== 'function') {
+    return null;
+  }
+  // No Face ID for a wallet that has nothing to unlock.
+  const current = yield call([wallet, wallet.getShieldedCapability]);
+  if (!isUnlockableLock(current)) {
+    return null;
+  }
+  const scanXPrivKey = yield call(unlockPasskeyShieldedKeys);
+  return { scanXPrivKey };
+}
+
+/**
  * Handles SHIELDED_VIEW_UNLOCK_REQUESTED: unlocks the shielded view key of the running wallet
- * with the PIN the user entered, when the wallet holds its shielded outputs locked. It runs only
- * where the crypto provider passed its self-test: without it, nothing can be decoded. The PIN is
- * never logged.
+ * with the PIN the user entered, or the scan key of a passkey wallet (see shieldedViewKeyInput),
+ * when the wallet holds its shielded outputs locked. It runs only where the crypto provider passed
+ * its self-test: without it, nothing can be decoded. The PIN and the key are never logged.
  *
  * The unlock the user asks for from a locked private balance reports its progress: unlocking,
  * then decoding until the walk ends and the balances are refreshed, then idle; or failed, with
  * the code of wallet-lib's refusal. An error nothing expects then goes to the error modal. A
- * later PIN entry that replaces it puts it back to idle. The unlock at the lock screen shows
- * nothing: a refusal is only logged.
+ * later PIN entry that replaces it puts it back to idle. A passkey ceremony the user dismisses
+ * puts it back to idle too, and one that fails as expected (wrong passkey, a ceremony already
+ * open...) is failed with the error's message for the user, without the error modal. The unlock
+ * at the lock screen shows nothing: a refusal is only logged.
  *
  * @param {ReturnType<createLoadedCapability>} loaded
  * @param {Object} action The SHIELDED_VIEW_UNLOCK_REQUESTED action
@@ -383,9 +428,17 @@ export function* onShieldedViewUnlockRequested(loaded, action) {
       progressOpen = true;
       yield unlockProgress(SHIELDED_UNLOCK_PROGRESS.UNLOCKING);
     }
-    const result = yield call(unlockShieldedViewIfLocked, wallet, action.payload.pinCode);
+    const input = yield call(shieldedViewKeyInput, wallet, action.payload);
+    if (!input) {
+      if (reportsProgress) {
+        progressOpen = false;
+        yield unlockProgress(SHIELDED_UNLOCK_PROGRESS.IDLE);
+      }
+      return;
+    }
+    const result = yield call(unlockShieldedViewIfLocked, wallet, input);
     if (result.status === SHIELDED_UNLOCK_STATUS.FAILED) {
-      log.error('The shielded view key was not unlocked at a PIN entry.', {
+      log.error('The shielded view key was not unlocked.', {
         source: action.payload.source,
         errorCode: result.errorCode,
       });
@@ -411,7 +464,24 @@ export function* onShieldedViewUnlockRequested(loaded, action) {
     yield spawn(refreshAfterUnlockWalk, loaded, wallet, result.reprocessed, reportsProgress);
     progressOpen = false;
   } catch (e) {
-    log.error('Failed to unlock the shielded view key at a PIN entry.', e);
+    if (e instanceof PasskeyCancelledError) {
+      if (reportsProgress) {
+        progressOpen = false;
+        yield unlockProgress(SHIELDED_UNLOCK_PROGRESS.IDLE);
+      }
+      return;
+    }
+    if (isExpectedPasskeyError(e)) {
+      // The user is told why (the wrong passkey, a ceremony already open...); the message can
+      // carry the wallet's passkey label, so only the error's name is logged.
+      log.error('The passkey did not unlock the shielded view key.', { name: e.name });
+      if (reportsProgress) {
+        progressOpen = false;
+        yield unlockProgress(SHIELDED_UNLOCK_PROGRESS.FAILED, null, e.message);
+      }
+      return;
+    }
+    log.error('Failed to unlock the shielded view key.', e);
     if (reportsProgress) {
       progressOpen = false;
       yield unlockProgress(SHIELDED_UNLOCK_PROGRESS.FAILED);
@@ -430,6 +500,8 @@ export function* onShieldedViewUnlockRequested(loaded, action) {
  * progress as decoding until the walk ends, then idle. A wallet that is connecting or stopped
  * refuses ('shielded-not-ready' or 'shielded-not-started'), and the walk of its next connection
  * retries them, so the refusal is only logged. An error nothing expects goes to the error modal.
+ * A wallet that can't process its history again, as on the wallet-service facade, where the
+ * service decodes the private outputs, is skipped.
  *
  * @param {ReturnType<createLoadedCapability>} loaded
  */
@@ -440,7 +512,9 @@ export function* onShieldedReprocessRequested(loaded) {
       wallet: state.wallet,
       providerStatus: state.shielded?.providerStatus,
     }));
-    if (!wallet || providerStatus !== SHIELDED_PROVIDER_STATUS.READY) {
+    if (!wallet
+      || providerStatus !== SHIELDED_PROVIDER_STATUS.READY
+      || typeof wallet.reprocessShieldedOutputs !== 'function') {
       return;
     }
 
