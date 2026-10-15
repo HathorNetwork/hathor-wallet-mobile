@@ -481,7 +481,9 @@ describe('startWallet (passkey wallet)', () => {
     });
 
     expect(HathorWallet).toHaveBeenCalledWith(expect.objectContaining({ xpub: XPUB }));
-    expect(fullnodeWallet.setExternalTxSigningMethod).toHaveBeenCalledWith(expect.any(Function));
+    // The signer signs the inputs that spend shielded outputs too.
+    expect(fullnodeWallet.setExternalTxSigningMethod)
+      .toHaveBeenCalledWith(expect.any(Function), { shieldedSpend: true });
     expect(fullnodeWallet.setExternalPrivateKeyMethod).toHaveBeenCalledWith(expect.any(Function));
   });
 

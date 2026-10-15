@@ -68,6 +68,11 @@ jest.mock('@hathor/wallet-lib', () => ({
   }),
 }));
 
+// A passkey wallet's unlock ceremony, which derives the scan key.
+jest.mock('../../src/passkey/shieldedKeys', () => ({
+  unlockPasskeyShieldedKeys: jest.fn(),
+}));
+
 /* eslint-disable import/first */
 import React from 'react';
 import { errors } from '@hathor/wallet-lib';
@@ -101,6 +106,8 @@ import { PortalProvider } from '../../src/components/Portal';
 import TextFmt from '../../src/components/TextFmt';
 import { COLORS } from '../../src/styles/themes';
 import SendConfirmScreen from '../../src/screens/SendConfirmScreen';
+import { PasskeyCancelledError, PasskeyXpubMismatchError } from '../../src/passkey/passkeySigner';
+import { unlockPasskeyShieldedKeys } from '../../src/passkey/shieldedKeys';
 /* eslint-enable import/first */
 
 // Testnet addresses built with wallet-lib's address encoders from fixed keys.
@@ -164,8 +171,9 @@ async function render(params, {
   useWalletService = false,
   level = capability('full'),
   providerStatus = SHIELDED_PROVIDER_STATUS.READY,
+  passkey = false,
 } = {}) {
-  jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(false);
+  jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(passkey);
   mockParams = params;
   const store = createStore(reducer);
   store.dispatch(networkSettingsUpdateState(PRE_SETTINGS_SHIELDED_TESTNET));
@@ -822,6 +830,97 @@ describe('SendConfirmScreen unlock of a locked private balance', () => {
     const decoding = renderer.root.find((node) => node.props.text === 'Reading your private balance');
     await act(async () => { decoding.props.onDismiss(); });
     expect(mockNavigation.goBack).toHaveBeenCalled();
+  });
+
+  test('says private sends are unavailable when the scan key given at start does not match', async () => {
+    const wallet = createWallet();
+    wallet.getShieldedCapability.mockResolvedValue(capability('watch', 'key-mismatch'));
+    const { texts } = await render(PRIVATE_SEND, { wallet, passkey: true });
+
+    expect(texts()).toContain('Private transfers are not available for this wallet.');
+    expect(texts()).not.toContain('Unlock private balance');
+  });
+
+  describe('of a passkey wallet', () => {
+    const SCAN_KEY = 'xprv-scan-key';
+
+    // A passkey wallet started without its scan key, which unlocks with it.
+    const createPasskeyLockedWallet = () => {
+      const wallet = createWallet();
+      let level = capability('watch', 'not-supplied');
+      wallet.getShieldedCapability.mockImplementation(async () => level);
+      wallet.unlockShieldedView.mockImplementation(async ({ scanXPrivKey }) => {
+        if (scanXPrivKey !== SCAN_KEY) {
+          throw new errors.ShieldedKeyError('shielded-key-mismatch', 'Not the scan key.');
+        }
+        level = capability('full');
+        return { capability: level, reprocessed: Promise.resolve(level) };
+      });
+      return { wallet };
+    };
+
+    const pressPasskeyUnlock = (renderer) => act(async () => {
+      renderer.root.find((node) => node.props.title === 'Unlock private balance' && node.props.onPress)
+        .props.onPress();
+    });
+
+    test('unlocks with the scan key of a passkey ceremony, without a PIN screen', async () => {
+      unlockPasskeyShieldedKeys.mockResolvedValue(SCAN_KEY);
+      const { wallet } = createPasskeyLockedWallet();
+      const { renderer } = await render(PRIVATE_SEND, { wallet, passkey: true });
+
+      await pressPasskeyUnlock(renderer);
+      await settle();
+
+      expect(mockNavigation.navigate).not.toHaveBeenCalled();
+      expect(unlockPasskeyShieldedKeys).toHaveBeenCalledTimes(1);
+      expect(wallet.unlockShieldedView).toHaveBeenCalledWith({ scanXPrivKey: SCAN_KEY });
+      expect(mockSends).toHaveLength(1);
+    });
+
+    test('asks again when the user dismisses the ceremony', async () => {
+      unlockPasskeyShieldedKeys.mockRejectedValue(new PasskeyCancelledError());
+      const { wallet } = createPasskeyLockedWallet();
+      const { renderer, texts } = await render(PRIVATE_SEND, { wallet, passkey: true });
+
+      await pressPasskeyUnlock(renderer);
+      await settle();
+
+      expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+      expect(texts()).toEqual(expect.arrayContaining([
+        'Your private balance is locked. Unlock it to send privately.',
+        'Unlock private balance',
+      ]));
+      expect(mockSends).toEqual([]);
+    });
+
+    test('says so when the ceremony fails, and builds nothing', async () => {
+      unlockPasskeyShieldedKeys.mockRejectedValue(new Error('wrong passkey'));
+      const { wallet } = createPasskeyLockedWallet();
+      const { renderer, texts } = await render(PRIVATE_SEND, { wallet, passkey: true });
+
+      await pressPasskeyUnlock(renderer);
+      await settle();
+
+      expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+      expect(texts()).toContain('Could not unlock your private balance.');
+      expect(mockSends).toEqual([]);
+    });
+
+    test('says why when the user picked the passkey of another wallet', async () => {
+      const error = new PasskeyXpubMismatchError('My passkey');
+      unlockPasskeyShieldedKeys.mockRejectedValue(error);
+      const { wallet } = createPasskeyLockedWallet();
+      const { renderer, texts } = await render(PRIVATE_SEND, { wallet, passkey: true });
+
+      await pressPasskeyUnlock(renderer);
+      await settle();
+
+      expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+      expect(texts()).toContain(error.message);
+      expect(texts()).not.toContain('Could not unlock your private balance.');
+      expect(mockSends).toEqual([]);
+    });
   });
 
   test('builds a public send while the private balance is locked', async () => {

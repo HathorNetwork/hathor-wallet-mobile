@@ -380,11 +380,19 @@ class AsyncStorageStore {
    * wallet metadata. Used by the passkey (PIN-less) onboarding: no seed, no PIN, no
    * password — the persisted access data contains no secret at all.
    *
+   * The shielded xpubs (see passkey/shieldedKeys.js) are public: they go both on the metadata and
+   * on the access data, so the wallet gets a shielded chain. A wallet-lib that can't take them
+   * ignores them on the access data.
+   *
    * @param {string} xpub - Account-path xpub (m/44'/280'/0') derived from the passkey PRF seed
-   * @param {{ passkeyLabel: string, credentialId?: string }} meta - Passkey wallet metadata
+   * @param {{
+   *   passkeyLabel: string,
+   *   credentialId?: string,
+   *   shieldedXpubs?: { scanXpubkey: string, spendXpubkey: string }|null,
+   * }} meta - Passkey wallet metadata
    */
   async initPasskeyStorage(xpub, meta) {
-    const accessData = walletUtils.generateAccessDataFromXpub(xpub);
+    const accessData = walletUtils.generateAccessDataFromXpub(xpub, meta.shieldedXpubs ?? {});
     const storage = this.getStorage();
     // Persist the wallet metadata BEFORE the access data, so this write is crash-atomic in the
     // right direction. The app gates "is a wallet loaded?" on the access data (walletIsLoaded()),

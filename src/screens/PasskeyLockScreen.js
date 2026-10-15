@@ -22,9 +22,11 @@ import Spinner from '../components/Spinner';
 import {
   onExceptionCaptured,
   resetOnLockScreen,
+  shieldedViewUnlockRequested,
   startWalletRequested,
   unlockScreen,
 } from '../actions';
+import { SHIELDED_UNLOCK_SOURCE } from '../constants';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
@@ -34,6 +36,7 @@ import {
   verifyPasskeyForUnlock,
 } from '../passkey/passkeySigner';
 import { sanitizePasskeyLabel } from '../passkey/passkeyService';
+import { rememberPasskeyShieldedKeys } from '../passkey/shieldedKeys';
 import {
   finishWalletServiceRegistration,
   walletServiceRegistrationForUnlock,
@@ -79,14 +82,25 @@ const PasskeyLockScreen = () => {
       // wallet-service can take up to a minute, and neither the passkey lock nor the unlock waits
       // for it. The wallet runs on the wallet-service facade from its next start. A failure never
       // blocks unlocking.
+      // The same ceremony derives the shielded keys: it stores their xpubs, which wallets created
+      // before shielded outputs don't have yet, and holds the scan key for the session, so the
+      // wallet decodes its private outputs as a seed wallet does after its PIN. It never throws.
+      const register = walletServiceRegistrationForUnlock(featureToggles, networkSettings);
       const registration = await verifyPasskeyForUnlock({
-        onWords: walletServiceRegistrationForUnlock(featureToggles, networkSettings),
+        onWords: (words) => {
+          rememberPasskeyShieldedKeys(words);
+          return register ? register(words) : undefined;
+        },
       });
       finishWalletServiceRegistration(registration);
       if (!wallet) {
         // App boot (or wallet stopped): start the xpub-only wallet. The saga derives
         // isPasskeyWallet from the persisted walletMeta; no secret (and no payload flag) via redux.
         dispatch(startWalletRequested());
+      } else {
+        // A running wallet that holds its shielded outputs locked: the saga unlocks them with the
+        // scan key this ceremony derived, if they are, as PinScreen does with the PIN.
+        dispatch(shieldedViewUnlockRequested({ source: SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN }));
       }
       dispatch(unlockScreen());
     } catch (e) {

@@ -23,8 +23,15 @@ import HathorHeader from '../components/HathorHeader';
 import ShieldedUnlockAction from '../components/Shielded/ShieldedUnlockAction';
 import { COLORS } from '../styles/themes';
 import { SENSITIVE_COPY_FEEDBACK_MS } from '../constants';
-import { isShieldedAvailable, selectShieldedCapability } from '../shielded/gating';
+import {
+  isShieldedAvailable,
+  isUnlockableLock,
+  selectShieldedCapability,
+} from '../shielded/gating';
 import { getWalletShieldedCapability } from '../shielded/capability';
+import { STORE } from '../store';
+import { PasskeyCancelledError, withPasskeyWords } from '../passkey/passkeySigner';
+import { derivePasskeyShieldedKeys } from '../passkey/shieldedKeys';
 import { closeScreen } from '../utils/navigation';
 import { copySensitive } from '../utils/sensitiveClipboard';
 
@@ -54,17 +61,6 @@ function decodesPrivateOutputs(capability) {
 }
 
 /**
- * Whether the wallet holds its private outputs locked, and a PIN can unlock them: any cause but a
- * stored scan key that doesn't decrypt to a valid one.
- *
- * @param {Object|null} capability The wallet's IShieldedCapability
- * @returns {boolean}
- */
-function canUnlockWithPin(capability) {
-  return capability?.level === 'watch' && capability.cause !== 'corrupt-key';
-}
-
-/**
  * What the export says of a wallet whose record has no shielded keys.
  *
  * @returns {string}
@@ -72,14 +68,14 @@ function canUnlockWithPin(capability) {
 const noShieldedKeysText = () => t`This wallet has no shielded keys. They are only present on wallets created after the shielded outputs feature was enabled.`;
 
 /**
- * What the export says of a wallet whose private outputs a PIN can unlock.
+ * What the export says of a wallet whose private outputs a PIN or a passkey can unlock.
  *
  * @returns {string}
  */
 const unlockFirstText = () => t`Unlock your private balance to export the privacy keys.`;
 
 /**
- * Why a wallet that doesn't decode its private outputs, and no PIN unlocks, can't export the keys.
+ * Why a wallet that doesn't decode its private outputs, and no unlock fixes, can't export the keys.
  *
  * @param {Object|null} capability The wallet's IShieldedCapability
  * @returns {string}
@@ -92,14 +88,14 @@ function unavailableText(capability) {
 }
 
 /**
- * Why a wallet that doesn't decode its private outputs can't export the keys: a PIN unlocks them
- * first, or nothing does.
+ * Why a wallet that doesn't decode its private outputs can't export the keys: a PIN or a passkey
+ * unlocks them first, or nothing does.
  *
  * @param {Object|null} capability The wallet's IShieldedCapability
  * @returns {string}
  */
 function blockedText(capability) {
-  return canUnlockWithPin(capability) ? unlockFirstText() : unavailableText(capability);
+  return isUnlockableLock(capability) ? unlockFirstText() : unavailableText(capability);
 }
 
 /**
@@ -175,7 +171,8 @@ const KeyCard = ({ label, description, value }) => {
  * the navigation params. When the PIN screen closes without the PIN (Cancel, Android's back, a
  * failed biometry), the export closes too, back to the privacy settings. The wallet must decode
  * its private outputs right before the scan key is decrypted; a locked wallet is asked to unlock
- * first, and the PIN comes once it is unlocked.
+ * first, and the PIN comes once it is unlocked. A passkey wallet has no PIN: a passkey ceremony
+ * takes its place and derives the keys, and a dismissed ceremony closes the export too.
  *
  * The keys show masked, and "Show full key" reveals one. Copy goes through the clipboard that
  * clears itself, and the keys' text is selectable. The keys hide while the app isn't active, out
@@ -290,10 +287,48 @@ export default function ExportPrivacyKeys({ navigation, route }) {
     }
   };
 
+  /**
+   * The passkey wallet's counterpart of the PIN entry: one passkey ceremony, which derives the
+   * keys from the wallet's root once the passkey is checked against the wallet. A dismissed
+   * ceremony closes the export, as a dismissed PIN screen does.
+   */
+  const readPasskeyKeys = async () => {
+    setStage(STAGE.READING);
+    try {
+      const derived = await withPasskeyWords(async (words) => derivePasskeyShieldedKeys(words));
+      if (!mounted.current) {
+        return;
+      }
+      if (!derived) {
+        fail(noShieldedKeysText());
+        return;
+      }
+      setKeys({
+        spendXpub: derived.shieldedXpubs.spendXpubkey,
+        scanXpriv: derived.scanXPrivKey,
+      });
+      setStage(STAGE.KEYS);
+    } catch (e) {
+      if (!mounted.current) {
+        return;
+      }
+      if (e instanceof PasskeyCancelledError) {
+        closeScreen(navigation, route.key);
+        return;
+      }
+      // The error isn't logged.
+      fail(e instanceof Error ? e.message : String(e));
+    }
+  };
+
   // The PIN first, once, as soon as the wallet decodes its private outputs: when the screen
-  // opens, or once a locked wallet is unlocked.
+  // opens, or once a locked wallet is unlocked. A passkey wallet runs its ceremony instead.
   useEffect(() => {
     if (!available || !decodes || stage !== STAGE.WAITING || awaitingPin.current) {
+      return;
+    }
+    if (STORE.isPasskeyWallet()) {
+      readPasskeyKeys();
       return;
     }
     awaitingPin.current = true;
@@ -308,7 +343,7 @@ export default function ExportPrivacyKeys({ navigation, route }) {
     if (decodes || stage !== STAGE.WAITING) {
       return null;
     }
-    if (canUnlockWithPin(capability)) {
+    if (isUnlockableLock(capability)) {
       return (
         <View>
           <Text style={styles.note}>{unlockFirstText()}</Text>

@@ -29,13 +29,15 @@ export const SHIELDED_UNLOCK_INITIAL_STATE = {
   status: SHIELDED_UNLOCK_PROGRESS.IDLE,
   /** @type {string|null} The code of wallet-lib's ShieldedKeyError, when it refused the unlock. */
   errorCode: null,
+  /** @type {string|null} What the user is told about a failure, when it is not the generic one. */
+  message: null,
 };
 
 /**
  * The progress of the unlock or the retry the user asked for.
  *
  * @param {Object} state Redux state
- * @returns {{ status: string, errorCode: string|null }}
+ * @returns {{ status: string, errorCode: string|null, message: string|null }}
  */
 export function selectShieldedUnlock(state) {
   return state.shielded?.unlock ?? SHIELDED_UNLOCK_INITIAL_STATE;

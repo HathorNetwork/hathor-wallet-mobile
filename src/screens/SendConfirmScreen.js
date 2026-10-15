@@ -46,6 +46,9 @@ import {
   TOKEN_FEES_URL,
 } from '../constants';
 import { authorizeTransaction } from '../passkey/authorizeTransaction';
+import { isExpectedPasskeyError, PasskeyCancelledError } from '../passkey/passkeySigner';
+import { unlockPasskeyShieldedKeys } from '../passkey/shieldedKeys';
+import { STORE } from '../store';
 import {
   buildSendOutput,
   computeSendFees,
@@ -53,7 +56,7 @@ import {
   privacyModeToShieldedMode,
   waitForWalletReady,
 } from '../utils/shieldedSend';
-import { isShieldedEnvironment } from '../shielded/gating';
+import { isShieldedEnvironment, isUnlockableLock } from '../shielded/gating';
 import { getWalletShieldedCapability } from '../shielded/capability';
 import { SHIELDED_UNLOCK_STATUS, unlockShieldedViewIfLocked } from '../shielded/unlock';
 import { logger } from '../logger';
@@ -126,8 +129,8 @@ const SendConfirmScreen = () => {
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const networkName = useSelector((state) => state.networkSettings.network);
-  // A provider is registered only for seed wallets on the shielded testnet, whether or not the
-  // shielded UI shows.
+  // A provider is registered only for seed wallets and passkey wallets with shielded keys, on the
+  // shielded testnet, whether or not the shielded UI shows.
   const providerReady = useSelector(
     (state) => state.shielded?.providerStatus === SHIELDED_PROVIDER_STATUS.READY,
   );
@@ -238,8 +241,8 @@ const SendConfirmScreen = () => {
           if (unmountedRef.current) {
             return;
           }
-          if (capability.level === 'watch' && capability.cause !== 'corrupt-key') {
-            // A PIN can unlock it: the user can, and then the send is built.
+          if (isUnlockableLock(capability)) {
+            // A PIN or a passkey can unlock it: the user can, and then the send is built.
             setPhase(PHASE.LOCKED);
             return;
           }
@@ -278,17 +281,38 @@ const SendConfirmScreen = () => {
   };
 
   /**
-   * Unlocks the wallet's private balance with the PIN the user entered, waits until the wallet
-   * decoded the private outputs it held locked, then builds the send. The PIN goes from the PIN
-   * screen's callback to wallet-lib, and nowhere else.
+   * Unlocks the wallet's private balance with the PIN the user entered, or for a passkey wallet
+   * with the scan key a passkey ceremony derives, waits until the wallet decoded the private
+   * outputs it held locked, then builds the send. The PIN goes from the PIN screen's callback to
+   * wallet-lib, and nowhere else. A dismissed passkey ceremony leaves the balance locked.
    *
-   * @param {string} pin The PIN, or the password that safe biometry keeps
+   * @param {string|null} pin The PIN, or the password that safe biometry keeps; null for a
+   *   passkey wallet
    */
   const unlockAndBuild = async (pin) => {
     setIsAskingForPin(false);
     setPhase(PHASE.UNLOCKING);
     try {
-      const result = await unlockShieldedViewIfLocked(wallet, pin);
+      let input;
+      if (STORE.isPasskeyWallet()) {
+        try {
+          input = { scanXPrivKey: await unlockPasskeyShieldedKeys() };
+        } catch (e) {
+          if (!(e instanceof PasskeyCancelledError)) {
+            throw e;
+          }
+          if (!unmountedRef.current) {
+            setPhase(PHASE.LOCKED);
+          }
+          return;
+        }
+        if (unmountedRef.current) {
+          return;
+        }
+      } else {
+        input = { pinCode: pin };
+      }
+      const result = await unlockShieldedViewIfLocked(wallet, input);
       if (unmountedRef.current) {
         return;
       }
@@ -310,12 +334,24 @@ const SendConfirmScreen = () => {
       if (unmountedRef.current) {
         return;
       }
+      // A passkey error the user can act on (the wrong passkey, a ceremony already open...)
+      // says why; only its name is logged, since its message can carry the passkey's label.
+      if (isExpectedPasskeyError(e)) {
+        log.error('The passkey did not unlock the private balance for a send.', { name: e.name });
+        failBuild(e.message);
+        return;
+      }
       log.error('Failed to unlock the private balance for a send.', e);
       failBuild(t`Could not unlock your private balance.`);
     }
   };
 
   const askForUnlockPin = () => {
+    // A passkey wallet has no PIN: the unlock runs its passkey ceremony.
+    if (STORE.isPasskeyWallet()) {
+      unlockAndBuild(null);
+      return;
+    }
     // The PIN screen opens over this screen, whose modals would cover it.
     setIsAskingForPin(true);
     navigation.navigate('PinScreen', {

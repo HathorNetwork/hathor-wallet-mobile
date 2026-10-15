@@ -23,6 +23,7 @@ import {
   isPasskeySupported,
 } from '../passkey/passkeyService';
 import { derivePasskeyXpub } from '../passkey/passkeySigner';
+import { derivePasskeyShieldedKeys, holdPasskeyScanKey } from '../passkey/shieldedKeys';
 import {
   registerOnWalletService,
   shouldRegisterOnWalletService,
@@ -110,12 +111,26 @@ const PasskeyOnboardingButton = () => {
       // The words exist only in this scope: derive the account xpub, persist it with the
       // wallet metadata, and start the wallet read-only. No PIN, no stored secret.
       const xpub = derivePasskeyXpub(words);
+      // The shielded keys too (see passkey/shieldedKeys.js): their xpubs are stored with the
+      // metadata, and the scan key is held for the session. null on a wallet-lib that can't
+      // derive them; the next unlock then derives them. Never blocks onboarding: a failure leaves
+      // them to that unlock as well.
+      let shielded = null;
+      try {
+        shielded = derivePasskeyShieldedKeys(words);
+      } catch (shieldedError) {
+        log.error('Passkey shielded key derivation failed at onboarding', shieldedError);
+      }
       await STORE.initPasskeyStorage(xpub, {
         // null when the platform didn't return a label: persisting a placeholder would present it
         // as the passkey's real name, making the generic "Unlock with your passkey" unreachable.
         passkeyLabel: label || null,
         credentialId: credentialId ?? null,
+        shieldedXpubs: shielded?.shieldedXpubs ?? null,
       });
+      if (shielded) {
+        holdPasskeyScanKey(shielded.scanXPrivKey);
+      }
       // With the wallet-service flag on, also create the wallet on the wallet-service now, while
       // the words are in scope (no extra prompt), so it can start on that facade. Never blocks
       // onboarding: on failure the wallet starts on the fullnode facade; the next unlock retries.

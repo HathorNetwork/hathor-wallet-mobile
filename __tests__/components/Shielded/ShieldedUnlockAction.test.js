@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { jest, describe, test, expect } from '@jest/globals';
+import { jest, describe, test, expect, afterEach } from '@jest/globals';
 import React from 'react';
 import { ActivityIndicator } from 'react-native';
 import { act, create } from 'react-test-renderer';
@@ -16,6 +16,7 @@ import { shieldedUnlockStatusUpdate, types } from '../../../src/actions';
 import { SHIELDED_UNLOCK_SOURCE } from '../../../src/constants';
 import { SHIELDED_UNLOCK_PROGRESS } from '../../../src/shielded/unlockState';
 import ShieldedUnlockAction from '../../../src/components/Shielded/ShieldedUnlockAction';
+import { STORE } from '../../../src/store';
 
 const PIN = '135790';
 const UNLOCK = 'Unlock private balance';
@@ -46,6 +47,25 @@ async function render(progress) {
 }
 
 describe('ShieldedUnlockAction', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  // A passkey wallet has no PIN: the saga runs its passkey ceremony.
+  test('requests the unlock of a passkey wallet without a PIN screen', async () => {
+    jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(true);
+    const { actions, navigation, unlockButtons } = await render();
+
+    await act(async () => { unlockButtons()[0].props.onPress(); });
+
+    expect(navigation.navigate).not.toHaveBeenCalled();
+    expect(actions.filter((action) => action.type === types.SHIELDED_VIEW_UNLOCK_REQUESTED))
+      .toEqual([{
+        type: types.SHIELDED_VIEW_UNLOCK_REQUESTED,
+        payload: { pinCode: undefined, source: SHIELDED_UNLOCK_SOURCE.USER },
+      }]);
+  });
+
   test('asks for the PIN, then requests the unlock with it', async () => {
     const { store, actions, navigation, unlockButtons } = await render();
 
@@ -91,6 +111,18 @@ describe('ShieldedUnlockAction', () => {
     expect(text()).not.toContain('shielded-wrong-pin');
     expect(unlockButtons()).toHaveLength(1);
     expect(renderer.root.findAllByType(ActivityIndicator)).toHaveLength(0);
+  });
+
+  test('says why a passkey unlock failed, when its passkey said so', async () => {
+    const message = 'This passkey opens a different wallet.';
+    const { text, unlockButtons } = await render({
+      status: SHIELDED_UNLOCK_PROGRESS.FAILED,
+      message,
+    });
+
+    expect(text()).toContain(message);
+    expect(text()).not.toContain('Could not unlock your private balance.');
+    expect(unlockButtons()).toHaveLength(1);
   });
 
   test('shows only the action otherwise', async () => {

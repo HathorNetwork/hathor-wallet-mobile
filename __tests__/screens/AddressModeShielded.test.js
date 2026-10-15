@@ -26,6 +26,7 @@ import {
 import { STORE } from '../../src/store';
 import { RadioGroup } from '../../src/components/Radio';
 import AddressMode from '../../src/screens/AddressMode';
+import * as passkeyShieldedKeys from '../../src/passkey/shieldedKeys';
 
 const NETWORK_NOTE = 'Single address mode is not available on this network.';
 const IN_USE_NOTE = "You can't switch to single address mode because other addresses in your wallet are already in use.";
@@ -96,7 +97,20 @@ describe('AddressMode', () => {
     expect(text()).not.toContain(NETWORK_NOTE);
   });
 
-  test('offers it to a passkey wallet, which gets no shielded chain', async () => {
+  test('keeps a passkey wallet with shielded keys out of single-address mode', async () => {
+    jest.spyOn(passkeyShieldedKeys, 'getPasskeyShieldedXpubs')
+      .mockReturnValue({ scanXpubkey: 'xpub-scan', spendXpubkey: 'xpub-spend' });
+    const { single, text } = await render({
+      networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
+      walletMeta: { walletType: 'passkey', xpub: 'xpub-passkey-wallet' },
+    });
+
+    expect(single().disabled).toBe(true);
+    expect(text()).toContain(NETWORK_NOTE);
+  });
+
+  test('offers it to a passkey wallet without shielded keys, which gets no shielded chain', async () => {
+    jest.spyOn(passkeyShieldedKeys, 'getPasskeyShieldedXpubs').mockReturnValue(null);
     const { single } = await render({
       networkSettings: PRE_SETTINGS_SHIELDED_TESTNET,
       walletMeta: { walletType: 'passkey', xpub: 'xpub-passkey-wallet' },

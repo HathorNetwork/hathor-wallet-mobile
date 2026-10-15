@@ -24,6 +24,7 @@ import { COLORS } from '../styles/themes';
 import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../store';
 import { privacyDefaultModeSet } from '../actions';
 import { isShieldedAvailable } from '../shielded/gating';
+import { getPasskeyShieldedXpubs } from '../passkey/shieldedKeys';
 import { closeScreen } from '../utils/navigation';
 
 /**
@@ -33,7 +34,7 @@ import { closeScreen } from '../utils/navigation';
  * for that send.
  *
  * Its audit section opens the export of the privacy keys, with no params: the export asks for the
- * PIN itself. A passkey wallet's record holds no scan key, so it gets no export.
+ * PIN itself, or the passkey. A passkey wallet without shielded keys gets no export.
  *
  * Settings opens it where the shielded UI is available. When it no longer is (the flag turns off,
  * or a reload or a network change starts), it closes with the screens above it, such as the export
@@ -47,7 +48,7 @@ export default function PrivacySettings({ navigation, route }) {
   const dispatch = useDispatch();
   const available = useSelector(isShieldedAvailable);
   const selectedMode = useSelector((state) => state.privacyDefaultMode);
-  const canExportKeys = !STORE.isPasskeyWallet();
+  const canExportKeys = !STORE.isPasskeyWallet() || getPasskeyShieldedXpubs() !== null;
 
   useEffect(() => {
     if (!available) {

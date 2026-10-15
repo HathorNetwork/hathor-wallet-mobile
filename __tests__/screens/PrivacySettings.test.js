@@ -6,6 +6,13 @@
  */
 
 import { jest, describe, test, expect, afterEach } from '@jest/globals';
+
+// The shielded xpubs a passkey wallet stores: each passkey test sets them.
+jest.mock('../../src/passkey/shieldedKeys', () => ({
+  getPasskeyShieldedXpubs: jest.fn(() => null),
+}));
+
+/* eslint-disable import/first */
 import React from 'react';
 import { Image, Switch, TouchableOpacity } from 'react-native';
 import { act, create } from 'react-test-renderer';
@@ -35,6 +42,8 @@ import { PRIVACY_DEFAULT_MODE_KEY, STORE } from '../../src/store';
 import { loadPrivacyDefaultMode } from '../../src/sagas/wallet';
 import { PortalProvider } from '../../src/components/Portal';
 import PrivacySettings from '../../src/screens/PrivacySettings';
+import { getPasskeyShieldedXpubs } from '../../src/passkey/shieldedKeys';
+/* eslint-enable import/first */
 
 const KEY = PRIVACY_DEFAULT_MODE_KEY;
 
@@ -213,11 +222,23 @@ describe('PrivacySettings and the key export', () => {
     expect(navigation.navigate.mock.calls[0]).toEqual(['ExportPrivacyKeys']);
   });
 
-  test('offers no export to a passkey wallet, whose record holds no scan key', async () => {
+  test('offers no export to a passkey wallet without shielded keys', async () => {
     jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(true);
+    getPasskeyShieldedXpubs.mockReturnValue(null);
     const { renderer, texts } = await render();
 
     expect(exportRows(renderer)).toEqual([]);
     expect(texts()).not.toContain('AUDIT');
+  });
+
+  // Its passkey derives the keys to export.
+  test('offers the export to a passkey wallet with shielded keys', async () => {
+    jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(true);
+    getPasskeyShieldedXpubs.mockReturnValue({ scanXpubkey: 'xpub-scan', spendXpubkey: 'xpub-spend' });
+    const { renderer, texts } = await render();
+
+    expect(exportRows(renderer)).toHaveLength(1);
+    expect(texts()).toContain('AUDIT');
+    getPasskeyShieldedXpubs.mockReturnValue(null);
   });
 });

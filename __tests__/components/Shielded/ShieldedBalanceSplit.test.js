@@ -149,6 +149,20 @@ describe('ShieldedBalanceSplit', () => {
     expect(buttonTitles()).toEqual([]);
   });
 
+  test('says why a passkey unlock failed, when its passkey said so', async () => {
+    const message = 'This passkey opens a different wallet.';
+    const { texts } = await render(
+      { capability: unusable('integrity', 'key-mismatch', { locked: 2 }) },
+      { progress: { status: SHIELDED_UNLOCK_PROGRESS.FAILED, message } },
+    );
+
+    expect(texts()).toEqual([
+      '2 private outputs are locked',
+      'Private transfers are not available for this wallet.',
+      message,
+    ]);
+  });
+
   test('keeps the locked count and the failure of an unlock that found the keys do not match', async () => {
     const { texts, buttonTitles } = await render(
       { capability: unusable('integrity', 'key-mismatch', { locked: 2 }) },

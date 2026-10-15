@@ -144,6 +144,37 @@ describe('AsyncStorageStore durable writes', () => {
     expect(store.getWalletMeta()).toMatchObject({ walletType: 'passkey', xpub: 'xpub-of-the-passkey-wallet' });
   });
 
+  // The shielded xpubs are public: they go on the metadata, which the next starts read, and on
+  // the access data, from which wallet-lib builds the shielded chain.
+  test('initPasskeyStorage writes the shielded xpubs on the metadata and the access data', async () => {
+    const store = new AsyncStorageStore();
+    const saveAccessData = stubAccessData(store);
+    const shieldedXpubs = { scanXpubkey: 'xpub-scan', spendXpubkey: 'xpub-spend' };
+
+    await store.initPasskeyStorage('xpub-of-the-passkey-wallet', {
+      passkeyLabel: 'Savings',
+      shieldedXpubs,
+    });
+
+    expect(walletUtils.generateAccessDataFromXpub)
+      .toHaveBeenCalledWith('xpub-of-the-passkey-wallet', shieldedXpubs);
+    expect(saveAccessData).toHaveBeenCalledWith({ fake: 'accessData' });
+    expect(store.getWalletMeta()).toMatchObject({ shieldedXpubs });
+  });
+
+  test('initPasskeyStorage gives the access data no shielded xpubs when it has none', async () => {
+    const store = new AsyncStorageStore();
+    stubAccessData(store);
+
+    await store.initPasskeyStorage('xpub-of-the-passkey-wallet', {
+      passkeyLabel: 'Savings',
+      shieldedXpubs: null,
+    });
+
+    expect(walletUtils.generateAccessDataFromXpub)
+      .toHaveBeenCalledWith('xpub-of-the-passkey-wallet', {});
+  });
+
   test('initPasskeyStorage rejects when the wallet metadata write fails', async () => {
     const store = new AsyncStorageStore();
     const saveAccessData = stubAccessData(store);

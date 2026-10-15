@@ -53,7 +53,7 @@ export const SHIELDED_INITIAL_STATE = {
    */
   receive: SHIELDED_RECEIVE_INITIAL_STATE,
   /**
-   * Where the unlock or the retry the user asked for stands (status and errorCode; see
+   * Where the unlock or the retry the user asked for stands (status, errorCode and message; see
    * SHIELDED_UNLOCK_PROGRESS). It never holds the PIN.
    */
   unlock: SHIELDED_UNLOCK_INITIAL_STATE,
@@ -2351,6 +2351,8 @@ export const onShieldedReceiveAddressUpdate = (state, { payload }) => ({
 /**
  * @param {string} action.payload.status One of SHIELDED_UNLOCK_PROGRESS
  * @param {string|null} action.payload.errorCode The code of the refusal, if any
+ * @param {string|null} action.payload.message What the user is told about a failure, if not the
+ *   generic one
  */
 export const onShieldedUnlockStatusUpdate = (state, { payload }) => ({
   ...state,

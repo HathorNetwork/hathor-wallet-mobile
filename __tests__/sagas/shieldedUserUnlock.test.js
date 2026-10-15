@@ -15,6 +15,12 @@ jest.mock('../../src/logger', () => {
   return { logger: () => log };
 });
 
+// A passkey wallet's scan key: the one held for the session, and the ceremony that derives it.
+jest.mock('../../src/passkey/shieldedKeys', () => ({
+  getPasskeyScanKey: jest.fn(() => null),
+  unlockPasskeyShieldedKeys: jest.fn(),
+}));
+
 /* eslint-disable import/first */
 import { runSaga, stdChannel } from 'redux-saga';
 import { constants as hathorLibConstants, errors } from '@hathor/wallet-lib';
@@ -37,6 +43,12 @@ import {
   SHIELDED_UNLOCK_PROGRESS,
 } from '../../src/shielded/unlockState';
 import { logger } from '../../src/logger';
+import { STORE } from '../../src/store';
+import {
+  PasskeyCancelledError,
+  PasskeyXpubMismatchError,
+} from '../../src/passkey/passkeySigner';
+import { getPasskeyScanKey, unlockPasskeyShieldedKeys } from '../../src/passkey/shieldedKeys';
 /* eslint-enable import/first */
 
 const log = logger();
@@ -190,7 +202,11 @@ describe('the unlock the user asks for', () => {
     deliver(userUnlock());
     await wait(0);
 
-    expect(getState().shielded.unlock).toEqual({ status: FAILED, errorCode: 'shielded-wrong-pin' });
+    expect(getState().shielded.unlock).toEqual({
+      status: FAILED,
+      errorCode: 'shielded-wrong-pin',
+      message: null,
+    });
     expect(dispatched.map((action) => action.type)).not.toContain(types.EXCEPTION_CAPTURED);
     expect(log.error).toHaveBeenCalledTimes(1);
     expect(JSON.stringify(log.error.mock.calls)).not.toContain(PIN);
@@ -204,7 +220,7 @@ describe('the unlock the user asks for', () => {
     deliver(userUnlock());
     await wait(0);
 
-    expect(getState().shielded.unlock).toEqual({ status: FAILED, errorCode: null });
+    expect(getState().shielded.unlock).toEqual({ status: FAILED, errorCode: null, message: null });
     expect(dispatched).toContainEqual(onExceptionCaptured(error, false));
   });
 
@@ -259,6 +275,127 @@ describe('the unlock the user asks for', () => {
 
     expect(wallet.unlockShieldedView).toHaveBeenCalledTimes(1);
     expect(progressUpdates()).toEqual([]);
+  });
+});
+
+describe('the unlock of a passkey wallet', () => {
+  const SCAN_KEY = 'xprv-scan-key';
+  // A passkey wallet has no PIN: its requests carry none.
+  const passkeyUnlock = (source) => shieldedViewUnlockRequested({ source });
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(true);
+    getPasskeyScanKey.mockReturnValue(null);
+    unlockPasskeyShieldedKeys.mockResolvedValue(SCAN_KEY);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  // The lock screen's ceremony just derived the key: no second Face ID.
+  test('unlocks at the lock screen with the scan key held for the session', async () => {
+    getPasskeyScanKey.mockReturnValue(SCAN_KEY);
+    const { wallet, deliver, progressUpdates } = setup();
+
+    deliver(passkeyUnlock(SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN));
+    await wait(0);
+
+    expect(wallet.unlockShieldedView).toHaveBeenCalledWith({ scanXPrivKey: SCAN_KEY });
+    expect(unlockPasskeyShieldedKeys).not.toHaveBeenCalled();
+    expect(progressUpdates()).toEqual([]);
+  });
+
+  test('does nothing at the lock screen without a scan key', async () => {
+    const { wallet, deliver } = setup();
+
+    deliver(passkeyUnlock(SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN));
+    await wait(0);
+
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    expect(unlockPasskeyShieldedKeys).not.toHaveBeenCalled();
+  });
+
+  test('runs a passkey ceremony for the user, then unlocks with its scan key', async () => {
+    const { wallet, deliver, dispatched, progressUpdates } = setup();
+
+    deliver(passkeyUnlock(SHIELDED_UNLOCK_SOURCE.USER));
+    await wait(0);
+
+    expect(unlockPasskeyShieldedKeys).toHaveBeenCalledTimes(1);
+    expect(wallet.unlockShieldedView).toHaveBeenCalledWith({ scanXPrivKey: SCAN_KEY });
+    expect(progressUpdates()).toEqual([progress(UNLOCKING), progress(DECODING)]);
+    expect(JSON.stringify(dispatched)).not.toContain(SCAN_KEY);
+  });
+
+  // The wallet-service facade can't report or unlock its shielded view.
+  test('runs no ceremony on a wallet that cannot report its shielded view', async () => {
+    const { wallet, deliver, dispatched, progressUpdates } = setup();
+    delete wallet.getShieldedCapability;
+
+    deliver(passkeyUnlock(SHIELDED_UNLOCK_SOURCE.USER));
+    await wait(0);
+
+    expect(unlockPasskeyShieldedKeys).not.toHaveBeenCalled();
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    expect(progressUpdates()).toEqual([progress(UNLOCKING), progress(IDLE)]);
+    expect(dispatched.map((action) => action.type)).not.toContain(types.EXCEPTION_CAPTURED);
+  });
+
+  test('runs no ceremony when the wallet is not locked anymore', async () => {
+    const { wallet, deliver, progressUpdates } = setup({ start: DECODED });
+
+    deliver(passkeyUnlock(SHIELDED_UNLOCK_SOURCE.USER));
+    await wait(0);
+
+    expect(unlockPasskeyShieldedKeys).not.toHaveBeenCalled();
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    expect(progressUpdates()).toEqual([progress(UNLOCKING), progress(IDLE)]);
+  });
+
+  test('goes back to idle when the user dismisses the ceremony, with no error modal', async () => {
+    unlockPasskeyShieldedKeys.mockRejectedValue(new PasskeyCancelledError());
+    const { wallet, deliver, dispatched, progressUpdates } = setup();
+
+    deliver(passkeyUnlock(SHIELDED_UNLOCK_SOURCE.USER));
+    await wait(0);
+
+    expect(wallet.unlockShieldedView).not.toHaveBeenCalled();
+    expect(progressUpdates()).toEqual([progress(UNLOCKING), progress(IDLE)]);
+    expect(dispatched.map((action) => action.type)).not.toContain(types.EXCEPTION_CAPTURED);
+  });
+
+  test('fails on an expected ceremony error with its message, with no error modal', async () => {
+    const error = new PasskeyXpubMismatchError('My passkey');
+    unlockPasskeyShieldedKeys.mockRejectedValue(error);
+    const { deliver, dispatched, getState } = setup();
+
+    deliver(passkeyUnlock(SHIELDED_UNLOCK_SOURCE.USER));
+    await wait(0);
+
+    expect(getState().shielded.unlock).toEqual({
+      status: FAILED,
+      errorCode: null,
+      message: error.message,
+    });
+    expect(error.message).toContain('My passkey');
+    expect(JSON.stringify(log.error.mock.calls)).not.toContain('My passkey');
+    expect(dispatched.map((action) => action.type)).not.toContain(types.EXCEPTION_CAPTURED);
+  });
+
+  test('sends a ceremony error nothing expects to the error modal', async () => {
+    const error = new Error('metadata missing');
+    unlockPasskeyShieldedKeys.mockRejectedValue(error);
+    const { deliver, dispatched, getState } = setup();
+
+    deliver(passkeyUnlock(SHIELDED_UNLOCK_SOURCE.USER));
+    await wait(0);
+
+    expect(getState().shielded.unlock).toEqual({ status: FAILED, errorCode: null, message: null });
+    expect(dispatched).toContainEqual(onExceptionCaptured(error, false));
   });
 });
 

@@ -65,10 +65,12 @@ export function getShieldedNetworkPresetFeatureToggle(state) {
 }
 
 /**
- * Whether a wallet start registers the shielded crypto provider: a seed wallet on the shielded
- * testnet, on either facade. It decides by wallet type, not by keys: a wallet created before
- * shielded outputs gets its shielded keys during start(), after the provider must be set. A
- * passkey wallet registers no shielded keys, as it starts from its xpub alone.
+ * Whether a wallet start registers the shielded crypto provider: on the shielded testnet, on
+ * either facade, a seed wallet or a passkey wallet with shielded keys. For a seed wallet it
+ * decides by wallet type, not by keys: a wallet created before shielded outputs gets its shielded
+ * keys during start(), after the provider must be set. A passkey wallet gets them from a passkey
+ * ceremony before start() (see passkey/shieldedKeys.js), so it decides by the shielded xpubs the
+ * wallet stores.
  *
  * It ignores the flag, so the private funds a wallet received keep counting in its balance
  * while the shielded UI is hidden. Elsewhere no provider is registered, so wallet-lib does no
@@ -77,13 +79,16 @@ export function getShieldedNetworkPresetFeatureToggle(state) {
  * @param {Object} params
  * @param {Object} params.networkSettings The selected network settings
  * @param {boolean} params.isPasskeyWallet Whether it is a passkey wallet
+ * @param {boolean} [params.passkeyShieldedKeys] Whether the passkey wallet stores its shielded
+ *   xpubs (getPasskeyShieldedXpubs)
  * @returns {boolean}
  */
 export function shouldRegisterShieldedProvider({
   networkSettings,
   isPasskeyWallet,
+  passkeyShieldedKeys = false,
 }) {
-  return isShieldedNetwork(networkSettings) && !isPasskeyWallet;
+  return isShieldedNetwork(networkSettings) && (!isPasskeyWallet || passkeyShieldedKeys);
 }
 
 /**
@@ -99,8 +104,8 @@ export function selectShieldedCapability(state) {
 /**
  * Whether the app may show shielded UI at all: the flag is on, the network the wallet runs on (the
  * fullnode's, or the wallet-service's) is the shielded testnet, and a crypto provider was
- * registered for the wallet or failed to load. A provider is only ever tried for seed wallets, so
- * this also rules out passkey wallets.
+ * registered for the wallet or failed to load. A provider is only ever tried for seed wallets and
+ * passkey wallets with shielded keys, so this also rules out passkey wallets without them.
  *
  * @param {Object} state Redux state
  * @returns {boolean}
@@ -137,11 +142,26 @@ export function isShieldedEnabled(state) {
 }
 
 /**
+ * Whether a locked wallet (level 'watch') can be unlocked: by the PIN for a seed wallet, by a
+ * passkey ceremony for a passkey wallet. Neither fixes a stored scan key that doesn't decrypt to a
+ * valid one ('corrupt-key'), nor a scan key given at start that isn't the key of the stored scan
+ * xpub ('key-mismatch'): the same root gives the same key again.
+ *
+ * @param {Object|null} capability The wallet's IShieldedCapability
+ * @returns {boolean}
+ */
+export function isUnlockableLock(capability) {
+  return capability?.level === 'watch'
+    && capability.cause !== 'corrupt-key'
+    && capability.cause !== 'key-mismatch';
+}
+
+/**
  * Whether the wallet can send privately, now or once the user unlocks its private balance with
- * the PIN: shielded support is available and the capability level is 'full', or 'watch' with a
- * cause a PIN can fix. A private send needs 'full': it may spend the wallet's private outputs,
- * and its private change must be decoded as soon as it is sent. No PIN fixes a locked wallet
- * whose stored scan key is corrupt ('corrupt-key').
+ * the PIN or the passkey: shielded support is available and the capability level is 'full', or
+ * 'watch' with a cause an unlock can fix (isUnlockableLock). A private send needs 'full': it may
+ * spend the wallet's private outputs, and its private change must be decoded as soon as it is
+ * sent.
  *
  * @param {Object} state Redux state
  * @returns {boolean}
@@ -154,5 +174,5 @@ export function canSendPrivately(state) {
   if (capability?.level === 'full') {
     return true;
   }
-  return capability?.level === 'watch' && capability.cause !== 'corrupt-key';
+  return isUnlockableLock(capability);
 }

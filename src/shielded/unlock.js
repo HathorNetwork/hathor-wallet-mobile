@@ -7,62 +7,55 @@
 
 import { errors } from '@hathor/wallet-lib';
 import { getWalletShieldedCapability } from './capability';
+import { isUnlockableLock } from './gating';
 
 /**
  * What unlockShieldedViewIfLocked did.
  */
 export const SHIELDED_UNLOCK_STATUS = {
   /**
-   * Nothing to unlock: the wallet is not locked (level other than 'watch'), or no PIN can
-   * unlock it (cause 'corrupt-key').
+   * Nothing to unlock: the wallet is not locked (level other than 'watch'), or no unlock can fix
+   * its lock (see isUnlockableLock).
    */
   SKIPPED: 'skipped',
-  /** The PIN unlocked the scan key; the wallet decodes its locked outputs in a walk. */
+  /** The scan key is unlocked; the wallet decodes its locked outputs in a walk. */
   UNLOCKED: 'unlocked',
   /** wallet-lib refused the unlock; errorCode says why. */
   FAILED: 'failed',
 };
 
 /**
- * The lock cause of a wallet whose PIN passes the check of its stored scan key, but whose stored
- * key doesn't decrypt to a valid key. No PIN can unlock it: only deriving the shielded keys again
- * repairs the record.
- */
-const CORRUPT_KEY_CAUSE = 'corrupt-key';
-
-/**
  * Unlocks the shielded view key of a running wallet that holds its shielded outputs locked
- * (level 'watch'), with the PIN that decrypts its access data now. It returns once the key is
- * unlocked, without waiting for the walk that decodes the locked outputs: `reprocessed`
- * resolves with the capability when that walk ends, and never rejects.
+ * (level 'watch'): a seed wallet with the PIN that decrypts its access data now, a passkey wallet
+ * with the scan key a passkey ceremony derived. It returns once the key is unlocked, without
+ * waiting for the walk that decodes the locked outputs: `reprocessed` resolves with the capability
+ * when that walk ends, and never rejects.
  *
  * A wallet that has no view key to unlock, such as a wallet-service facade wallet, whose scan key
  * is unlocked at start(), is skipped with its capability (getWalletShieldedCapability). A wallet
- * at another level is left as it is, and so is a locked wallet whose
- * cause is 'corrupt-key', which no PIN can unlock: a try would only run the PIN check and the
- * decrypt again, and fail. A PIN can fix the other causes ('not-supplied', 'wrong-pin' and
- * 'error'). When wallet-lib refuses the unlock, it returns the ShieldedKeyError's code, one of the
- * 'shielded-*' strings (such as 'shielded-wrong-pin' or 'shielded-corrupt-key'). Any other error is
- * thrown.
+ * at another level is left as it is, and so is a locked wallet whose lock no unlock can fix (cause
+ * 'corrupt-key' or 'key-mismatch', see isUnlockableLock): a try would only check the key again,
+ * and fail. An unlock can fix the other causes ('not-supplied', 'wrong-pin' and 'error'). When
+ * wallet-lib refuses the unlock, it returns the ShieldedKeyError's code, one of the 'shielded-*'
+ * strings (such as 'shielded-wrong-pin' or 'shielded-corrupt-key'). Any other error is thrown.
  *
  * @param {HathorWallet|HathorWalletServiceWallet} wallet A started wallet
- * @param {string} pinCode The wallet's PIN, or its safe-biometry password
+ * @param {{ pinCode: string }|{ scanXPrivKey: string }} input wallet-lib's ShieldedViewKeyInput:
+ *   the wallet's PIN, or its safe-biometry password; or the scan private key itself
  * @returns {Promise<
  *   { status: 'skipped', capability: Object|null }
  *   | { status: 'unlocked', capability: Object, reprocessed: Promise<Object> }
  *   | { status: 'failed', errorCode: string }
  * >}
  */
-export async function unlockShieldedViewIfLocked(wallet, pinCode) {
+export async function unlockShieldedViewIfLocked(wallet, input) {
   const current = await getWalletShieldedCapability(wallet);
-  if (typeof wallet.unlockShieldedView !== 'function'
-    || current.level !== 'watch'
-    || current.cause === CORRUPT_KEY_CAUSE) {
+  if (typeof wallet.unlockShieldedView !== 'function' || !isUnlockableLock(current)) {
     return { status: SHIELDED_UNLOCK_STATUS.SKIPPED, capability: current };
   }
 
   try {
-    const { capability, reprocessed } = await wallet.unlockShieldedView({ pinCode });
+    const { capability, reprocessed } = await wallet.unlockShieldedView(input);
     return { status: SHIELDED_UNLOCK_STATUS.UNLOCKED, capability, reprocessed };
   } catch (e) {
     if (e instanceof errors.ShieldedKeyError) {
