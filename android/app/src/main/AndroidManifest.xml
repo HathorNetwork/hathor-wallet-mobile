@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- enableOnBackInvokedCallback="false": targeting API 36, Android 16 stops calling
+         onBackPressed, which React Native 0.77 handles the back button with. -->
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -14,7 +16,8 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:theme="@style/AppTheme"
-      android:supportsRtl="true">
+      android:supportsRtl="true"
+      android:enableOnBackInvokedCallback="false">
     <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
