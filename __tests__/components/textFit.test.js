@@ -119,15 +119,29 @@ describe('FitText', () => {
   // The visible Text and the hidden one used to measure, in that order.
   function render(os) {
     const { FitText: { default: FitText } } = loadFor(os);
+    const element = (children) => (
+      <FitText style={{ fontSize: 32, fontWeight: 'bold' }}>{children}</FitText>
+    );
     let renderer;
     act(() => {
-      renderer = create(<FitText style={{ fontSize: 32, fontWeight: 'bold' }}>{text}</FitText>);
+      renderer = create(element(text));
     });
     const texts = () => renderer.root.findAll((node) => node.type === 'Text');
-    return { renderer, texts };
+    const layout = (width) => act(() => {
+      renderer.root.findByType('View').props.onLayout({ nativeEvent: { layout: { width } } });
+    });
+    const measure = (width) => act(() => {
+      texts()[1].props.onTextLayout({ nativeEvent: { lines: [{ width }] } });
+    });
+    const setText = (children) => act(() => {
+      renderer.update(element(children));
+    });
+    return { texts, layout, measure, setText };
   }
 
   const fontSize = (props) => Object.assign({}, ...[props.style].flat()).fontSize;
+  const visibleSize = (texts) => fontSize(texts()[0].props);
+  const measuredSize = (texts) => fontSize(texts()[1].props);
 
   test('uses the native shrink on iOS', () => {
     const { texts } = render('ios');
@@ -138,25 +152,65 @@ describe('FitText', () => {
   });
 
   test('on Android, lowers the font size until the measured text fits', () => {
-    const { renderer, texts } = render('android');
-    const layout = (width) => act(() => {
-      renderer.root.findByType('View').props.onLayout({ nativeEvent: { layout: { width } } });
-    });
-    const measure = (width) => act(() => {
-      texts()[1].props.onTextLayout({ nativeEvent: { lines: [{ width }] } });
-    });
+    const { texts, layout, measure } = render('android');
 
     // The measurement may arrive before the available width.
     measure(400);
-    expect(fontSize(texts()[0].props)).toBe(32);
+    expect(visibleSize(texts)).toBe(32);
     layout(300);
-    expect(fontSize(texts()[0].props)).toBe(24);
-    expect(fontSize(texts()[1].props)).toBe(24);
+    expect(measuredSize(texts)).toBe(24);
     measure(310);
-    expect(fontSize(texts()[0].props)).toBe(23);
+    expect(measuredSize(texts)).toBe(23);
+    // The visible text changes size once the fit is found, not at each size tried.
+    expect(visibleSize(texts)).toBe(32);
     measure(299);
-    expect(fontSize(texts()[0].props)).toBe(23);
+    expect(visibleSize(texts)).toBe(23);
+    expect(measuredSize(texts)).toBe(23);
     expect(texts()[0].props.numberOfLines).toBe(1);
     expect(texts()[0].props.adjustsFontSizeToFit).toBeUndefined();
+  });
+
+  test('measures each size with a new Text, which always reports its layout', () => {
+    // Fabric reports a layout only when it differs from the instance's last one, and two sizes
+    // can round to the same pixels, so a reused instance could leave a size never measured.
+    const { texts, layout, measure } = render('android');
+    layout(300);
+    const first = texts()[1];
+    measure(400);
+    expect(measuredSize(texts)).toBe(24);
+    expect(texts()[1]).not.toBe(first);
+  });
+
+  test('counts a text less than a pixel wider than the space as fitting', () => {
+    // Android 7-10 don't round the measured width up, unlike the space around the text.
+    const { texts, layout, measure } = render('android');
+    layout(300);
+    measure(300.4);
+    expect(visibleSize(texts)).toBe(32);
+    expect(measuredSize(texts)).toBe(32);
+  });
+
+  test('keeps the last fitted size while a new text is fitted', () => {
+    const { texts, layout, measure, setText } = render('android');
+    layout(300);
+    measure(400);
+    measure(299);
+    expect(visibleSize(texts)).toBe(24);
+
+    setText('1,234,568.89 HTR');
+    // The new text is measured from the full size, out of sight.
+    expect(measuredSize(texts)).toBe(32);
+    expect(visibleSize(texts)).toBe(24);
+    measure(400);
+    measure(310);
+    expect(visibleSize(texts)).toBe(24);
+    measure(299);
+    expect(visibleSize(texts)).toBe(23);
+
+    // A shorter text grows back once it is measured.
+    setText('1.00 HTR');
+    expect(visibleSize(texts)).toBe(23);
+    measure(150);
+    expect(visibleSize(texts)).toBe(32);
   });
 });

@@ -564,6 +564,8 @@ class BalanceView extends React.Component {
       alignItems: 'center',
     },
     view: {
+      // The screen's width, not the balance's: FitText fits the balance in it.
+      alignSelf: 'stretch',
       paddingTop: 32,
       paddingBottom: 24,
       paddingLeft: 54,
