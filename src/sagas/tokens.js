@@ -36,7 +36,7 @@ import {
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
   tokensSavedForNetwork,
-  setTokens,
+  tokenImportRemoveFromList,
 } from '../actions';
 import { STORE } from '../store';
 import { isShieldedAvailable } from '../shielded/gating';
@@ -592,8 +592,12 @@ export function* saveNetworkTokens() {
 }
 
 /**
- * Restore previously saved tokens for the current network after
- * the wallet starts successfully.
+ * Registers again the tokens saved for the current network that the wallet's storage lacks, as
+ * after a network change wiped them.
+ *
+ * loadTokens calls it before it reads the registered tokens, so the tokens are in storage and in
+ * the redux state before the wallet start ends: the scan for unregistered tokens and the txs that
+ * arrive after the start must not take a token this restores for an unregistered one.
  */
 export function* restoreNetworkTokens() {
   try {
@@ -608,7 +612,7 @@ export function* restoreNetworkTokens() {
     const wallet = yield select((state) => state.wallet);
     if (!wallet) return;
 
-    let restoredAny = false;
+    const restoredUids = [];
     for (const token of Object.values(savedTokens)) {
       const isRegistered = yield call(
         [wallet.storage, wallet.storage.isTokenRegistered],
@@ -619,17 +623,13 @@ export function* restoreNetworkTokens() {
           [wallet.storage, wallet.storage.registerToken],
           token,
         );
-        restoredAny = true;
+        restoredUids.push(token.uid);
       }
     }
 
-    if (restoredAny) {
-      const tokens = yield call(getRegisteredTokens, wallet);
-      yield put(setTokens(tokens));
-
-      for (const token of Object.values(savedTokens)) {
-        yield put(tokenFetchBalanceRequested(token.uid));
-      }
+    if (restoredUids.length > 0) {
+      // A restored token is registered: it must not stay listed for import.
+      yield put(tokenImportRemoveFromList(restoredUids));
     }
   } catch (e) {
     log.error('Error restoring tokens for network:', e);
@@ -662,7 +662,6 @@ export function* saga() {
     takeEvery(types.NEW_TOKEN, routeTokenChange),
     takeEvery(types.SET_TOKENS, routeTokenChange),
     takeEvery(types.SAVE_TOKENS_FOR_NETWORK, saveNetworkTokens),
-    takeEvery(types.START_WALLET_SUCCESS, restoreNetworkTokens),
     takeEvery(types.NEW_TOKEN, updateNetworkTokenSnapshot),
     takeEvery(types.SET_TOKENS, updateNetworkTokenSnapshot),
   ]);

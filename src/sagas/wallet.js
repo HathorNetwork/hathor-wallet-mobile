@@ -100,7 +100,7 @@ import {
   startWalletRequested,
   shieldedCapabilityUpdate,
 } from '../actions';
-import { fetchTokenData } from './tokens';
+import { fetchTokenData, restoreNetworkTokens } from './tokens';
 import { detectUnregisteredWalletTokens } from './tokenImport';
 import {
   specificTypeAndPayload,
@@ -850,6 +850,8 @@ export function* loadTokens() {
 
   const wallet = yield select((state) => state.wallet);
 
+  // Register the tokens saved for this network first, so they are read as registered below.
+  yield call(restoreNetworkTokens);
   const tokens = yield getRegisteredTokens(wallet);
 
   yield put(setTokens(tokens));
