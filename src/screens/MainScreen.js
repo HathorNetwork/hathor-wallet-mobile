@@ -31,6 +31,7 @@ import {
 import { DEFAULT_TOKEN, IS_MULTI_TOKEN } from '../constants';
 import { fetchMoreHistory, tokenFetchBalanceRequested, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
+import FitText from '../components/FitText';
 import ShieldedBalanceSplit from '../components/Shielded/ShieldedBalanceSplit';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
@@ -563,6 +564,8 @@ class BalanceView extends React.Component {
       alignItems: 'center',
     },
     view: {
+      // The screen's width, not the balance's: FitText fits the balance in it.
+      alignSelf: 'stretch',
       paddingTop: 32,
       paddingBottom: 24,
       paddingLeft: 54,
@@ -611,14 +614,9 @@ class BalanceView extends React.Component {
     const { style } = this;
     return (
       <View style={style.center}>
-        <Text
-          style={style.balanceAvailable}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
+        <FitText style={style.balanceAvailable}>
           {`${availableStr} ${token.symbol}`}
-        </Text>
+        </FitText>
         <Text style={style.text1}>{t`Available Balance`}</Text>
         {this.renderSplit()}
       </View>

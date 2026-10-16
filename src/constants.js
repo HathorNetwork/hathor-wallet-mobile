@@ -8,6 +8,7 @@
 // Workaround to prevent error when using locale in android
 import 'intl';
 import 'intl/locale-data/jsonp/en';
+import { Platform } from 'react-native';
 
 import {
   _IS_MULTI_TOKEN as IS_MULTI_TOKEN,
@@ -15,6 +16,14 @@ import {
   _PRIMARY_COLOR as PRIMARY_COLOR,
   _SENTRY_DSN as SENTRY_DSN,
 } from './config';
+
+/**
+ * Whether Text may shrink its font to fit (adjustsFontSizeToFit). Only on iOS: on Android (React
+ * Native 0.77, New Architecture) the shrink compounds on every layout pass and ignores
+ * minimumFontScale, so the text ends up far smaller than it needs to be. There it stays on one
+ * line and is truncated instead, or shrinks with FitText.
+ */
+export const SHRINK_TEXT_TO_FIT = Platform.OS === 'ios';
 
 /**
  * This is the environment stage that will be used to load the unleash feature flags.

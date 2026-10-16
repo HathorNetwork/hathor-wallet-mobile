@@ -24,6 +24,7 @@ import {
   REOWN_FEATURE_TOGGLE,
   SINGLE_ADDRESS_FEATURE_TOGGLE,
   AMOUNT_FORMAT_FEATURE_TOGGLE,
+  SHRINK_TEXT_TO_FIT,
 } from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
@@ -253,7 +254,9 @@ export class Settings extends React.Component {
                   <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>{t`Connected to`}</Text>
                   <Text
                     style={{ fontSize: 12 }}
-                    adjustsFontSizeToFit
+                    numberOfLines={1}
+                    ellipsizeMode='middle'
+                    adjustsFontSizeToFit={SHRINK_TEXT_TO_FIT}
                     minimumFontScale={0.5}
                   >
                     {this.props.server}
