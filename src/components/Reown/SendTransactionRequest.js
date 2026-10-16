@@ -71,15 +71,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   itemTitle: {
     fontWeight: 'bold',
     fontSize: 16,
+    flexShrink: 0,
+    marginRight: 8,
   },
   valueText: {
     fontSize: 16,
     fontWeight: '600',
+    flexShrink: 1,
+    textAlign: 'right',
   },
   labelText: {
     fontSize: 14,
@@ -145,7 +149,9 @@ const styles = StyleSheet.create({
   },
   valueWithIcon: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    maxWidth: '60%',
+    flexShrink: 1,
   },
   errorActions: {
     width: '100%',
@@ -173,11 +179,13 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     unregisteredTokens,
     reown,
     tokenMetadata,
+    decimalPlaces,
   } = useSelector((state) => ({
     tokens: state.tokens,
     tokenMetadata: state.tokenMetadata,
     unregisteredTokens: state.unregisteredTokens,
-    reown: state.reown
+    reown: state.reown,
+    decimalPlaces: state.serverInfo?.decimal_places,
   }));
 
   // Combine registered and unregistered tokens
@@ -267,7 +275,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
     const isNFT = tokenId && isTokenNFT(tokenId, tokenMetadata);
 
-    return numberUtils.prettyValue(value, isNFT ? 0 : constants.DECIMAL_PLACES);
+    return numberUtils.prettyValue(value, isNFT ? 0 : decimalPlaces);
   };
 
   const truncateTxId = (txId) => {
