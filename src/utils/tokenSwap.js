@@ -355,9 +355,10 @@ export function selectTokenSwapContractId(state) {
  * Render amount and token symbol for UI components.
  * @param {number|bigint} amount
  * @param {TokenData} token
+ * @param {number} [decimalPlaces] Network decimal places (serverInfo.decimal_places)
  */
-export function renderAmountAndSymbol(amount, token) {
-  return `${renderValue(amount, false)} ${token.symbol}`;
+export function renderAmountAndSymbol(amount, token, decimalPlaces) {
+  return `${renderValue(amount, false, decimalPlaces)} ${token.symbol}`;
 }
 
 /**
@@ -367,10 +368,17 @@ export function renderAmountAndSymbol(amount, token) {
  * @param {number|bigint} amount
  * @param {TokenData} token
  * @param {number} slippage
+ * @param {number} [decimalPlaces] Network decimal places (serverInfo.decimal_places)
  */
-export function renderAmountAndSymbolWithSlippage(direction, amount, token, slippage) {
+export function renderAmountAndSymbolWithSlippage(
+  direction,
+  amount,
+  token,
+  slippage,
+  decimalPlaces,
+) {
   const newAmount = calcAmountWithSlippage(direction, amount, slippage);
-  return renderAmountAndSymbol(newAmount, token);
+  return renderAmountAndSymbol(newAmount, token, decimalPlaces);
 }
 
 /**
@@ -378,21 +386,25 @@ export function renderAmountAndSymbolWithSlippage(direction, amount, token, slip
  * @param {TokenSwapQuote} quote
  * @param {TokenData} inToken
  * @param {TokenData} outToken
+ * @param {number} [decimalPlaces] Network decimal places (serverInfo.decimal_places)
  */
-export function renderConversionRate(quote, inToken, outToken) {
+export function renderConversionRate(quote, inToken, outToken, decimalPlaces) {
   if (!quote) {
     return null;
   }
+  // Reference amount the rate is quoted against: one whole token in the
+  // network's smallest-unit scale.
+  const oneToken = 10 ** (decimalPlaces ?? hathorLib.constants.DECIMAL_PLACES);
   if ((!quote.amount_in) || quote.amount_in === 0) {
     // Invalid but we should avoid rendering errors
-    return `${renderAmountAndSymbol(100, outToken)} = ${renderAmountAndSymbol(0, inToken)}`;
+    return `${renderAmountAndSymbol(oneToken, outToken, decimalPlaces)} = ${renderAmountAndSymbol(0, inToken, decimalPlaces)}`;
   }
-  let exchangeRate = (100 * Number(quote.amount_out)) / Number(quote.amount_in);
+  let exchangeRate = (oneToken * Number(quote.amount_out)) / Number(quote.amount_in);
   let extraRate = 1;
 
   /**
    * This loop will gradually increase the reference so we do not use fractional rates.
-   * The cutoff for the reference value is 1000.00
+   * The cutoff for the reference is 1000 whole tokens.
    */
   while (!Number.isInteger(exchangeRate)) {
     if (extraRate === 1000) {
@@ -402,7 +414,7 @@ export function renderConversionRate(quote, inToken, outToken) {
     extraRate *= 10;
     exchangeRate *= 10;
   }
-  return `${renderAmountAndSymbol(exchangeRate, outToken)} = ${renderAmountAndSymbol(100 * extraRate, inToken)}`;
+  return `${renderAmountAndSymbol(exchangeRate, outToken, decimalPlaces)} = ${renderAmountAndSymbol(oneToken * extraRate, inToken, decimalPlaces)}`;
 }
 
 /**

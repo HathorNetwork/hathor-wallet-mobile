@@ -4,77 +4,81 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
 #: src/components/Reown/CreateTokenRequest.js:89
-#: src/models.js:85
+#: src/models.js:94
 #.  This should never happen!
 msgid "Unknown"
 msgstr ""
 
-#: src/models.js:88
+#: src/models.js:97
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr ""
 
-#: src/models.js:90
+#: src/models.js:99
 msgid "Sent ${ symbol }"
 msgstr ""
 
-#: src/models.js:92
+#: src/models.js:101
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr ""
 
-#: src/models.js:102
+#: src/models.js:111
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Today •] HH:mm"
 msgstr ""
 
-#: src/models.js:103
+#: src/models.js:112
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Tomorrow •] HH:mm"
 msgstr ""
 
-#: src/models.js:104
+#: src/models.js:113
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "dddd [•] HH:mm"
 msgstr ""
 
-#: src/models.js:105
+#: src/models.js:114
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Yesterday •] HH:mm"
 msgstr ""
 
-#: src/models.js:106
+#: src/models.js:115
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
-#: src/models.js:107
-#: src/utils.js:665
+#: src/models.js:116
+#: src/utils.js:868
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:271
+#: src/utils.js:257
+msgid "This wallet does not support shielded addresses."
+msgstr ""
+
+#: src/utils.js:305
 msgid "Invalid address"
 msgstr ""
 
-#: src/utils.js:650
+#: src/utils.js:853
 msgid "CREATE DEPOSIT TOKEN"
 msgstr ""
 
-#: src/utils.js:652
+#: src/utils.js:855
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:36
-#: src/screens/CreateTokenConfirm.js:84
+#: src/screens/CreateTokenConfirm.js:95
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94
-#: src/utils.js:654
+#: src/utils.js:857
 msgid "CREATE TOKEN"
 msgstr ""
 
-#: src/workers/pushNotificationHandler.js:92
+#: src/workers/pushNotificationHandler.js:97
 #. *
 #.          * @example
 #.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
@@ -89,7 +93,7 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/workers/pushNotificationHandler.js:105
+#: src/workers/pushNotificationHandler.js:110
 #. *
 #.          * @example
 #.          * You have received 10 T2 and 5 T1 on a new transaction.
@@ -100,7 +104,7 @@ msgid ""
 "transaction."
 msgstr ""
 
-#: src/workers/pushNotificationHandler.js:113
+#: src/workers/pushNotificationHandler.js:118
 #. *
 #.          * @example
 #.          * You have received 10 T2 on a new transaction.
@@ -108,24 +112,90 @@ msgstr ""
 msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr ""
 
-#: src/workers/pushNotificationHandler.js:116
+#: src/workers/pushNotificationHandler.js:121
 msgid "There is a new transaction in your wallet."
 msgstr ""
 
-#: src/workers/pushNotificationHandler.js:118
+#: src/workers/pushNotificationHandler.js:123
 msgid "New transaction received"
 msgstr ""
 
-#: src/utils/tokenSwap.js:447
+#: src/screens/SendConfirmScreen.js:542
+#: src/utils/shieldedSend.js:207
+msgid "Your private balance is locked. Unlock it to send privately."
+msgstr ""
+
+#: src/utils/shieldedSend.js:210
+msgid "This wallet cannot receive the private change this transaction needs."
+msgstr ""
+
+#: src/utils/shieldedSend.js:218
+msgid ""
+"To keep the value of the private funds it spends hidden, this transaction "
+"needs a private change, and there is not enough HTR to pay its privacy fee."
+msgstr ""
+
+#: src/utils/shieldedSend.js:222
+msgid ""
+"To keep the amount it sends hidden, this transaction needs a private "
+"change, and there is not enough HTR to pay its privacy fee."
+msgstr ""
+
+#: src/utils/shieldedSend.js:226
+msgid "Insufficient HTR to cover the privacy fees of this transaction."
+msgstr ""
+
+#: src/utils/shieldedSend.js:229
+msgid ""
+"An amount in this transaction, its change included, is too large to be "
+"private."
+msgstr ""
+
+#: src/shielded/newAddress.js:34
+#: src/shielded/receiveState.js:145
+#: src/utils/shieldedSend.js:232
+msgid "Private transfers could not be loaded on this device."
+msgstr ""
+
+#: src/utils/shieldedSend.js:235
+msgid "The private change of this transaction could not be prepared. Try again."
+msgstr ""
+
+#: src/utils/shieldedSend.js:254
+msgid ""
+"This transaction spends private funds, so its change must stay private, but "
+"the dApp asked to send the change to an address that can't receive private "
+"funds."
+msgstr ""
+
+#: src/utils/tokenSwap.js:459
 msgid "Insufficient HTR balance to cover the network fee."
 msgstr ""
 
-#: src/utils/tokenSwap.js:450
+#: src/utils/tokenSwap.js:462
 msgid "Insufficient balance to execute the swap."
 msgstr ""
 
-#: src/utils/tokenSwap.js:453
+#: src/utils/tokenSwap.js:465
 msgid "Could not build the swap transaction. Please try again."
+msgstr ""
+
+#: src/shielded/newAddress.js:32
+msgid "Your private balance is locked. Unlock it and try again."
+msgstr ""
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:97
+#: src/components/Shielded/ShieldedBalanceSplit.js:155
+#: src/screens/ExportPrivacyKeys.js:86
+#: src/screens/SendConfirmScreen.js:201
+#: src/screens/SendConfirmScreen.js:233
+#: src/shielded/newAddress.js:36
+#: src/shielded/receiveState.js:150
+msgid "Private transfers are not available for this wallet."
+msgstr ""
+
+#: src/shielded/receiveState.js:148
+msgid "Could not load your private address."
 msgstr ""
 
 #: src/screens/About.js:83
@@ -137,12 +207,12 @@ msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""
 
 #: src/screens/About.js:99
-#: src/screens/InitWallet.js:65
+#: src/screens/InitWallet.js:68
 msgid "This wallet is connected to the **mainnet**."
 msgstr ""
 
 #: src/screens/About.js:102
-#: src/screens/InitWallet.js:68
+#: src/screens/InitWallet.js:71
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
 "So, we advise you to keep only a small amount of tokens here, such as "
@@ -155,69 +225,114 @@ msgid ""
 "|link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#: src/screens/AddressMode.js:122
+#: src/screens/AddressMode.js:134
 msgid "Error"
 msgstr ""
 
-#: src/screens/AddressMode.js:123
+#: src/screens/AddressMode.js:135
 msgid "Failed to change address mode. Please try again."
 msgstr ""
 
-#: src/screens/AddressMode.js:184
-#: src/screens/AddressMode.js:197
+#: src/screens/AddressMode.js:148
+#: src/screens/AddressMode.js:161
 msgid "ADDRESS MODE"
 msgstr ""
 
-#: src/screens/AddressMode.js:203
+#: src/screens/AddressMode.js:167
 msgid "You can set your wallet to "
 msgstr ""
 
-#: src/screens/AddressMode.js:205
+#: src/screens/AddressMode.js:169
 msgid "single or multi address mode"
 msgstr ""
 
-#: src/screens/AddressMode.js:210
+#: src/screens/AddressMode.js:174
 msgid "You can switch anytime in the settings."
 msgstr ""
 
-#: src/screens/AddressMode.js:217
+#: src/screens/AddressMode.js:184
 msgid "Single Address"
 msgstr ""
 
-#: src/screens/AddressMode.js:218
+#: src/screens/AddressMode.js:185
 msgid "Your wallet will use only one address (index 0)."
 msgstr ""
 
-#: src/screens/AddressMode.js:219
+#: src/screens/AddressMode.js:186
 msgid "Easier to manage and compatible with all dApps."
 msgstr ""
 
-#: src/screens/AddressMode.js:224
+#: src/screens/AddressMode.js:191
 msgid "Multi Address"
 msgstr ""
 
-#: src/screens/AddressMode.js:225
+#: src/screens/AddressMode.js:192
 msgid "Your wallet will let you generate multiple addresses."
 msgstr ""
 
-#: src/screens/AddressMode.js:226
+#: src/screens/AddressMode.js:193
 msgid "Useful for advanced users."
 msgstr ""
 
-#: src/screens/AddressMode.js:237
+#: src/screens/AddressMode.js:204
+msgid "Single address mode is not available on this network."
+msgstr ""
+
+#: src/screens/AddressMode.js:205
 msgid ""
 "You can't switch to single address mode because other addresses in your "
 "wallet are already in use."
 msgstr ""
 
-#: src/screens/AddressMode.js:261
-msgid "SAVE PREFERENCES"
+#: src/screens/AddressMode.js:215
+#: src/screens/AmountFormat.js:99
+msgid "Save preferences"
 msgstr ""
 
-#: src/screens/AddressMode.js:281
+#: src/screens/AddressMode.js:236
 msgid ""
 "Changing\n"
 "address mode..."
+msgstr ""
+
+#: src/screens/AmountFormat.js:59
+msgid "AMOUNT FORMAT"
+msgstr ""
+
+#: src/screens/AmountFormat.js:65
+msgid ""
+"Choose how amounts are displayed across your wallet. You can change your "
+"default anytime."
+msgstr ""
+
+#: src/screens/AmountFormat.js:75
+msgid "Expanded"
+msgstr ""
+
+#: src/screens/AmountFormat.js:76
+msgid "Standard notation. Leading zeros are written out in full (ex: 0.0000005195)."
+msgstr ""
+
+#: src/screens/AmountFormat.js:77
+msgid "Default"
+msgstr ""
+
+#: src/screens/AmountFormat.js:81
+msgid "Compressed"
+msgstr ""
+
+#: src/screens/AmountFormat.js:82
+msgid ""
+"Compresses leading zeros into a subscript count for shorter, easier-to-read "
+"small values (ex: 0.0₆5195)."
+msgstr ""
+
+#: src/screens/AmountFormat.js:88
+msgid "PREVIEW"
+msgstr ""
+
+#: src/screens/AmountFormat.js:90
+msgid "Full amount"
 msgstr ""
 
 #: src/screens/BackupWords.js:184
@@ -240,83 +355,84 @@ msgstr ""
 msgid "Please double check the words you saved and start the process again."
 msgstr ""
 
-#: src/screens/ChangePin.js:113
+#: src/screens/ChangePin.js:118
 msgid "Incorrect PIN code."
 msgstr ""
 
-#: src/screens/ChangePin.js:149
+#: src/screens/ChangePin.js:154
 msgid "PIN codes don't match."
 msgstr ""
 
-#: src/screens/ChangePin.js:178
+#: src/screens/ChangePin.js:186
 #.  Should never get here because we've done all the validations before
 msgid "Error while changing PIN"
 msgstr ""
 
-#: src/screens/ChangePin.js:185
+#: src/screens/ChangePin.js:193
 msgid "Please enter your **current PIN**"
 msgstr ""
 
-#: src/screens/ChangePin.js:198
+#: src/screens/ChangePin.js:206
 msgid "Please enter your **new PIN**"
 msgstr ""
 
-#: src/screens/ChangePin.js:211
+#: src/screens/ChangePin.js:219
 msgid "Please enter your **new PIN** again"
 msgstr ""
 
-#: src/screens/ChangePin.js:226
+#: src/screens/ChangePin.js:234
 msgid "New PIN recorded"
 msgstr ""
 
-#: src/screens/ChangePin.js:236
+#: src/screens/ChangePin.js:244
 msgid "CHANGE PIN"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:140
+#: src/screens/ChoosePinScreen.js:148
 msgid "Enter your new PIN code"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:152
+#: src/screens/ChoosePinScreen.js:160
 msgid "Enter your new PIN code again"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:74
+#: src/screens/ChoosePinScreen.js:75
 msgid "Create a new PIN code,"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:77
+#: src/screens/ChoosePinScreen.js:78
 msgid "To confirm the PIN,"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:166
+#: src/screens/ChoosePinScreen.js:174
 msgid "PIN codes don't match. Try again."
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:189
+#: src/screens/ChoosePinScreen.js:197
 msgid "Start the Wallet"
 msgstr ""
 
-#: src/screens/ConfirmImportScreen.js:91
-#: src/screens/ImportTokensScreen.js:199
+#: src/screens/ConfirmImportScreen.js:92
+#: src/screens/ImportTokensScreen.js:200
 msgid "IMPORT TOKENS"
 msgstr ""
 
-#: src/screens/ConfirmImportScreen.js:105
+#: src/screens/ConfirmImportScreen.js:106
 msgid "Confirm Import"
 msgstr ""
 
-#: src/screens/ConfirmImportScreen.js:107
+#: src/screens/ConfirmImportScreen.js:108
 msgid "You are about to add these tokens to your wallet:"
 msgstr ""
 
 #: src/components/TokenImportBanner.js:77
-#: src/screens/ConfirmImportScreen.js:120
-#: src/screens/Settings.js:129
+#: src/screens/ConfirmImportScreen.js:121
+#: src/screens/Settings.js:157
 msgid "Import tokens"
 msgstr ""
 
-#: src/screens/ConfirmImportScreen.js:129
+#: src/components/PasskeyOnboardingButton.js:240
+#: src/screens/ConfirmImportScreen.js:130
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:80
 #: src/screens/Reown/SuccessFeedbackScreen.js:39
 msgid "Back"
@@ -324,7 +440,7 @@ msgstr ""
 
 #: src/screens/CreateTokenAmount.js:96
 #: src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:92
+#: src/screens/SendAmountInput.js:129
 msgid "Invalid amount"
 msgstr ""
 
@@ -353,10 +469,10 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:211
 #: src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86
-#: src/screens/InitWallet.js:229
-#: src/screens/InitWallet.js:382
-#: src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:169
+#: src/screens/InitWallet.js:268
+#: src/screens/InitWallet.js:421
+#: src/screens/SendAddressInput.js:151
+#: src/screens/SendAmountInput.js:251
 msgid "Next"
 msgstr ""
 
@@ -372,53 +488,62 @@ msgid ""
 "to each future transaction of this token."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:140
+#: src/screens/CreateTokenConfirm.js:173
 msgid "Creating token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:155
+#: src/screens/CreateTokenConfirm.js:179
+msgid "Building the transaction"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:197
+#.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 msgid "Enter your 6-digit pin to create your token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:156
+#: src/screens/CreateTokenConfirm.js:198
+#.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 msgid "Authorize token creation"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:158
-#: src/screens/SendConfirmScreen.js:196
-#: src/screens/TokenSwapReview.js:221
+#: src/screens/CreateTokenConfirm.js:200
+#: src/screens/SendConfirmScreen.js:444
+#: src/screens/TokenSwapReview.js:265
+#.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:216
+#: src/screens/CreateTokenConfirm.js:241
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:229
+#: src/screens/CreateTokenConfirm.js:258
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:243
+#: src/screens/CreateTokenConfirm.js:272
 msgid "Token name"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:249
+#: src/screens/CreateTokenConfirm.js:278
 #: src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:256
+#: src/screens/CreateTokenConfirm.js:285
 msgid "Deposit"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:264
+#: src/components/Shielded/FeeBreakdown.js:70
+#: src/screens/CreateTokenConfirm.js:293
+#: src/screens/SendConfirmScreen.js:671
 msgid "Network fee"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:273
+#: src/screens/CreateTokenConfirm.js:302
 msgid "Create token"
 msgstr ""
 
@@ -540,127 +665,212 @@ msgstr ""
 msgid "FEE TOKEN"
 msgstr ""
 
-#: src/screens/Dashboard.js:140
-#: src/screens/Dashboard.js:202
+#: src/screens/Dashboard.js:142
+#: src/screens/Dashboard.js:207
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 msgid "Tokens"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractsList.js:75
-#: src/screens/Dashboard.js:141
+#: src/screens/Dashboard.js:143
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 msgid "Nano Contracts"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:134
+#: src/screens/ExportPrivacyKeys.js:67
+msgid ""
+"This wallet has no shielded keys. They are only present on wallets created "
+"after the shielded outputs feature was enabled."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:74
+msgid "Unlock your private balance to export the privacy keys."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:149
+msgid "Hide"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:149
+msgid "Show full key"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:154
+msgid "Copied"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:154
+msgid "Copy"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:257
+msgid "Wallet not ready"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:337
+msgid "Enter your 6-digit PIN to export the audit keys"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:365
+msgid "EXPORT PRIVACY KEYS"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:373
+msgid "Read this before sharing"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:375
+msgid ""
+"These two keys give an auditor read-only access to every shielded output "
+"your wallet receives — they can identify every incoming shielded "
+"transaction and decrypt the amount and token of each one."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:378
+msgid ""
+"They do NOT allow spending. Whoever holds them cannot move your funds, sign "
+"transactions on your behalf, or access transparent (non-shielded) balances."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:381
+msgid ""
+"Treat them like any other private wallet data. Share them only with "
+"auditors you trust, and over a secure channel."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:388
+msgid "Deriving keys…"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:401
+msgid "Spend public key (xpub)"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:403
+msgid ""
+"Path m/44'/280'/2'/0. Lets the auditor derive every receiving spend-side "
+"address and find your incoming shielded outputs on-chain."
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:409
+msgid "Scan private key (xpriv)"
+msgstr ""
+
+#: src/screens/ExportPrivacyKeys.js:411
+msgid ""
+"Path m/44'/280'/1'/0. Lets the auditor decrypt the value and token of every "
+"shielded output your wallet receives. Used only for ECDH; never for signing."
+msgstr ""
+
+#: src/screens/ImportTokensScreen.js:135
 msgid "No tokens available to import"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:137
+#: src/screens/ImportTokensScreen.js:138
 msgid "We didn't find any unregistered tokens linked to your wallet."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:140
+#: src/screens/ImportTokensScreen.js:141
 msgid "You can register a new one manually."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:144
-#: src/screens/Settings.js:121
+#: src/screens/ImportTokensScreen.js:145
+#: src/screens/Settings.js:149
 msgid "Register a token"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:166
+#: src/screens/ImportTokensScreen.js:167
 msgid "Select the tokens you want to add to your wallet."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:173
+#: src/screens/ImportTokensScreen.js:174
 msgid "Check before import tokens"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:176
+#: src/screens/ImportTokensScreen.js:177
 msgid "Adding tokens is your responsibility. Make sure you recognize the source."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:182
+#: src/screens/ImportTokensScreen.js:183
 msgid "Tokens found"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:208
+#: src/screens/ImportTokensScreen.js:209
 msgid "Continue"
 msgstr ""
 
-#: src/screens/InitWallet.js:62
+#: src/screens/InitWallet.js:65
 msgid "Welcome to Hathor Wallet!"
 msgstr ""
 
-#: src/screens/InitWallet.js:73
+#: src/screens/InitWallet.js:76
 msgid ""
 "For further information, check out our website "
 "|link:https://hathor.network/|."
 msgstr ""
 
-#: src/screens/InitWallet.js:86
+#: src/screens/InitWallet.js:89
 msgid ""
 "I agree with the |link1:Terms of Service| and |link2:Privacy Policy| and "
 "understand the risks of using a mobile wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:98
+#: src/screens/InitWallet.js:101
 msgid "Start"
 msgstr ""
 
-#: src/screens/InitWallet.js:115
+#: src/screens/InitWallet.js:123
+msgid "New Wallet"
+msgstr ""
+
+#: src/screens/InitWallet.js:130
+msgid "Import Wallet"
+msgstr ""
+
+#: src/screens/InitWallet.js:162
 msgid "To start,"
 msgstr ""
 
-#: src/screens/InitWallet.js:117
+#: src/screens/InitWallet.js:164
 msgid "You need to **initialize your wallet**."
 msgstr ""
 
-#: src/screens/InitWallet.js:120
+#: src/screens/InitWallet.js:167
 msgid ""
 "You can either **start a new wallet** or **import a wallet** that already "
 "exists."
 msgstr ""
 
-#: src/screens/InitWallet.js:123
+#: src/screens/InitWallet.js:170
 msgid "To import a wallet, you will need to provide your seed words."
 msgstr ""
 
-#: src/screens/InitWallet.js:128
-msgid "Import Wallet"
-msgstr ""
-
-#: src/screens/InitWallet.js:134
-msgid "New Wallet"
-msgstr ""
-
-#: src/screens/InitWallet.js:220
+#: src/screens/InitWallet.js:259
 msgid "Your wallet has been created!"
 msgstr ""
 
-#: src/screens/InitWallet.js:222
+#: src/screens/InitWallet.js:261
 msgid ""
 "You must **do a backup** and save the words below **in the same order they "
 "appear**."
 msgstr ""
 
-#: src/screens/InitWallet.js:343
+#: src/screens/InitWallet.js:382
 msgid "To import a wallet,"
 msgstr ""
 
-#: src/screens/InitWallet.js:345
+#: src/screens/InitWallet.js:384
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
 "wallet, separated by space."
 msgstr ""
 
-#: src/screens/InitWallet.js:348
+#: src/screens/InitWallet.js:387
 msgid "Words"
 msgstr ""
 
-#: src/screens/InitWallet.js:353
+#: src/screens/InitWallet.js:392
 msgid "Enter your seed words separated by space"
 msgstr ""
 
@@ -668,11 +878,11 @@ msgstr ""
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
-#: src/components/Reown/SendTransactionRequest.js:550
+#: src/components/Reown/SendTransactionRequest.js:552
 #: src/screens/LoadHistoryScreen.js:51
 #: src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:176
-#: src/screens/PinScreen.js:283
+#: src/screens/PinScreen.js:299
 #: src/screens/TokenSwapLoadingScreen.js:90
 msgid "Try again"
 msgstr ""
@@ -696,8 +906,9 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28
-#: src/screens/PinScreen.js:318
-#: src/screens/Settings.js:177
+#: src/screens/PasskeyLockScreen.js:213
+#: src/screens/PinScreen.js:334
+#: src/screens/Settings.js:223
 msgid "Reset wallet"
 msgstr ""
 
@@ -705,33 +916,28 @@ msgstr ""
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:136
+#: src/screens/MainScreen.js:180
 msgid "No transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:139
+#: src/screens/MainScreen.js:183
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 
-#: src/screens/MainScreen.js:156
+#: src/screens/MainScreen.js:200
 msgid "Loading transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:165
+#: src/screens/MainScreen.js:209
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:168
+#: src/screens/MainScreen.js:212
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:551
-#: src/screens/MainScreen.js:580
+#: src/screens/MainScreen.js:622
 msgid "Available Balance"
-msgstr ""
-
-#: src/screens/MainScreen.js:560
-msgid "Locked"
 msgstr ""
 
 #: src/screens/NanoContractRegisterQrCodeScreen.js:26
@@ -753,31 +959,72 @@ msgstr ""
 msgid "Scan the nano contract ID QR code"
 msgstr ""
 
-#: src/screens/PinScreen.js:272
+#: src/screens/PasskeyLockScreen.js:108
+msgid "Unlock cancelled."
+msgstr ""
+
+#: src/screens/PasskeyLockScreen.js:124
+msgid "Could not verify your passkey. Please try again."
+msgstr ""
+
+#: src/screens/PasskeyLockScreen.js:177
+#, javascript-format
+msgid "Unlock with the passkey \"${ passkeyLabel }\""
+msgstr ""
+
+#: src/screens/PasskeyLockScreen.js:178
+msgid "Unlock with your passkey"
+msgstr ""
+
+#: src/screens/PasskeyLockScreen.js:198
+msgid "Unlock"
+msgstr ""
+
+#: src/screens/PinScreen.js:288
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:76
+#: src/screens/PinScreen.js:80
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:77
+#: src/screens/PinScreen.js:81
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:309
+#: src/screens/PinScreen.js:325
 #: src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:349
-#: src/screens/PinScreen.js:353
+#: src/screens/PinScreen.js:365
+#: src/screens/PinScreen.js:369
 msgid "Biometry failed or canceled."
 msgstr ""
 
+#: src/screens/PrivacySettings.js:70
+msgid "PRIVACY SETTINGS"
+msgstr ""
+
+#: src/screens/PrivacySettings.js:78
+msgid "You can change your default anytime, or switch per transaction when sending."
+msgstr ""
+
+#: src/screens/PrivacySettings.js:81
+msgid "TRANSACTION DEFAULTS"
+msgstr ""
+
+#: src/screens/PrivacySettings.js:90
+msgid "AUDIT"
+msgstr ""
+
+#: src/screens/PrivacySettings.js:95
+msgid "Export privacy keys"
+msgstr ""
+
 #: src/screens/PushNotification.js:58
-#: src/screens/Settings.js:147
+#: src/screens/Settings.js:182
 msgid "Push Notification"
 msgstr ""
 
@@ -831,7 +1078,7 @@ msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:45
 #: src/screens/RegisterOptionsScreen.js:57
-#: src/screens/SendScanQRCode.js:38
+#: src/screens/SendScanQRCode.js:37
 #: src/screens/UnifiedQRScanner.js:36
 msgid "OK"
 msgstr ""
@@ -855,7 +1102,6 @@ msgid "Reown Connection"
 msgstr ""
 
 #: src/screens/RegisterToken.js:27
-#: src/screens/SendScanQRCode.js:72
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 msgid "Manual info"
@@ -924,212 +1170,305 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr ""
 
-#: src/screens/Security.js:145
+#: src/screens/Security.js:150
 msgid "Disable biometry"
 msgstr ""
 
-#: src/screens/Security.js:146
+#: src/screens/Security.js:151
 msgid "Disabling biometry"
 msgstr ""
 
-#: src/screens/Security.js:158
-#: src/screens/Security.js:170
+#: src/screens/Security.js:163
+#: src/screens/Security.js:175
 msgid "Enter your 6-digit pin to enable biometry"
 msgstr ""
 
-#: src/screens/Security.js:183
+#: src/screens/Security.js:188
 msgid "No biometry supported"
 msgstr ""
 
-#: src/screens/Security.js:183
+#: src/screens/Security.js:188
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr ""
 
-#: src/screens/Security.js:191
+#: src/screens/Security.js:200
 msgid "SECURITY"
 msgstr ""
 
-#: src/screens/Security.js:213
+#: src/screens/Security.js:226
 msgid "Change PIN"
 msgstr ""
 
-#: src/screens/Security.js:218
+#: src/screens/Security.js:231
 msgid "Lock wallet"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:53
-#: src/screens/SendScanQRCode.js:80
-msgid "SEND"
+#: src/screens/SendAddressInput.js:90
+msgid "Scan QR code"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:59
+#: src/screens/SendAddressInput.js:106
+msgid "SEND TOKENS"
+msgstr ""
+
+#: src/screens/SendAddressInput.js:118
 msgid "Address to send"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:97
+#: src/screens/SendAddressInput.js:132
+msgid "Paste or type address"
+msgstr ""
+
+#: src/screens/SendAmountInput.js:134
 msgid "Insufficient funds"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:123
+#: src/screens/SendAmountInput.js:144
+msgid ""
+"The selected privacy mode requires a shielded address as the recipient. The "
+"address you entered is not shielded — change the address or switch to "
+"Public."
+msgstr ""
+
+#: src/screens/SendAmountInput.js:157
 #, javascript-format
+msgid "A private send can be at most ${ max } ${ symbol }."
+msgstr ""
+
+#: src/screens/SendAmountInput.js:188
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:137
-#: src/screens/SendConfirmScreen.js:287
+#: src/screens/SendAmountInput.js:202
+#: src/screens/SendConfirmScreen.js:526
+#, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:42
-#: src/screens/TokenSwapReview.js:320
+#: src/screens/SendConfirmScreen.js:80
+#: src/screens/TokenSwapReview.js:364
 msgid "No fee"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:54
+#: src/screens/SendConfirmScreen.js:106
 msgid "Insufficient HTR to cover the network fee."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:57
+#: src/screens/SendConfirmScreen.js:109
+#: src/screens/SendConfirmScreen.js:116
 msgid "Insufficient balance to send this transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:59
+#: src/screens/SendConfirmScreen.js:115
+#.  HTR pays the fees: for HTR, they count with the amount.
+msgid "Insufficient HTR to cover this transaction and its fees."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:119
+msgid ""
+"This amount needs more inputs than a transaction can hold. Try sending a "
+"smaller amount."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:121
 msgid "Failed to process transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:178
-#: src/screens/TokenSwapReview.js:205
+#: src/components/Shielded/ShieldedBalanceSplit.js:100
+#: src/components/Shielded/ShieldedUnlockAction.js:69
+#: src/screens/SendConfirmScreen.js:304
+#: src/screens/SendConfirmScreen.js:328
+msgid "Could not unlock your private balance."
+msgstr ""
+
+#: src/components/Shielded/ShieldedUnlockAction.js:60
+#: src/screens/SendConfirmScreen.js:343
+msgid "Enter your 6-digit pin to unlock your private balance"
+msgstr ""
+
+#: src/components/Shielded/ShieldedUnlockAction.js:61
+#: src/components/Shielded/ShieldedUnlockAction.js:73
+#: src/screens/SendConfirmScreen.js:344
+#: src/screens/SendConfirmScreen.js:546
+msgid "Unlock private balance"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:423
+#: src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr ""
 
 #: src/sagas/helpers.js:147
-#: src/screens/SendConfirmScreen.js:194
-#: src/screens/TokenSwapReview.js:219
+#: src/screens/SendConfirmScreen.js:442
+#: src/screens/TokenSwapReview.js:263
+#.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
 #: src/sagas/helpers.js:148
-#: src/screens/SendConfirmScreen.js:195
-#: src/screens/TokenSwapReview.js:220
+#: src/screens/SendConfirmScreen.js:443
+#: src/screens/TokenSwapReview.js:264
+#.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 msgid "Authorize operation"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:235
+#: src/screens/SendConfirmScreen.js:474
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendConfirmScreen.js:258
+#: src/screens/SendConfirmScreen.js:497
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:261
+#: src/screens/SendConfirmScreen.js:500
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:264
+#: src/screens/SendConfirmScreen.js:503
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:266
+#: src/screens/SendConfirmScreen.js:505
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:271
+#: src/screens/SendConfirmScreen.js:510
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:293
+#: src/screens/SendConfirmScreen.js:532
 msgid "Building your transaction"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:311
+#: src/screens/SendConfirmScreen.js:553
+msgid "Reading your private balance"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:573
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:322
+#: src/screens/SendConfirmScreen.js:589
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:344
-msgid "**Transaction summary**"
+#: src/screens/SendConfirmScreen.js:601
+msgid "Transaction fees"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:347
-msgid "**To**"
+#: src/screens/SendConfirmScreen.js:603
+msgid ""
+"This transaction includes a network fee and additional privacy fees. Each "
+"shielded output incurs a separate privacy fee. Tap to see the breakdown."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:352
-msgid "**Network Fee**"
+#: src/screens/SendConfirmScreen.js:626
+msgid "Transaction summary"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:360
-msgid "**Total**"
+#: src/screens/SendConfirmScreen.js:630
+msgid "To"
+msgstr ""
+
+#: src/components/Shielded/FeeBreakdown.js:58
+#: src/screens/SendConfirmScreen.js:646
+msgid "Fees"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:680
+#, javascript-format
+msgid "Privacy fee (${ shieldedCount } output)"
+msgid_plural "Privacy fee (${ shieldedCount } outputs)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/components/Reown/CreateTokenRequest.js:130
+#: src/components/Reown/TransactionFees.js:55
+#: src/screens/SendConfirmScreen.js:697
+#: src/screens/TokenSwapReview.js:360
+msgid "Network Fee"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:707
+msgid "Total"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:367
+#: src/screens/SendConfirmScreen.js:716
 msgid "Send"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:35
+#: src/screens/SendScanQRCode.js:34
 msgid "Invalid QR code"
 msgstr ""
 
+#: src/screens/SendScanQRCode.js:69
+msgid "SEND"
+msgstr ""
+
 #: src/screens/Reown/ReownScan.js:49
-#: src/screens/SendScanQRCode.js:87
+#: src/screens/SendScanQRCode.js:76
 #: src/screens/UnifiedQRScanner.js:96
 msgid "Scan the QR code"
 msgstr ""
 
-#: src/screens/Settings.js:108
+#: src/screens/Settings.js:136
 msgid "You are connected to"
 msgstr ""
 
-#: src/screens/Settings.js:117
+#: src/screens/Settings.js:145
 msgid "General Settings"
 msgstr ""
 
-#: src/screens/Settings.js:136
+#: src/screens/Settings.js:164
 msgid "Create a new token"
 msgstr ""
 
-#: src/screens/Settings.js:141
+#: src/screens/Settings.js:169
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:154
+#: src/screens/Settings.js:175
 msgid "Reown"
 msgstr ""
 
-#: src/screens/Settings.js:161
+#: src/screens/Settings.js:189
 msgid "Advanced Settings"
 msgstr ""
 
-#: src/screens/Settings.js:165
+#: src/screens/Settings.js:193
 msgid "Network Settings"
 msgstr ""
 
-#: src/screens/Settings.js:172
+#: src/screens/Settings.js:201
 msgid "Address Mode"
 msgstr ""
 
-#: src/screens/Settings.js:185
+#: src/screens/Settings.js:209
+msgid "Amount format"
+msgstr ""
+
+#: src/screens/Settings.js:217
+msgid "Privacy"
+msgstr ""
+
+#: src/screens/Settings.js:232
 msgid "About"
 msgstr ""
 
-#: src/screens/Settings.js:193
+#: src/screens/Settings.js:240
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:206
+#: src/screens/Settings.js:253
 msgid "Connected to"
 msgstr ""
 
@@ -1163,25 +1502,19 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:231
+#: src/screens/TokenSwapReview.js:275
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:237
+#: src/screens/TokenSwapReview.js:281
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:255
+#: src/screens/TokenSwapReview.js:299
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/components/Reown/CreateTokenRequest.js:130
-#: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:316
-msgid "Network Fee"
-msgstr ""
-
-#: src/screens/TokenSwapReview.js:328
+#: src/screens/TokenSwapReview.js:372
 msgid "SWAP"
 msgstr ""
 
@@ -1245,10 +1578,6 @@ msgstr ""
 #: src/components/Reown/GetAddressRequest.js:54
 #: src/screens/Reown/GetAddressRequestScreen.js:21
 msgid "Address Request"
-msgstr ""
-
-#: src/screens/Reown/GetBalanceRequestScreen.js:25
-msgid "Get Balance Request"
 msgstr ""
 
 #: src/components/Reown/GetUtxosRequest.js:88
@@ -1323,7 +1652,7 @@ msgid "Reject All (${ pendingRequests.length })"
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:303
-#: src/components/Reown/SendTransactionRequest.js:472
+#: src/components/Reown/SendTransactionRequest.js:474
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:33
 msgid "Transaction successfully sent."
 msgstr ""
@@ -1476,11 +1805,11 @@ msgstr ""
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:29
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:34
 msgid "Network Pre-Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:131
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:147
 msgid "Customize"
 msgstr ""
 
@@ -1528,7 +1857,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:82
-#: src/components/TxDetailsModal.js:129
+#: src/components/Reown/SignOracleDataRequest.js:40
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:202
 msgid "Nano Contract ID"
 msgstr ""
@@ -1557,98 +1886,159 @@ msgstr ""
 msgid "Contract successfully registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:92
+#: src/sagas/nanoContract.js:95
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:93
+#: src/sagas/nanoContract.js:96
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:94
+#: src/sagas/nanoContract.js:97
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:95
+#: src/sagas/nanoContract.js:98
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:96
+#: src/sagas/nanoContract.js:99
 msgid "Error while trying to register Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:97
+#: src/sagas/nanoContract.js:100
 msgid "Invalid transaction to register as Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:98
+#: src/sagas/nanoContract.js:101
 msgid "Blueprint not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:99
+#: src/sagas/nanoContract.js:102
 msgid "Couldn't get Blueprint info."
 msgstr ""
 
-#: src/sagas/nanoContract.js:100
+#: src/sagas/nanoContract.js:103
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:101
+#: src/sagas/nanoContract.js:104
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
-#: src/sagas/networkSettings.js:87
+#: src/sagas/networkSettings.js:88
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:94
+#: src/sagas/networkSettings.js:95
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:101
+#: src/sagas/networkSettings.js:102
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:108
+#: src/sagas/networkSettings.js:109
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:115
+#: src/sagas/networkSettings.js:116
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:122
+#: src/sagas/networkSettings.js:123
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:129
+#: src/sagas/networkSettings.js:130
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/pushNotification.js:77
+#: src/sagas/pushNotification.js:88
 msgid "Transaction"
 msgstr ""
 
-#: src/sagas/pushNotification.js:78
+#: src/sagas/pushNotification.js:89
 msgid "Open"
 msgstr ""
 
-#: src/sagas/wallet.js:908
+#: src/sagas/wallet.js:1217
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:922
+#: src/sagas/wallet.js:1231
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:932
+#: src/sagas/wallet.js:1241
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:948
+#: src/sagas/wallet.js:1257
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
+msgstr ""
+
+#: src/passkey/passkeyService.js:110
+msgid ""
+"This passkey isn't available on this device. Make sure it's synced to this "
+"device, or use the device where you created it."
+msgstr ""
+
+#: src/passkey/passkeyService.js:111
+msgid "The passkey request timed out. Please try again."
+msgstr ""
+
+#: src/passkey/passkeyService.js:112
+msgid "The passkey request was interrupted. Please try again."
+msgstr ""
+
+#: src/passkey/passkeyService.js:131
+msgid "The passkey operation failed. Please try again."
+msgstr ""
+
+#: src/passkey/passkeyService.js:154
+msgid ""
+"This device can't create a passkey wallet. Passkey wallets need iOS 18 or "
+"later, or Android with Google Password Manager passkeys."
+msgstr ""
+
+#: src/passkey/passkeyService.js:174
+msgid ""
+"The passkey did not verify your identity. Use a passkey protected by Face "
+"ID, fingerprint or your device PIN."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:39
+msgid "Passkey authorization was cancelled. Nothing was sent."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:49
+#, javascript-format
+msgid "This passkey opens a different wallet. Use the passkey named \"${ label }\"."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:50
+msgid ""
+"This passkey opens a different wallet. Use the passkey that created this "
+"wallet."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:58
+msgid "Another passkey authorization is already in progress."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:69
+msgid ""
+"Passkey wallet data is missing or corrupted. Reset the wallet and sign in "
+"again with your passkey."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:79
+msgid ""
+"Sending from a passkey wallet isn't supported in this version of the app "
+"yet."
 msgstr ""
 
 #: src/components/AmountInputAccessory.js:98
@@ -1681,8 +2071,17 @@ msgid ""
 "registration. Do you want to do it now?"
 msgstr ""
 
+#: src/components/AuditUnblindingRows.js:104
+msgid "View in Explorer unblinded"
+msgstr ""
+
+#: src/components/AuditUnblindingRows.js:111
 #: src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
+msgstr ""
+
+#: src/components/AuditUnblindingRows.js:111
+msgid "Copy unblinding values"
 msgstr ""
 
 #: src/components/GlobalErrorModal.js:46
@@ -1757,38 +2156,134 @@ msgstr ""
 msgid "No internet connection"
 msgstr ""
 
+#: src/components/PasskeyOnboardingButton.js:155
+msgid "Passkey unavailable"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:169
+msgid "Hathor Wallet"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:182
+msgid "Passkey"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:189
+msgid "Continue with passkey"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:194
+#: src/components/PasskeyOnboardingButton.js:234
+msgid "Working…"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:194
+msgid "Sign in with passkey"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:200
+msgid "Create passkey wallet"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:208
+msgid ""
+"Your wallet is protected by this passkey. Keep it backed up in your "
+"password manager so you don't lose access."
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:213
+msgid "Name your wallet"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:215
+msgid "This name identifies the passkey when you sign in later."
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:222
+msgid "e.g. Savings"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:234
+msgid "Create"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:50
+msgid "Private"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:52
+msgid "Token and amount hidden on all new transactions"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:53
+msgid "Token and amount hidden"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:59
+msgid "Hide amount"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:61
+msgid "Token visible, amount hidden on all new transactions"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:62
+msgid "Token visible, amount hidden"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:68
+msgid "Public"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:70
+msgid "Token and amount visible on all new transactions"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:71
+msgid "Token and amount visible"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:107
+msgid "No privacy fees"
+msgstr ""
+
+#: src/components/PrivacyModeCard.js:110
+#, javascript-format
+msgid "Fee: ${ fee } HTR per output"
+msgstr ""
+
 #: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"
 msgstr ""
 
-#: src/components/PushTxDetailsModal.js:77
-#: src/components/TxDetailsModal.js:114
+#: src/components/PushTxDetailsModal.js:82
+#: src/components/TxDetailsModal.js:133
 msgid "Date & Time"
 msgstr ""
 
-#: src/components/PushTxDetailsModal.js:78
+#: src/components/PushTxDetailsModal.js:83
 msgid "ID"
 msgstr ""
 
-#: src/components/PushTxDetailsModal.js:102
+#: src/components/PushTxDetailsModal.js:107
 msgid "New Transaction"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:36
+#: src/components/ReceiveMyAddress.js:76
 #, javascript-format
 msgid "Here is my address: ${ lastSharedAddress }"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:60
+#: src/components/ReceiveMyAddress.js:100
 msgid "New address"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:67
+#: src/components/ReceiveMyAddress.js:107
 #: src/components/TokenDetails.js:102
 msgid "Share"
 msgstr ""
 
-#: src/components/SendTransactionFeedbackModal.js:162
+#: src/components/SendTransactionFeedbackModal.js:215
 msgid "Propagating transaction to the network."
 msgstr ""
 
@@ -1802,6 +2297,8 @@ msgstr ""
 
 #: src/components/NanoContract/SelectAddressModal.js:111
 #: src/components/Reown/GetAddressClientRequest.js:129
+#: src/components/Shielded/PrivateReceiveAddress.js:69
+#: src/components/Shielded/ShieldedBalanceSplit.js:128
 #: src/components/ShowPushNotificationTxDetails.js:18
 msgid "Retry"
 msgstr ""
@@ -1812,7 +2309,6 @@ msgid "Here is the configuration string of token ${ tokenLabel }: ${ configStrin
 msgstr ""
 
 #: src/components/TokenDetails.js:47
-#: src/components/TxDetailsModal.js:51
 msgid "Native Token"
 msgstr ""
 
@@ -1841,13 +2337,29 @@ msgid "New tokens"
 msgstr ""
 
 #: src/components/Reown/ReownPendingOverlay.js:364
-#: src/components/Reown/RequestErrorModal.js:56
+#: src/components/Reown/RequestErrorModal.js:54
 #: src/components/TokenImportBanner.js:63
 msgid "Dismiss"
 msgstr ""
 
 #: src/components/TokenImportBanner.js:70
 msgid "We found tokens linked to your address that are not yet in your wallet."
+msgstr ""
+
+#: src/components/TransactionPrivacyModal.js:55
+msgid "Transaction privacy"
+msgstr ""
+
+#: src/components/TransactionPrivacyModal.js:57
+msgid "Choose what's hidden **only for this transaction**"
+msgstr ""
+
+#: src/components/TransactionPrivacyModal.js:66
+msgid "You can change your default on advanced settings"
+msgstr ""
+
+#: src/components/TransactionPrivacyModal.js:70
+msgid "DONE"
 msgstr ""
 
 #: src/components/TransactionStatusLabel.js:69
@@ -1862,54 +2374,51 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:54
-msgid "Deposit Based"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:57
-msgid "Fee Based"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:112
-msgid "Token"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:113
-msgid "Description"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:115
-msgid "Fee Model"
-msgstr ""
-
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
-#: src/components/TxDetailsModal.js:116
+#: src/components/TxDetailsModal.js:142
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:119
-msgid "Nano Contract Status"
+#: src/components/Shielded/FeeBreakdown.js:76
+msgid "Privacy fee"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionHeader.js:89
-#: src/components/Reown/NanoContract/NanoContractExecInfo.js:115
-#: src/components/TxDetailsModal.js:128
-msgid "Blueprint Method"
+#: src/components/Shielded/PrivateReceiveAddress.js:55
+msgid "Private receiving is locked"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:130
-msgid "Nano Contract Caller"
+#: src/components/Shielded/PrivateReceiveAddress.js:56
+msgid ""
+"Unlock your private balance to receive private payments and see your "
+"private funds."
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.js:100
-#: src/components/TxDetailsModal.js:131
-msgid "Nano Contract"
+#: src/components/Shielded/PrivateReceiveAddress.js:64
+msgid "Private receiving is unavailable"
 msgstr ""
 
-#: src/components/Reown/CreateTokenRequest.js:103
-#: src/components/TxDetailsModal.js:174
-msgid "Amount"
+#: src/components/Shielded/ShieldedBalanceSplit.js:47
+#, javascript-format
+msgid "${ count } private output is locked"
+msgid_plural "${ count } private outputs are locked"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:143
+msgid "private"
+msgstr ""
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:148
+msgid "public"
+msgstr ""
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:158
+msgid "Some private funds could not be read."
+msgstr ""
+
+#: src/components/Shielded/ShieldedBalanceSplit.js:161
+msgid "Your private balance may be incomplete."
 msgstr ""
 
 #: src/components/Reown/AdvancedErrorOptions.js:41
@@ -1928,11 +2437,15 @@ msgstr ""
 msgid "Connect to this dApp?"
 msgstr ""
 
-#: src/components/Reown/ConnectModal.js:88
+#: src/components/Reown/ConnectModal.js:89
 msgid ""
 "By clicking connect, you allow this dapp to receive your wallet's public "
 "address. Please validate the URL and the dApp name, this is an important "
 "security step to protect your data from potential phishing risks."
+msgstr ""
+
+#: src/components/Reown/ConnectModal.js:92
+msgid "This dApp will also be able to view the balance of your tokens."
 msgstr ""
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxModal.js:21
@@ -1956,14 +2469,14 @@ msgstr ""
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:70
 #: src/components/Reown/CreateTokenRequest.js:202
 #: src/components/Reown/SignMessageRequest.js:81
-#: src/components/Reown/SignOracleDataRequest.js:146
+#: src/components/Reown/SignOracleDataRequest.js:163
 msgid "Accept Request"
 msgstr ""
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:71
 #: src/components/Reown/CreateTokenRequest.js:206
 #: src/components/Reown/SignMessageRequest.js:85
-#: src/components/Reown/SignOracleDataRequest.js:150
+#: src/components/Reown/SignOracleDataRequest.js:167
 msgid "Decline Request"
 msgstr ""
 
@@ -2005,6 +2518,10 @@ msgstr ""
 #: src/components/Reown/CreateTokenRequest.js:102
 #: src/components/Reown/TokenInfoModal.js:98
 msgid "Symbol"
+msgstr ""
+
+#: src/components/Reown/CreateTokenRequest.js:103
+msgid "Amount"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:104
@@ -2059,13 +2576,13 @@ msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:216
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:515
-#: src/components/Reown/SendTransactionRequest.js:487
+#: src/components/Reown/SendTransactionRequest.js:489
 msgid "Sending transaction"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:217
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:516
-#: src/components/Reown/SendTransactionRequest.js:488
+#: src/components/Reown/SendTransactionRequest.js:490
 msgid "Please wait."
 msgstr ""
 
@@ -2154,7 +2671,6 @@ msgstr ""
 
 #: src/components/Reown/GetAddressClientRequest.js:177
 #: src/components/Reown/GetAddressRequest.js:114
-#: src/components/Reown/GetBalanceRequest.js:137
 #: src/components/Reown/GetUtxosRequest.js:207
 msgid "Decline"
 msgstr ""
@@ -2193,7 +2709,7 @@ msgstr ""
 #: src/components/Reown/GetAddressRequest.js:42
 #: src/components/Reown/SendTransactionRequest.js:343
 #: src/components/Reown/SignMessageRequest.js:40
-#: src/components/Reown/SignOracleDataRequest.js:46
+#: src/components/Reown/SignOracleDataRequest.js:59
 msgid "Address"
 msgstr ""
 
@@ -2205,55 +2721,6 @@ msgstr ""
 
 #: src/components/Reown/GetAddressRequest.js:110
 msgid "Share Address"
-msgstr ""
-
-#: src/components/Reown/GetBalanceModal.js:19
-msgid "New Get Balance Request"
-msgstr ""
-
-#: src/components/Reown/GetBalanceModal.js:20
-msgid ""
-"You have received a new Get Balance Request. Please carefully review the "
-"details before deciding to accept or decline."
-msgstr ""
-
-#: src/components/Reown/GetBalanceModal.js:21
-msgid "Review Get Balance Request details"
-msgstr ""
-
-#: src/components/Reown/GetBalanceRequest.js:42
-msgid "Balance Request"
-msgstr ""
-
-#: src/components/Reown/GetBalanceRequest.js:44
-msgid "This app is requesting access to your token balances"
-msgstr ""
-
-#: src/components/Reown/GetBalanceRequest.js:57
-msgid "Tokens to be shared"
-msgstr ""
-
-#: src/components/Reown/GetBalanceRequest.js:62
-#: src/components/Reown/GetUtxosRequest.js:60
-msgid "Unregistered token"
-msgstr ""
-
-#: src/components/Reown/GetBalanceRequest.js:75
-msgid "Available:"
-msgstr ""
-
-#: src/components/Reown/GetBalanceRequest.js:82
-msgid "Locked:"
-msgstr ""
-
-#: src/components/Reown/GetBalanceRequest.js:100
-msgid ""
-"The app will only receive your balance information. It cannot access your "
-"funds or make transactions."
-msgstr ""
-
-#: src/components/Reown/GetBalanceRequest.js:133
-msgid "Share Balance Information"
 msgstr ""
 
 #: src/components/Reown/GetUtxosModal.js:19
@@ -2268,6 +2735,10 @@ msgstr ""
 
 #: src/components/Reown/GetUtxosModal.js:21
 msgid "Review UTXOs Request details"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:60
+msgid "Unregistered token"
 msgstr ""
 
 #: src/components/Reown/GetUtxosRequest.js:90
@@ -2365,7 +2836,7 @@ msgstr ""
 msgid "Review details"
 msgstr ""
 
-#: src/components/Reown/RequestErrorModal.js:30
+#: src/components/Reown/RequestErrorModal.js:34
 msgid "An error occurred while processing the request."
 msgstr ""
 
@@ -2400,28 +2871,28 @@ msgstr ""
 msgid "Output"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:356
+#: src/components/Reown/SendTransactionRequest.js:358
 msgid "Data field"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:378
+#: src/components/Reown/SendTransactionRequest.js:380
 msgid "Change Address"
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:302
-#: src/components/Reown/SendTransactionRequest.js:471
+#: src/components/Reown/SendTransactionRequest.js:473
 #.  No unregistered tokens, just show success
 msgid "Success!"
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:573
-#: src/components/Reown/SendTransactionRequest.js:515
+#: src/components/Reown/SendTransactionRequest.js:517
 msgid "This transaction will only be built, not pushed to the network."
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:154
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:52
-#: src/components/Reown/SendTransactionRequest.js:525
+#: src/components/Reown/SendTransactionRequest.js:527
 msgid "Accept Transaction"
 msgstr ""
 
@@ -2429,12 +2900,12 @@ msgstr ""
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:453
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:474
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:53
-#: src/components/Reown/SendTransactionRequest.js:529
+#: src/components/Reown/SendTransactionRequest.js:531
 msgid "Decline Transaction"
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:622
-#: src/components/Reown/SendTransactionRequest.js:546
+#: src/components/Reown/SendTransactionRequest.js:548
 msgid "Error while sending transaction."
 msgstr ""
 
@@ -2460,11 +2931,11 @@ msgstr ""
 msgid "Address Path"
 msgstr ""
 
-#: src/components/Reown/SignOracleDataRequest.js:40
+#: src/components/Reown/SignOracleDataRequest.js:53
 msgid "Oracle"
 msgstr ""
 
-#: src/components/Reown/SignOracleDataRequest.js:73
+#: src/components/Reown/SignOracleDataRequest.js:86
 msgid "Data"
 msgstr ""
 
@@ -2580,6 +3051,11 @@ msgstr ""
 msgid "Blueprint Name"
 msgstr ""
 
+#: src/components/NanoContract/NanoContractTransactionHeader.js:89
+#: src/components/Reown/NanoContract/NanoContractExecInfo.js:115
+msgid "Blueprint Method"
+msgstr ""
+
 #: src/components/NanoContract/NanoContractTransactionHeader.js:103
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:127
 msgid "Caller"
@@ -2669,6 +3145,10 @@ msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.js:231
 msgid "Nano Contract Transactions Error"
+msgstr ""
+
+#: src/components/NanoContract/NanoContractDetailsHeader.js:100
+msgid "Nano Contract"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:177

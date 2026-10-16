@@ -25,7 +25,7 @@ import {
   setKeychainPin,
 } from '../utils';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
-import { lockScreen, onExceptionCaptured } from '../actions';
+import { lockScreen, onExceptionCaptured, walletPinChanged } from '../actions';
 import { COLORS } from '../styles/themes';
 import { SAFE_BIOMETRY_FEATURE_FLAG_KEY, STORE } from '../store';
 
@@ -36,6 +36,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
   onExceptionCaptured: (error, isFatal) => dispatch(onExceptionCaptured(error, isFatal)),
+  walletPinChanged: (pin) => dispatch(walletPinChanged(pin)),
 });
 
 export class Security extends React.Component {
@@ -103,6 +104,8 @@ export class Security extends React.Component {
     ).then((success) => {
       if (success) {
         STORE.enableSafeBiometry(pin, password);
+        // A reload of the wallet must start it with the password, which now decrypts it.
+        this.props.walletPinChanged(password);
         this.setState({ biometryEnabled: true });
       } else {
         // Should never get here because we've done all the validations before
@@ -124,6 +127,8 @@ export class Security extends React.Component {
       pin,
     ).then((success) => {
       if (success) {
+        // A reload of the wallet must start it with the PIN, which now decrypts it.
+        this.props.walletPinChanged(pin);
         this.setState({ biometryEnabled: false });
       } else {
         // Should never get here because we've done all the validations before
@@ -185,6 +190,10 @@ export class Security extends React.Component {
     const useSafeBiometryFeature = STORE.getItem(SAFE_BIOMETRY_FEATURE_FLAG_KEY);
     const safeBiometryActive = this.state.biometryEnabled && useSafeBiometryFeature;
 
+    // Passkey wallets have no PIN and no stored secret: both the biometry-instead-of-PIN
+    // switch and Change PIN are meaningless (authorization is always the passkey ceremony).
+    const isPasskeyWallet = STORE.isPasskeyWallet();
+
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <HathorHeader
@@ -192,21 +201,25 @@ export class Security extends React.Component {
           onBackPress={() => this.props.navigation.goBack()}
         />
         <HathorList>
-          <ListItem
-            title={biometryText}
-            // if no biometry is supported, use default ListItem color (grey),
-            // so it looks disabled. Else, color is black, as other items
-            titleStyle={!switchDisabled ? { color: COLORS.textColor } : null}
-            text={(
-              <Switch
-                onValueChange={this.onBiometrySwitchChange.bind(this)}
-                value={this.state.biometryEnabled}
-                disabled={switchDisabled}
+          { isPasskeyWallet
+            ? null
+            : (
+              <ListItem
+                title={biometryText}
+                // if no biometry is supported, use default ListItem color (grey),
+                // so it looks disabled. Else, color is black, as other items
+                titleStyle={!switchDisabled ? { color: COLORS.textColor } : null}
+                text={(
+                  <Switch
+                    onValueChange={this.onBiometrySwitchChange.bind(this)}
+                    value={this.state.biometryEnabled}
+                    disabled={switchDisabled}
+                  />
+                )}
+                isFirst
               />
             )}
-            isFirst
-          />
-          { safeBiometryActive
+          { (safeBiometryActive || isPasskeyWallet)
             ? null
             : (
               <ListMenu
@@ -217,6 +230,7 @@ export class Security extends React.Component {
           <ListMenu
             title={t`Lock wallet`}
             onPress={this.onLockWallet}
+            isFirst={isPasskeyWallet}
             isLast
           />
         </HathorList>

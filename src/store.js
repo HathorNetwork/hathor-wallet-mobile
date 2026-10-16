@@ -9,12 +9,16 @@ import CryptoJS from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MemoryStore, Storage, bigIntUtils, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
 import { NETWORK_MAINNET } from './constants';
+import { logger } from './logger';
+
+const log = logger('store');
 
 export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
 export const STORE_VERSION_KEY = 'asyncstorage:version';
 export const REGISTERED_NANO_CONTRACTS_KEY = 'asyncstorage:registeredNanoContracts';
 export const NETWORK_TOKENS_KEY = 'asyncstorage:networkTokens';
+export const NETWORK_NANO_CONTRACTS_KEY = 'asyncstorage:networkNanoContracts';
 export const PIN_BACKUP_KEY = 'asyncstorage:pinBackup';
 // Wheather old biometry mode is active (by the user request)
 export const IS_OLD_BIOMETRY_ENABLED_KEY = 'mobile:isBiometryEnabled';
@@ -28,12 +32,21 @@ export const SAFE_BIOMETRY_FEATURE_FLAG_KEY = 'asyncstorage:featureFlagSafeBiome
 // These are the last known values of the unleash feature toggles
 // These are updated on every call to unleash
 export const FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY = 'asyncstorage:featureTogglesLastKnownValues';
+// App-level wallet metadata: { walletType, passkeyLabel, xpub, credentialId?, createdAt }.
+// Only present for passkey (xpub-only) wallets; absent means a regular seed+PIN wallet.
+export const WALLET_META_KEY = 'asyncstorage:walletMeta';
+// The default privacy mode of new sends, one of PRIVACY_MODE, which Settings, under Privacy,
+// saves. It belongs to the device, not to the wallet or the network: it is in neither list
+// below, and has no 'wallet:' prefix, so a wallet reset keeps it.
+export const PRIVACY_DEFAULT_MODE_KEY = 'asyncstorage:privacyDefaultMode';
 
 export const walletKeys = [
   ACCESS_DATA_KEY,
   REGISTERED_TOKENS_KEY,
   REGISTERED_NANO_CONTRACTS_KEY,
   NETWORK_TOKENS_KEY,
+  NETWORK_NANO_CONTRACTS_KEY,
+  WALLET_META_KEY,
 ];
 
 export const cleanOnWalletReset = [
@@ -256,12 +269,26 @@ class AsyncStorageStore {
     return ret;
   }
 
+  /**
+   * Fire-and-forget write. Returns undefined, so a saga's `yield STORE.setItem(...)` neither blocks
+   * on the native flush nor throws when the write fails. Callers that need durability use
+   * setItemAsync.
+   */
   setItem(key, value) {
+    // Nobody awaits this write, so log a failure instead of leaving an unhandled rejection.
+    this.setItemAsync(key, value).catch((err) => log.error(`Failed to persist ${key}.`, err));
+  }
+
+  /**
+   * Durable variant of setItem: returns the AsyncStorage flush promise so the caller can await it
+   * (e.g. initPasskeyStorage, whose walletMeta.xpub is the wallet's ONLY persisted identity).
+   */
+  setItemAsync(key, value) {
     this.hathorMemoryStorage[key] = value;
     // JSONBigInt round-trips bigint values that the native JSON cannot.
     // Required for the wallet-lib 3.x token shape, which can include
     // bigint balance fields under registered tokens.
-    AsyncStorage.setItem(key, bigIntUtils.JSONBigInt.stringify(value));
+    return AsyncStorage.setItem(key, bigIntUtils.JSONBigInt.stringify(value));
   }
 
   /**
@@ -323,6 +350,14 @@ class AsyncStorageStore {
    * @param {string} pin - Will be used as pin and password
    */
   async initStorage(seed, pin) {
+    // Clear any passkey metadata left by a prior passkey onboarding that failed AFTER writing its
+    // WALLET_META_KEY (saveAccessData rejected, or the app was killed between the two writes). If
+    // it survived, startWallet would read the stale walletType:'passkey' and boot this seed wallet
+    // read-only from the OLD xpub — ignoring the entered seed and rendering PasskeyLockScreen.
+    // removeItemAsync drops both the persisted key and the in-memory cache, so a seed wallet can
+    // never inherit passkey metadata (same session or after a restart); awaited so it is durable
+    // before this wallet's access data is written.
+    await this.removeItemAsync(WALLET_META_KEY);
     const accessData = walletUtils.generateAccessDataFromSeed(
       seed,
       {
@@ -338,6 +373,81 @@ class AsyncStorageStore {
     );
     const storage = this.getStorage();
     await storage.saveAccessData(accessData);
+  }
+
+  /**
+   * Generate READ-ONLY accessData from an account-path xpub and persist the passkey
+   * wallet metadata. Used by the passkey (PIN-less) onboarding: no seed, no PIN, no
+   * password — the persisted access data contains no secret at all.
+   *
+   * The shielded xpubs (see passkey/shieldedKeys.js) are public: they go both on the metadata and
+   * on the access data, so the wallet gets a shielded chain. A wallet-lib that can't take them
+   * ignores them on the access data.
+   *
+   * @param {string} xpub - Account-path xpub (m/44'/280'/0') derived from the passkey PRF seed
+   * @param {{
+   *   passkeyLabel: string,
+   *   credentialId?: string,
+   *   shieldedXpubs?: { scanXpubkey: string, spendXpubkey: string }|null,
+   * }} meta - Passkey wallet metadata
+   */
+  async initPasskeyStorage(xpub, meta) {
+    const accessData = walletUtils.generateAccessDataFromXpub(xpub, meta.shieldedXpubs ?? {});
+    const storage = this.getStorage();
+    // Persist the wallet metadata BEFORE the access data, so this write is crash-atomic in the
+    // right direction. The app gates "is a wallet loaded?" on the access data (walletIsLoaded()),
+    // so if an app-kill interrupts between the two flushes the surviving state is
+    // meta-without-access-data => walletIsLoaded() is false => a clean re-onboarding. The reverse
+    // order would leave access-data-without-meta, stranding this PIN-less wallet on the PinScreen
+    // (walletIsLoaded() true but isPasskeyWallet() false) with no PIN that could ever unlock it.
+    // The meta's xpub is this wallet's ONLY persisted identity (no seed, no PIN), so its write is
+    // awaited (durable). saveAccessData's AsyncStorage flush is fire-and-forget inside
+    // HybridStore.saveAccessData, which is the safe side of the ordering above: a lost access-data
+    // flush leaves meta-without-access-data, i.e. a clean re-onboarding.
+    await this.setItemAsync(WALLET_META_KEY, {
+      // Spread meta FIRST so walletType/xpub/createdAt set below stay authoritative — a meta that
+      // happened to carry those keys must not override this method's own values.
+      ...meta,
+      walletType: 'passkey',
+      xpub,
+      createdAt: Date.now(),
+    });
+    await storage.saveAccessData(accessData);
+    // A passkey wallet is born on the current storage version — the PIN-based data
+    // migration path (handleDataMigration) must never run for it.
+    this.updateStorageVersion();
+  }
+
+  /**
+   * Get the app-level wallet metadata (only present for passkey wallets).
+   * Synchronous after preStart() has populated the memory cache.
+   *
+   * @returns {{ walletType: string, passkeyLabel: string, xpub: string }|null}
+   */
+  getWalletMeta() {
+    return this.getItem(WALLET_META_KEY);
+  }
+
+  /**
+   * Merge a patch into the wallet metadata (e.g. backfill credentialId after a ceremony).
+   * No-op when no metadata exists. Returns the setItemAsync promise so callers can await
+   * durability or attach a .catch() — without it, a rejected AsyncStorage write here would be an
+   * unhandled rejection.
+   *
+   * @returns {Promise<void>}
+   */
+  updateWalletMeta(patch) {
+    const meta = this.getWalletMeta();
+    if (!meta) return Promise.resolve();
+    return this.setItemAsync(WALLET_META_KEY, { ...meta, ...patch });
+  }
+
+  /**
+   * Whether the loaded wallet is a passkey (xpub-only, PIN-less) wallet.
+   * @returns {boolean}
+   */
+  isPasskeyWallet() {
+    return this.getWalletMeta()?.walletType === 'passkey';
   }
 
   /**
@@ -468,12 +578,24 @@ class AsyncStorageStore {
   }
 
   /**
-   * Remove a key from AsyncStorage and from memory.
+   * Remove a key from AsyncStorage and from memory. Fire-and-forget, like setItem: saga callers
+   * `yield STORE.removeItem(...)` must not block on or throw from the native delete. Callers that
+   * need durability use removeItemAsync.
    * @param {string} key Item to remove.
    */
   removeItem(key) {
-    AsyncStorage.removeItem(key);
+    // Nobody awaits this delete, so log a failure instead of leaving an unhandled rejection.
+    this.removeItemAsync(key).catch((err) => log.error(`Failed to remove ${key}.`, err));
+  }
+
+  /**
+   * Durable variant of removeItem: returns the AsyncStorage promise so the caller can await the
+   * removal (e.g. initStorage clearing stale passkey metadata before a seed wallet).
+   * @param {string} key Item to remove.
+   */
+  removeItemAsync(key) {
     delete this.hathorMemoryStorage[key];
+    return AsyncStorage.removeItem(key);
   }
 
   async preStart() {
@@ -562,6 +684,31 @@ class AsyncStorageStore {
     if (!genesisHash) return null;
     const networkTokens = this.getItem(NETWORK_TOKENS_KEY) || {};
     return networkTokens[genesisHash] || null;
+  }
+
+  /**
+   * Save registered nano contracts for a specific network identified by genesis block hash.
+   *
+   * @param {string} genesisHash The genesis block hash identifying the network
+   * @param {Object} contracts Nano contracts map to save (keyed by ncId)
+   */
+  saveNanoContractsForNetwork(genesisHash, contracts) {
+    if (!genesisHash) return;
+    const networkNanoContracts = this.getItem(NETWORK_NANO_CONTRACTS_KEY) || {};
+    networkNanoContracts[genesisHash] = contracts;
+    this.setItem(NETWORK_NANO_CONTRACTS_KEY, networkNanoContracts);
+  }
+
+  /**
+   * Get saved nano contracts for a specific network identified by genesis block hash.
+   *
+   * @param {string} genesisHash The genesis block hash identifying the network
+   * @returns {Object|null} Saved nano contracts map or null
+   */
+  getNanoContractsForNetwork(genesisHash) {
+    if (!genesisHash) return null;
+    const networkNanoContracts = this.getItem(NETWORK_NANO_CONTRACTS_KEY) || {};
+    return networkNanoContracts[genesisHash] || null;
   }
 
   /**

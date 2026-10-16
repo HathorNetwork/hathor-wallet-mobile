@@ -8,6 +8,7 @@
 import moment from 'moment';
 import { t } from 'ttag';
 import { transactionUtils, constants } from '@hathor/wallet-lib'
+import { shieldedOutputsFee } from './shielded/fees';
 
 export class TxHistory {
   /**
@@ -22,6 +23,7 @@ export class TxHistory {
    *   ncMethod?: string;
    *   ncCaller?: Address;
    *   firstBlock?: string;
+   *   privacyFee?: bigint;
    * }}
    */
   constructor({
@@ -35,6 +37,7 @@ export class TxHistory {
     ncMethod,
     ncCaller,
     firstBlock,
+    privacyFee = 0n,
   }) {
     /**
      * @type {string}
@@ -76,6 +79,12 @@ export class TxHistory {
      * @type {string?}
      */
     this.firstBlock = firstBlock;
+    /**
+     * The privacy part of the tx's fee: what its shielded outputs cost whoever paid the tx. The
+     * tx details' Fees row shows it for any tx with fees, where the shielded UI shows.
+     * @type {bigint}
+     */
+    this.privacyFee = privacyFee;
   }
 
   getDescription(token) {
@@ -134,7 +143,9 @@ export class TxHistory {
    *   ncMethod?: string;
    *   ncCaller?: Address;
    *   firstBlock?: string;
-   * }} rawTxHistory - The raw transaction history data.
+   *   shielded_outputs?: Object[];
+   * }} rawTxHistory - The raw transaction history data. Its shielded outputs only give the
+   *   privacy fee: they hold blinding factors, which the TxHistory doesn't keep.
    * @param {string} tokenUid - The UID of the token associated with the transaction.
    *
    * @returns {TxHistory} A TxHistory instance representing the transaction.
@@ -162,6 +173,7 @@ export class TxHistory {
       // in wallet service this comes as 0/1 and in the full node comes with true/false
       isVoided: Boolean(rawTxHistory.voided),
       firstBlock,
+      privacyFee: shieldedOutputsFee(rawTxHistory.shielded_outputs),
     });
   }
 }

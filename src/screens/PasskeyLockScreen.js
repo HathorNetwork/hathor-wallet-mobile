@@ -1,0 +1,228 @@
+/**
+ * Copyright (c) Hathor Labs and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  BackHandler,
+  Keyboard,
+  Text,
+  View,
+} from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { t } from 'ttag';
+
+import SimpleButton from '../components/SimpleButton';
+import NewHathorButton from '../components/NewHathorButton';
+import Logo from '../components/Logo';
+import Spinner from '../components/Spinner';
+import {
+  onExceptionCaptured,
+  resetOnLockScreen,
+  shieldedViewUnlockRequested,
+  startWalletRequested,
+  unlockScreen,
+} from '../actions';
+import { SHIELDED_UNLOCK_SOURCE } from '../constants';
+import { COLORS } from '../styles/themes';
+import { STORE } from '../store';
+import baseStyle from '../styles/init';
+import {
+  isExpectedPasskeyError,
+  PasskeyCancelledError,
+  verifyPasskeyForUnlock,
+} from '../passkey/passkeySigner';
+import { sanitizePasskeyLabel } from '../passkey/passkeyService';
+import { rememberPasskeyShieldedKeys } from '../passkey/shieldedKeys';
+import {
+  finishWalletServiceRegistration,
+  walletServiceRegistrationForUnlock,
+} from '../passkey/walletServiceRegistration';
+import { logger } from '../logger';
+import { getNetworkSettings } from '../sagas/helpers';
+
+const log = logger('passkey');
+
+/**
+ * Lock screen for passkey (PIN-less, xpub-only) wallets — the counterpart of PinScreen's
+ * lock-screen mode. There is no PIN and no stored secret: unlocking runs a passkey ceremony,
+ * re-derives the xpub in memory and compares it to the stored one. Verification failure is
+ * never fatal — the user can always retry or fall back to resetting the wallet.
+ */
+const PasskeyLockScreen = () => {
+  const dispatch = useDispatch();
+  const wallet = useSelector((state) => state.wallet);
+  const featureToggles = useSelector((state) => state.featureToggles);
+  const networkSettings = useSelector(getNetworkSettings);
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState(null);
+  // Synchronous idempotency guard: fire the ceremony at most once even if the mount effect runs
+  // more than once in the same tick (e.g. a Fast Refresh remount). setVerifying is async, so the
+  // `verifying` check alone can't cover a same-tick double-fire; the OS shows a single credential
+  // sheet and a duplicate call would fail or stack sheets.
+  const startedRef = useRef(false);
+
+  // Labels persisted from old-format credentials may be decode garbage; never show those.
+  const passkeyLabel = sanitizePasskeyLabel(STORE.getWalletMeta()?.passkeyLabel);
+
+  const unlock = async () => {
+    if (verifying) {
+      return;
+    }
+    setVerifying(true);
+    setError(null);
+    try {
+      // If the wallet-service flag is on and this wallet isn't registered there yet (wallets
+      // created before that, a failed onboarding registration, a reinstall), prepare the
+      // registration inside the unlock ceremony while the words are in memory — no extra Face ID.
+      // It's finished in the background after the ceremony: creating the wallet on the
+      // wallet-service can take up to a minute, and neither the passkey lock nor the unlock waits
+      // for it. The wallet runs on the wallet-service facade from its next start. A failure never
+      // blocks unlocking.
+      // The same ceremony derives the shielded keys: it stores their xpubs, which wallets created
+      // before shielded outputs don't have yet, and holds the scan key for the session, so the
+      // wallet decodes its private outputs as a seed wallet does after its PIN. It never throws.
+      const register = walletServiceRegistrationForUnlock(featureToggles, networkSettings);
+      const registration = await verifyPasskeyForUnlock({
+        onWords: (words) => {
+          rememberPasskeyShieldedKeys(words);
+          return register ? register(words) : undefined;
+        },
+      });
+      finishWalletServiceRegistration(registration);
+      if (!wallet) {
+        // App boot (or wallet stopped): start the xpub-only wallet. The saga derives
+        // isPasskeyWallet from the persisted walletMeta; no secret (and no payload flag) via redux.
+        dispatch(startWalletRequested());
+      } else {
+        // A running wallet that holds its shielded outputs locked: the saga unlocks them with the
+        // scan key this ceremony derived, if they are, as PinScreen does with the PIN.
+        dispatch(shieldedViewUnlockRequested({ source: SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN }));
+      }
+      dispatch(unlockScreen());
+    } catch (e) {
+      if (e instanceof PasskeyCancelledError) {
+        setError(t`Unlock cancelled.`);
+      } else if (isExpectedPasskeyError(e)) {
+        // Expected, user-correctable outcomes (wrong passkey, a ceremony already open, a deleted or
+        // unsynced passkey...): show them in the banner only. Reporting them would pop the global
+        // "Unexpected error" alert on top of the banner, and the report payload would carry the
+        // wallet label from the mismatch message.
+        setError(e.message);
+      } else {
+        // An unexpected failure on the only entry point for these wallets (incl. corrupted
+        // metadata): log + report (fatal=false — the user can always retry or reset), and ALWAYS
+        // show text, since a non-Error rejection or empty native message would otherwise leave the
+        // error banner blank on an Unlock button that looks like it did nothing.
+        log.error('passkey unlock failed', e);
+        dispatch(onExceptionCaptured(e, false));
+        const nativeCode = e?.code ?? e?.error;
+        const code = nativeCode ? `[${nativeCode}] ` : '';
+        setError(`${code}${e?.message || t`Could not verify your passkey. Please try again.`}`);
+      }
+    } finally {
+      // Also on success: if the screen is re-locked while this overlay is still mounted (e.g. an
+      // app-state transition racing the unlock), it must offer the Unlock button again rather than
+      // a permanent spinner — the mount effect below never re-runs the ceremony.
+      setVerifying(false);
+    }
+  };
+
+  useEffect(() => {
+    // Parity with PinScreen's lock mode: the overlay sits above the still-mounted navigator, so
+    // without this a hardware back press would pop the hidden screen (or exit the app), and a
+    // keyboard open before the lock would stay up over the overlay.
+    Keyboard.dismiss();
+    const backListener = BackHandler.addEventListener('hardwareBackPress', () => true);
+    if (!startedRef.current) {
+      startedRef.current = true;
+      unlock();
+    }
+    return () => backListener.remove();
+  }, []);
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        paddingHorizontal: 16, // Padding ensures a homogeneous background color
+        backgroundColor: baseStyle.container.backgroundColor,
+        justifyContent: 'space-between',
+      }}
+    >
+      <View
+        style={{
+          flex: 0.1,
+          marginVertical: 16,
+          alignItems: 'center',
+          height: 21,
+          width: 120,
+        }}
+      >
+        <Logo style={{ height: 21, width: 120 }} />
+      </View>
+      <View
+        style={{
+          flex: 2,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text style={{ marginBottom: 8 }}>
+          {passkeyLabel
+            ? t`Unlock with the passkey "${passkeyLabel}"`
+            : t`Unlock with your passkey`}
+        </Text>
+        {verifying ? (
+          <Spinner size={48} animating />
+        ) : (
+          <>
+            {error && (
+              <Text
+                style={{
+                  color: COLORS.errorTextColor ?? COLORS.errorBgColor,
+                  textAlign: 'center',
+                  marginBottom: 16,
+                  paddingHorizontal: 16,
+                }}
+              >
+                {error}
+              </Text>
+            )}
+            <NewHathorButton
+              onPress={unlock}
+              title={t`Unlock`}
+              style={{ marginTop: 8, minWidth: 200 }}
+            />
+          </>
+        )}
+      </View>
+      <View
+        style={{
+          flex: 0.2,
+          alignItems: 'flex-end',
+          justifyContent: 'flex-end',
+        }}
+      >
+        <SimpleButton
+          onPress={() => dispatch(resetOnLockScreen())}
+          title={t`Reset wallet`}
+          textStyle={{
+            textAlign: 'center',
+            textTransform: 'uppercase',
+            color: COLORS.textColorShadow,
+            letterSpacing: 1,
+            padding: 4,
+          }}
+          containerStyle={{ marginTop: 16, marginBottom: 32 }}
+        />
+      </View>
+    </View>
+  );
+};
+
+export default PasskeyLockScreen;

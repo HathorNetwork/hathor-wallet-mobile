@@ -15,17 +15,57 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
-import { sharedAddressUpdate } from '../actions';
+import PrivateReceiveAddress from './Shielded/PrivateReceiveAddress';
+import { sharedAddressUpdate, walletRefreshSharedAddress } from '../actions';
 import { ADDRESS_MODE } from '../constants';
+import { isShieldedEnvironment } from '../shielded/gating';
 import { COLORS } from '../styles/themes';
 
-export default function ReceiveMyAddress() {
+/**
+ * The wallet's receive address. Where the shielded UI is on, it is the wallet's new (shielded)
+ * address alone, which PrivateReceiveAddress shows once the wallet gives it out; elsewhere, its
+ * legacy address.
+ *
+ * @param {Object} props
+ * @param {{ navigate: Function }} props.navigation
+ */
+export default function ReceiveMyAddress({ navigation }) {
+  const shieldedEnvironment = useSelector(isShieldedEnvironment);
+
+  if (!shieldedEnvironment) {
+    return <SharedAddress />;
+  }
+
+  return (
+    <PrivateReceiveAddress navigation={navigation}>
+      <SharedAddress shielded />
+    </PrivateReceiveAddress>
+  );
+}
+
+/**
+ * The wallet's shared address (lastSharedAddress), with its QR code, copy, share and, in
+ * multi-address mode, a new address. In the shielded environment the shared address is the
+ * wallet's current shielded address.
+ *
+ * @param {Object} props
+ * @param {boolean} [props.shielded] Whether the shared address is the shielded one
+ */
+function SharedAddress({ shielded = false }) {
   const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
   const lastSharedAddress = useSelector((state) => state.lastSharedAddress);
   const addressMode = useSelector((state) => state.addressMode);
 
   const getNextAddress = async () => {
+    if (shielded) {
+      await wallet.getNextAddress({ legacy: false });
+      // The refresh shares the address the wallet gives out now, with its receive state, and
+      // keeps a refresh that started before from sharing the address this one replaced.
+      dispatch(walletRefreshSharedAddress());
+      return;
+    }
+
     const { address, index } = await wallet.getNextAddress();
 
     dispatch(sharedAddressUpdate(address, index));

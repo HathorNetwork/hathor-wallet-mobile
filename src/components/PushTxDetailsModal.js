@@ -39,11 +39,14 @@ const getTimestampFormat = (tx) => {
 };
 
 const getTokenTitle = (token) => `${token.symbol} - ${token.name}`;
-const getTokenBalance = (token, isNFT) => renderValue(token.balance, isNFT);
+const getTokenBalance = (token, isNFT, decimalPlaces) => (
+  renderValue(token.balance, isNFT, decimalPlaces)
+);
 
 export default function PushTxDetailsModal(props) {
   const { tx, tokens } = props;
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
   const dispatch = useDispatch();
 
   const idStr = getShortHash(tx.txId, 12);
@@ -70,7 +73,9 @@ export default function PushTxDetailsModal(props) {
             title={getTokenTitle(token)}
             titleStyle={token.isRegistered && styles.registeredToken}
             button={(
-              <Text>{getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}</Text>
+              <Text>
+                {getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata), decimalPlaces)}
+              </Text>
             )}
           />
         ))}

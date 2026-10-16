@@ -1,0 +1,529 @@
+import {
+  jest, describe, test, expect, beforeEach, afterEach,
+} from '@jest/globals';
+
+jest.mock('@hathor/wallet-lib', () => ({
+  ...jest.requireActual('@hathor/wallet-lib'),
+  HathorWalletServiceWallet: jest.fn(),
+}));
+
+jest.mock('../../src/store', () => ({
+  STORE: {
+    getWalletMeta: jest.fn(),
+    updateWalletMeta: jest.fn(() => Promise.resolve()),
+  },
+}));
+
+jest.mock('../../src/passkey/shieldedKeys', () => ({
+  supportsPasskeyShieldedWalletService: jest.fn(() => false),
+  rememberPasskeyShieldedKeys: jest.fn(),
+}));
+
+// The ceremony runs `fn` with the words; the tests replace it to cancel or record the order.
+jest.mock('../../src/passkey/passkeySigner', () => {
+  class PasskeyCancelledError extends Error {}
+  class PasskeyBusyError extends Error {}
+  return {
+    PasskeyCancelledError,
+    PasskeyBusyError,
+    isExpectedPasskeyError: (e) => (
+      e instanceof PasskeyCancelledError || e instanceof PasskeyBusyError
+    ),
+    withPasskeyWords: jest.fn(),
+  };
+});
+
+jest.mock('../../src/shielded/cryptoProvider', () => ({
+  loadShieldedCryptoProvider: jest.fn(async () => ({ provider: {} })),
+}));
+
+jest.mock('../../src/logger', () => {
+  const log = {
+    error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn(), log: jest.fn(),
+  };
+  return { logger: () => log };
+});
+
+/* eslint-disable import/first */
+import { HathorWalletServiceWallet, config, errors as hathorErrors } from '@hathor/wallet-lib';
+import { STORE } from '../../src/store';
+import { logger } from '../../src/logger';
+import { PRE_SETTINGS_SHIELDED_TESTNET, WALLET_SERVICE_FEATURE_TOGGLE } from '../../src/constants';
+import {
+  rememberPasskeyShieldedKeys,
+  supportsPasskeyShieldedWalletService,
+} from '../../src/passkey/shieldedKeys';
+import {
+  PasskeyBusyError,
+  PasskeyCancelledError,
+  withPasskeyWords,
+} from '../../src/passkey/passkeySigner';
+import { loadShieldedCryptoProvider } from '../../src/shielded/cryptoProvider';
+import {
+  completeWalletServiceRegistration,
+  facadeSupportsExternalSigner,
+  finishWalletServiceRegistration,
+  isWalletServiceRegistered,
+  markWalletServiceRegistered,
+  passkeyFullTokenHook,
+  prepareWalletServiceRegistration,
+  registerOnNetworkChange,
+  registerOnWalletService,
+  shouldRegisterOnWalletService,
+  startFailureMeansUnregistered,
+  walletServiceRegistrationForUnlock,
+} from '../../src/passkey/walletServiceRegistration';
+/* eslint-enable import/first */
+
+const log = logger();
+
+// Lets pending promise callbacks run.
+const flush = () => new Promise((resolve) => { setImmediate(resolve); });
+
+// A temp wallet-service wallet; `order` records the calls that matter, in sequence.
+const makeTempWallet = (order = []) => ({
+  start: jest.fn(async () => { order.push('start'); }),
+  stop: jest.fn(async () => { order.push('stop'); }),
+  clearSensitiveData: jest.fn(),
+  isShieldedEnabled: jest.fn(() => true),
+});
+
+const WORDS = new Array(24).fill('abandon').join(' ');
+const URL = 'https://ws.example/';
+const NETWORK_SETTINGS = { network: 'mainnet', walletServiceUrl: URL, walletServiceWsUrl: 'wss://ws.example/' };
+const FACADE_METHODS = ['setExternalTxSigningMethod', 'refreshFullAuthToken', 'startReadOnly'];
+
+const setFacadeSupport = (supported) => {
+  FACADE_METHODS.forEach((m) => {
+    if (supported) {
+      HathorWalletServiceWallet.prototype[m] = jest.fn();
+    } else {
+      delete HathorWalletServiceWallet.prototype[m];
+    }
+  });
+};
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  STORE.getWalletMeta.mockReturnValue({ walletType: 'passkey', xpub: 'xpub' });
+  supportsPasskeyShieldedWalletService.mockReturnValue(false);
+});
+
+afterEach(() => {
+  setFacadeSupport(false);
+});
+
+describe('facadeSupportsExternalSigner', () => {
+  test('is false when the bundled wallet-lib lacks facade signing (e.g. 3.1.1)', () => {
+    expect(facadeSupportsExternalSigner()).toBe(false);
+  });
+
+  test('is true once the facade exposes the signer, token and xpub-start methods', () => {
+    setFacadeSupport(true);
+    expect(facadeSupportsExternalSigner()).toBe(true);
+  });
+});
+
+describe('registration flag', () => {
+  test('is per wallet-service URL', () => {
+    STORE.getWalletMeta.mockReturnValue({ walletServiceRegistrations: [URL] });
+
+    expect(isWalletServiceRegistered(URL)).toBe(true);
+    expect(isWalletServiceRegistered('https://other.example/')).toBe(false);
+    expect(isWalletServiceRegistered('')).toBe(false);
+  });
+
+  test('marking adds the URL once, and un-marking removes it', async () => {
+    STORE.getWalletMeta.mockReturnValue({ walletServiceRegistrations: [URL] });
+
+    await markWalletServiceRegistered(URL);
+    expect(STORE.updateWalletMeta).toHaveBeenLastCalledWith({ walletServiceRegistrations: [URL] });
+
+    await markWalletServiceRegistered(URL, false);
+    expect(STORE.updateWalletMeta).toHaveBeenLastCalledWith({ walletServiceRegistrations: [] });
+  });
+
+  test('a failed write is logged, never thrown', async () => {
+    STORE.updateWalletMeta.mockReturnValueOnce(Promise.reject(new Error('disk full')));
+
+    await expect(markWalletServiceRegistered(URL)).resolves.toBeUndefined();
+  });
+});
+
+describe('shouldRegisterOnWalletService', () => {
+  const flagOn = { [WALLET_SERVICE_FEATURE_TOGGLE]: true };
+
+  test('only when the flag is on, a URL is set, the lib supports it and it is not registered', () => {
+    setFacadeSupport(true);
+    expect(shouldRegisterOnWalletService(flagOn, NETWORK_SETTINGS)).toBe(true);
+
+    expect(shouldRegisterOnWalletService({}, NETWORK_SETTINGS)).toBe(false);
+    expect(shouldRegisterOnWalletService(flagOn, { ...NETWORK_SETTINGS, walletServiceUrl: '' }))
+      .toBe(false);
+    STORE.getWalletMeta.mockReturnValue({ walletServiceRegistrations: [URL] });
+    expect(shouldRegisterOnWalletService(flagOn, NETWORK_SETTINGS)).toBe(false);
+  });
+
+  test('never on a wallet-lib without facade signing', () => {
+    expect(shouldRegisterOnWalletService(flagOn, NETWORK_SETTINGS)).toBe(false);
+  });
+
+  // Registering hands the passkey seed's scan key to the wallet-service, which then counts the
+  // private funds: only when the app can run the wallet with them on the facade.
+  test('on the shielded testnet, only when the lib runs passkey wallets with shielded keys on the facade', () => {
+    setFacadeSupport(true);
+    supportsPasskeyShieldedWalletService.mockReturnValue(false);
+    expect(shouldRegisterOnWalletService(flagOn, PRE_SETTINGS_SHIELDED_TESTNET)).toBe(false);
+    expect(walletServiceRegistrationForUnlock(flagOn, PRE_SETTINGS_SHIELDED_TESTNET))
+      .toBeUndefined();
+
+    supportsPasskeyShieldedWalletService.mockReturnValue(true);
+    expect(shouldRegisterOnWalletService(flagOn, PRE_SETTINGS_SHIELDED_TESTNET)).toBe(true);
+    expect(walletServiceRegistrationForUnlock(flagOn, PRE_SETTINGS_SHIELDED_TESTNET))
+      .toEqual(expect.any(Function));
+  });
+});
+
+describe('registerOnWalletService', () => {
+  test('creates the wallet with a temp wallet from the words, records it, and stops the temp wallet', async () => {
+    const tempWallet = { start: jest.fn(async () => {}), stop: jest.fn(async () => {}) };
+    HathorWalletServiceWallet.mockImplementation(() => tempWallet);
+    jest.spyOn(config, 'setWalletServiceBaseUrl');
+
+    await registerOnWalletService(WORDS, NETWORK_SETTINGS);
+
+    expect(config.setWalletServiceBaseUrl).toHaveBeenCalledWith(URL);
+    expect(HathorWalletServiceWallet).toHaveBeenCalledWith(
+      expect.objectContaining({ seed: WORDS, enableWs: false }),
+    );
+    const [{ pinCode, password }] = tempWallet.start.mock.calls[0];
+    expect(pinCode).toMatch(/^[0-9a-f]{64}$/);
+    expect(password).toBe(pinCode);
+    expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ walletServiceRegistrations: [URL] });
+    expect(tempWallet.stop).toHaveBeenCalledWith({ cleanStorage: true });
+  });
+
+  test('a failed wallet/init records nothing, drops the seed and propagates', async () => {
+    const tempWallet = makeTempWallet();
+    tempWallet.start.mockRejectedValue(new Error('ws down'));
+    HathorWalletServiceWallet.mockImplementation(() => tempWallet);
+
+    await expect(registerOnWalletService(WORDS, NETWORK_SETTINGS)).rejects.toThrow('ws down');
+    expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
+    expect(tempWallet.clearSensitiveData).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('prepareWalletServiceRegistration', () => {
+  test('builds the temp wallet on the configured network and wallet-service, without starting it', () => {
+    const tempWallet = makeTempWallet();
+    HathorWalletServiceWallet.mockImplementation(() => tempWallet);
+    const setUrl = jest.spyOn(config, 'setWalletServiceBaseUrl');
+    const setWsUrl = jest.spyOn(config, 'setWalletServiceBaseWsUrl');
+
+    const registration = prepareWalletServiceRegistration(WORDS, NETWORK_SETTINGS);
+
+    expect(registration).toEqual({ tempWallet, walletServiceUrl: URL, shieldedNetwork: false });
+    const [options] = HathorWalletServiceWallet.mock.calls[0];
+    expect(options).toMatchObject({ seed: WORDS, enableWs: false });
+    expect(options.network.name).toBe(NETWORK_SETTINGS.network);
+    expect(setUrl).toHaveBeenCalledWith(URL);
+    expect(setWsUrl).toHaveBeenCalledWith(NETWORK_SETTINGS.walletServiceWsUrl);
+    // Starting talks to the wallet-service; it happens later, outside the passkey ceremony.
+    expect(tempWallet.start).not.toHaveBeenCalled();
+  });
+
+  test('marks a registration on the shielded testnet', () => {
+    HathorWalletServiceWallet.mockImplementation(() => makeTempWallet());
+
+    const registration = prepareWalletServiceRegistration(WORDS, PRE_SETTINGS_SHIELDED_TESTNET);
+
+    expect(registration.shieldedNetwork).toBe(true);
+  });
+});
+
+describe('completeWalletServiceRegistration', () => {
+  test('starts the temp wallet with a one-time pin, records the registration, then stops it', async () => {
+    const order = [];
+    const tempWallet = makeTempWallet(order);
+    STORE.updateWalletMeta.mockImplementation(async () => { order.push('record'); });
+
+    await completeWalletServiceRegistration({ tempWallet, walletServiceUrl: URL });
+
+    expect(order).toEqual(['start', 'record', 'stop']);
+    const [{ pinCode, password }] = tempWallet.start.mock.calls[0];
+    expect(pinCode).toMatch(/^[0-9a-f]{64}$/);
+    expect(password).toBe(pinCode);
+    expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ walletServiceRegistrations: [URL] });
+    expect(tempWallet.stop).toHaveBeenCalledWith({ cleanStorage: true });
+    expect(loadShieldedCryptoProvider).not.toHaveBeenCalled();
+  });
+
+  test('on the shielded testnet, loads the crypto provider before the start registers the keys', async () => {
+    const order = [];
+    const tempWallet = makeTempWallet(order);
+    loadShieldedCryptoProvider.mockImplementationOnce(async () => {
+      order.push('provider');
+      return { provider: {} };
+    });
+
+    await completeWalletServiceRegistration({
+      tempWallet,
+      walletServiceUrl: URL,
+      shieldedNetwork: true,
+    });
+
+    expect(order).toEqual(['provider', 'start', 'stop']);
+    expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ walletServiceRegistrations: [URL] });
+  });
+
+  // A passkey wallet only registers here, unlike a seed wallet that sends its keys at each start:
+  // recording it would keep it off the facade's shielded side for good.
+  test('on the shielded testnet, records nothing when the service did not register the shielded keys', async () => {
+    const order = [];
+    const tempWallet = makeTempWallet(order);
+    tempWallet.isShieldedEnabled.mockReturnValue(false);
+
+    await completeWalletServiceRegistration({
+      tempWallet,
+      walletServiceUrl: URL,
+      shieldedNetwork: true,
+    });
+
+    expect(order).toEqual(['start', 'stop']);
+    expect(tempWallet.stop).toHaveBeenCalledWith({ cleanStorage: true });
+    expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
+  });
+
+  // As for a seed wallet: the service would count private funds the app can't spend.
+  test('on the shielded testnet, registers nothing without a crypto provider', async () => {
+    const tempWallet = makeTempWallet();
+    loadShieldedCryptoProvider.mockResolvedValueOnce({ error: new Error('no native module') });
+
+    await expect(completeWalletServiceRegistration({
+      tempWallet,
+      walletServiceUrl: URL,
+      shieldedNetwork: true,
+    })).rejects.toThrow('no native module');
+
+    expect(tempWallet.start).not.toHaveBeenCalled();
+    expect(tempWallet.clearSensitiveData).toHaveBeenCalledTimes(1);
+    expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
+  });
+});
+
+describe('registration at unlock', () => {
+  const flagOn = { [WALLET_SERVICE_FEATURE_TOGGLE]: true };
+
+  test('has no hook when the wallet should not register', () => {
+    expect(walletServiceRegistrationForUnlock(flagOn, NETWORK_SETTINGS)).toBeUndefined();
+  });
+
+  test('the hook only prepares the registration inside the ceremony', () => {
+    setFacadeSupport(true);
+    const tempWallet = makeTempWallet();
+    HathorWalletServiceWallet.mockImplementation(() => tempWallet);
+
+    const onWords = walletServiceRegistrationForUnlock(flagOn, NETWORK_SETTINGS);
+    const registration = onWords(WORDS);
+
+    expect(registration).toEqual({ tempWallet, walletServiceUrl: URL, shieldedNetwork: false });
+    expect(tempWallet.start).not.toHaveBeenCalled();
+  });
+
+  test('a failure to prepare is logged and never blocks the unlock', () => {
+    setFacadeSupport(true);
+    const failure = new Error('bad network settings');
+    HathorWalletServiceWallet.mockImplementation(() => { throw failure; });
+
+    const onWords = walletServiceRegistrationForUnlock(flagOn, NETWORK_SETTINGS);
+
+    expect(onWords(WORDS)).toBeNull();
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), failure);
+  });
+
+  test('finishing runs in the background: it returns at once and completes later', async () => {
+    const order = [];
+    const tempWallet = makeTempWallet(order);
+
+    expect(finishWalletServiceRegistration({ tempWallet, walletServiceUrl: URL })).toBeUndefined();
+    await flush();
+
+    expect(order).toEqual(['start', 'stop']);
+    expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ walletServiceRegistrations: [URL] });
+  });
+
+  test('a failed background registration is logged, never thrown', async () => {
+    const tempWallet = makeTempWallet();
+    const failure = new Error('ws down');
+    tempWallet.start.mockRejectedValue(failure);
+
+    finishWalletServiceRegistration({ tempWallet, walletServiceUrl: URL });
+    await flush();
+
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), failure);
+    expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
+  });
+
+  test('finishing nothing is a no-op', () => {
+    expect(() => finishWalletServiceRegistration(null)).not.toThrow();
+    expect(() => finishWalletServiceRegistration(undefined)).not.toThrow();
+  });
+});
+
+describe('passkeyFullTokenHook', () => {
+  afterEach(() => {
+    delete HathorWalletServiceWallet.deriveAuthPrivateKey;
+  });
+
+  test('is undefined for a wallet without auth tokens (the fullnode facade)', () => {
+    expect(passkeyFullTokenHook({})).toBeUndefined();
+    expect(passkeyFullTokenHook(undefined)).toBeUndefined();
+  });
+
+  test('on the wallet-service facade, mints a full token from the auth key of the root', async () => {
+    HathorWalletServiceWallet.deriveAuthPrivateKey = jest.fn(() => 'auth-key');
+    const wallet = { refreshFullAuthToken: jest.fn(async () => {}) };
+
+    await passkeyFullTokenHook(wallet)('root-key');
+
+    expect(HathorWalletServiceWallet.deriveAuthPrivateKey).toHaveBeenCalledWith('root-key');
+    expect(wallet.refreshFullAuthToken).toHaveBeenCalledWith('auth-key');
+  });
+});
+
+describe('startFailureMeansUnregistered', () => {
+  const requestError = (cause) => new hathorErrors.WalletRequestError('request failed', { cause });
+  const timeoutError = Object.assign(new Error('timeout of 10000ms exceeded'), {
+    code: 'ECONNABORTED',
+  });
+
+  test.each([
+    ['the read-only startup timed out', requestError({ source: requestError({ status: 400 }) })],
+    ['a 404 answer', requestError({ status: 404 })],
+    ['a 403 answer', requestError({ status: 403 })],
+  ])('is true when %s', (_case, error) => {
+    expect(startFailureMeansUnregistered(error)).toBe(true);
+  });
+
+  test.each([
+    ['a network failure', new Error('Network Error')],
+    ['a request timeout', timeoutError],
+    ['a 5xx answer', requestError({ status: 503 })],
+    ['a request error without a cause', requestError(null)],
+  ])('is false for %s', (_case, error) => {
+    expect(startFailureMeansUnregistered(error)).toBe(false);
+  });
+});
+
+describe('registration at a network change', () => {
+  const flagOn = { [WALLET_SERVICE_FEATURE_TOGGLE]: true };
+  let meta;
+  let order;
+
+  beforeEach(() => {
+    setFacadeSupport(true);
+    order = [];
+    // The walletMeta the registration reads and writes, so the result reflects what was recorded.
+    meta = { walletType: 'passkey', xpub: 'xpub' };
+    STORE.getWalletMeta.mockImplementation(() => meta);
+    STORE.updateWalletMeta.mockImplementation(async (update) => { meta = { ...meta, ...update }; });
+    withPasskeyWords.mockImplementation(async (fn) => {
+      order.push('ceremony');
+      const result = await fn(WORDS);
+      order.push('ceremony end');
+      return result;
+    });
+    HathorWalletServiceWallet.mockImplementation(() => makeTempWallet(order));
+  });
+
+  test('without a reason to register, it opens no ceremony', async () => {
+    meta.walletServiceRegistrations = [URL];
+
+    await expect(registerOnNetworkChange(flagOn, NETWORK_SETTINGS)).resolves.toBe(true);
+    const otherNetwork = { ...NETWORK_SETTINGS, walletServiceUrl: 'https://other.example/' };
+    await expect(registerOnNetworkChange({}, otherNetwork)).resolves.toBe(false);
+
+    expect(withPasskeyWords).not.toHaveBeenCalled();
+  });
+
+  test('registers in one ceremony, and creates the wallet after the ceremony ends', async () => {
+    await expect(registerOnNetworkChange(flagOn, NETWORK_SETTINGS)).resolves.toBe(true);
+
+    expect(withPasskeyWords).toHaveBeenCalledTimes(1);
+    expect(rememberPasskeyShieldedKeys).toHaveBeenCalledWith(WORDS);
+    expect(HathorWalletServiceWallet)
+      .toHaveBeenCalledWith(expect.objectContaining({ seed: WORDS }));
+    expect(order).toEqual(['ceremony', 'ceremony end', 'start', 'stop']);
+    expect(meta.walletServiceRegistrations).toEqual([URL]);
+  });
+
+  test('a cancelled ceremony registers nothing and never throws', async () => {
+    withPasskeyWords.mockRejectedValue(new PasskeyCancelledError());
+
+    await expect(registerOnNetworkChange(flagOn, NETWORK_SETTINGS)).resolves.toBe(false);
+
+    expect(HathorWalletServiceWallet).not.toHaveBeenCalled();
+    expect(log.error).not.toHaveBeenCalled();
+    expect(meta.walletServiceRegistrations).toBeUndefined();
+  });
+
+  test('a failed registration is logged and never thrown', async () => {
+    const failure = new Error('ws down');
+    HathorWalletServiceWallet.mockImplementation(() => {
+      const tempWallet = makeTempWallet(order);
+      tempWallet.start.mockRejectedValue(failure);
+      return tempWallet;
+    });
+
+    await expect(registerOnNetworkChange(flagOn, NETWORK_SETTINGS)).resolves.toBe(false);
+
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), failure);
+    expect(meta.walletServiceRegistrations).toBeUndefined();
+  });
+
+  test('another ceremony in progress is expected: logged quietly, nothing registered', async () => {
+    withPasskeyWords.mockRejectedValue(new PasskeyBusyError('busy'));
+
+    await expect(registerOnNetworkChange(flagOn, NETWORK_SETTINGS)).resolves.toBe(false);
+
+    expect(log.error).not.toHaveBeenCalled();
+    expect(meta.walletServiceRegistrations).toBeUndefined();
+  });
+
+  test('stops waiting after waitMs, and the registration finishes in the background', async () => {
+    let finishStart;
+    HathorWalletServiceWallet.mockImplementation(() => {
+      const tempWallet = makeTempWallet(order);
+      tempWallet.start.mockImplementation(
+        () => new Promise((resolve) => { finishStart = resolve; }),
+      );
+      return tempWallet;
+    });
+
+    await expect(registerOnNetworkChange(flagOn, NETWORK_SETTINGS, 10)).resolves.toBe(false);
+    expect(meta.walletServiceRegistrations).toBeUndefined();
+
+    finishStart();
+    await flush();
+    expect(meta.walletServiceRegistrations).toEqual([URL]);
+  });
+
+  test('a registration that fails after the wait is logged, never thrown', async () => {
+    const failure = new Error('ws down');
+    let failStart;
+    HathorWalletServiceWallet.mockImplementation(() => {
+      const tempWallet = makeTempWallet(order);
+      tempWallet.start.mockImplementation(
+        () => new Promise((_, reject) => { failStart = reject; }),
+      );
+      return tempWallet;
+    });
+
+    await expect(registerOnNetworkChange(flagOn, NETWORK_SETTINGS, 10)).resolves.toBe(false);
+    failStart(failure);
+    await flush();
+
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), failure);
+  });
+});

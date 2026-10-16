@@ -38,6 +38,11 @@ export function setNotificationError(error) {
 
 /**
  * Render the balance value in decimal format.
+ *
+ * Runs in the background message handler, where the Redux store is not
+ * available, so it cannot pass the network's decimal places and falls back to
+ * the wallet-lib default.
+ *
  * @param {string} tokenBalance
  * @returns {string} - the rendered balance value with the token symbol.
  * @example
