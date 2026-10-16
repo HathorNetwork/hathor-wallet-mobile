@@ -113,6 +113,21 @@ describe('persistNetworkSettings wallet stop', () => {
     expect(stopStep.value.payload.fn).toBe(storage.cleanStorage);
     expectRegistrationThenReload(gen);
   });
+
+  test('a failed passkey registration is logged and does not block the network switch', () => {
+    const { gen } = runToWalletStop(wallet);
+    gen.next(); // the wallet stop ends: clean storage
+
+    const registerStep = gen.next().value;
+    expect(registerStep.payload.fn).toBe(registerPasskeyWalletOnNetworkChange);
+
+    // The storage is already wiped: the status must still leave LOADING, and the wallet reload.
+    const registrationError = new Error('feature toggles unavailable');
+    expect(isPut(gen.throw(registrationError).value, networkSettingsUpdateWaiting())).toBe(true);
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), registrationError);
+    expect(isPut(gen.next().value, reloadWalletRequested())).toBe(true);
+    expect(gen.next().done).toBe(true);
+  });
 });
 
 describe('registerPasskeyWalletOnNetworkChange', () => {
