@@ -7,8 +7,7 @@ import {
 } from '../../src/sagas/tokens';
 import {
   tokensSavedForNetwork,
-  setTokens,
-  tokenFetchBalanceRequested,
+  tokenImportRemoveFromList,
 } from '../../src/actions';
 import { STORE } from '../../src/store';
 
@@ -84,7 +83,7 @@ describe('saveNetworkTokens', () => {
 });
 
 describe('restoreNetworkTokens', () => {
-  test('restores tokens for current network and updates Redux', () => {
+  test('restores tokens for current network and takes them off the import list', () => {
     const gen = restoreNetworkTokens();
 
     // select serverInfo
@@ -122,20 +121,9 @@ describe('restoreNetworkTokens', () => {
       ),
     );
 
-    // advance past registerToken, expect getRegisteredTokens call
-    gen.next();
-
-    // feed all registered tokens, expect setTokens dispatch
-    const allTokens = { ...mockTokens, htr: { uid: '00', name: 'HTR', symbol: 'HTR' } };
-    const setTokensEffect = gen.next(allTokens);
-    expect(setTokensEffect.value).toStrictEqual(put(setTokens(allTokens)));
-
-    // expect tokenFetchBalanceRequested for each saved token
-    const fetchBalance1 = gen.next();
-    expect(fetchBalance1.value).toStrictEqual(put(tokenFetchBalanceRequested('token1')));
-
-    const fetchBalance2 = gen.next();
-    expect(fetchBalance2.value).toStrictEqual(put(tokenFetchBalanceRequested('token2')));
+    // advance past registerToken, expect the restored tokens off the import list
+    const removeEffect = gen.next();
+    expect(removeEffect.value).toStrictEqual(put(tokenImportRemoveFromList(['token1', 'token2'])));
 
     expect(gen.next().done).toBe(true);
   });

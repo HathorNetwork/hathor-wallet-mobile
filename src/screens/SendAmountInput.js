@@ -260,7 +260,6 @@ const SendAmountInput = () => {
       {privateSendsAvailable && (
         <TransactionPrivacyModal
           visible={isPrivacyModalShown}
-          onDismiss={() => setIsPrivacyModalShown(false)}
           selectedMode={privacyMode}
           onConfirm={(mode) => {
             setChosenPrivacyMode(mode);
