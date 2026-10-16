@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Linking } from 'react-native';
+import { ActivityIndicator, Linking } from 'react-native';
 import { useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -40,10 +40,18 @@ import { copySensitive } from '../utils/sensitiveClipboard';
  * values are encoded only when a row is pressed, and never leave the component but through the
  * explorer link or the clipboard.
  *
+ * The read can take seconds: on the wallet-service facade it asks the service for the tx and for
+ * each of the wallet's private outputs in it. Meanwhile, a tx whose history shows private activity
+ * already shows the rows, each with a spinner in place of its icon and not pressable, and they
+ * become pressable once the values load, or go away when the tx has none. Other txs show the rows
+ * only once the read gives values, so a transparent tx never shows them.
+ *
  * @param {Object} props
  * @param {string} props.txId
+ * @param {boolean} [props.hasShieldedActivity] Whether the tx's history shows private activity
+ *   (TxHistory.hasShieldedActivity)
  */
-export default function AuditUnblindingRows({ txId }) {
+export default function AuditUnblindingRows({ txId, hasShieldedActivity = false }) {
   const wallet = useSelector((state) => state.wallet);
   const enabled = useSelector(isShieldedEnabled);
   const explorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
@@ -53,11 +61,13 @@ export default function AuditUnblindingRows({ txId }) {
     && typeof wallet?.getShieldedUnblindingForTx === 'function';
 
   const [openings, setOpenings] = useState(null);
+  const [loading, setLoading] = useState(active);
   const [copied, setCopied] = useState(false);
   const copiedTimer = useRef(null);
 
   useEffect(() => {
     setOpenings(null);
+    setLoading(active);
     if (!active) {
       return undefined;
     }
@@ -72,6 +82,10 @@ export default function AuditUnblindingRows({ txId }) {
         }
       } catch (e) {
         // The rows stay hidden. The error isn't logged: it could quote the values.
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
     load();
@@ -82,10 +96,13 @@ export default function AuditUnblindingRows({ txId }) {
 
   useEffect(() => () => clearTimeout(copiedTimer.current), []);
 
-  if (!active || openings === null) {
+  const pending = loading && hasShieldedActivity;
+  if (!active || (openings === null && !pending)) {
     return null;
   }
 
+  const loadingIcon = <ActivityIndicator size='small' color={COLORS.textColorShadow} />;
+  // Only reached once the values loaded: the rows don't take presses before.
   const encodeValues = () => encoder(txId, openings.outputs, openings.inputs);
 
   const openExplorer = () => {
@@ -105,15 +122,19 @@ export default function AuditUnblindingRows({ txId }) {
       {supportsUnblindLink(explorerUrl) && (
         <ListButton
           title={t`View in Explorer unblinded`}
-          button={<OpenInNewIcon size={24} color={COLORS.black} />}
+          button={pending ? loadingIcon : <OpenInNewIcon size={24} color={COLORS.black} />}
           onPress={openExplorer}
+          disabled={pending}
           titleStyle={{ color: COLORS.textColorShadow }}
         />
       )}
       <ListButton
         title={copied ? t`Copied to clipboard!` : t`Copy unblinding values`}
-        button={<FontAwesomeIcon icon={faCopy} size={20} color={COLORS.textColorShadow} />}
+        button={pending
+          ? loadingIcon
+          : <FontAwesomeIcon icon={faCopy} size={20} color={COLORS.textColorShadow} />}
         onPress={copyValues}
+        disabled={pending}
         titleStyle={{ color: copied ? COLORS.primary : COLORS.textColorShadow }}
       />
     </>

@@ -170,9 +170,12 @@ export class ListItem extends BaseItem {
   }
 }
 
+/**
+ * A pressable row. With `disabled`, it ignores presses, as while what it acts on is loading.
+ */
 export class ListButton extends BaseItem {
   onPress = () => {
-    if (this.props.onPress) {
+    if (this.props.onPress && !this.props.disabled) {
       this.props.onPress();
     }
   }
@@ -180,7 +183,11 @@ export class ListButton extends BaseItem {
   renderInside() {
     const borderStyles = this.getBorderStyles();
     return (
-      <TouchableHighlight style={borderStyles} onPress={this.onPress}>
+      <TouchableHighlight
+        style={borderStyles}
+        onPress={this.onPress}
+        disabled={Boolean(this.props.disabled)}
+      >
         <View style={[this.style.view, ...borderStyles]}>
           {(typeof (this.props.title) === 'string'
             ? <Text style={[this.style.title, this.props.titleStyle]}>{this.props.title}</Text>
