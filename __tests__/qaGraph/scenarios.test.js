@@ -148,3 +148,30 @@ describe('validateGraph scenario checks', () => {
     expect(validateGraph(g).errors.some((e) => e.includes('send') && e.includes('dest'))).toBe(true);
   });
 });
+
+describe('actions with fewer than two axes', () => {
+  const variant = (axes) => {
+    const g = fresh();
+    g.actions.push({
+      ...structuredClone(g.actions[0]), id: 'extra', axes, setups: ['ws-single', 'fn-single'],
+    });
+    g.constraints = [];
+    return g;
+  };
+
+  it('covers every value of a one-axis action', () => {
+    const g = variant(['dest']);
+    ['ws-single', 'fn-single'].forEach((setupId) => {
+      const seen = selectScenarios(g, 'extra', setupId).map((s) => s.values.dest);
+      expect(new Set(seen)).toEqual(new Set(['simple', 'multisig', 'shielded']));
+    });
+  });
+
+  it('returns exactly one scenario per setup for a zero-axis action', () => {
+    const g = variant([]);
+    ['ws-single', 'fn-single'].forEach((setupId) => {
+      const result = selectScenarios(g, 'extra', setupId);
+      expect(result.map((s) => s.id)).toEqual([`extra:${setupId}`]);
+    });
+  });
+});

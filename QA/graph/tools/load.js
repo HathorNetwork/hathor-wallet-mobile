@@ -48,7 +48,8 @@ const asArray = (value) => (Array.isArray(value) ? value : [value]);
  * `invalid` one when it matches no combination at all. Checked across the action's setups.
  */
 function deadConstraintWarnings(graph) {
-  // Lazy: scenarios.js is independent of load.js, but keep the cycle impossible.
+  // Required lazily, as the plan mandates; it keeps load.js usable without scenarios.js loaded.
+  // There is no actual require cycle.
   // eslint-disable-next-line global-require
   const { enumerateCombos, matches, classifyCombo } = require('./scenarios');
   return asList(graph.constraints).filter((c) => {

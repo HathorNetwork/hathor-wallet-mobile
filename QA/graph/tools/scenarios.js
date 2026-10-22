@@ -55,8 +55,9 @@ function classifyCombo(graph, actionId, values) {
   };
 }
 
+// Coverage targets: every single axis=value, plus every pair of them.
 const pairKeys = (values, axes) => {
-  const keys = [];
+  const keys = axes.map((a) => `${a}=${values[a]}`);
   for (let i = 0; i < axes.length; i += 1) {
     for (let j = i + 1; j < axes.length; j += 1) {
       keys.push(`${axes[i]}=${values[axes[i]]}|${axes[j]}=${values[axes[j]]}`);
@@ -92,6 +93,9 @@ function selectScenarios(graph, actionId, setupId) {
   candidates.filter((c) => chosen.has(c.index))
     .forEach((c) => pairKeys(c.values, axes).forEach((k) => uncovered.delete(k)));
 
+  // An action with no action axes has nothing to cover but still needs its one run.
+  if (axes.length === 0 && chosen.size === 0 && combos.length > 0) chosen.add(0);
+
   while (uncovered.size > 0) {
     let best = null;
     let bestGain = 0;
@@ -109,7 +113,8 @@ function selectScenarios(graph, actionId, setupId) {
   return [...chosen].sort((a, b) => a - b).map((index) => {
     const { values, classes, constraintIds, expected } = combos[index];
     return {
-      id: `${actionId}:${setupId}:${axes.map((a) => values[a]).join('.')}`,
+      // With no action axes the id has no trailing colon: `action:setup`.
+      id: [actionId, setupId, ...(axes.length ? [axes.map((a) => values[a]).join('.')] : [])].join(':'),
       action: actionId,
       setup: setupId,
       values,
