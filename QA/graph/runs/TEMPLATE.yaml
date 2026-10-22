@@ -1,0 +1,14 @@
+# This test was run based on the YAML of <date>, version from commit <hash>.
+yamlCommit: <hash>
+yamlDate: <date>
+appBuild: <version or build id>
+device: <device model>
+platform: android # android | ios
+environment: testnet
+scope:
+  reason: <why this run covers these picks>
+  picks: [] # features, flags or axis values that were picked
+results:
+  - scenario: <scenario id as of yamlCommit>
+    status: passed # passed | failed | skipped
+    notes: ''
