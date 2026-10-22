@@ -60,7 +60,7 @@ features:
       - { to: shielded, reason: Needs the private balance unlocked and the shielded provider registered }
       - { to: pin-unlock, reason: On the fullnode facade a locked private balance is unlocked with the PIN or passkey before sending }
       - { to: privacy-settings, reason: The default privacy mode set in privacy settings preselects the send's mode }
-    introduces: []
+    introduces: ['privacy:hide-amount', 'privacy:private', 'dest:shielded', 'amount:private-over-limit']
     actions: []
 
   - id: token-create
@@ -96,10 +96,10 @@ features:
       - src/components/TokenDetails.js
     flags: [fee-based-tokens]
     links:
-      - { to: send, reason: Sending a fee token needs HTR for the fee, otherwise it fails on confirm }
+      - { to: send, reason: Sending a fee token needs HTR for the fee or it fails on confirm }
       - { to: token-create, reason: The token type is picked in the create token wizard }
       - { to: tx-history, reason: The transaction details show the fee row }
-    introduces: []
+    introduces: ['token:fee']
     actions: []
 
   - id: receive
@@ -128,7 +128,7 @@ features:
       - src/shielded/receiveState.js
     flags: [shielded-outputs]
     links:
-      - { to: shielded, reason: Needs the shielded provider registered and, on the wallet service, an unused shielded address }
+      - { to: shielded, reason: Needs the shielded provider registered and an unused shielded address on the wallet service }
       - { to: address-mode, reason: Shielded addresses are not supported in single-address mode }
       - { to: receive, reason: Shown inside the receive screen }
     introduces: []
@@ -146,7 +146,7 @@ features:
       - { to: receive, reason: Decides which address the receive screen shows and whether a new one can be made }
       - { to: shielded-receive, reason: Single-address mode turns the private receive address off }
       - { to: wallet-service, reason: Changing the mode reloads the wallet }
-    introduces: []
+    introduces: ['addr:single']
     actions: []
 
   - id: tx-history
@@ -208,7 +208,7 @@ features:
       - { to: tx-history, reason: Balances and transaction details show the private part }
       - { to: wallet-service, reason: On the wallet service the private balance comes from the service and needs shielded capability }
       - { to: address-mode, reason: An active shielded chain keeps the wallet in multi-address mode }
-    introduces: []
+    introduces: ['private-balance:locked', 'private-balance:broken-key']
     actions: []
 
   - id: wallet-service
@@ -290,10 +290,10 @@ features:
     links:
       - { to: wallet-load, reason: The passkey wallet starts right after the ceremony }
       - { to: wallet-service, reason: A passkey wallet registers itself with the wallet service }
-      - { to: passkey-lock, reason: A passkey wallet is unlocked with the passkey, not a PIN }
+      - { to: passkey-lock, reason: A passkey wallet is unlocked with the passkey instead of a PIN }
       - { to: shielded, reason: Shielded keys are derived from the passkey }
       - { to: pin-unlock, reason: Sends are authorized with the passkey instead of the PIN }
-    introduces: []
+    introduces: ['wallet:passkey']
     actions: []
 
   - id: pin-unlock
@@ -307,7 +307,7 @@ features:
       - src/components/NumPad.js
     flags: []
     links:
-      - { to: biometrics, reason: With biometrics on, the PIN screen may be replaced by a fingerprint or face check }
+      - { to: biometrics, reason: With biometrics on the PIN screen may be replaced by a fingerprint or face check }
       - { to: lock-screen, reason: The same screen locks the app after it was in the background }
     introduces: []
     actions: []
@@ -767,7 +767,231 @@ flags:
     appliesAt: live
     status: active
 
-axes: []
-setups: []
+axes:
+  # Setup axes: expensive to change, they form the setups.
+  - id: network
+    name: Network
+    kind: setup
+    values:
+      - { id: testnet, name: Public testnet }
+      - { id: testnet-shielded, name: Shielded testnet (testnet-shielded-outputs) }
+      - { id: local-privnet, name: Local privnet (mobile-e2e-flows) }
+    how: QA.md "Common Activities" > "Changing Networks" (Settings > Network Settings > "I Understand" > pick a pre-setting or "Customize"); "Identifying the current network" to check it. The wallet restarts and flags are read again for the new network. The Shielded Testnet preset shows only with shielded-outputs-network.rollout on for the device on the current network (QA_SHIELDED.md). The local privnet is a Customize to the emulator's forwarded fullnode, in the debug build of `../mobile-e2e-flows`.
+    switch:
+      cost: expensive # QA: confirm
+      transitions:
+        - { from: testnet, to: local-privnet, cost: very-expensive, when: The privnet runs only in the e2e kit's emulator debug build; the run moves to another install } # QA: confirm
+        - { from: testnet-shielded, to: local-privnet, cost: very-expensive, when: The privnet runs only in the e2e kit's emulator debug build; the run moves to another install } # QA: confirm
+        - { from: local-privnet, to: testnet, cost: very-expensive, when: Leaving the e2e kit's emulator for a normal build } # QA: confirm
+        - { from: local-privnet, to: testnet-shielded, cost: very-expensive, when: Leaving the e2e kit's emulator for a normal build } # QA: confirm
+
+  - id: facade
+    name: Wallet facade
+    kind: setup
+    values:
+      - { id: wallet-service, name: Wallet service }
+      - { id: fullnode, name: Fullnode }
+    how: QA.md "Common Activities" > "Changing the Facade". To the fullnode, Customize the network and empty the "Wallet Service URL" and "Wallet Service WS URL" fields (or turn wallet-service-mobile.rollout off on Unleash for the device). Back to the wallet service, pick a pre-setting again. Check it with "Identifying the current facade". Trap, IGNORE_WS_TOGGLE_FLAG, from "Changing the Facade" > "Wallet Service". After an irrecoverable wallet-service error, the app stays on the fullnode for 24 hours, whatever the flag says. To get back to the wallet service sooner, clear the app data (Android) or reinstall (iOS) and import the wallet again. A passkey wallet stays on the fullnode unless it is registered on the wallet service.
+    switch:
+      cost: expensive # QA: confirm
+      transitions: []
+      fallback: { cost: very-expensive, how: "Clear the app data (Android) or reinstall (iOS), then import the wallet again: this clears IGNORE_WS_TOGGLE_FLAG" } # QA: confirm
+
+  - id: wallet
+    name: Wallet type
+    kind: setup
+    values:
+      - { id: seed, name: Seed (24 words and PIN) }
+      - { id: passkey, name: Passkey (no words and no PIN) }
+    how: QA.md "Reset Wallet", then "New Wallet Flow" or "Import a wallet" for a seed wallet, or the passkey button on the onboarding screen (needs passkey-onboarding.rollout) for a passkey wallet.
+    switch:
+      cost: very-expensive # QA: confirm
+      transitions: []
+
+  - id: addr
+    name: Address mode
+    kind: setup
+    values:
+      - { id: single, name: Single address }
+      - { id: multi, name: Multi address }
+    how: QA.md "Address mode" and QA_ADDRESS_MODE.md. Settings > Address mode (needs single-address-mobile.rollout), then save; the wallet restarts. The mode is stored per network. At start the app moves a single-address wallet to multi when it finds transactions past index 0, and a wallet with an active shielded chain (seed wallets on the shielded testnet) is always multi.
+    switch:
+      cost: cheap # QA: confirm
+      transitions:
+        - { from: multi, to: single, impossible: true, when: wallet has tx past index 0 or a shielded chain is active }
+      fallback: { cost: very-expensive, how: reset and import a fresh seed } # QA: confirm
+
+  - id: flag-fbt
+    name: fee-based-tokens.rollout
+    kind: setup
+    values:
+      - { id: on, name: Flag on }
+      - { id: off, name: Flag off }
+    how: QA.md "Common Activities" > "Setting flags on Unleash", for the device's Unique app identifier on the current network. It applies live within the 15 s polling. On the local privnet, flags are forced by `E2E-LOCAL` edits to FEATURE_TOGGLE_DEFAULTS in the e2e worktree, so a change there needs a rebuild.
+    switch:
+      cost: medium # QA: confirm
+      transitions: []
+
+  # Action axes: cheap to vary inside one setup.
+  - id: dest
+    name: Destination address
+    kind: action
+    values:
+      - { id: simple, name: Simple address (P2PKH) }
+      - { id: multisig, name: Multisig address (P2SH) }
+      - { id: shielded, name: Shielded address }
+    how: Type, paste or scan the address on the send address screen. Keep one address of each kind of the current network at hand.
+    switch:
+      cost: cheap # QA: confirm
+      transitions: []
+
+  - id: token
+    name: Token
+    kind: action
+    values:
+      - { id: htr, name: HTR }
+      - { id: deposit, name: Deposit-based custom token }
+      - { id: fee, name: Fee-based custom token }
+    how: Pick the token on the send amount screen (Change token), or open it from the home list. The wallet must already hold each kind (QA.md "Create a new token Tests").
+    switch:
+      cost: cheap # QA: confirm
+      transitions: []
+
+  - id: privacy
+    name: Privacy mode
+    kind: action
+    values:
+      - { id: public, name: Public }
+      - { id: hide-amount, name: Hide amount }
+      - { id: private, name: Private }
+    how: The privacy selector on the send amount screen, shown only where private sends are possible (shielded testnet with shielded-outputs.rollout on). The default comes from Settings > Privacy.
+    switch:
+      cost: cheap # QA: confirm
+      transitions: []
+
+  - id: amount
+    name: Amount
+    kind: action
+    values:
+      - { id: normal, name: A normal amount below the balance }
+      - { id: max, name: Exactly the available balance }
+      - { id: over-balance, name: More than the available balance }
+      - { id: empty, name: Zero or empty }
+      - { id: decimals, name: Many decimal places }
+      - { id: private-over-limit, name: Private amount at or above the shielded output limit (2^40) }
+    how: Type it on the amount input.
+    switch:
+      cost: cheap # QA: confirm
+      transitions: []
+
+  - id: funding
+    name: Funding before the action
+    kind: action
+    values:
+      - { id: enough-htr, name: Holds the token and enough HTR for fees }
+      - { id: zero-htr, name: Holds the token but no HTR }
+    how: Send HTR or the token to the wallet beforehand from another wallet (on the local privnet, `sender/sender.js send`), or send all HTR away to reach zero HTR.
+    switch:
+      cost: medium # QA: confirm
+      transitions: []
+
+  - id: private-balance
+    name: Private balance state
+    kind: action
+    values:
+      - { id: unlocked, name: Unlocked }
+      - { id: locked, name: Locked (scan key not decrypted at start) }
+      - { id: broken-key, name: Broken key (shielded keys don't match) }
+    how: QA_SHIELDED.md "A start that leaves the private funds locked" and "Unlocking a locked private balance". Locked needs a start with a PIN that doesn't decrypt the scan key, and broken key needs a forced shielded-key-mismatch; both are reachable only in a debug build. Unlock with "Unlock private balance" and the PIN, or the passkey.
+    switch:
+      cost: medium # QA: confirm
+      transitions:
+        - { from: unlocked, to: locked, cost: expensive, when: Needs a debug build and a wallet restart with a mismatched PIN } # QA: confirm
+        - { from: unlocked, to: broken-key, cost: expensive, when: Needs a debug build that forces shielded-key-mismatch } # QA: confirm
+        - { from: locked, to: broken-key, cost: expensive, when: Needs a debug build that forces shielded-key-mismatch } # QA: confirm
+
+setups:
+  # Public testnet, seed wallet: the main run (QA.md "Suggested Test Sequence").
+  - id: tn-ws-seed-single
+    name: Testnet, wallet service, seed, single address
+    values: { network: testnet, facade: wallet-service, wallet: seed, addr: single, flag-fbt: on }
+    environment: testnet
+    runnable: true # QA: confirm
+    notes: A new wallet starts in single-address mode; run it first, while no address past index 0 has transactions.
+  - id: tn-ws-seed-multi
+    name: Testnet, wallet service, seed, multi address
+    values: { network: testnet, facade: wallet-service, wallet: seed, addr: multi, flag-fbt: on }
+    environment: testnet
+    runnable: true # QA: confirm
+  - id: tn-ws-seed-multi-nofbt
+    name: Testnet, wallet service, seed, multi address, fee-based tokens off
+    values: { network: testnet, facade: wallet-service, wallet: seed, addr: multi, flag-fbt: off }
+    environment: testnet
+    runnable: true # QA: confirm
+    notes: For create token, which offers only deposit tokens with the flag off.
+  - id: tn-fn-seed-single
+    name: Testnet, fullnode, seed, single address
+    values: { network: testnet, facade: fullnode, wallet: seed, addr: single, flag-fbt: on }
+    environment: testnet
+    runnable: true # QA: confirm
+    notes: Needs a wallet with no transactions past index 0 (a fresh seed), as multi to single is impossible otherwise.
+  - id: tn-fn-seed-multi
+    name: Testnet, fullnode, seed, multi address
+    values: { network: testnet, facade: fullnode, wallet: seed, addr: multi, flag-fbt: on }
+    environment: testnet
+    runnable: true # QA: confirm
+    notes: QA.md "Fullnode Facade tests".
+
+  # Shielded testnet, seed wallet.
+  - id: tns-ws-seed-multi
+    name: Shielded testnet, wallet service, seed, multi address
+    values: { network: testnet-shielded, facade: wallet-service, wallet: seed, addr: multi, flag-fbt: on }
+    environment: testnet-shielded
+    runnable: true # QA: confirm
+    notes: Private sends to shielded recipients need the wallet service's shielded capability to be full.
+  - id: tns-fn-seed-multi
+    name: Shielded testnet, fullnode, seed, multi address
+    values: { network: testnet-shielded, facade: fullnode, wallet: seed, addr: multi, flag-fbt: on }
+    environment: testnet-shielded
+    runnable: true # QA: confirm
+  - id: tns-ws-seed-single
+    name: Shielded testnet, wallet service, seed, single address
+    values: { network: testnet-shielded, facade: wallet-service, wallet: seed, addr: single, flag-fbt: on }
+    environment: testnet-shielded
+    runnable: false
+    notes: Unreachable. A seed wallet on the shielded testnet registers the shielded provider, and its shielded chain keeps it in multi-address mode (src/shielded/gating.js shouldRegisterShieldedProvider, src/screens/AddressMode.js).
+
+  # Local privnet (../mobile-e2e-flows).
+  - id: pn-fn-seed-multi
+    name: Local privnet, fullnode, seed, multi address
+    values: { network: local-privnet, facade: fullnode, wallet: seed, addr: multi, flag-fbt: on }
+    environment: local-privnet
+    runnable: true # QA: confirm
+    notes: For large amounts and edge cases. Funded by the kit's `sender` wallet; flags are forced with `E2E-LOCAL` edits.
+  - id: pn-ws-seed-multi
+    name: Local privnet, wallet service, seed, multi address
+    values: { network: local-privnet, facade: wallet-service, wallet: seed, addr: multi, flag-fbt: on }
+    environment: local-privnet
+    runnable: false
+    notes: Unreachable today. The kit's privnet/docker-compose.yml runs only a fullnode and a tx-mining service, with no wallet service.
+
+  # Passkey wallets: the passkey's RP ID needs a store-signed build on a physical device.
+  - id: tn-ws-passkey-multi
+    name: Testnet, wallet service, passkey, multi address
+    values: { network: testnet, facade: wallet-service, wallet: passkey, addr: multi, flag-fbt: on }
+    environment: store-device
+    runnable: true # QA: confirm
+    notes: The passkey wallet must already be registered on the wallet service, or it stays on the fullnode. passkey-onboarding.rollout must be on to create it.
+  - id: tn-fn-passkey-multi
+    name: Testnet, fullnode, passkey, multi address
+    values: { network: testnet, facade: fullnode, wallet: passkey, addr: multi, flag-fbt: on }
+    environment: store-device
+    runnable: true # QA: confirm
+  - id: tns-fn-passkey-multi
+    name: Shielded testnet, fullnode, passkey, multi address
+    values: { network: testnet-shielded, facade: fullnode, wallet: passkey, addr: multi, flag-fbt: on }
+    environment: store-device
+    runnable: true # QA: confirm
+    notes: The passkey wallet needs its shielded keys, derived in a passkey ceremony, for shielded support; it unlocks its private balance with the passkey.
 actions: []
 constraints: []
