@@ -40,7 +40,7 @@ features:
       - { to: wallet-service, reason: The facade decides how the transaction is built and which recipients are allowed }
       - { to: tx-history, reason: A sent transaction shows up in the token history and changes balances }
     introduces: []
-    actions: []
+    actions: [send]
 
   - id: shielded-send
     name: Private send
@@ -83,7 +83,7 @@ features:
       - { to: pin-unlock, reason: The confirm screen asks for the PIN (or a passkey) }
       - { to: shielded, reason: On the shielded testnet the minted amount can go to a shielded address }
     introduces: []
-    actions: []
+    actions: [create-token]
 
   - id: fee-tokens
     name: Fee-based tokens
@@ -115,7 +115,7 @@ features:
       - { to: address-mode, reason: In single-address mode the address never changes and no new one can be generated }
       - { to: shielded-receive, reason: On the shielded testnet the screen also shows the private receive address }
     introduces: []
-    actions: []
+    actions: [receive]
 
   - id: shielded-receive
     name: Private receive address
@@ -166,7 +166,7 @@ features:
       - { to: shielded, reason: On the shielded testnet balances split into public and private and details show the privacy fee }
       - { to: fee-tokens, reason: Transaction details show the fee row of fee-based tokens }
     introduces: []
-    actions: []
+    actions: [history]
 
   - id: dashboard
     name: Home token list
@@ -993,5 +993,400 @@ setups:
     environment: store-device
     runnable: true # QA: confirm
     notes: The passkey wallet needs its shielded keys, derived in a passkey ceremony, for shielded support; it unlocks its private balance with the passkey.
-actions: []
-constraints: []
+actions:
+  - id: send
+    name: Send tokens
+    feature: send
+    axes: [dest, token, privacy, amount, funding, private-balance]
+    setups: [tn-ws-seed-multi, tn-fn-seed-multi, tns-ws-seed-multi, tns-fn-seed-multi, pn-fn-seed-multi, tn-ws-passkey-multi, tn-fn-passkey-multi, tns-fn-passkey-multi]
+    path:
+      steps:
+        - { id: address, screen: SendAddressInput, name: Type or paste or scan the address and tap Next }
+        - { id: amount, screen: SendAmountInput, name: Pick the token and privacy mode and type the amount }
+        - { id: confirm, screen: SendConfirmScreen, name: Review the summary and fees and tap Send }
+        - { id: authorize, screen: PinScreen, name: Enter the PIN (or do the passkey ceremony) }
+      outcomes:
+        - id: ok-sent
+          kind: success
+          at: authorize
+          message: 'Your transfer of **${amountAndToken}** has been confirmed'
+          source: 'src/screens/SendConfirmScreen.js:590'
+          verified: false
+        - id: err-shielded-dest-unsupported
+          kind: error
+          at: address
+          message: This wallet does not support shielded addresses.
+          source: 'src/utils.js:257'
+          verified: false
+        - id: err-invalid-amount
+          kind: error
+          at: amount
+          message: Invalid amount
+          source: 'src/screens/SendAmountInput.js:129'
+          verified: false
+        - id: err-insufficient-funds
+          kind: error
+          at: amount
+          message: Insufficient funds
+          source: 'src/screens/SendAmountInput.js:134'
+          verified: false
+        - id: err-privacy-needs-shielded
+          kind: error
+          at: amount
+          message: 'The selected privacy mode requires a shielded address as the recipient. The address you entered is not shielded — change the address or switch to Public.'
+          source: 'src/screens/SendAmountInput.js:144'
+          verified: false
+        - id: err-private-over-limit
+          kind: error
+          at: amount
+          message: 'A private send can be at most ${max} ${symbol}.'
+          source: 'src/screens/SendAmountInput.js:157'
+          verified: false
+        - id: err-no-htr-for-fee
+          kind: error
+          at: confirm
+          message: Insufficient HTR to cover the network fee.
+          source: 'src/screens/SendConfirmScreen.js:107'
+          verified: false
+        - id: err-htr-and-fees
+          kind: error
+          at: confirm
+          message: Insufficient HTR to cover this transaction and its fees.
+          source: 'src/screens/SendConfirmScreen.js:116'
+          verified: false
+        - id: err-private-unavailable
+          kind: error
+          at: confirm
+          message: Private transfers are not available for this wallet.
+          source: 'src/screens/SendConfirmScreen.js:214'
+          verified: false
+        - id: err-ws-shielded-dest
+          kind: error
+          at: confirm
+          message: This wallet does not support shielded addresses.
+          source: 'src/utils.js:257'
+          verified: false
+        - id: edge-locked-unlock
+          kind: error
+          at: confirm
+          message: Your private balance is locked. Unlock it to send privately.
+          source: 'src/screens/SendConfirmScreen.js:559'
+          verified: false
+
+  - id: create-token
+    name: Create a token
+    feature: token-create
+    axes: [token, funding, private-balance]
+    setups: [tn-ws-seed-multi, tn-ws-seed-multi-nofbt, tn-fn-seed-multi, tns-ws-seed-multi, tns-fn-seed-multi, tn-ws-passkey-multi]
+    path:
+      steps:
+        - { id: type, screen: CreateTokenTypeNotice, name: Pick deposit or fee token (or accept the deposit notice when the flag is off) }
+        - { id: name, screen: CreateTokenName, name: Type the token name }
+        - { id: symbol, screen: CreateTokenSymbol, name: Type the token symbol }
+        - { id: amount, screen: CreateTokenAmount, name: Type the amount and check the deposit or fee }
+        - { id: confirm, screen: CreateTokenConfirm, name: Review and tap Create token }
+        - { id: authorize, screen: PinScreen, name: Enter the PIN (or do the passkey ceremony) }
+        - { id: detail, screen: CreateTokenDetail, name: See the new token's details }
+      outcomes:
+        - id: ok-created
+          kind: success
+          at: confirm
+          message: '**${name}** created successfully'
+          source: 'src/screens/CreateTokenConfirm.js:241'
+          verified: false
+        - id: err-not-enough-htr
+          kind: error
+          at: amount
+          message: 'You have ${amountAvailableText} available'
+          source: 'src/screens/CreateTokenAmount.js:159'
+          verified: false
+        - id: err-locked
+          kind: error
+          at: confirm
+          message: Your private balance is locked. Unlock it and try again.
+          source: 'src/shielded/newAddress.js:32'
+          verified: false
+        - id: err-private-unavailable
+          kind: error
+          at: confirm
+          message: Private transfers are not available for this wallet.
+          source: 'src/shielded/newAddress.js:36'
+          verified: false
+
+  - id: receive
+    name: Receive (show and share an address)
+    feature: receive
+    axes: [private-balance]
+    setups: [tn-ws-seed-single, tn-ws-seed-multi, tn-fn-seed-single, tn-fn-seed-multi, tns-ws-seed-multi, tns-fn-seed-multi, tns-ws-seed-single]
+    path:
+      steps:
+        - { id: open, screen: Receive, name: Open the Receive tab and read the address and QR code }
+        - { id: new-address, screen: Receive, name: Tap New address (multi-address mode only) }
+        - { id: share, screen: Receive, name: Tap Share and check the shared text }
+      outcomes:
+        - id: ok-shared
+          kind: success
+          at: share
+          message: 'Here is my address: ${lastSharedAddress}'
+          source: 'src/components/ReceiveMyAddress.js:76'
+          verified: false
+        - id: ok-new-address
+          kind: success
+          at: new-address
+          message: New address
+          source: 'src/components/ReceiveMyAddress.js:100'
+          verified: false
+        - id: edge-private-locked
+          kind: error
+          at: open
+          message: Private receiving is locked
+          source: 'src/components/Shielded/PrivateReceiveAddress.js:55'
+          verified: false
+        - id: edge-private-unavailable
+          kind: error
+          at: open
+          message: Private receiving is unavailable
+          source: 'src/components/Shielded/PrivateReceiveAddress.js:64'
+          verified: false
+
+  - id: history
+    name: Token balance and history
+    feature: tx-history
+    axes: [token, private-balance]
+    setups: [tn-ws-seed-multi, tn-fn-seed-multi, tns-ws-seed-multi, tns-fn-seed-multi]
+    path:
+      steps:
+        - { id: list, screen: Dashboard, name: Read the token list balances on Home }
+        - { id: token, screen: MainScreen, name: Open a token and read its available balance and transactions }
+        - { id: tx, screen: MainScreen, name: Open a transaction and read its details and fees }
+      outcomes:
+        - id: ok-balance
+          kind: success
+          at: token
+          message: Available Balance
+          source: 'src/screens/MainScreen.js:620'
+          verified: false
+        - id: edge-locked-count
+          kind: error
+          at: token
+          message: '${count} private output is locked'
+          source: 'src/components/Shielded/ShieldedBalanceSplit.js:48'
+          verified: false
+        - id: edge-private-unavailable
+          kind: error
+          at: token
+          message: Private transfers are not available for this wallet.
+          source: 'src/components/Shielded/ShieldedBalanceSplit.js:97'
+          verified: false
+
+constraints:
+  # send
+  - id: c-send-shielded-dest-outside
+    action: send
+    when: { network: testnet, dest: shielded }
+    class: rejected
+    outcome: err-shielded-dest-unsupported
+    note: 'Outside the shielded environment a shielded address is not valid (src/utils.js validateAddress, allowShielded from isShieldedEnvironment in SendAddressInput.js:53). Next stays disabled, so the message may never show (QA_SHIELDED.md "type and scan a private address: Next stays disabled").'
+  - id: c-send-privacy-outside
+    action: send
+    when: { network: testnet, privacy: [hide-amount, private] }
+    class: invalid
+    note: The privacy selector shows only where the wallet can send privately (canSendPrivately in src/shielded/gating.js); elsewhere every send is public.
+  - id: c-send-private-balance-outside
+    action: send
+    when: { network: testnet, private-balance: [locked, broken-key] }
+    class: invalid
+    note: There is no private balance outside the shielded environment.
+  - id: c-send-privacy-broken-key
+    action: send
+    when: { private-balance: broken-key, privacy: [hide-amount, private] }
+    class: invalid
+    note: With mismatched keys the capability level is none, so canSendPrivately is false and the privacy selector is hidden.
+  - id: c-send-htr-zero-htr
+    action: send
+    when: { token: htr, funding: zero-htr }
+    class: invalid
+    note: '"Holds the token but no HTR" cannot hold for HTR itself.'
+  - id: c-send-over-limit-public
+    action: send
+    when: { amount: private-over-limit, privacy: public }
+    class: invalid
+    note: The limit applies to private outputs only; a public send of that amount is a normal amount.
+  - id: c-send-over-limit-htr
+    action: send
+    when: { amount: private-over-limit, token: htr }
+    class: invalid
+    note: No test wallet holds 2^40 base units of HTR; reach the limit with a custom token minted with a huge supply.
+  - id: c-send-passkey-broken-key
+    action: send
+    when: { wallet: passkey, private-balance: broken-key }
+    class: invalid
+    note: Mismatched keys are forced only in a debug build, and passkey setups run on a store build.
+  - id: c-send-private-legacy-dest
+    action: send
+    when: { privacy: [hide-amount, private], dest: [simple, multisig] }
+    class: rejected
+    outcome: err-privacy-needs-shielded
+    note: A private output needs the scan key a shielded address carries (SendAmountInput.js:140-152). If isShieldedAddress throws the check is skipped and the build fails later with wallet-lib's text.
+  - id: c-send-private-over-limit
+    action: send
+    when: { amount: private-over-limit, privacy: [hide-amount, private], dest: shielded }
+    class: rejected
+    outcome: err-private-over-limit
+    note: A private amount must be below MAX_SHIELDED_OUTPUT_VALUE (2^40) (src/utils/shieldedSend.js:23-33, SendAmountInput.js:154).
+  - id: c-send-over-balance
+    action: send
+    when: { amount: over-balance }
+    class: rejected
+    outcome: err-insufficient-funds
+    note: The amount screen checks only the available balance of the sent token.
+  - id: c-send-empty
+    action: send
+    when: { amount: empty }
+    class: rejected
+    outcome: err-invalid-amount
+    note: Next stays disabled for an empty or zero amount (isButtonDisabled); "Invalid amount" shows only if Next is tapped with no parsed amount.
+  - id: c-send-fee-token-zero-htr
+    action: send
+    when: { token: fee, funding: zero-htr }
+    class: edge
+    outcome: err-no-htr-for-fee
+    note: The amount screen checks only the fee token's balance (SendAmountInput.js:126-136), so the missing HTR for the fee shows only when Confirm builds the tx.
+  - id: c-send-htr-max-with-fee
+    action: send
+    when: { token: htr, amount: max, privacy: [hide-amount, private] }
+    class: edge
+    outcome: err-htr-and-fees
+    note: 'Exactly the available HTR leaves nothing for the privacy fee, which is paid in HTR; it passes the amount screen and fails when Confirm builds the tx. The message may instead be the privacy-fee one from mapShieldedSendError (src/utils/shieldedSend.js:245).'
+  - id: c-send-ws-shielded-dest-public
+    action: send
+    when: { facade: wallet-service, dest: shielded, privacy: public, private-balance: [locked, broken-key] }
+    class: rejected
+    outcome: err-ws-shielded-dest
+    note: On the wallet service a send to a shielded address needs shielded capability full (SendConfirmScreen.js:200-218); below it a public send fails with shieldedAddressNotSupportedText.
+  - id: c-send-ws-private-not-full
+    action: send
+    when: { facade: wallet-service, dest: shielded, privacy: [hide-amount, private], private-balance: locked }
+    class: rejected
+    outcome: err-private-unavailable
+    note: On the wallet service a private send needs shielded capability full (SendConfirmScreen.js:209-216); there is no unlock phase on this facade.
+  - id: c-send-fn-locked-private
+    action: send
+    when: { facade: fullnode, private-balance: locked, privacy: [hide-amount, private], dest: shielded }
+    class: edge
+    outcome: edge-locked-unlock
+    note: On the fullnode facade a locked private balance stops the build at the unlock phase (SendConfirmScreen.js:241-246); after the PIN or passkey unlock the send is built.
+  - id: c-send-multisig
+    action: send
+    when: { dest: multisig }
+    class: lib-risk
+    note: The app treats P2SH like P2PKH; multisig output building lives in wallet-lib, where past breakage happened.
+
+  # create-token
+  - id: c-ct-htr
+    action: create-token
+    when: { token: htr }
+    class: invalid
+    note: A new token is a deposit or fee token, never HTR.
+  - id: c-ct-fee-flag-off
+    action: create-token
+    when: { flag-fbt: off, token: fee }
+    class: invalid
+    note: With fee-based-tokens.rollout off the wizard opens on the deposit notice and offers no fee token (App.js CreateTokenStack).
+  - id: c-ct-private-balance-outside
+    action: create-token
+    when: { network: testnet, private-balance: [locked, broken-key] }
+    class: invalid
+    note: There is no private balance outside the shielded environment.
+  - id: c-ct-passkey-broken-key
+    action: create-token
+    when: { wallet: passkey, private-balance: broken-key }
+    class: invalid
+    note: Mismatched keys are forced only in a debug build, and passkey setups run on a store build.
+  - id: c-ct-zero-htr
+    action: create-token
+    when: { funding: zero-htr }
+    class: rejected
+    outcome: err-not-enough-htr
+    note: Next stays disabled when the deposit or fee is above the available HTR (CreateTokenAmount.js isButtonDisabled); the amount shows in red under the available HTR.
+  - id: c-ct-fee-hardcoded
+    action: create-token
+    when: { token: fee }
+    class: edge
+    note: The amount screen shows a fee of 1 (hard-coded 1n, CreateTokenAmount.js:84-89) while the confirm screen shows FEE_PER_OUTPUT (CreateTokenConfirm.js:107); check both show the same fee.
+  - id: c-ct-locked
+    action: create-token
+    when: { private-balance: locked }
+    class: edge
+    outcome: err-locked
+    note: In the shielded environment the token is minted to a new shielded address, which wallet-lib gives out only with the scan key unlocked (CreateTokenConfirm.js:150-160, QA_SHIELDED.md).
+  - id: c-ct-broken-key
+    action: create-token
+    when: { private-balance: broken-key }
+    class: edge
+    outcome: err-private-unavailable
+    note: With mismatched keys no shielded address can be given out, so the creation fails (newAddressErrorText default branch).
+
+  # receive
+  - id: c-rcv-private-balance-outside
+    action: receive
+    when: { network: testnet, private-balance: [locked, broken-key] }
+    class: invalid
+    note: There is no private balance outside the shielded environment.
+  - id: c-rcv-single-shielded-chain
+    action: receive
+    when: { network: [testnet-shielded, local-privnet], wallet: seed, addr: single }
+    class: invalid
+    note: 'A seed wallet in the shielded environment has a shielded chain, which keeps it in multi-address mode ("Single address mode is not available on this network.", src/screens/AddressMode.js:202).'
+  - id: c-rcv-ws-single-no-shielded
+    action: receive
+    when: { network: testnet-shielded, facade: wallet-service, addr: single }
+    class: invalid
+    note: 'The wallet service gives out no shielded address in single-address mode (receiveState.js:79 maps it to "Private receiving is unavailable"). Unreachable today, as no wallet with a shielded chain can be in single mode; kept so the branch is visible.'
+  - id: c-rcv-single-no-new-address
+    action: receive
+    when: { addr: single }
+    class: edge
+    outcome: ok-shared
+    note: In single-address mode the New address button is hidden and the address never changes (ReceiveMyAddress.js:97-103).
+  - id: c-rcv-locked
+    action: receive
+    when: { private-balance: locked }
+    class: edge
+    outcome: edge-private-locked
+    note: The private receive address is replaced by a notice and an unlock action until the private balance is unlocked.
+  - id: c-rcv-broken-key
+    action: receive
+    when: { private-balance: broken-key }
+    class: edge
+    outcome: edge-private-unavailable
+    note: 'With mismatched keys the receive screen says "Private transfers are not available for this wallet." (receiveState.js:177).'
+
+  # history
+  - id: c-hist-private-balance-outside
+    action: history
+    when: { network: testnet, private-balance: [locked, broken-key] }
+    class: invalid
+    note: There is no private balance outside the shielded environment.
+  - id: c-hist-fee-row
+    action: history
+    when: { token: fee, facade: fullnode }
+    class: edge
+    note: Tx details of a fee-token send show the "Fees" row (src/components/Shielded/FeeBreakdown.js:58) on the fullnode facade only; on the wallet service the tx wallet-lib reads has no fees (QA_SHIELDED.md).
+  - id: c-hist-locked
+    action: history
+    when: { private-balance: locked }
+    class: edge
+    outcome: edge-locked-count
+    note: The token screen counts the locked private outputs and offers "Unlock private balance".
+  - id: c-hist-broken-key
+    action: history
+    when: { private-balance: broken-key }
+    class: edge
+    outcome: edge-private-unavailable
+    note: With mismatched keys the split is replaced by the note that private transfers are not available.
+  - id: c-hist-ws-split
+    action: history
+    when: { facade: wallet-service, network: testnet-shielded }
+    class: lib-risk
+    note: On the wallet service the private part of the balance comes from the service (sagas/tokens.js:225-231 fetchWalletServiceSplitBalance), not from local UTXOs.
