@@ -878,7 +878,7 @@ axes:
       - { id: over-balance, name: More than the available balance }
       - { id: empty, name: Zero or empty }
       - { id: decimals, name: Many decimal places }
-      - { id: private-over-limit, name: Private amount at or above the shielded output limit (2^40) }
+      - { id: private-over-limit, name: At or above the shielded output limit (2^40) that private modes reject }
     how: Type it on the amount input.
     switch:
       cost: cheap # QA: confirm
@@ -1015,15 +1015,17 @@ actions:
         - id: err-shielded-dest-unsupported
           kind: error
           at: address
-          message: This wallet does not support shielded addresses.
-          source: 'src/utils.js:257'
+          message: Next stays disabled
+          source: 'src/screens/SendAddressInput.js:152'
           verified: false
+          note: 'The validation message "This wallet does not support shielded addresses." (src/utils.js:257) is set only when Next is tapped, so it does not show.'
         - id: err-invalid-amount
           kind: error
           at: amount
-          message: Invalid amount
-          source: 'src/screens/SendAmountInput.js:129'
+          message: Next stays disabled
+          source: 'src/screens/SendAmountInput.js:252'
           verified: false
+          note: '"Invalid amount" (SendAmountInput.js:129) is set only when Next is tapped, so it does not show for an empty or zero amount.'
         - id: err-insufficient-funds
           kind: error
           at: amount
@@ -1053,6 +1055,12 @@ actions:
           at: confirm
           message: Insufficient HTR to cover this transaction and its fees.
           source: 'src/screens/SendConfirmScreen.js:116'
+          verified: false
+        - id: err-privacy-fee
+          kind: error
+          at: confirm
+          message: Insufficient HTR to cover the privacy fees of this transaction.
+          source: 'src/utils/shieldedSend.js:245'
           verified: false
         - id: err-private-unavailable
           kind: error
@@ -1097,9 +1105,10 @@ actions:
         - id: err-not-enough-htr
           kind: error
           at: amount
-          message: 'You have ${amountAvailableText} available'
-          source: 'src/screens/CreateTokenAmount.js:159'
+          message: Next stays disabled and the deposit or fee shows in red
+          source: 'src/screens/CreateTokenAmount.js:133'
           verified: false
+          note: 'The amount shows in red next to "You have ${amountAvailableText} available" (CreateTokenAmount.js:159).'
         - id: err-locked
           kind: error
           at: confirm
@@ -1133,9 +1142,10 @@ actions:
         - id: ok-new-address
           kind: success
           at: new-address
-          message: New address
-          source: 'src/components/ReceiveMyAddress.js:100'
+          message: A new, different address and QR code are shown
+          source: 'src/components/ReceiveMyAddress.js:69'
           verified: false
+          note: 'Tapped through the "New address" button (ReceiveMyAddress.js:100); in the shielded environment the new address comes from ReceiveMyAddress.js:62.'
         - id: edge-private-locked
           kind: error
           at: open
@@ -1163,9 +1173,10 @@ actions:
         - id: ok-balance
           kind: success
           at: token
-          message: Available Balance
+          message: The token's available balance and its transactions are shown, and the balance matches the home list
           source: 'src/screens/MainScreen.js:620'
           verified: false
+          note: 'The balance sits under the "Available Balance" label (MainScreen.js:620).'
         - id: edge-locked-count
           kind: error
           at: token
@@ -1207,11 +1218,6 @@ constraints:
     when: { token: htr, funding: zero-htr }
     class: invalid
     note: '"Holds the token but no HTR" cannot hold for HTR itself.'
-  - id: c-send-over-limit-public
-    action: send
-    when: { amount: private-over-limit, privacy: public }
-    class: invalid
-    note: The limit applies to private outputs only; a public send of that amount is a normal amount.
   - id: c-send-over-limit-htr
     action: send
     when: { amount: private-over-limit, token: htr }
@@ -1227,31 +1233,43 @@ constraints:
     when: { privacy: [hide-amount, private], dest: [simple, multisig] }
     class: rejected
     outcome: err-privacy-needs-shielded
-    note: A private output needs the scan key a shielded address carries (SendAmountInput.js:140-152). If isShieldedAddress throws the check is skipped and the build fails later with wallet-lib's text.
+    note: Checks run in order (SendAmountInput.js:128-158), and only the first failure shows. The order is invalid amount, then "Insufficient funds", then this one, then the private amount limit. A private output needs the scan key a shielded address carries (SendAmountInput.js:140-152). If isShieldedAddress throws the check is skipped and the build fails later with wallet-lib's text.
   - id: c-send-private-over-limit
     action: send
     when: { amount: private-over-limit, privacy: [hide-amount, private], dest: shielded }
     class: rejected
     outcome: err-private-over-limit
-    note: A private amount must be below MAX_SHIELDED_OUTPUT_VALUE (2^40) (src/utils/shieldedSend.js:23-33, SendAmountInput.js:154).
+    note: Checked last on the amount screen, after "Insufficient funds" and the shielded-recipient check; only the first failure shows. A private amount must be below MAX_SHIELDED_OUTPUT_VALUE (2^40) (src/utils/shieldedSend.js:23-33, SendAmountInput.js:154).
   - id: c-send-over-balance
     action: send
     when: { amount: over-balance }
     class: rejected
     outcome: err-insufficient-funds
-    note: The amount screen checks only the available balance of the sent token.
+    note: The amount screen checks only the available balance of the sent token. This check runs before the privacy checks (SendAmountInput.js:133), so it wins when several rejections match.
   - id: c-send-empty
     action: send
     when: { amount: empty }
     class: rejected
     outcome: err-invalid-amount
     note: Next stays disabled for an empty or zero amount (isButtonDisabled); "Invalid amount" shows only if Next is tapped with no parsed amount.
-  - id: c-send-fee-token-zero-htr
+  - id: c-send-fee-token-zero-htr-fn
     action: send
-    when: { token: fee, funding: zero-htr }
+    when: { token: fee, funding: zero-htr, facade: fullnode, privacy: public }
+    class: edge
+    outcome: err-htr-and-fees
+    note: 'The amount screen checks only the fee token''s balance (SendAmountInput.js:126-136), so the missing HTR for the fee shows only when Confirm builds the tx. On the fullnode facade wallet-lib throws "Token: 00. Insufficient amount of tokens to fill the amount." (lib/new/sendTransaction.js:678), which mapTxError maps to this message. The installed wallet-lib is 3.1.1 while package.json pins 4.3.0: confirm the lib message.'
+  - id: c-send-fee-token-zero-htr-ws
+    action: send
+    when: { token: fee, funding: zero-htr, facade: wallet-service, privacy: public }
     class: edge
     outcome: err-no-htr-for-fee
-    note: The amount screen checks only the fee token's balance (SendAmountInput.js:126-136), so the missing HTR for the fee shows only when Confirm builds the tx.
+    note: 'As on the fullnode, the missing HTR shows only on Confirm. On the wallet service wallet-lib throws "No UTXOs available for the token 00..." (sendTransactionWalletService.js:392). The installed wallet-lib is 3.1.1 while package.json pins 4.3.0: confirm the lib message.'
+  - id: c-send-zero-htr-private
+    action: send
+    when: { token: [deposit, fee], funding: zero-htr, privacy: [hide-amount, private] }
+    class: edge
+    outcome: err-privacy-fee
+    note: 'A private send pays its privacy fee in HTR. mapShieldedSendError runs before the generic mapping (SendConfirmScreen.js:99), so with no HTR the privacy-fee text is the likely one. The installed wallet-lib is 3.1.1 while package.json pins 4.3.0: confirm the lib message.'
   - id: c-send-htr-max-with-fee
     action: send
     when: { token: htr, amount: max, privacy: [hide-amount, private] }
@@ -1308,7 +1326,12 @@ constraints:
     when: { funding: zero-htr }
     class: rejected
     outcome: err-not-enough-htr
-    note: Next stays disabled when the deposit or fee is above the available HTR (CreateTokenAmount.js isButtonDisabled); the amount shows in red under the available HTR.
+    note: Next stays disabled when the deposit or fee is above the available HTR (CreateTokenAmount.js:133); the amount shows in red under the available HTR. Not always, for a deposit token; see c-ct-zero-htr-small-deposit.
+  - id: c-ct-zero-htr-small-deposit
+    action: create-token
+    when: { funding: zero-htr, token: deposit }
+    class: edge
+    note: 'The amount screen floors the deposit (value / 100n, CreateTokenAmount.js:87), while the confirm screen and wallet-lib round it up (getDepositAmount, CreateTokenConfirm.js:105). With zero HTR and an amount below 1.00 the screen shows a zero deposit and Next is enabled, and the creation fails later. Try an amount of 0.50 as well as a normal amount.'
   - id: c-ct-fee-hardcoded
     action: create-token
     when: { token: fee }
