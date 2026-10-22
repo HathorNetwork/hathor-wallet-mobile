@@ -100,17 +100,17 @@ function touchedFeatures(graph, changed) {
 /**
  * What a change reaches: features (each with reasons), scenarios to re-run, and their run plan.
  * @param {{type: 'feature'|'flag'|'axisValue', id: string}} pick
+ * @param {object[]} [scenarios] Precomputed `allScenarios(graph)`, to avoid recomputing per pick.
  */
-function computeImpact(graph, pick) {
+function computeImpact(graph, pick, scenarios = allScenarios(graph)) {
   assertKnown(graph, pick);
   const changed = changedBy(graph, pick);
   const { touched, scope } = touchedFeatures(graph, changed);
-  const everything = allScenarios(graph);
 
   // A feature reached only via axis re-runs just the scenarios on the changed values;
   // one reached via code or flag re-runs all its scenarios.
   const actionFeature = new Map(asList(graph.actions).map((a) => [a.id, a.feature]));
-  const scenarios = everything.filter((s) => {
+  const affected = scenarios.filter((s) => {
     const sc = scope.get(actionFeature.get(s.action));
     if (!sc) return false;
     if (sc.whole) return true;
@@ -120,9 +120,9 @@ function computeImpact(graph, pick) {
     });
   });
 
-  const plan = scenarios.length > 0 ? planRun(graph, scenarios) : [];
+  const plan = affected.length > 0 ? planRun(graph, affected) : [];
   return {
-    pick, changed, touched, scenarios, plan,
+    pick, changed, touched, scenarios: affected, plan,
   };
 }
 

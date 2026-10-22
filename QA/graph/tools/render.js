@@ -24,7 +24,7 @@ function buildPageData(graph, version) {
   const scenarios = allScenarios(graph);
   const impacts = {};
   allPicks(graph).forEach((pick) => {
-    impacts[pickKey(pick)] = computeImpact(graph, pick);
+    impacts[pickKey(pick)] = computeImpact(graph, pick, scenarios);
   });
   return {
     version,
