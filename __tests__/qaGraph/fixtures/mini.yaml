@@ -9,7 +9,7 @@ features:
     status: in-scope
     screens: [SendAmountInput]
     files: [src/screens/Send/]
-    flags: [fbt]
+    flags: []
     links:
       - { to: pin-f, reason: PIN confirms send }
     introduces: []

@@ -140,6 +140,25 @@ function validateGraph(graph) {
     });
   });
 
+  // Impact spreads via `gates`, so they must be the inverse of the features' `flags`.
+  const flagsById = new Map(asList(graph.flags).map((f) => [f && f.id, f]));
+  asList(graph.flags).forEach((flag) => {
+    asList(flag.gates).forEach((id) => {
+      const feature = asList(graph.features).find((f) => f.id === id);
+      if (feature && !asList(feature.flags).includes(flag.id)) {
+        warnings.push(`flag ${flag.id}: gates feature '${id}', but that feature does not list the flag`);
+      }
+    });
+  });
+  asList(graph.features).forEach((f) => {
+    asList(f.flags).forEach((id) => {
+      const flag = flagsById.get(id);
+      if (flag && !asList(flag.gates).includes(f.id)) {
+        warnings.push(`feature ${f.id}: lists flag '${id}', but the flag does not gate it`);
+      }
+    });
+  });
+
   // Axes
   asList(graph.axes).forEach((axis) => {
     const where = `axis ${axis.id}`;

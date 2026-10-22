@@ -322,7 +322,7 @@ features:
       - src/screens/RegisterToken.js
       - src/screens/RegisterTokenManual.js
       - src/utils/tokens.js
-    flags: []
+    flags: [reown, nano-contract]
     links:
       - { to: dashboard, reason: A registered token appears in the home list }
       - { to: send, reason: Only registered tokens can be sent }
@@ -630,7 +630,7 @@ flags:
     name: wallet-service-mobile.rollout
     constant: WALLET_SERVICE_FEATURE_TOGGLE
     default: false
-    gates: [wallet-service]
+    gates: [wallet-service, network-settings, passkey-onboarding, wallet-load]
     combinesWith:
       - Needs a wallet-service URL in the network settings; an empty URL forces it off (and push off with it).
       - Ignored for 24 hours after a failed wallet-service start (IGNORE_WS_TOGGLE_FLAG); the wallet runs on the fullnode meanwhile.
@@ -654,7 +654,7 @@ flags:
     name: reown.rollout
     constant: REOWN_FEATURE_TOGGLE
     default: false
-    gates: [reown, dapp-rpc]
+    gates: [reown, dapp-rpc, qr-scanner, settings, token-register]
     combinesWith:
       - Needs nano contracts enabled on the network (server info nano_contracts_enabled).
       - Turning it off mid-session shuts the sessions down at once; turning it on starts Reown at the next wallet start.
@@ -665,7 +665,7 @@ flags:
     name: network-settings.rollout
     constant: NETWORK_SETTINGS_FEATURE_TOGGLE
     default: false
-    gates: [network-settings]
+    gates: [network-settings, settings]
     combinesWith:
       - Shows the Network Settings entry in the settings menu, read live.
     appliesAt: live
@@ -675,7 +675,7 @@ flags:
     name: nano-contract.rollout
     constant: NANO_CONTRACT_FEATURE_TOGGLE
     default: false
-    gates: [nano-contracts]
+    gates: [nano-contracts, token-swap, qr-scanner, token-register]
     combinesWith:
       - Needs nano contracts enabled on the network (server info nano_contracts_enabled).
       - Registered contracts load only at wallet start.
@@ -718,7 +718,7 @@ flags:
     name: single-address-mobile.rollout
     constant: SINGLE_ADDRESS_FEATURE_TOGGLE
     default: false
-    gates: [address-mode]
+    gates: [address-mode, settings]
     combinesWith:
       - Shows the Address mode entry in settings live, but the wallet picks its address mode at the next start.
       - An active shielded chain or transactions past the first address keep the wallet in multi-address mode.
@@ -739,7 +739,7 @@ flags:
     name: amount-format-mobile.rollout
     constant: AMOUNT_FORMAT_FEATURE_TOGGLE
     default: false
-    gates: [amount-format]
+    gates: [amount-format, settings]
     combinesWith:
       - Shows the Amount format entry in settings and applies the chosen format, read live.
     appliesAt: live
@@ -749,7 +749,7 @@ flags:
     name: shielded-outputs.rollout
     constant: SHIELDED_OUTPUTS_FEATURE_TOGGLE
     default: false
-    gates: [shielded, shielded-send, shielded-receive, privacy-settings]
+    gates: [shielded, shielded-send, shielded-receive, privacy-settings, token-create]
     combinesWith:
       - The shielded UI also needs the testnet-shielded-outputs network and a registered shielded provider.
       - Read with the current network, so it is off on the networks the user switches from.

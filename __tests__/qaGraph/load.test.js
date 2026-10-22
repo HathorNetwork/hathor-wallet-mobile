@@ -41,6 +41,28 @@ describe('qa graph loader', () => {
     expect(errors.some((e) => e.includes('c-priv') && e.includes('nope'))).toBe(true);
   });
 
+  it('warns when a flag gates a feature that does not list it', () => {
+    const graph = fresh();
+    find(graph.flags, 'fbt').gates = ['fee-f', 'pin-f'];
+    const { errors, warnings } = validateGraph(graph);
+    expect(errors).toEqual([]);
+    expect(warnings).toContainEqual(
+      "flag fbt: gates feature 'pin-f', but that feature does not list the flag"
+    );
+  });
+
+  it('warns when a feature lists a flag that does not gate it', () => {
+    const graph = fresh();
+    find(graph.features, 'pin-f').flags = ['fbt'];
+    expect(validateGraph(graph).warnings).toContainEqual(
+      "feature pin-f: lists flag 'fbt', but the flag does not gate it"
+    );
+  });
+
+  it('gives the mini fixture no warnings', () => {
+    expect(validateGraph(fresh()).warnings).toEqual([]);
+  });
+
   it('reports dangling feature link', () => {
     const graph = fresh();
     find(graph.features, 'pin-f').links = [{ to: 'ghost', reason: 'x' }];
