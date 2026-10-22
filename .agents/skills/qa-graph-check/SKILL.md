@@ -12,12 +12,14 @@ The diff is the evidence. The CLI catches some gaps mechanically; most need you 
 ## 1. Get the diff and run the check
 
 - Diff: `git diff origin/master...HEAD`, plus `git diff HEAD` for uncommitted work. If you were handed a diff instead of a branch, use that diff and skip the CLI.
-- Check: `npm run qa:graph:check -- --base origin/master`. Lines are `ERROR` (schema broken, exit 1), `WARN` (likely stale graph) or `NOTE` (worth a look). No output means nothing was detected, which is not the same as nothing missing.
+- Check: `npm run qa:graph:check -- --base origin/master`. Lines are `ERROR` (schema broken, exit 1), `WARN` (a stale graph, or a schema warning such as a flag and feature that don't list each other) or `NOTE` (worth a look). No output means nothing was detected, which is not the same as nothing missing.
+- An `ERROR` or schema `WARN` that was already there before your change is still yours to report: fix it if it is local (step 3), otherwise name it in the PR-body line.
 
 The check has blind spots; cover them from the diff:
 
 - It scans routes only in `src/App.js`. Screens registered elsewhere (e.g. `src/screens/NetworkSettings/NetworkSettingsFlowStack.js`) are not checked.
-- It counts the graph as changed only once `graph.yaml` is committed. An uncommitted graph edit still produces "the graph did not change" warnings.
+- It sees only committed changes (`base...HEAD`). Uncommitted code changes are invisible to it, and an uncommitted `graph.yaml` edit still produces "the graph did not change" warnings.
+- If it prints `WARN Cannot diff against ...; assuming no changed files` (a fork or shallow clone without `origin/master`), its clean result means nothing. Re-run with `--base master` or the upstream remote's default branch (`--base upstream/master`), or rely on your read of the diff.
 - It cannot see new axis values, new or changed messages, new path steps or changed switching costs.
 
 Done when every `ERROR`, `WARN` and `NOTE` is listed for step 2.
@@ -37,6 +39,8 @@ Walk every hunk under `src/` and every `WARN`/`NOTE`. For each, find the matchin
 | A new kind of thing a tester must vary: token type, address kind, wallet type, network, privacy mode | An axis value, the feature's `introduces` |
 | Something that changes how hard it is to move between axis values (a reset, a migration, a one-way switch) | The axis `switch` transitions or `fallback` |
 | A feature affecting another in a new way | The feature's `links` |
+
+For a new flag, read `src/sagas/featureToggle.js` and the flag's readers to decide `appliesAt` (`live`, `next-start` or `next-pin`). Mark any value you had to guess (`appliesAt`, `default`, `status`, a cost) with a trailing `# QA: confirm` comment.
 
 A `NOTE` about an unverified outcome whose source changed: check the `message` and the `source` line still match the code; fix the line number or text.
 
