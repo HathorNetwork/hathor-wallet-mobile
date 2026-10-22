@@ -10,6 +10,7 @@
 import { describe, expect, it } from '@jest/globals';
 import path from 'path';
 import { loadGraph } from '../../QA/graph/tools/load';
+import { allScenarios } from '../../QA/graph/tools/scenarios';
 import { computeImpact, allPicks } from '../../QA/graph/tools/impact';
 
 const graph = structuredClone(loadGraph(path.join(__dirname, 'fixtures', 'mini.yaml')));
@@ -54,12 +55,29 @@ describe('qa graph impact', () => {
     });
   });
 
-  it('returns an empty plan when no scenarios are reached', () => {
+  it('limits an axis-only feature to scenarios on the changed value', () => {
     const impact = computeImpact(graph, { type: 'feature', id: 'fee-f' });
+    expect(impact.scenarios.length).toBeGreaterThan(0);
+    impact.scenarios.forEach((s) => expect(s.values.token).toBe('fee'));
+  });
+
+  it('re-runs all scenarios of a feature reached via code', () => {
+    const impact = computeImpact(graph, { type: 'feature', id: 'pin-f' });
+    const sends = allScenarios(graph).filter((s) => s.action === 'send');
+    expect(impact.scenarios.map((s) => s.id)).toEqual(sends.map((s) => s.id));
+  });
+
+  it('returns an empty plan when no scenarios are reached', () => {
     const none = computeImpact(graph, { type: 'flag', id: 'fbt' });
-    expect(impact.plan).toBeDefined();
     expect(none.scenarios).toEqual([]);
     expect(none.plan).toEqual([]);
+  });
+
+  it('throws on unknown picks', () => {
+    expect(() => computeImpact(graph, { type: 'flag', id: 'nope' }))
+      .toThrow("Unknown flag 'nope'");
+    expect(() => computeImpact(graph, { type: 'axisValue', id: 'token:zzz' }))
+      .toThrow("Unknown axisValue 'token:zzz'");
   });
 
   it('allPicks excludes out-of-scope features', () => {
