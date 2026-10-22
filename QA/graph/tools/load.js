@@ -43,6 +43,28 @@ const asList = (value) => (Array.isArray(value) ? value : []);
 const asArray = (value) => (Array.isArray(value) ? value : [value]);
 
 /**
+ * Warn about constraints that can never produce a scenario. A non-invalid constraint
+ * is dead when it matches no combination surviving the `invalid` exclusions; an
+ * `invalid` one when it matches no combination at all. Checked across the action's setups.
+ */
+function deadConstraintWarnings(graph) {
+  // Lazy: scenarios.js is independent of load.js, but keep the cycle impossible.
+  // eslint-disable-next-line global-require
+  const { enumerateCombos, matches, classifyCombo } = require('./scenarios');
+  return asList(graph.constraints).filter((c) => {
+    const action = asList(graph.actions).find((a) => a.id === c.action);
+    const combos = asList(action.setups)
+      .map((id) => asList(graph.setups).find((s) => s.id === id))
+      .filter(Boolean)
+      .flatMap((setup) => enumerateCombos(graph, action, setup));
+    const pool = c.class === 'invalid'
+      ? combos
+      : combos.filter((values) => !classifyCombo(graph, c.action, values).excluded);
+    return !pool.some((values) => matches(c, values));
+  }).map((c) => `constraint ${c.id}: matches no combination, so it never produces a scenario`);
+}
+
+/**
  * Check the graph schema and cross-references.
  * @param {object} graph
  * @returns {{errors: string[], warnings: string[]}}
@@ -176,6 +198,10 @@ function validateGraph(graph) {
     asList(action.setups).forEach((id) => {
       if (!ids.setups.has(id)) err(`${where}: unknown setup '${id}'`);
     });
+    const axisIds = asList(action.axes);
+    axisIds.filter((id, i) => axisIds.indexOf(id) !== i).forEach((id) => {
+      err(`${where}: duplicate axis '${id}'`);
+    });
     const steps = asList(action.path && action.path.steps);
     const stepIds = new Set(steps.map((s) => s.id));
     asList(action.path && action.path.outcomes).forEach((o) => {
@@ -213,6 +239,8 @@ function validateGraph(graph) {
       }
     }
   });
+
+  if (errors.length === 0) warnings.push(...deadConstraintWarnings(graph));
 
   return { errors, warnings };
 }
