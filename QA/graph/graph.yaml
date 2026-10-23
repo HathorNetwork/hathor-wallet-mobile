@@ -1010,14 +1010,14 @@ actions:
           kind: error
           at: address
           message: Next stays disabled
-          source: 'src/screens/SendAddressInput.js:152'
+          source: 'src/screens/SendAddressInput.js:154'
           verified: false
           note: 'The validation message "This wallet does not support shielded addresses." (src/utils.js:257) is set only when Next is tapped, so it does not show.'
         - id: err-invalid-amount
           kind: error
           at: amount
           message: Next stays disabled
-          source: 'src/screens/SendAmountInput.js:252'
+          source: 'src/screens/SendAmountInput.js:255'
           verified: false
           note: '"Invalid amount" (SendAmountInput.js:129) is set only when Next is tapped, so it does not show for an empty or zero amount.'
         - id: err-insufficient-funds

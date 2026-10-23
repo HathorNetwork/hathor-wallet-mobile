@@ -13,7 +13,7 @@ The diff is the evidence. The CLI catches some gaps mechanically; most need you 
 
 - Diff: `git diff origin/master...HEAD`, plus `git diff HEAD` for uncommitted work. If you were handed a diff instead of a branch, use that diff and skip the CLI.
 - Check: `npm run qa:graph:check -- --base origin/master`. Lines are `ERROR` (schema broken, exit 1), `WARN` (a stale graph, or a schema warning such as a flag and feature that don't list each other) or `NOTE` (worth a look). No output means nothing was detected, which is not the same as nothing missing.
-- An `ERROR` or schema `WARN` that was already there before your change is still yours to report: fix it if it is local (step 3), otherwise name it in the PR-body line.
+- An `ERROR` or schema `WARN` that was already there before your change is still yours to report: fix it if it is local (step 4), otherwise name it in the PR-body line.
 
 The check has blind spots; cover them from the diff:
 
@@ -30,7 +30,7 @@ Walk every hunk under `src/` and every `WARN`/`NOTE`. For each, find the matchin
 
 | In the diff | In the graph |
 |---|---|
-| A `*.rollout` constant added, renamed or removed in `src/constants.js` | `flags` entry (`name` = flag string, `constant`, `default`, `gates`, `appliesAt`), and the gated features' `flags` |
+| A `*.rollout` constant added, renamed or removed in `src/constants.js` | `flags` entry (`name` = flag string, `constant`, `default`, `gates`, `appliesAt`), and the gated features' `flags`. When the flag controls a setup axis value (a facade, a wallet type, a flag axis like `flag-fbt`), list it in the flag's `axisValues` |
 | A screen added, renamed or removed (`*.Screen name=...` in any navigator) | The feature's `screens` |
 | A source file added, moved or deleted | The feature's `files` |
 | A user-facing message added or changed (`` t`...` `` strings, alerts, error mapping) | An `outcome` of the action: `message` copied verbatim, `source: 'path:line'`, `verified: false`, `at` = the step where it shows |
@@ -38,7 +38,7 @@ Walk every hunk under `src/` and every `WARN`/`NOTE`. For each, find the matchin
 | A combination the app now refuses, allows, or treats differently | `constraints` (`rejected` needs an error `outcome`) |
 | A new kind of thing a tester must vary: token type, address kind, wallet type, network, privacy mode | An axis value, the feature's `introduces` |
 | Something that changes how hard it is to move between axis values (a reset, a migration, a one-way switch) | The axis `switch` transitions or `fallback` |
-| A feature affecting another in a new way | The feature's `links` |
+| A feature depending on another in a new way | The dependant's `links` (a link means "this feature depends on `to`"); if the relation is an axis value rather than code, the providing feature's `introduces` instead |
 
 For a new flag, read `src/sagas/featureToggle.js` and the flag's readers to decide `appliesAt` (`live`, `next-start` or `next-pin`). Mark any value you had to guess (`appliesAt`, `default`, `status`, a cost) with a trailing `# QA: confirm` comment.
 
