@@ -55,9 +55,85 @@ function setupDistance(graph, fromSetupId, toSetupId) {
   return { cost, steps };
 }
 
+const actionAxisIds = (graph) => new Set(asList(graph.axes)
+  .filter((a) => a.kind === 'action').map((a) => a.id));
+
+/** Action-axis switches from the current state to the next scenario's values. */
+function moveTo(graph, axisIds, state, values) {
+  let cost = 0;
+  const steps = [];
+  Object.keys(values)
+    .filter((axis) => axisIds.has(axis) && axis in state && state[axis] !== values[axis])
+    .forEach((axis) => {
+      const t = transitionCost(graph, axis, state[axis], values[axis]);
+      cost += t.cost;
+      steps.push({
+        axis, from: state[axis], to: values[axis], via: t.via, cost: t.cost,
+      });
+    });
+  return { cost, steps };
+}
+
+/** Walk scenarios in order; action-axis values persist from one scenario to the next. */
+function walk(graph, scenarios) {
+  const axisIds = actionAxisIds(graph);
+  let state = {};
+  let cost = 0;
+  const moves = scenarios.map((s) => {
+    const move = moveTo(graph, axisIds, state, s.values);
+    cost += move.cost;
+    state = { ...state, ...s.values };
+    return move;
+  });
+  return { cost, moves };
+}
+
+/** Total action-axis switch cost of running the scenarios in this order. */
+const sequenceCost = (graph, scenarios) => walk(graph, scenarios).cost;
+
 /**
- * Groups scenarios by setup and orders the groups greedily by the cheapest next switch.
- * @returns {{setup: string, cost: number, steps: object[], scenarios: object[]}[]}
+ * Order one setup's scenarios to keep action-axis switches cheap: greedy nearest neighbour
+ * from the first enumerated scenario, ties broken by enumeration order. Falls back to
+ * enumeration order when that is not more expensive.
+ */
+function orderInSetup(graph, scenarios) {
+  const axisIds = actionAxisIds(graph);
+  const remaining = scenarios.slice(1);
+  const ordered = scenarios.slice(0, 1);
+  let state = { ...(scenarios[0] ? scenarios[0].values : {}) };
+  while (remaining.length > 0) {
+    let best = 0;
+    let bestCost = moveTo(graph, axisIds, state, remaining[0].values).cost;
+    for (let i = 1; i < remaining.length; i += 1) {
+      const { cost } = moveTo(graph, axisIds, state, remaining[i].values);
+      if (cost < bestCost) {
+        best = i;
+        bestCost = cost;
+      }
+    }
+    const [next] = remaining.splice(best, 1);
+    ordered.push(next);
+    state = { ...state, ...next.values };
+  }
+  const nearest = walk(graph, ordered);
+  const enumerated = walk(graph, scenarios);
+  const [order, result] = nearest.cost < enumerated.cost
+    ? [ordered, nearest] : [scenarios, enumerated];
+  const cheap = graph.costs.cheap || 0;
+  const moves = order.map((s, i) => ({
+    scenario: s.id,
+    cost: result.moves[i].cost,
+    steps: result.moves[i].steps.filter((step) => step.cost > cheap),
+  })).filter((move) => move.steps.length > 0);
+  return { scenarios: order, intraCost: result.cost, moves };
+}
+
+/**
+ * Groups scenarios by setup and orders the runnable groups greedily by the cheapest next switch;
+ * not-runnable setups come last, outside the route (cost 0, no steps). Inside each group the
+ * scenarios are ordered to keep action-axis switches cheap.
+ * @returns {{setup: string, runnable: boolean, cost: number, steps: object[],
+ *   scenarios: object[], intraCost: number, moves: object[]}[]}
  */
 function planRun(graph, scenarios, { start } = {}) {
   const bySetup = new Map();
@@ -65,30 +141,35 @@ function planRun(graph, scenarios, { start } = {}) {
     if (!bySetup.has(s.setup)) bySetup.set(s.setup, []);
     bySetup.get(s.setup).push(s);
   });
-  const remaining = asList(graph.setups).map((s) => s.id).filter((id) => bySetup.has(id));
-  if (remaining.length === 0) return [];
+  const present = asList(graph.setups).filter((s) => bySetup.has(s.id));
+  const remaining = present.filter((s) => s.runnable !== false).map((s) => s.id);
+  const blocked = present.filter((s) => s.runnable === false).map((s) => s.id);
+  const group = (setup, runnable, cost, steps) => ({
+    setup, runnable, cost, steps, ...orderInSetup(graph, bySetup.get(setup)),
+  });
 
-  let current = start && bySetup.has(start) ? start : remaining[0];
-  remaining.splice(remaining.indexOf(current), 1);
-  const plan = [{
-    setup: current, cost: 0, steps: [], scenarios: bySetup.get(current),
-  }];
-
-  while (remaining.length > 0) {
-    const from = current;
-    const best = remaining
-      .map((id) => ({ id, d: setupDistance(graph, from, id) }))
-      .reduce((a, b) => (b.d.cost < a.d.cost ? b : a));
-    if (best.d.cost === Infinity) {
-      throw new Error(`No reachable switch from ${current} to ${best.id}`);
+  const plan = [];
+  if (remaining.length > 0) {
+    let current = start && remaining.includes(start) ? start : remaining[0];
+    remaining.splice(remaining.indexOf(current), 1);
+    plan.push(group(current, true, 0, []));
+    while (remaining.length > 0) {
+      const from = current;
+      const best = remaining
+        .map((id) => ({ id, d: setupDistance(graph, from, id) }))
+        .reduce((a, b) => (b.d.cost < a.d.cost ? b : a));
+      if (best.d.cost === Infinity) {
+        throw new Error(`No reachable switch from ${current} to ${best.id}`);
+      }
+      plan.push(group(best.id, true, best.d.cost, best.d.steps));
+      remaining.splice(remaining.indexOf(best.id), 1);
+      current = best.id;
     }
-    plan.push({
-      setup: best.id, cost: best.d.cost, steps: best.d.steps, scenarios: bySetup.get(best.id),
-    });
-    remaining.splice(remaining.indexOf(best.id), 1);
-    current = best.id;
   }
+  blocked.forEach((id) => plan.push(group(id, false, 0, [])));
   return plan;
 }
 
-module.exports = { transitionCost, setupDistance, planRun };
+module.exports = {
+  transitionCost, setupDistance, planRun, sequenceCost,
+};

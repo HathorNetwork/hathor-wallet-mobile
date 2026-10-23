@@ -11,7 +11,7 @@ import { describe, expect, it } from '@jest/globals';
 import path from 'path';
 import { loadGraph } from '../../QA/graph/tools/load';
 import { allScenarios } from '../../QA/graph/tools/scenarios';
-import { planRun, transitionCost } from '../../QA/graph/tools/runplan';
+import { planRun, transitionCost, sequenceCost } from '../../QA/graph/tools/runplan';
 
 const fixture = path.join(__dirname, 'fixtures', 'mini.yaml');
 const fresh = () => structuredClone(loadGraph(fixture));
@@ -63,5 +63,64 @@ describe('qa graph run plan', () => {
     const ids = planRun(g, all).flatMap((s) => s.scenarios.map((x) => x.id));
     expect(ids).toHaveLength(all.length);
     expect(new Set(ids)).toEqual(new Set(all.map((s) => s.id)));
+  });
+
+  it('puts not-runnable setups last and never routes through them', () => {
+    const g = fresh();
+    g.setups.find((s) => s.id === 'ws-multi').runnable = false;
+    const plan = planRun(g, allScenarios(g), { start: 'ws-multi' });
+    expect(plan.map((s) => s.setup)).toEqual(['ws-single', 'fn-single', 'fn-multi', 'ws-multi']);
+    expect(plan.map((s) => s.runnable)).toEqual([true, true, true, false]);
+    expect(plan[3].cost).toBe(0);
+    expect(plan[3].steps).toEqual([]);
+  });
+
+  describe('order inside a setup', () => {
+    // Privacy changes fastest in enumeration order; make it the expensive switch.
+    const costly = () => {
+      const g = fresh();
+      g.axes.find((a) => a.id === 'privacy').switch.cost = 'expensive';
+      g.axes.find((a) => a.id === 'token').switch.cost = 'medium';
+      return g;
+    };
+    const enumerated = (g, setup) => allScenarios(g).filter((s) => s.setup === setup);
+
+    it('never costs more than enumeration order', () => {
+      [fresh(), costly()].forEach((g) => {
+        planRun(g, allScenarios(g)).forEach((group) => {
+          expect(group.intraCost).toBe(sequenceCost(g, group.scenarios));
+          expect(group.intraCost).toBeLessThanOrEqual(sequenceCost(g, enumerated(g, group.setup)));
+        });
+      });
+    });
+
+    it('cuts expensive switches', () => {
+      const g = costly();
+      const before = g.setups.reduce((n, s) => n + sequenceCost(g, enumerated(g, s.id)), 0);
+      const after = planRun(g, allScenarios(g)).reduce((n, group) => n + group.intraCost, 0);
+      expect(after).toBeLessThan(before);
+    });
+
+    it('is deterministic and keeps every scenario', () => {
+      const g = costly();
+      const plan = planRun(g, allScenarios(g));
+      expect(planRun(g, allScenarios(g))).toEqual(plan);
+      plan.forEach((group) => {
+        expect(new Set(group.scenarios.map((s) => s.id)))
+          .toEqual(new Set(enumerated(g, group.setup).map((s) => s.id)));
+      });
+    });
+
+    it('lists the switches that cost more than cheap', () => {
+      const g = costly();
+      const [group] = planRun(g, allScenarios(g));
+      expect(group.moves.length).toBeGreaterThan(0);
+      group.moves.forEach((move) => {
+        expect(group.scenarios.map((s) => s.id)).toContain(move.scenario);
+        move.steps.forEach((step) => expect(step.cost).toBeGreaterThan(g.costs.cheap));
+      });
+      const plain = planRun(fresh(), allScenarios(fresh()));
+      plain.forEach((grp) => expect(grp.moves).toEqual([]));
+    });
   });
 });
