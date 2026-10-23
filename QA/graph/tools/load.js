@@ -41,6 +41,38 @@ function loadGraph(filePath) {
 
 const asList = (value) => (Array.isArray(value) ? value : []);
 const asArray = (value) => (Array.isArray(value) ? value : [value]);
+const isMapping = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+/** Mapping items of a list; malformed items are skipped (validateGraph reports them). */
+const mappings = (value) => asList(value).filter(isMapping);
+
+// Keys each object type may carry; anything else is reported as a likely typo.
+const KNOWN_KEYS = {
+  graph: ['version', 'costs', ...TOP_LEVEL_LISTS],
+  environment: ['id', 'name', 'notes'],
+  feature: ['id', 'name', 'description', 'status', 'screens', 'files', 'flags', 'links', 'introduces', 'actions'],
+  link: ['to', 'reason'],
+  flag: ['id', 'name', 'constant', 'default', 'gates', 'combinesWith', 'appliesAt', 'status', 'axisValues'],
+  axis: ['id', 'name', 'kind', 'values', 'how', 'switch'],
+  value: ['id', 'name'],
+  switch: ['cost', 'transitions', 'fallback'],
+  transition: ['from', 'to', 'cost', 'impossible', 'when'],
+  fallback: ['cost', 'how'],
+  setup: ['id', 'name', 'values', 'environment', 'runnable', 'notes'],
+  action: ['id', 'name', 'feature', 'axes', 'setups', 'path'],
+  path: ['steps', 'outcomes'],
+  step: ['id', 'screen', 'name'],
+  outcome: ['id', 'kind', 'at', 'message', 'source', 'verified', 'note'],
+  constraint: ['id', 'action', 'when', 'class', 'outcome', 'note'],
+};
+const ITEM_TYPE = {
+  environments: 'environment',
+  features: 'feature',
+  flags: 'flag',
+  axes: 'axis',
+  setups: 'setup',
+  actions: 'action',
+  constraints: 'constraint',
+};
 
 /**
  * Warn about constraints that can never produce a scenario. A non-invalid constraint
@@ -75,16 +107,30 @@ function validateGraph(graph) {
   const warnings = [];
   const err = (msg) => errors.push(msg);
 
-  if (!graph || typeof graph !== 'object') {
+  if (!isMapping(graph)) {
     return { errors: ['graph: expected a YAML mapping at the top level'], warnings };
   }
 
+  const checkKeys = (where, obj, type) => {
+    Object.keys(obj).filter((key) => !KNOWN_KEYS[type].includes(key)).forEach((key) => {
+      warnings.push(`${where}: unknown key '${key}'`);
+    });
+  };
+  /** Mapping items of a nested list, reporting the malformed ones. */
+  const nested = (where, field, value) => {
+    asList(value).forEach((item, index) => {
+      if (!isMapping(item)) err(`${where}: ${field}[${index}]: expected a mapping`);
+    });
+    return mappings(value);
+  };
+
+  checkKeys('graph', graph, 'graph');
   if (graph.version !== 1) err(`graph: version must be 1, got '${graph.version}'`);
-  if (!graph.costs || typeof graph.costs !== 'object') err('graph: missing field \'costs\'');
+  if (!isMapping(graph.costs)) err('graph: missing field \'costs\'');
   TOP_LEVEL_LISTS.forEach((key) => {
     if (!Array.isArray(graph[key])) err(`graph: field '${key}' must be a list`);
   });
-  const costs = graph.costs && typeof graph.costs === 'object' ? graph.costs : {};
+  const costs = isMapping(graph.costs) ? graph.costs : {};
   const checkCost = (where, cost) => {
     if (!(cost in costs)) err(`${where}: unknown cost '${cost}'`);
   };
@@ -94,63 +140,77 @@ function validateGraph(graph) {
   TOP_LEVEL_LISTS.forEach((key) => {
     ids[key] = new Set();
     asList(graph[key]).forEach((item, index) => {
-      if (!item || typeof item.id !== 'string' || !item.id) {
+      if (!isMapping(item)) {
+        err(`${key}[${index}]: expected a mapping`);
+        return;
+      }
+      if (typeof item.id !== 'string' || !item.id) {
         err(`${key}[${index}]: missing field 'id'`);
         return;
       }
       if (ids[key].has(item.id)) err(`${key} ${item.id}: duplicate id`);
       ids[key].add(item.id);
+      checkKeys(`${ITEM_TYPE[key]} ${item.id}`, item, ITEM_TYPE[key]);
     });
   });
 
-  const axesById = new Map(asList(graph.axes).map((a) => [a && a.id, a]));
-  const actionsById = new Map(asList(graph.actions).map((a) => [a && a.id, a]));
-  const axisHasValue = (axis, valueId) => asList(axis.values).some((v) => v.id === valueId);
+  const features = mappings(graph.features);
+  const flags = mappings(graph.flags);
+  const axes = mappings(graph.axes);
+  const axesById = new Map(axes.map((a) => [a.id, a]));
+  const actionsById = new Map(mappings(graph.actions).map((a) => [a.id, a]));
+  const axisHasValue = (axis, valueId) => mappings(axis.values).some((v) => v.id === valueId);
+  const checkAxisValueRef = (where, ref) => {
+    const [axisId, valueId] = String(ref).split(':');
+    const axis = axesById.get(axisId);
+    if (!axis) err(`${where} unknown axis '${axisId}'`);
+    else if (!axisHasValue(axis, valueId)) {
+      err(`${where} unknown value '${valueId}' for axis '${axisId}'`);
+    }
+  };
 
   // Features
-  asList(graph.features).forEach((f) => {
+  features.forEach((f) => {
     const where = `feature ${f.id}`;
     if (!FEATURE_STATUSES.includes(f.status)) err(`${where}: invalid status '${f.status}'`);
     asList(f.flags).forEach((id) => {
       if (!ids.flags.has(id)) err(`${where}: unknown flag '${id}'`);
     });
-    asList(f.links).forEach((link) => {
+    nested(where, 'links', f.links).forEach((link) => {
+      checkKeys(`${where} link to ${link.to}`, link, 'link');
       if (!ids.features.has(link.to)) err(`${where}: link to unknown feature '${link.to}'`);
       if (!link.reason) err(`${where}: link to '${link.to}' has no reason`);
     });
     asList(f.actions).forEach((id) => {
       if (!ids.actions.has(id)) err(`${where}: unknown action '${id}'`);
     });
-    asList(f.introduces).forEach((ref) => {
-      const [axisId, valueId] = String(ref).split(':');
-      const axis = axesById.get(axisId);
-      if (!axis) err(`${where}: introduces unknown axis '${axisId}'`);
-      else if (!axisHasValue(axis, valueId)) {
-        err(`${where}: introduces unknown value '${valueId}' for axis '${axisId}'`);
-      }
-    });
+    asList(f.introduces).forEach((ref) => checkAxisValueRef(`${where}: introduces`, ref));
   });
 
   // Flags
-  asList(graph.flags).forEach((flag) => {
+  flags.forEach((flag) => {
     const where = `flag ${flag.id}`;
     if (!APPLIES_AT.includes(flag.appliesAt)) err(`${where}: invalid appliesAt '${flag.appliesAt}'`);
     asList(flag.gates).forEach((id) => {
       if (!ids.features.has(id)) err(`${where}: gates unknown feature '${id}'`);
     });
+    if (flag.axisValues !== undefined && !Array.isArray(flag.axisValues)) {
+      err(`${where}: axisValues must be a list`);
+    }
+    asList(flag.axisValues).forEach((ref) => checkAxisValueRef(`${where}: axisValues`, ref));
   });
 
   // Impact spreads via `gates`, so they must be the inverse of the features' `flags`.
-  const flagsById = new Map(asList(graph.flags).map((f) => [f && f.id, f]));
-  asList(graph.flags).forEach((flag) => {
+  const flagsById = new Map(flags.map((f) => [f.id, f]));
+  flags.forEach((flag) => {
     asList(flag.gates).forEach((id) => {
-      const feature = asList(graph.features).find((f) => f.id === id);
+      const feature = features.find((f) => f.id === id);
       if (feature && !asList(feature.flags).includes(flag.id)) {
         warnings.push(`flag ${flag.id}: gates feature '${id}', but that feature does not list the flag`);
       }
     });
   });
-  asList(graph.features).forEach((f) => {
+  features.forEach((f) => {
     asList(f.flags).forEach((id) => {
       const flag = flagsById.get(id);
       if (flag && !asList(flag.gates).includes(f.id)) {
@@ -160,22 +220,25 @@ function validateGraph(graph) {
   });
 
   // Axes
-  asList(graph.axes).forEach((axis) => {
+  axes.forEach((axis) => {
     const where = `axis ${axis.id}`;
     if (!AXIS_KINDS.includes(axis.kind)) err(`${where}: invalid kind '${axis.kind}'`);
     if (asList(axis.values).length === 0) err(`${where}: has no values`);
     const valueIds = new Set();
-    asList(axis.values).forEach((v) => {
+    nested(where, 'values', axis.values).forEach((v) => {
+      checkKeys(`${where} value ${v.id}`, v, 'value');
       if (valueIds.has(v.id)) err(`${where}: duplicate value '${v.id}'`);
       valueIds.add(v.id);
     });
     const sw = axis.switch;
-    if (!sw) {
+    if (!isMapping(sw)) {
       err(`${where}: missing field 'switch'`);
       return;
     }
+    checkKeys(`${where} switch`, sw, 'switch');
     checkCost(`${where} switch`, sw.cost);
-    asList(sw.transitions).forEach((t) => {
+    nested(where, 'switch.transitions', sw.transitions).forEach((t) => {
+      checkKeys(`${where} transition ${t.from}->${t.to}`, t, 'transition');
       ['from', 'to'].forEach((end) => {
         if (!valueIds.has(t[end])) {
           err(`${where}: transition ${end} unknown value '${t[end]}'`);
@@ -183,16 +246,23 @@ function validateGraph(graph) {
       });
       if (t.cost !== undefined) checkCost(`${where} transition ${t.from}->${t.to}`, t.cost);
     });
-    if (sw.fallback) checkCost(`${where} fallback`, sw.fallback.cost);
+    if (sw.fallback !== undefined) {
+      if (!isMapping(sw.fallback)) {
+        err(`${where}: switch.fallback: expected a mapping`);
+      } else {
+        checkKeys(`${where} fallback`, sw.fallback, 'fallback');
+        checkCost(`${where} fallback`, sw.fallback.cost);
+      }
+    }
   });
 
   // Setups
-  asList(graph.setups).forEach((setup) => {
+  mappings(graph.setups).forEach((setup) => {
     const where = `setup ${setup.id}`;
     if (!ids.environments.has(setup.environment)) {
       err(`${where}: unknown environment '${setup.environment}'`);
     }
-    const values = setup.values || {};
+    const values = isMapping(setup.values) ? setup.values : {};
     Object.entries(values).forEach(([axisId, valueId]) => {
       const axis = axesById.get(axisId);
       if (!axis) err(`${where}: unknown axis '${axisId}'`);
@@ -201,13 +271,13 @@ function validateGraph(graph) {
         err(`${where}: unknown value '${valueId}' for axis '${axisId}'`);
       }
     });
-    asList(graph.axes).filter((a) => a.kind === 'setup' && !(a.id in values)).forEach((a) => {
+    axes.filter((a) => a.kind === 'setup' && !(a.id in values)).forEach((a) => {
       err(`${where}: missing value for setup axis '${a.id}'`);
     });
   });
 
   // Actions
-  asList(graph.actions).forEach((action) => {
+  mappings(graph.actions).forEach((action) => {
     const where = `action ${action.id}`;
     if (!ids.features.has(action.feature)) err(`${where}: unknown feature '${action.feature}'`);
     asList(action.axes).forEach((id) => {
@@ -222,22 +292,29 @@ function validateGraph(graph) {
     axisIds.filter((id, i) => axisIds.indexOf(id) !== i).forEach((id) => {
       err(`${where}: duplicate axis '${id}'`);
     });
-    const steps = asList(action.path && action.path.steps);
-    const stepIds = new Set(steps.map((s) => s.id));
-    asList(action.path && action.path.outcomes).forEach((o) => {
+    const actionPath = isMapping(action.path) ? action.path : {};
+    if (isMapping(action.path)) checkKeys(`${where} path`, action.path, 'path');
+    const steps = nested(where, 'path.steps', actionPath.steps);
+    steps.forEach((step) => checkKeys(`${where} step ${step.id}`, step, 'step'));
+    const stepIds = new Set(steps.map((step) => step.id));
+    nested(where, 'path.outcomes', actionPath.outcomes).forEach((o) => {
+      checkKeys(`${where} outcome ${o.id}`, o, 'outcome');
       if (!OUTCOME_KINDS.includes(o.kind)) err(`${where}: outcome ${o.id}: invalid kind '${o.kind}'`);
       if (!stepIds.has(o.at)) err(`${where}: outcome ${o.id}: unknown step '${o.at}'`);
+      if (o.note !== undefined && typeof o.note !== 'string') {
+        err(`${where}: outcome ${o.id}: note must be a string`);
+      }
       if (!o.source) warnings.push(`${where}: outcome ${o.id} has no source`);
     });
   });
 
   // Constraints
-  asList(graph.constraints).forEach((c) => {
+  mappings(graph.constraints).forEach((c) => {
     const where = `constraint ${c.id}`;
     if (!CONSTRAINT_CLASSES.includes(c.class)) err(`${where}: invalid class '${c.class}'`);
     const action = actionsById.get(c.action);
     if (!action) err(`${where}: unknown action '${c.action}'`);
-    Object.entries(c.when || {}).forEach(([axisId, wanted]) => {
+    Object.entries(isMapping(c.when) ? c.when : {}).forEach(([axisId, wanted]) => {
       const axis = axesById.get(axisId);
       if (!axis) {
         err(`${where}: unknown axis '${axisId}'`);
@@ -249,7 +326,7 @@ function validateGraph(graph) {
         }
       });
     });
-    const outcomes = asList(action && action.path && action.path.outcomes);
+    const outcomes = mappings(action && isMapping(action.path) && action.path.outcomes);
     if (c.class === 'rejected' && !c.outcome) err(`${where}: rejected constraint requires 'outcome'`);
     if (c.outcome) {
       const outcome = outcomes.find((o) => o.id === c.outcome);

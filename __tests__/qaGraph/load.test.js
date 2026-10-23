@@ -81,6 +81,67 @@ describe('qa graph loader', () => {
     expect(validateGraph(graph).errors.some((e) => e.includes('ws-single'))).toBe(true);
   });
 
+  it('warns about unknown keys, naming the key and its owner', () => {
+    const graph = fresh();
+    find(graph.setups, 'ws-single').runable = true;
+    find(graph.features, 'pin-f').link = [];
+    find(graph.actions, 'send').path.outcomes[0].mesage = 'x';
+    find(graph.axes, 'addr').switch.transitions[0].costs = 'cheap';
+    graph.extra = 1;
+    const { errors, warnings } = validateGraph(graph);
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual(expect.arrayContaining([
+      "setup ws-single: unknown key 'runable'",
+      "feature pin-f: unknown key 'link'",
+      "action send outcome ok-sent: unknown key 'mesage'",
+      "axis addr transition multi->single: unknown key 'costs'",
+      "graph: unknown key 'extra'",
+    ]));
+  });
+
+  it('reports null and malformed list items as errors', () => {
+    const graph = fresh();
+    graph.features.push(null);
+    graph.setups.push('ws-x');
+    find(graph.features, 'send-f').links.push(null);
+    find(graph.axes, 'dest').values.push(null);
+    find(graph.actions, 'send').path.outcomes.push(null);
+    find(graph.actions, 'send').path.steps.push(7);
+    graph.constraints.push(null);
+    find(graph.axes, 'addr').switch.transitions.push(null);
+    let result;
+    expect(() => { result = validateGraph(graph); }).not.toThrow();
+    expect(result.errors).toEqual(expect.arrayContaining([
+      'features[4]: expected a mapping',
+      'setups[4]: expected a mapping',
+      'feature send-f: links[1]: expected a mapping',
+      'axis dest: values[3]: expected a mapping',
+      'action send: path.outcomes[3]: expected a mapping',
+      'action send: path.steps[3]: expected a mapping',
+      'constraints[4]: expected a mapping',
+      'axis addr: switch.transitions[1]: expected a mapping',
+    ]));
+  });
+
+  it('accepts an optional string note on outcomes and rejects other types', () => {
+    const graph = fresh();
+    find(graph.actions, 'send').path.outcomes[0].note = 'Shown in a toast';
+    expect(validateGraph(graph).errors).toEqual([]);
+    find(graph.actions, 'send').path.outcomes[0].note = 3;
+    expect(validateGraph(graph).errors)
+      .toContainEqual('action send: outcome ok-sent: note must be a string');
+  });
+
+  it('checks the axis values a flag controls', () => {
+    const graph = fresh();
+    find(graph.flags, 'fbt').axisValues = ['token:fee', 'facade:ws'];
+    expect(validateGraph(graph).errors).toEqual([]);
+    find(graph.flags, 'fbt').axisValues = ['token:zzz', 'nope:x'];
+    const { errors } = validateGraph(graph);
+    expect(errors).toContainEqual("flag fbt: axisValues unknown value 'zzz' for axis 'token'");
+    expect(errors).toContainEqual("flag fbt: axisValues unknown axis 'nope'");
+  });
+
   it('includes the file path in YAML syntax errors', () => {
     const tmp = path.join(os.tmpdir(), `qa-graph-bad-${process.pid}.yaml`);
     fs.writeFileSync(tmp, 'a: [');
