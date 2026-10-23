@@ -35,10 +35,7 @@ features:
     links:
       - { to: pin-unlock, reason: The confirm screen asks for the PIN (or a passkey) before the send goes out }
       - { to: token-register, reason: Only registered tokens can be picked to send }
-      - { to: fee-tokens, reason: Sending a fee-based token charges an HTR fee checked only on confirm }
-      - { to: shielded-send, reason: The privacy mode and private recipients are part of the send flow }
-      - { to: wallet-service, reason: The facade decides how the transaction is built and which recipients are allowed }
-      - { to: tx-history, reason: A sent transaction shows up in the token history and changes balances }
+    # Fee tokens, private sends and the facade reach send via axis (token, privacy, dest, facade), not via code.
     introduces: []
     actions: [send]
 
@@ -61,6 +58,7 @@ features:
       - { to: pin-unlock, reason: On the fullnode facade a locked private balance is unlocked with the PIN or passkey before sending }
       - { to: privacy-settings, reason: The default privacy mode set in privacy settings preselects the send's mode }
     introduces: ['privacy:hide-amount', 'privacy:private', 'dest:shielded', 'amount:private-over-limit']
+    # Exercised by send only on the values it introduces, so it owns no whole action.
     actions: []
 
   - id: token-create
@@ -95,12 +93,10 @@ features:
       - src/components/TxFeesRow.js
       - src/components/TokenDetails.js
     flags: [fee-based-tokens]
-    links:
-      - { to: send, reason: Sending a fee token needs HTR for the fee or it fails on confirm }
-      - { to: token-create, reason: The token type is picked in the create token wizard }
-      - { to: tx-history, reason: The transaction details show the fee row }
+    # Send and history reach fee tokens via axis (token = fee), not via code.
+    links: []
     introduces: ['token:fee']
-    actions: []
+    actions: [create-token]
 
   - id: receive
     name: Receive
@@ -132,7 +128,7 @@ features:
       - { to: address-mode, reason: Shielded addresses are not supported in single-address mode }
       - { to: receive, reason: Shown inside the receive screen }
     introduces: []
-    actions: []
+    actions: [receive]
 
   - id: address-mode
     name: Address mode
@@ -143,11 +139,10 @@ features:
       - src/screens/AddressMode.js
     flags: [single-address]
     links:
-      - { to: receive, reason: Decides which address the receive screen shows and whether a new one can be made }
-      - { to: shielded-receive, reason: Single-address mode turns the private receive address off }
-      - { to: wallet-service, reason: Changing the mode reloads the wallet }
+      - { to: shielded, reason: An active shielded chain keeps the wallet in multi-address mode }
+      - { to: wallet-load, reason: Changing the mode reloads the wallet }
     introduces: ['addr:single']
-    actions: []
+    actions: [receive]
 
   - id: tx-history
     name: Token history and transaction details
@@ -164,7 +159,6 @@ features:
     links:
       - { to: token-metadata, reason: History rows and details show token metadata such as the NFT flag }
       - { to: shielded, reason: On the shielded testnet balances split into public and private and details show the privacy fee }
-      - { to: fee-tokens, reason: Transaction details show the fee row of fee-based tokens }
     introduces: []
     actions: [history]
 
@@ -178,11 +172,10 @@ features:
       - src/components/TokenSelect.js
     flags: []
     links:
-      - { to: tx-history, reason: Tapping a token opens its history }
       - { to: token-register, reason: Shows only registered tokens }
       - { to: token-import, reason: Shows the banner to import tokens found in the wallet }
     introduces: []
-    actions: []
+    actions: [history] # history starts on the home token list
 
   - id: shielded
     name: Private balance and unlock
@@ -203,12 +196,11 @@ features:
       - src/components/AuditUnblindingRows.js
     flags: [shielded-outputs]
     links:
-      - { to: shielded-send, reason: Private sends spend the private balance }
-      - { to: shielded-receive, reason: The private receive address needs the shielded provider }
-      - { to: tx-history, reason: Balances and transaction details show the private part }
       - { to: wallet-service, reason: On the wallet service the private balance comes from the service and needs shielded capability }
-      - { to: address-mode, reason: An active shielded chain keeps the wallet in multi-address mode }
+      - { to: network-settings, reason: The shielded UI only exists on the shielded testnet }
+      - { to: feature-flags, reason: The shielded UI turns on or off live with its flag }
     introduces: ['private-balance:locked', 'private-balance:broken-key']
+    # Exercised only on the shielded networks, so it owns no whole action; it reaches them via its values.
     actions: []
 
   - id: wallet-service
@@ -221,10 +213,10 @@ features:
     flags: [wallet-service]
     links:
       - { to: wallet-load, reason: A failed wallet-service start falls back to the fullnode and ignores the flag for 24 hours }
-      - { to: send, reason: The wallet service needs full shielded capability for shielded recipients }
-      - { to: shielded, reason: The private balance and receive address come from the service on that facade }
-      - { to: push-notifications, reason: Push registration starts a wallet-service wallet }
-    introduces: []
+      - { to: network-settings, reason: An empty wallet-service URL in the network settings forces the fullnode facade }
+      - { to: feature-flags, reason: Turning the wallet-service flag off mid-session reloads the wallet }
+    # Every action runs on one facade; the wallet-service one is reached via its value.
+    introduces: ['facade:wallet-service']
     actions: []
 
   - id: network-settings
@@ -240,10 +232,8 @@ features:
     flags: [network-settings, shielded-outputs-network, wallet-service]
     links:
       - { to: wallet-load, reason: Saving a network restarts the wallet }
-      - { to: feature-flags, reason: Flags are read again for the new network }
-      - { to: wallet-service, reason: An empty wallet-service URL forces the fullnode facade }
-      - { to: shielded, reason: The shielded UI only exists on the shielded testnet }
-    introduces: []
+    # The default network is the public testnet; the others are reached only through these settings.
+    introduces: ['network:testnet-shielded', 'network:local-privnet']
     actions: []
 
   - id: wallet-create
@@ -290,9 +280,7 @@ features:
     links:
       - { to: wallet-load, reason: The passkey wallet starts right after the ceremony }
       - { to: wallet-service, reason: A passkey wallet registers itself with the wallet service }
-      - { to: passkey-lock, reason: A passkey wallet is unlocked with the passkey instead of a PIN }
-      - { to: shielded, reason: Shielded keys are derived from the passkey }
-      - { to: pin-unlock, reason: Sends are authorized with the passkey instead of the PIN }
+    # Passkey authorization and passkey-derived shielded keys reach the actions via axis (wallet = passkey).
     introduces: ['wallet:passkey']
     actions: []
 
@@ -308,9 +296,8 @@ features:
     flags: []
     links:
       - { to: biometrics, reason: With biometrics on the PIN screen may be replaced by a fingerprint or face check }
-      - { to: lock-screen, reason: The same screen locks the app after it was in the background }
     introduces: []
-    actions: []
+    actions: [send, create-token]
 
   - id: token-register
     name: Register token
@@ -324,8 +311,6 @@ features:
       - src/utils/tokens.js
     flags: [reown, nano-contract]
     links:
-      - { to: dashboard, reason: A registered token appears in the home list }
-      - { to: send, reason: Only registered tokens can be sent }
       - { to: camera-permission, reason: Scanning the configuration needs the camera permission }
     introduces: []
     actions: []
@@ -339,9 +324,7 @@ features:
       - src/sagas/featureToggle.js
     flags: []
     links:
-      - { to: wallet-service, reason: Turning the wallet-service flag off mid-session reloads the wallet }
-      - { to: shielded, reason: The shielded UI turns on or off live with its flag }
-      - { to: network-settings, reason: Flags depend on the network the wallet is on }
+      - { to: network-settings, reason: Flags are read again for the network the wallet is on }
     introduces: []
     actions: []
 
@@ -354,7 +337,7 @@ features:
       - src/screens/ResetWallet.js
     flags: []
     links:
-      - { to: wallet-create, reason: After a reset the user starts onboarding again }
+      - { to: wallet-create, reason: A reset ends on the onboarding screens of wallet creation }
     introduces: []
     actions: []
 
@@ -397,6 +380,8 @@ features:
     screens: [PinScreen]
     files: []
     flags: []
+    links:
+      - { to: pin-unlock, reason: The app lock uses the same PIN screen }
 
   - id: passkey-lock
     name: Passkey lock screen
@@ -406,6 +391,8 @@ features:
     files:
       - src/screens/PasskeyLockScreen.js
     flags: []
+    links:
+      - { to: passkey-onboarding, reason: Only a passkey wallet has a passkey lock }
 
   - id: privacy-settings
     name: Privacy settings and key export
@@ -568,6 +555,8 @@ features:
       - src/components/PushTxDetailsModal.js
       - src/components/ShowPushNotificationTxDetails.js
     flags: [push-notification]
+    links:
+      - { to: wallet-service, reason: Push registration starts a wallet-service wallet }
 
   - id: amount-format
     name: Amount format
@@ -631,6 +620,7 @@ flags:
     constant: WALLET_SERVICE_FEATURE_TOGGLE
     default: false
     gates: [wallet-service, network-settings, passkey-onboarding, wallet-load]
+    axisValues: ['facade:wallet-service']
     combinesWith:
       - Needs a wallet-service URL in the network settings; an empty URL forces it off (and push off with it).
       - Ignored for 24 hours after a failed wallet-service start (IGNORE_WS_TOGGLE_FLAG); the wallet runs on the fullnode meanwhile.
@@ -709,6 +699,7 @@ flags:
     constant: FBT_FEATURE_TOGGLE
     default: false
     gates: [fee-tokens, token-create]
+    axisValues: ['token:fee', 'flag-fbt:off']
     combinesWith:
       - Decides the first create-token screen (type choice vs deposit notice) each time the wizard opens.
     appliesAt: live
@@ -719,6 +710,7 @@ flags:
     constant: SINGLE_ADDRESS_FEATURE_TOGGLE
     default: false
     gates: [address-mode, settings]
+    axisValues: ['addr:single']
     combinesWith:
       - Shows the Address mode entry in settings live, but the wallet picks its address mode at the next start.
       - An active shielded chain or transactions past the first address keep the wallet in multi-address mode.
@@ -730,6 +722,7 @@ flags:
     constant: PASSKEY_ONBOARDING_FEATURE_TOGGLE
     default: false
     gates: [passkey-onboarding]
+    axisValues: ['wallet:passkey']
     combinesWith:
       - Shows the passkey button on the onboarding screen, read live.
     appliesAt: live
@@ -762,6 +755,7 @@ flags:
     constant: SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE
     default: false
     gates: [network-settings]
+    axisValues: ['network:testnet-shielded']
     combinesWith:
       - Only shows the Shielded Testnet preset in Network Settings; needs network-settings.rollout to reach the screen.
     appliesAt: live
