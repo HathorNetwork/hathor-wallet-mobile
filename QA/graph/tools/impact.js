@@ -22,40 +22,57 @@ function assertKnown(graph, pick) {
   if (!known) throw new Error(`Unknown ${pick.type} '${pick.id}'`);
 }
 
+/**
+ * What the pick changes. `axisFrom[key]` says where each axis value comes from:
+ * the pick itself, a feature that introduces it, or a flag that controls it.
+ * A picked feature lists its flags, but only a picked flag adds the values it controls.
+ */
 function changedBy(graph, pick) {
-  const changed = { features: [], flags: [], axisValues: [] };
+  const changed = {
+    features: [], flags: [], axisValues: [], axisFrom: {},
+  };
+  const addValue = (key, from) => {
+    if (changed.axisValues.includes(key)) return;
+    changed.axisValues.push(key);
+    changed.axisFrom[key] = from;
+  };
   if (pick.type === 'feature') {
     const feature = findById(graph.features, pick.id);
     changed.features.push(pick.id);
     changed.flags.push(...asList(feature && feature.flags));
-    changed.axisValues.push(...asList(feature && feature.introduces));
+    asList(feature && feature.introduces).forEach((key) => addValue(key, { type: 'feature', id: pick.id }));
   } else if (pick.type === 'flag') {
     changed.flags.push(pick.id);
   } else {
-    changed.axisValues.push(pick.id);
+    addValue(pick.id, { type: 'axisValue', id: pick.id });
+  }
+  if (pick.type === 'flag') {
+    const flag = findById(graph.flags, pick.id);
+    asList(flag && flag.axisValues).forEach((key) => addValue(key, { type: 'flag', id: pick.id }));
   }
   return changed;
 }
 
-/** Does the action vary on, or run under a setup that sets, this axis? */
-function actionUsesAxis(graph, action, axisId) {
-  if (asList(action.axes).includes(axisId)) return true;
-  return asList(action.setups)
-    .some((id) => {
-      const setup = findById(graph.setups, id);
-      return setup && setup.values && axisId in setup.values;
-    });
+/** A feature owns an action that names it, or that it lists in its `actions`. */
+function ownsAction(feature, action) {
+  return action.feature === feature.id || asList(feature.actions).includes(action.id);
 }
 
-function touchedFeatures(graph, changed) {
+const valueMatches = (key, values) => {
+  const [axisId, valueId] = key.split(':');
+  return values[axisId] === valueId;
+};
+
+/**
+ * Features reached by the change. A feature reached via code or flag is touched as a whole:
+ * all scenarios of the actions it owns, plus the scenarios on the axis values it introduces.
+ * A value reaches every action that has a scenario on it ("via axis").
+ */
+function touchedFeatures(graph, pick, changed, scenarios) {
   const touched = new Map();
-  // Per feature: axis values that reached it, and whether any non-axis reason did.
-  const scope = new Map();
-  const add = (featureId, via, why, axisKey) => {
-    const s = scope.get(featureId) || { whole: false, axisKeys: [] };
-    if (via === 'axis') s.axisKeys.push(axisKey);
-    else s.whole = true;
-    scope.set(featureId, s);
+  const whole = new Set();
+  const add = (featureId, via, why) => {
+    if (via !== 'axis') whole.add(featureId);
     const entry = touched.get(featureId) || { feature: featureId, reasons: [] };
     if (!entry.reasons.some((r) => r.via === via && r.why === why)) {
       entry.reasons.push({ via, why });
@@ -65,36 +82,57 @@ function touchedFeatures(graph, changed) {
 
   changed.features.forEach((id) => add(id, 'code', 'changed directly'));
 
+  // `links` point at dependencies: a feature is touched when something it depends on changes.
   asList(graph.features).forEach((feature) => {
     asList(feature.links)
       .filter((link) => changed.features.includes(link.to))
       .forEach((link) => add(feature.id, 'code', link.reason));
   });
 
+  // A picked flag spreads to every feature it gates. A picked feature's flags only tag the
+  // features already touched: changing the feature does not change its flag's other features.
   changed.flags.forEach((flagId) => {
     const flag = findById(graph.flags, flagId);
-    asList(flag && flag.gates).forEach((featureId) => add(
-      featureId,
-      'flag',
-      `must be tested with ${flag.name} on and off`,
-    ));
-  });
-
-  changed.axisValues.forEach((key) => {
-    const [axisId, valueId] = key.split(':');
-    const axis = findById(graph.axes, axisId);
-    const value = findById(axis && axis.values, valueId);
-    asList(graph.actions)
-      .filter((action) => actionUsesAxis(graph, action, axisId))
-      .forEach((action) => add(
-        action.feature,
-        'axis',
-        `${action.name} varies on ${axis.name}; new value ${value ? value.name : valueId}`,
-        key,
+    asList(flag && flag.gates)
+      .filter((featureId) => pick.type === 'flag' || touched.has(featureId))
+      .forEach((featureId) => add(
+        featureId,
+        'flag',
+        `must be tested with ${flag.name} on and off`,
       ));
   });
 
-  return { touched: [...touched.values()], scope };
+  const axisFrom = { ...changed.axisFrom };
+  const keys = [...changed.axisValues];
+  [...whole].forEach((featureId) => {
+    const feature = findById(graph.features, featureId);
+    asList(feature && feature.introduces).filter((key) => !keys.includes(key)).forEach((key) => {
+      keys.push(key);
+      axisFrom[key] = { type: 'feature', id: featureId };
+    });
+  });
+
+  keys.forEach((key) => {
+    const [axisId, valueId] = key.split(':');
+    const axis = findById(graph.axes, axisId);
+    const value = findById(axis && axis.values, valueId);
+    const valueText = `${axis ? axis.name : axisId} = ${value ? value.name : valueId}`;
+    const from = axisFrom[key];
+    const source = findById(from.type === 'flag' ? graph.flags : graph.features, from.id);
+    const onValue = scenarios.filter((s) => valueMatches(key, s.values));
+    asList(graph.actions)
+      .filter((action) => onValue.some((s) => s.action === action.id))
+      .forEach((action) => {
+        let why = `${action.name} varies on ${axis.name}; new value ${value ? value.name : valueId}`;
+        if (from.type === 'flag') why = `${action.name} runs on ${valueText}, which ${source.name} controls`;
+        else if (from.type === 'feature' && !changed.features.includes(from.id)) {
+          why = `${action.name} runs on ${valueText}, which ${source.name} brings in`;
+        }
+        add(action.feature, 'axis', why);
+      });
+  });
+
+  return { touched: [...touched.values()], whole, keys };
 }
 
 /**
@@ -105,20 +143,14 @@ function touchedFeatures(graph, changed) {
 function computeImpact(graph, pick, scenarios = allScenarios(graph)) {
   assertKnown(graph, pick);
   const changed = changedBy(graph, pick);
-  const { touched, scope } = touchedFeatures(graph, changed);
+  const { touched, whole, keys } = touchedFeatures(graph, pick, changed, scenarios);
 
-  // A feature reached only via axis re-runs just the scenarios on the changed values;
-  // one reached via code or flag re-runs all its scenarios.
-  const actionFeature = new Map(asList(graph.actions).map((a) => [a.id, a.feature]));
-  const affected = scenarios.filter((s) => {
-    const sc = scope.get(actionFeature.get(s.action));
-    if (!sc) return false;
-    if (sc.whole) return true;
-    return sc.axisKeys.some((key) => {
-      const [axisId, valueId] = key.split(':');
-      return s.values[axisId] === valueId;
-    });
-  });
+  const wholeActions = new Set(asList(graph.actions)
+    .filter((action) => asList(graph.features)
+      .some((f) => whole.has(f.id) && ownsAction(f, action)))
+    .map((action) => action.id));
+  const affected = scenarios.filter((s) => wholeActions.has(s.action)
+    || keys.some((key) => valueMatches(key, s.values)));
 
   const plan = affected.length > 0 ? planRun(graph, affected) : [];
   return {
@@ -138,4 +170,4 @@ function allPicks(graph) {
   ];
 }
 
-module.exports = { computeImpact, allPicks };
+module.exports = { computeImpact, allPicks, ownsAction };

@@ -15,6 +15,7 @@ import { computeImpact, allPicks } from '../../QA/graph/tools/impact';
 
 const graph = structuredClone(loadGraph(path.join(__dirname, 'fixtures', 'mini.yaml')));
 const entry = (impact, feature) => impact.touched.find((t) => t.feature === feature);
+const sendIds = (g) => allScenarios(g).filter((s) => s.action === 'send').map((s) => s.id);
 
 describe('qa graph impact', () => {
   it('feature pick spreads via its links', () => {
@@ -68,9 +69,75 @@ describe('qa graph impact', () => {
   });
 
   it('returns an empty plan when no scenarios are reached', () => {
-    const none = computeImpact(graph, { type: 'flag', id: 'fbt' });
+    const g = structuredClone(graph);
+    g.features.find((f) => f.id === 'fee-f').introduces = [];
+    const none = computeImpact(g, { type: 'flag', id: 'fbt' });
     expect(none.scenarios).toEqual([]);
     expect(none.plan).toEqual([]);
+  });
+
+  it('touches the features that depend on a change, not its dependencies', () => {
+    const impact = computeImpact(graph, { type: 'feature', id: 'send-f' });
+    expect(impact.touched.map((t) => t.feature)).toEqual(['send-f']);
+  });
+
+  it('re-runs the actions a feature lists in actions, not only those naming it', () => {
+    const g = structuredClone(graph);
+    g.features.find((f) => f.id === 'pin-f').actions = ['send'];
+    g.features.find((f) => f.id === 'send-f').links = [];
+    const impact = computeImpact(g, { type: 'feature', id: 'pin-f' });
+    expect(impact.scenarios.map((s) => s.id)).toEqual(sendIds(g));
+  });
+
+  it('flag pick reaches the scenarios of actions exercising the features it gates', () => {
+    const g = structuredClone(graph);
+    g.features.find((f) => f.id === 'fee-f').actions = ['send'];
+    const impact = computeImpact(g, { type: 'flag', id: 'fbt' });
+    expect(impact.scenarios.map((s) => s.id)).toEqual(sendIds(g));
+  });
+
+  it('flag pick reaches the values its gated features introduce', () => {
+    const impact = computeImpact(graph, { type: 'flag', id: 'fbt' });
+    expect(impact.scenarios.length).toBeGreaterThan(0);
+    impact.scenarios.forEach((s) => expect(s.values.token).toBe('fee'));
+    expect(entry(impact, 'send-f').reasons.map((r) => r.via)).toEqual(['axis']);
+  });
+
+  it('flag pick spreads via axis to the axis values it controls', () => {
+    const g = structuredClone(graph);
+    g.features.find((f) => f.id === 'fee-f').introduces = [];
+    g.flags.find((f) => f.id === 'fbt').axisValues = ['facade:ws'];
+    const impact = computeImpact(g, { type: 'flag', id: 'fbt' });
+    expect(impact.changed.axisValues).toEqual(['facade:ws']);
+    expect(entry(impact, 'send-f').reasons.map((r) => r.via)).toEqual(['axis']);
+    const wsSends = allScenarios(g).filter((s) => s.values.facade === 'ws').map((s) => s.id);
+    expect(impact.scenarios.map((s) => s.id)).toEqual(wsSends);
+  });
+
+  it('a feature pick tags touched features with its flags but does not spread through them', () => {
+    const g = structuredClone(graph);
+    const pin = g.features.find((f) => f.id === 'pin-f');
+    pin.flags = ['fbt'];
+    pin.links = [];
+    g.flags.find((f) => f.id === 'fbt').gates.push('pin-f');
+    g.flags.find((f) => f.id === 'fbt').axisValues = ['facade:ws'];
+    g.features.find((f) => f.id === 'send-f').links = [];
+    const impact = computeImpact(g, { type: 'feature', id: 'pin-f' });
+    expect(impact.touched.map((t) => t.feature)).toEqual(['pin-f']);
+    expect(entry(impact, 'pin-f').reasons.map((r) => r.via)).toEqual(['code', 'flag']);
+    expect(impact.changed.axisValues).toEqual([]);
+    expect(impact.scenarios).toEqual([]);
+  });
+
+  it('a feature reached via code re-runs the scenarios on the values it introduces', () => {
+    const g = structuredClone(graph);
+    g.features.find((f) => f.id === 'send-f').links = [];
+    g.features.find((f) => f.id === 'fee-f').links = [{ to: 'pin-f', reason: 'fees are confirmed with the PIN' }];
+    const impact = computeImpact(g, { type: 'feature', id: 'pin-f' });
+    expect(entry(impact, 'fee-f').reasons).toContainEqual({ via: 'code', why: 'fees are confirmed with the PIN' });
+    expect(entry(impact, 'send-f').reasons.map((r) => r.via)).toEqual(['axis']);
+    const feeSends = allScenarios(g).filter((s) => s.values.token === 'fee').map((s) => s.id);
+    expect(impact.scenarios.map((s) => s.id)).toEqual(feeSends);
   });
 
   it('throws on unknown picks', () => {
@@ -85,5 +152,43 @@ describe('qa graph impact', () => {
     expect(picks.find((p) => p.id === 'swap-f')).toBeUndefined();
     expect(picks).toContainEqual({ type: 'flag', id: 'fbt' });
     expect(picks).toContainEqual({ type: 'axisValue', id: 'token:fee' });
+  });
+});
+
+describe('qa graph impact on QA/graph/graph.yaml', () => {
+  const real = loadGraph(path.join(__dirname, '..', '..', 'QA', 'graph', 'graph.yaml'));
+  const scenarios = allScenarios(real);
+  const impactOf = (type, id) => computeImpact(real, { type, id }, scenarios);
+  const actionsOf = (impact) => [...new Set(impact.scenarios.map((s) => s.action))].sort();
+
+  it('flag wallet-service reaches every action on the wallet-service facade', () => {
+    const impact = impactOf('flag', 'wallet-service');
+    const onWs = impact.scenarios.filter((s) => s.values.facade === 'wallet-service');
+    expect(actionsOf({ scenarios: onWs })).toEqual(['create-token', 'history', 'receive', 'send']);
+  });
+
+  it('flag fee-based-tokens reaches the fee-token sends', () => {
+    const impact = impactOf('flag', 'fee-based-tokens');
+    const sends = impact.scenarios.filter((s) => s.action === 'send');
+    expect(sends.length).toBeGreaterThan(0);
+    sends.forEach((s) => expect(s.values.token).toBe('fee'));
+  });
+
+  it('feature fee-tokens re-runs the fee column and create token only', () => {
+    const impact = impactOf('feature', 'fee-tokens');
+    const createTokens = scenarios.filter((s) => s.action === 'create-token');
+    expect(impact.scenarios.filter((s) => s.action === 'create-token')).toEqual(createTokens);
+    impact.scenarios.filter((s) => s.action !== 'create-token')
+      .forEach((s) => expect(s.values.token).toBe('fee'));
+  });
+
+  it('features without their own screens in a path still reach scenarios', () => {
+    ['dashboard', 'network-settings', 'wallet-service', 'address-mode'].forEach((id) => {
+      expect(impactOf('feature', id).scenarios.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('tx-history does not re-run the sends', () => {
+    expect(actionsOf(impactOf('feature', 'tx-history'))).toEqual(['history']);
   });
 });
