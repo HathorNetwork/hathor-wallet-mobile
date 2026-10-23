@@ -82,6 +82,9 @@
     const action = actions.get(actionId);
     return list(action && action.path && action.path.outcomes).find((o) => o.id === outcomeId);
   };
+  // A feature owns the actions that name it and those it lists (as impact.js ownsAction).
+  const ownedActions = (f) => list(graph.actions)
+    .filter((a) => a.feature === f.id || list(f.actions).includes(a.id));
   const primaryClass = (s) => CLASS_ORDER.find((c) => s.classes.includes(c)) || 'valid';
   const plural = (n, word, many) => `${n} ${n === 1 ? word : (many || `${word}s`)}`;
 
@@ -326,7 +329,12 @@
   function changedColumn(impact) {
     const { pick, changed } = impact;
     const isPick = (type, id) => pick.type === type && pick.id === id;
-    const fromPick = (type, id) => (isPick(type, id) ? null : h('span', { class: 'from-pick' }, 'with the feature'));
+    const fromPick = (type, id) => {
+      if (isPick(type, id)) return null;
+      const from = (changed.axisFrom || {})[id];
+      const text = from && from.type === 'flag' ? 'controlled by the flag' : 'with the feature';
+      return h('span', { class: 'from-pick' }, text);
+    };
     const boxes = [];
     changed.features.forEach((id) => {
       const f = features.get(id);
@@ -350,10 +358,12 @@
       const [axisId, valueId] = key.split(':');
       const axis = axes.get(axisId);
       const others = list(axis && axis.values).filter((v) => v.id !== valueId).map((v) => v.name);
+      const from = (changed.axisFrom || {})[key];
+      const controlled = from && from.type === 'flag';
       boxes.push(box(
         `axis${isPick('axisValue', key) ? ' chg' : ''}`,
-        [h('span', { class: 'kind' }, `${axis ? axis.kind : ''} axis value`), axisName(axisId), ' += ', h('b', null, valueName(axisId, valueId))],
-        others.length ? `joins ${others.join(', ')}` : null,
+        [h('span', { class: 'kind' }, `${axis ? axis.kind : ''} axis value`), axisName(axisId), controlled ? ' = ' : ' += ', h('b', null, valueName(axisId, valueId))],
+        others.length && !controlled ? `joins ${others.join(', ')}` : null,
         fromPick('axisValue', key),
       ));
     });
@@ -369,8 +379,10 @@
     const flagNames = impact.changed.flags.map((id) => (flags.get(id) ? flags.get(id).name : id));
     const axisNames = [...new Set(impact.changed.axisValues.map((k) => axisName(k.split(':')[0])))];
     const explain = {
-      code: 'changed directly, or linked to the change in code',
-      axis: `every action that varies on ${axisNames.join(', ')} gets the new value, even if its code did not change`,
+      code: 'changed directly, or depends on the change in code',
+      axis: axisNames.length
+        ? `every action with scenarios on the ${axisNames.join(', ')} value re-runs them, even if its code did not change`
+        : 'every action with scenarios on a value a touched feature brings in re-runs them',
       flag: `must be tested with ${flagNames.join(', ')} on and off`,
     };
     const boxes = ['code', 'axis', 'flag'].filter((via) => byVia[via] > 0).map((via) => box(
@@ -385,7 +397,7 @@
     if (impact.touched.length === 0) return [h('p', { class: 'muted' }, 'No features reached.')];
     return impact.touched.map((t) => {
       const f = features.get(t.feature);
-      const owned = list(f && f.actions).map(actionName);
+      const owned = f ? ownedActions(f).map((a) => a.name) : [];
       const vias = [...new Set(t.reasons.map((r) => r.via))];
       return h(
         'div',
@@ -426,7 +438,7 @@
       h('div', { class: 'rerun-meta' }, classBar(items), h('span', { class: 'muted' }, plural(new Set(items.map((s) => s.setup)).size, 'setup'))),
     ));
     const setupCount = impact.plan.length;
-    const totalCost = impact.plan.reduce((sum, g) => sum + g.cost, 0);
+    const totalCost = impact.plan.reduce((sum, g) => sum + g.cost + g.intraCost, 0);
     return [
       ...rows,
       h(
@@ -640,6 +652,7 @@
           h('q', null, o.message),
         ),
         h('div', { class: 'outcome-meta' }, h('code', { class: 'src' }, o.source), unverifiedBadge(o)),
+        o.note ? h('p', { class: 'outcome-note' }, o.note) : null,
         triggers(o.id).length ? h('ul', { class: 'triggers' }, triggers(o.id).map((c) => h(
           'li',
           null,
@@ -719,6 +732,35 @@
     );
   }
 
+  const COLUMNS = ['#', 'Scenario id', 'Action', 'Combination', 'Class', 'Expected', ''];
+
+  /** A switch inside a setup that costs more than cheap, spelled out before the scenario. */
+  function moveRow(move) {
+    return h(
+      'tr',
+      { class: 'move-row' },
+      h('td', { class: 'num', 'aria-hidden': 'true' }, '↻'),
+      h('td', { colspan: COLUMNS.length - 1 }, h(
+        'div',
+        { class: 'move' },
+        h('span', { class: 'move-head' }, 'Switch first'),
+        move.steps.map((step) => {
+          const cost = stepCost(step);
+          return h(
+            'span',
+            { class: 'move-step' },
+            h('span', { class: 'taxis' }, axisName(step.axis)),
+            valueName(step.axis, step.from),
+            h('span', { class: 'tarrow', 'aria-hidden': 'true' }, ' → '),
+            h('b', null, valueName(step.axis, step.to)),
+            cost.key ? h('span', { class: `cost cost-${cost.key}` }, `${cost.key} · ${cost.value}`) : null,
+            cost.when ? h('span', { class: 'muted' }, `when ${cost.when}`) : null,
+          );
+        }),
+      )),
+    );
+  }
+
   function planRow(s, n) {
     const action = actions.get(s.action);
     const cls = primaryClass(s);
@@ -726,6 +768,7 @@
       'tr',
       { id: `run-${s.id}`, class: `c-row-${cls}` },
       h('td', { class: 'num' }, String(n)),
+      h('td', { class: 'sid' }, h('code', { title: 'Scenario id, as used in run files' }, s.id)),
       h('td', null, actionName(s.action)),
       h('td', { class: 'combo' }, list(action && action.axes).map((a) => h(
         'span',
@@ -752,20 +795,29 @@
     const plan = impact ? impact.plan : data.plan;
     const groups = plan.map((g) => ({ ...g, items: resolve(g.scenarios) }));
     const total = groups.reduce((sum, g) => sum + g.items.length, 0);
-    const totalCost = groups.reduce((sum, g) => sum + g.cost, 0);
+    const betweenCost = groups.reduce((sum, g) => sum + g.cost, 0);
+    const intraCost = groups.reduce((sum, g) => sum + g.intraCost, 0);
     const fallbacks = groups.flatMap((g) => g.steps).filter((s) => s.via === 'fallback').length;
-    const blocked = groups
-      .filter((g) => setups.get(g.setup) && setups.get(g.setup).runnable === false).length;
+    const blocked = groups.filter((g) => g.runnable === false).length;
 
     let n = 0;
     const body = groups.map((g, i) => {
       const setup = setups.get(g.setup);
-      const rows = g.items.map((s) => {
+      const movesBefore = new Map(list(g.moves).map((m) => [m.scenario, m]));
+      const rows = g.items.flatMap((s) => {
         n += 1;
-        return planRow(s, n);
+        const move = movesBefore.get(s.id);
+        return [move ? moveRow(move) : null, planRow(s, n)];
       });
+      const firstBlocked = g.runnable === false && (i === 0 || groups[i - 1].runnable !== false);
       return [
-        i > 0 ? transitionBlock(g, i) : null,
+        firstBlocked ? h(
+          'div',
+          { class: 'blocked-head' },
+          h('h3', null, 'Not runnable today'),
+          h('p', { class: 'muted' }, 'These setups cannot be reached on the available environments. They are listed for reference and are not part of the route or its switch cost.'),
+        ) : null,
+        i > 0 && g.runnable !== false ? transitionBlock(g, i) : null,
         h(
           'details',
           { class: `group${setup && setup.runnable === false ? ' not-runnable' : ''}`, id: `group-${g.setup}`, open: true },
@@ -778,13 +830,14 @@
             runnableBadge(setup),
             h('span', { class: 'group-spacer' }),
             classBar(g.items),
+            g.intraCost > 0 ? h('span', { class: 'muted group-intra', title: 'Switch cost between scenarios inside this setup' }, `inside: cost ${g.intraCost}`) : null,
             h('span', { class: 'group-count' }, plural(g.items.length, 'scenario')),
           ),
           setup ? h('p', { class: 'group-sub muted' }, setupValuesText(setup), setup.notes ? ` · ${setup.notes}` : '') : null,
           h(
             'table',
             { class: 'runs' },
-            h('thead', null, h('tr', null, ['#', 'Action', 'Combination', 'Class', 'Expected', ''].map((t) => h('th', { scope: 'col' }, t)))),
+            h('thead', null, h('tr', null, COLUMNS.map((t) => h('th', { scope: 'col' }, t)))),
             h('tbody', null, rows),
           ),
         ),
@@ -798,7 +851,7 @@
         'div',
         { class: 'view-head' },
         h('h2', null, 'Run plan'),
-        h('p', { class: 'lede' }, 'Scenarios grouped by setup, ordered to keep expensive switches rare. Between groups, the switch steps are spelled out; forced resets are highlighted.'),
+        h('p', { class: 'lede' }, 'Scenarios grouped by setup, ordered to keep expensive switches rare, between setups and inside each one. Between groups, the switch steps are spelled out; forced resets are highlighted. Inside a group, any switch above cheap is shown before the scenario that needs it. Run files refer to scenarios by their id.'),
         impact ? h(
           'div',
           { class: 'filter-banner' },
@@ -812,7 +865,7 @@
           { class: 'plan-summary' },
           h('span', null, h('b', null, String(total)), ' scenarios'),
           h('span', null, h('b', null, String(groups.length)), ' setups'),
-          h('span', null, 'switch cost ', h('b', null, String(totalCost))),
+          h('span', null, 'switch cost ', h('b', null, String(betweenCost + intraCost)), h('span', { class: 'muted' }, ` (${betweenCost} between setups, ${intraCost} inside)`)),
           fallbacks ? h('span', { class: 'fallback-badge' }, `⟲ ${plural(fallbacks, 'forced reset')}`) : null,
           blocked ? h('span', { class: 'badge not-runnable-badge' }, `${plural(blocked, 'setup')} not runnable`) : null,
           h('span', { class: 'group-spacer' }),
@@ -859,7 +912,13 @@
       h('h4', null, 'Expected'),
       h('div', { class: 'insp-expected' }, s.expected.map((o) => {
         const outcome = outcomeOf(s.action, o);
-        return h('div', null, outcomeLine(s.action, o), outcome ? h('code', { class: 'src' }, outcome.source) : null);
+        return h(
+          'div',
+          null,
+          outcomeLine(s.action, o),
+          outcome ? h('code', { class: 'src' }, outcome.source) : null,
+          outcome && outcome.note ? h('p', { class: 'outcome-note' }, outcome.note) : null,
+        );
       })),
       h(
         'div',

@@ -482,6 +482,7 @@ td.multi .chip + .chip { margin-top: 2px; }
 .triggers { list-style: none; margin: 6px 0 0; padding: 0; font-size: 11.5px; color: var(--ink-2); }
 .triggers li + li { margin-top: 3px; }
 .outcome-count { margin-top: 5px; font-size: 11px; }
+.outcome-note { margin: 4px 0 0; font-size: 11.5px; color: var(--ink-2); }
 
 /* ---------- D · Run plan ---------- */
 
@@ -554,6 +555,16 @@ td.multi .chip + .chip { margin-top: 2px; }
 .runs tbody tr { scroll-margin: 140px; }
 .runs tbody tr:hover { background: var(--surface-2); }
 .runs .num { width: 44px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+.runs .sid code { font-size: 10.5px; color: var(--ink-2); user-select: all; word-break: break-all; }
+.runs .sid { max-width: 260px; }
+.move-row td { background: var(--surface-2); padding-top: 4px; padding-bottom: 4px; }
+.move { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 11.5px; }
+.move-head { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); font-weight: 650; }
+.move-step { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.group-intra { font-size: 11px; font-variant-numeric: tabular-nums; }
+.blocked-head { margin: 22px 0 8px; }
+.blocked-head h3 { margin: 0; font-size: 14px; }
+.blocked-head p { margin: 2px 0 0; font-size: 12px; }
 .runs tr.c-row-rejected td:first-child { box-shadow: inset 3px 0 0 var(--c-rejected); }
 .runs tr.c-row-edge td:first-child { box-shadow: inset 3px 0 0 var(--c-edge); }
 .runs tr.c-row-lib-risk td:first-child { box-shadow: inset 3px 0 0 var(--c-lib-risk); }
