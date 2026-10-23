@@ -992,7 +992,7 @@ actions:
     name: Send tokens
     feature: send
     axes: [dest, token, privacy, amount, funding, private-balance]
-    setups: [tn-ws-seed-multi, tn-fn-seed-multi, tns-ws-seed-multi, tns-fn-seed-multi, pn-fn-seed-multi, tn-ws-passkey-multi, tn-fn-passkey-multi, tns-fn-passkey-multi]
+    setups: [tn-ws-seed-multi, tn-fn-seed-multi, tns-ws-seed-multi, tns-fn-seed-multi, pn-fn-seed-multi, pn-ws-seed-multi, tn-ws-passkey-multi, tn-fn-passkey-multi, tns-fn-passkey-multi]
     path:
       steps:
         - { id: address, screen: SendAddressInput, name: Type or paste or scan the address and tap Next }
@@ -1217,6 +1217,11 @@ constraints:
     when: { amount: private-over-limit, token: htr }
     class: invalid
     note: No test wallet holds 2^40 base units of HTR; reach the limit with a custom token minted with a huge supply.
+  - id: c-send-over-limit-deposit-public
+    action: send
+    when: { amount: private-over-limit, token: deposit, network: [testnet, testnet-shielded] }
+    class: invalid # QA: confirm
+    note: 'Buildable in principle, not with public test funds: minting 2^40 base units of a deposit token locks a 1% HTR deposit, about 110M HTR. On the public networks reach the limit with a fee token (flat creation fee); with a deposit token only on the local privnet, funded by the sender wallet of the e2e kit.'
   - id: c-send-passkey-broken-key
     action: send
     when: { wallet: passkey, private-balance: broken-key }
