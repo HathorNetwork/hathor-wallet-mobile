@@ -44,11 +44,17 @@ function printValidation(graph) {
   return errors.length;
 }
 
+const TOOLS_DIR = path.relative(REPO_ROOT, __dirname);
+
 function graphVersion(graphPath) {
   try {
     const [commit, date] = git(['log', '-1', '--format=%h %cs', '--', graphPath]).trim().split(' ');
     const dirty = git(['status', '--porcelain', graphPath]).trim() !== '';
-    return describeVersion({ commit: commit || 'unknown', date: date || 'unknown', dirty });
+    const toolsCommit = git(['rev-parse', '--short', 'HEAD']).trim();
+    const toolsDirty = git(['status', '--porcelain', TOOLS_DIR]).trim() !== '';
+    return describeVersion({
+      commit: commit || 'unknown', date: date || 'unknown', dirty, toolsCommit, toolsDirty,
+    });
   } catch (e) {
     return 'unknown version (git unavailable)';
   }

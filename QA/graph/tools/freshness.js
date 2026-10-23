@@ -85,11 +85,13 @@ function checkFreshness(graph, input) {
   return { warnings, notes };
 }
 
-/** One-line description of which graph version a rendered page shows. */
-function describeVersion({ commit, date, dirty }) {
-  return dirty
-    ? `UNCOMMITTED changes on top of ${commit}`
-    : `YAML of ${date}, commit ${commit}`;
+/**
+ * One-line description of which graph and tools versions a rendered page shows; the tools
+ * generate the scenarios, so they matter as much as the YAML.
+ */
+function describeVersion({ commit, date, dirty, toolsCommit, toolsDirty, }) {
+  const mark = (isDirty) => (isDirty ? ' + UNCOMMITTED changes' : '');
+  return `YAML of ${date}, commit ${commit}${mark(dirty)} · tools ${toolsCommit}${mark(toolsDirty)}`;
 }
 
 module.exports = {

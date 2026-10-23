@@ -1,6 +1,7 @@
-# This test was run based on the YAML of <date>, version from commit <hash>.
+# This test was run based on the YAML of <date>, version from commit <hash>, with the tools at commit <toolsCommit>.
 yamlCommit: <hash>
 yamlDate: <date>
+toolsCommit: <hash> # HEAD when the page or plan was rendered; the tools generate the scenario ids
 appBuild: <version or build id>
 device: <device model>
 platform: android # android | ios

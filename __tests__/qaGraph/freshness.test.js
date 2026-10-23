@@ -84,11 +84,15 @@ describe('qa graph freshness', () => {
     expect(notes.some((n) => n.includes('err-priv'))).toBe(true);
   });
 
-  it('describes an uncommitted version', () => {
-    expect(describeVersion({ commit: 'ab123cd', date: '2026-10-22', dirty: true }))
-      .toContain('UNCOMMITTED');
-    expect(describeVersion({ commit: 'ab123cd', date: '2026-10-22', dirty: false }))
-      .toBe('YAML of 2026-10-22, commit ab123cd');
+  it('describes the YAML and tools versions', () => {
+    const base = {
+      commit: 'ab123cd', date: '2026-10-22', dirty: false, toolsCommit: 'ef45678', toolsDirty: false,
+    };
+    expect(describeVersion(base)).toBe('YAML of 2026-10-22, commit ab123cd · tools ef45678');
+    expect(describeVersion({ ...base, dirty: true }))
+      .toBe('YAML of 2026-10-22, commit ab123cd + UNCOMMITTED changes · tools ef45678');
+    expect(describeVersion({ ...base, toolsDirty: true }))
+      .toBe('YAML of 2026-10-22, commit ab123cd · tools ef45678 + UNCOMMITTED changes');
   });
 });
 
