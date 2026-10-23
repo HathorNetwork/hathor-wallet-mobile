@@ -37,6 +37,26 @@ describe('classifyCombo', () => {
     expect(r.expected).toEqual(['err-htr']);
   });
 
+  it('a rejection expects only its own outcome, dropping later edges', () => {
+    const r = classifyCombo(graph, 'send', combo('ws', 'simple', 'fee', 'private'));
+    expect(r.classes).toEqual(['rejected', 'edge']);
+    expect(r.constraintIds).toEqual(['c-priv', 'c-fee']);
+    expect(r.expected).toEqual(['err-priv']);
+  });
+
+  it('keeps only the rejections at the earliest step, and edges before it', () => {
+    const g = fresh();
+    const { outcomes } = g.actions[0].path;
+    outcomes.push({ id: 'err-late', kind: 'error', at: 'confirm', message: 'late', source: 'x:1', verified: false });
+    outcomes.push({ id: 'err-early', kind: 'error', at: 'addr-in', message: 'early', source: 'x:2', verified: false });
+    g.constraints.push(
+      { id: 'c-late', action: 'send', when: { token: 'fee' }, class: 'rejected', outcome: 'err-late', note: 'x' },
+      { id: 'c-early', action: 'send', when: { dest: 'multisig' }, class: 'edge', outcome: 'err-early', note: 'x' },
+    );
+    const r = classifyCombo(g, 'send', combo('ws', 'multisig', 'fee', 'private'));
+    expect(r.expected).toEqual(['err-early', 'err-priv']);
+  });
+
   it('plain combo expects the success outcome', () => {
     const r = classifyCombo(graph, 'send', combo('ws', 'simple', 'htr', 'public'));
     expect(r.excluded).toBe(false);

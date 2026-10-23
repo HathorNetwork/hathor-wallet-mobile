@@ -42,13 +42,24 @@ function classifyCombo(graph, actionId, values) {
     return { excluded: true, classes: [], constraintIds: [], expected: [] };
   }
   const classes = [...new Set(hits.map((c) => c.class))];
-  const expected = [...new Set(hits
-    .filter((c) => (c.class === 'rejected' || c.class === 'edge') && c.outcome)
-    .map((c) => c.outcome))];
+  const outcomes = asList(action && action.path && action.path.outcomes);
+  const steps = asList(action && action.path && action.path.steps).map((s) => s.id);
+  const stepOf = (outcomeId) => {
+    const outcome = outcomes.find((o) => o.id === outcomeId);
+    return outcome ? steps.indexOf(outcome.at) : -1;
+  };
+  const outcomesOf = (cls) => hits
+    .filter((c) => c.class === cls && c.outcome).map((c) => c.outcome);
+  // A rejection stops the path at its step: expect the rejections at the earliest one, and
+  // only the edges shown before it.
+  const rejectedSteps = outcomesOf('rejected').map(stepOf);
+  const stopAt = rejectedSteps.length ? Math.min(...rejectedSteps) : Infinity;
+  const expected = [...new Set([
+    ...outcomesOf('rejected').filter((o) => stepOf(o) === stopAt),
+    ...outcomesOf('edge').filter((o) => stepOf(o) < stopAt),
+  ])].sort((a, b) => stepOf(a) - stepOf(b));
   if (expected.length === 0) {
-    asList(action && action.path && action.path.outcomes)
-      .filter((o) => o.kind === 'success')
-      .forEach((o) => expected.push(o.id));
+    outcomes.filter((o) => o.kind === 'success').forEach((o) => expected.push(o.id));
   }
   return {
     excluded: false, classes, constraintIds: hits.map((c) => c.id), expected,
