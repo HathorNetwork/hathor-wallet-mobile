@@ -63,3 +63,5 @@ appId: network.hathor.wallet
     visible: "HTR"
     timeout: 180000
 - takeScreenshot: dashboard  # relative: lands in --test-output-dir
+# The runner reads the seed from this line to derive the wallet's addresses (throwaway, privnet).
+- evalScript: ${console.log("E2E_SEED " + output.seedWords)}

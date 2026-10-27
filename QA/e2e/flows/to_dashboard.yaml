@@ -1,0 +1,11 @@
+appId: network.hathor.wallet
+---
+# Back out of wherever a scenario ended (a dialog, the send screens) to the dashboard.
+- repeat:
+    times: 6
+    while:
+      notVisible: "Nano Contracts"
+    commands:
+      - back
+      - waitForAnimationToEnd
+- assertVisible: "Nano Contracts"
