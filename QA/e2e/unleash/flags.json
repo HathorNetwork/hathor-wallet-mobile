@@ -1,0 +1,15 @@
+{
+  "wallet-service-mobile.rollout": false,
+  "push-notification.rollout": false,
+  "reown.rollout": true,
+  "network-settings.rollout": true,
+  "nano-contract.rollout": true,
+  "safe-biometry-mode.rollout": false,
+  "token-swap.rollout": true,
+  "fee-based-tokens.rollout": true,
+  "single-address-mobile.rollout": true,
+  "passkey-onboarding.rollout": true,
+  "amount-format-mobile.rollout": true,
+  "shielded-outputs.rollout": true,
+  "shielded-outputs-network.rollout": true
+}

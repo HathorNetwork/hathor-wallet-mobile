@@ -1,0 +1,41 @@
+# Local stand-in for the Shielded Testnet, for the mobile e2e runs (QA/e2e): the fullnode image
+# the shielded testnet runs (0.71.0-local, alpha-v4) with shielded txs on, reporting the network
+# name the app gates on; the dev miner; and the fake Unleash the app reads its flags from here.
+# Genesis funds go to the wallet-lib integration tests' throwaway genesis seed (see privnet.yml).
+#
+#   docker compose up -d     then: adb reverse tcp:<port> tcp:<port> for 18083, 18035, 18042
+#   docker compose down      always, after a run: the miner keeps running until then
+name: mobile-e2e-privnet
+services:
+  fullnode:
+    image: hathornetwork/hathor-core:experimental-shielded-outputs-alpha-v4
+    command: ["run_node", "--listen", "tcp:40404", "--status", "8080",
+      "--wallet-index",
+      "--allow-mining-without-peers",
+      "--data", "./tmp", "--nc-indexes"]
+    environment:
+      HATHOR_CONFIG_YAML: privnet/conf/privnet.yml
+    ports: ["18083:8080"]
+    volumes:
+      - {type: bind, source: ./, target: /privnet/conf}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request, json; b = json.loads(urllib.request.urlopen('http://localhost:8080/v1a/status').read()); assert b['server']['state'] == 'READY'"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+  tx-mining-service:
+    platform: linux/amd64
+    # Shielded sends need this tag: :latest rejects them with a bare MineTxError.
+    image: hathornetwork/tx-mining-service:shielded-outputs-v3
+    depends_on:
+      fullnode: {condition: service_healthy}
+    ports: ["18035:8035"]
+    command: ["http://fullnode:8080", "--stratum-port=8034", "--block-interval=1000",
+      "--api-port=8035", "--dev-miner", "--testnet",
+      "--address", "WTjhJXzQJETVx7BVXdyZmvk396DRRsubdw"]
+  unleash:
+    image: node:22-alpine
+    command: ["node", "/unleash/server.js"]
+    ports: ["18042:18042"]
+    volumes:
+      - {type: bind, source: ../unleash, target: /unleash, read_only: true}
