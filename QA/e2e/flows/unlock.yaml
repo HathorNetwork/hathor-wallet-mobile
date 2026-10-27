@@ -1,0 +1,15 @@
+appId: network.hathor.wallet
+---
+- extendedWaitUntil:
+    visible: "RESET WALLET"
+    timeout: 120000
+# The unlock PIN screen is not exposed in the accessibility tree; tap keypad by point.
+- tapOn: {point: "19%,68%"}
+- tapOn: {point: "50%,68%"}
+- tapOn: {point: "80%,68%"}
+- tapOn: {point: "19%,75%"}
+- tapOn: {point: "50%,75%"}
+- tapOn: {point: "80%,75%"}
+- extendedWaitUntil:
+    visible: "HTR"
+    timeout: 120000

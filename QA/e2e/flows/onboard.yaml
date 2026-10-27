@@ -1,0 +1,65 @@
+appId: network.hathor.wallet
+---
+# New wallet on the local privnet -> dashboard. Run bin/app-on-privnet.sh --fresh first: it wipes
+# the app and points it at the privnet, which is why this flow doesn't clear the app's state.
+# Selectors are text and screen points: the app has no testIDs.
+- launchApp
+- extendedWaitUntil:
+    visible: "Welcome to Hathor Wallet!"
+    timeout: 180000
+# Terms switch (native <Switch>; Android delivers the tap to JS).
+- tapOn:
+    point: "9%,47%"
+- assertVisible:
+    checked: true
+# Right after a cold debug launch the JS thread may lag; retry START.
+- repeat:
+    times: 20
+    while:
+      visible: "Welcome to Hathor Wallet!"
+    commands:
+      - tapOn: "START"
+      - extendedWaitUntil:
+          visible: "NEW WALLET"
+          timeout: 3000
+          optional: true
+- tapOn: "NEW WALLET"
+- extendedWaitUntil:
+    visible: "Your wallet has been created!"
+    timeout: 30000
+- evalScript: ${output.i = 1}
+- repeat:
+    times: 24
+    commands:
+      - copyTextFrom:
+          text: "${output.i}\\. .*"
+      - runScript: captureWord.js
+- tapOn: "NEXT"
+- repeat:
+    times: 10
+    while:
+      visible: "Please select the word that corresponds to the number below:"
+    commands:
+      - copyTextFrom:
+          text: "\\d{1,2}"
+      - runScript: lookupWord.js
+      - evalScript: ${console.log("asked " + maestro.copiedText + " -> " + output.correctWord)}
+      - tapOn:
+          text: "${output.correctWord.toUpperCase()}"
+# Success modal after the backup check: dismiss by tapping the backdrop (as the PoC does).
+- extendedWaitUntil:
+    visible: "Words saved correctly"
+    timeout: 10000
+    optional: true
+- tapOn:
+    point: "50%,10%"
+    optional: true
+- runFlow: pin.yaml
+- tapOn: "START THE WALLET"
+- extendedWaitUntil:
+    visible: "Custom network: testnet-shielded-outputs"
+    timeout: 120000
+- extendedWaitUntil:
+    visible: "HTR"
+    timeout: 180000
+- takeScreenshot: dashboard  # relative: lands in --test-output-dir
