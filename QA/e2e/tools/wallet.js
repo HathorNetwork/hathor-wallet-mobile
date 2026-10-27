@@ -15,9 +15,12 @@
 //   wallet.js send-private <address> <HTR> <amount|full>
 //                                            pays a shielded address with a private output
 //                                            (TEMPORARY, see sendPrivate below)
+//   wallet.js mint <address> <deposit|fee> <name> <symbol> <units>
+//                                            creates a custom token paid to the address; prints
+//                                            its uid
 
 const fs = require('fs');
-const { walletUtils, addressUtils, HathorWallet, Connection, config } = require('@hathor/wallet-lib');
+const { walletUtils, addressUtils, HathorWallet, Connection, config, TokenVersion } = require('@hathor/wallet-lib');
 
 const NODE_URL = process.env.NODE_URL || 'http://localhost:18083/v1a/';
 const TX_MINING_URL = process.env.TX_MINING_URL || 'http://localhost:18035/';
@@ -61,6 +64,32 @@ async function withShieldedWallet(seed, use) {
   }
 }
 
+/**
+ * Runs `use` on a throwaway wallet holding `cents` HTR, paid through the integration-test
+ * helper's POST /fund to its first public address.
+ */
+async function withFundedWallet(cents, use) {
+  const seed = walletUtils.generateWalletWords();
+  const response = await fetch(`${FUNDING_URL}/fund`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ address: publicAddress(seed, 0), amount: cents }),
+  });
+  if (!response.ok) {
+    throw new Error(`funding the throwaway wallet failed: ${response.status} ${await response.text()}`);
+  }
+  return withShieldedWallet(seed, async (wallet) => {
+    for (let i = 0; i < 60; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const [balance] = await wallet.getBalance('00');
+      if (balance && BigInt(balance.balance.unlocked) >= BigInt(cents)) break;
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(500);
+    }
+    return use(wallet);
+  });
+}
+
 const shieldedAddress = (seed) => withShieldedWallet(
   seed,
   async (wallet) => (await wallet.getCurrentAddress({}, { legacy: false })).address,
@@ -92,29 +121,33 @@ async function sendPrivate(address, htr, mode) {
   }
   const [whole, cents = ''] = htr.split('.');
   const value = BigInt(whole) * 100n + BigInt(cents.padEnd(2, '0'));
-  const seed = walletUtils.generateWalletWords();
   // The amount plus 1 HTR for the privacy fee (0.01 to 0.02 HTR per private output).
-  const funding = Number(value) + 100;
-  const response = await fetch(`${FUNDING_URL}/fund`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ address: publicAddress(seed, 0), amount: funding }),
-  });
-  if (!response.ok) {
-    throw new Error(`funding the sender failed: ${response.status} ${await response.text()}`);
-  }
-  return withShieldedWallet(seed, async (wallet) => {
-    for (let i = 0; i < 60; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      const [balance] = await wallet.getBalance('00');
-      if (balance && BigInt(balance.balance.unlocked) >= BigInt(funding)) break;
-      // eslint-disable-next-line no-await-in-loop
-      await sleep(500);
-    }
+  return withFundedWallet(Number(value) + 100, async (wallet) => {
     const tx = await wallet.sendManyOutputsTransaction(
       [{ address, value, token: '00', shielded }],
       { pinCode: PIN },
     );
+    return tx.hash;
+  });
+}
+
+/**
+ * Creates a custom token whose whole supply goes to `address`, from a throwaway wallet that keeps
+ * the mint and melt authorities. A deposit token locks 1% of its supply in HTR, so 2^40 units
+ * cost about 110M HTR of the privnet's 1B genesis.
+ */
+async function mint(address, kind, name, symbol, units) {
+  const versions = { deposit: TokenVersion.DEPOSIT, fee: TokenVersion.FEE };
+  if (!address || versions[kind] === undefined || !name || !symbol || !/^\d+$/.test(units || '')) {
+    throw new Error('usage: mint <address> <deposit|fee> <name> <symbol> <units>');
+  }
+  const amount = BigInt(units);
+  const deposit = kind === 'deposit' ? (amount + 99n) / 100n : 0n;
+  // 1 HTR above the deposit pays the fee-token fee and leaves change.
+  return withFundedWallet(Number(deposit) + 100, async (wallet) => {
+    const tx = await wallet.createNewToken(name, symbol, amount, {
+      address, tokenVersion: versions[kind], pinCode: PIN,
+    });
     return tx.hash;
   });
 }
@@ -132,8 +165,11 @@ async function main([command, ...args]) {
   if (command === 'send-private') {
     return sendPrivate(...args);
   }
+  if (command === 'mint') {
+    return mint(...args);
+  }
   throw new Error('usage: wallet.js new-seed | address <seed-file> [index] | shielded-address <seed-file>'
-    + ' | send-private <address> <HTR> <amount|full>');
+    + ' | send-private <address> <HTR> <amount|full> | mint <address> <deposit|fee> <name> <symbol> <units>');
 }
 
 // wallet-lib keeps handles open after its work is done, so exit explicitly.
