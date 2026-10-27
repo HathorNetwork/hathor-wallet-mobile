@@ -4,6 +4,8 @@
 # Genesis funds go to the wallet-lib integration tests' throwaway genesis seed (see privnet.yml).
 #
 #   docker compose up -d     then: adb reverse tcp:<port> tcp:<port> for 18083, 18035, 18042
+#   funding:                 curl -X POST localhost:13020/fund -H 'Content-Type: application/json'
+#                              -d '{"address": "W...", "amount": 1000}'   (amount in cents)
 #   docker compose down      always, after a run: the miner keeps running until then
 name: mobile-e2e-privnet
 services:
@@ -39,3 +41,14 @@ services:
     ports: ["18042:18042"]
     volumes:
       - {type: bind, source: ../unleash, target: /unleash, read_only: true}
+  funding:
+    # https://github.com/HathorNetwork/hathor-integration-test-helper, as wallet-lib's CI runs it.
+    image: hathornetwork/hathor-integration-test-helper:0.0.2
+    depends_on:
+      fullnode: {condition: service_healthy}
+    environment:
+      HATHOR_NODE_URL: http://fullnode:8080/v1a/
+      TX_MINING_URL: http://tx-mining-service:8035/
+      # The same throwaway seed privnet.yml pays; the helper defaults to it too.
+      GENESIS_SEED_WORDS: avocado spot town typical traffic vault danger century property shallow divorce festival spend attack anchor afford rotate green audit adjust fade wagon depart level
+    ports: ["13020:3020"]

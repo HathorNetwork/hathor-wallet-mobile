@@ -8,9 +8,10 @@ The host setup (KVM, JDK 17, NDK, Maestro, the AVD) and the Android and Maestro 
 
 | Path | What it is |
 |---|---|
-| `privnet/` | docker compose: the shielded fullnode (host port 18083), the dev miner (18035) and the fake Unleash (18042). Blocks are weight 1, so the miner sits near idle. |
+| `privnet/` | docker compose: the shielded fullnode (host port 18083), the dev miner (18035), the fake Unleash (18042) and wallet-lib's integration-test helper for funding (13020). Blocks are weight 1, so the miner sits near idle. |
 | `unleash/` | The fake Unleash: `server.js`, and `flags.json`, the flags it starts with (real testnet values, plus the shielded flags on, push and wallet service off). |
 | `bin/flags.js` | Lists and sets the flags: `flags.js set fee-based-tokens.rollout=off --wait`. |
+| `bin/fund.js` | Sends HTR from the genesis wallet to a public address: `fund.js W... 10.50`. Uses the helper's `POST /fund`; shielded addresses are refused. |
 | `bin/app-on-privnet.sh` | Points the debug app at the privnet before it starts. `--fresh` wipes it first. |
 | `flows/` | Maestro flows. `onboard.yaml`: new wallet on the privnet, ending on the dashboard. |
 
