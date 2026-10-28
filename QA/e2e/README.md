@@ -12,8 +12,8 @@ The host setup (KVM, JDK 17, NDK, Maestro, the AVD) and the Android and Maestro 
 | `unleash/` | The fake Unleash: `server.js`, and `flags.json`, the flags it starts with (real testnet values, plus the shielded flags on, push and wallet service off). |
 | `bin/flags.js` | Lists and sets the flags: `flags.js set fee-based-tokens.rollout=off --wait`. |
 | `bin/fund.js` | Sends HTR from the genesis wallet to a public address: `fund.js W... 10.50`. Uses the helper's `POST /fund`; shielded addresses are refused. |
-| `tools/` | A small Node package of its own (wallet-lib 4.3.0, ct-crypto-node 0.5.0; `npm install` there once). `wallet.js` derives the app wallet's addresses from its seed, gives a peer wallet's shielded address, mints custom tokens (`mint <address> <deposit\|fee> <name> <symbol> <units>`), and sends private outputs (temporary, see below). |
-| `run.js` | The runner: `node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,...] [--dry-run]`. Runs that setup's send scenarios and writes a results file to `QA/graph/runs/`; evidence goes to `evidence/` (git-ignored). |
+| `tools/` | A small Node package of its own (wallet-lib 4.3.0, ct-crypto-node 0.5.0; `npm install` there once). `wallet.js` derives the app wallet's addresses from its seed, gives a peer wallet's shielded address, mints custom tokens (`mint <address> <deposit\|fee> <name> <symbol> <units> <treasury-seed-file>`), gives a run's funds back to genesis (`cleanup <evidence dir>`), and sends private outputs (temporary, see below). |
+| `run.js` | The runner: `node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,...] [--dry-run] [--no-cleanup]`. Runs that setup's send scenarios and writes a results file to `QA/graph/runs/`; evidence goes to `evidence/` (git-ignored). |
 | `bin/app-on-privnet.sh` | Points the debug app at the privnet before it starts. `--fresh` wipes it first. Refuses anything but an emulator: store builds share the app id, so a wipe on a phone would erase its wallet. |
 | `lib/` | `sendFlow.js` turns a send scenario into a Maestro flow; `runOrder.js` orders a setup's scenarios. |
 | `flows/` | Maestro flows. `onboard.yaml`: new wallet on the privnet, ending on the dashboard. `import_tokens.yaml`: registers the minted tokens through the dashboard's "New tokens" banner. |
@@ -28,9 +28,15 @@ The app fetches flags when it connects to a network and then every 15 s. Set fla
 
 ## Custom tokens and the run order
 
-After onboarding, the runner mints two tokens straight to the app wallet, from a throwaway wallet that keeps the authorities: `E2E Deposit` (E2ED, 1000 tokens), `E2E Large` (E2EL, a deposit token of exactly 2^40 units, used only for the over-limit amounts) and `E2E Fee` (E2EF, 1000 tokens, fee-based). A separate token keeps the 2^40 units out of the other deposit scenarios: a balance above 2^40 makes a private send of the whole balance fail the 2^40 limit before it reaches the fee check. The app then imports them from the dashboard banner. E2EL's 1% deposit costs about 110M HTR of the privnet's 1B genesis, so a privnet lasts about nine runs; `docker compose down` resets it.
+After onboarding, the runner mints three tokens straight to the app wallet, from a treasury wallet that keeps the authorities: `E2E Deposit` (E2ED, 1000 tokens), `E2E Large` (E2EL, a deposit token of exactly 2^40 units, used only for the over-limit amounts) and `E2E Fee` (E2EF, 1000 tokens, fee-based). A separate token keeps the 2^40 units out of the other deposit scenarios: a balance above 2^40 makes a private send of the whole balance fail the 2^40 limit before it reaches the fee check. The app then imports them from the dashboard banner. E2EL's 1% deposit locks about 110M HTR of the privnet's 1B genesis, which the cleanup below frees.
 
 All of a setup's scenarios share one wallet, so the order matters (`lib/runOrder.js`). The wallet starts with the tokens and no HTR, so the zero-HTR scenarios run first. The other scenarios each get 20 HTR first; failures run before successful sends, because failures spend nothing. The private over-limit check needs all 2^40 E2EL, so it runs before the public send that moves them.
+
+## Cleanup: the run's funds go back to genesis
+
+After the scenarios, even when the run stopped half-way, the runner gives back what it took (`cleanup` in `tools/wallet.js`): the app wallet and the peer send their deposit tokens to the treasury, which melts them and so frees their deposits, and all three send their HTR to the genesis address. Without it, E2EL's deposit would use up a privnet in about nine runs; with it, a run costs a few HTR: the fee-token fees, what the multisig destination received (the helper keeps its keys) and what the fee tokens hold (melting them frees nothing). Each step that fails is logged and the rest go on; `node QA/e2e/tools/wallet.js cleanup <evidence dir>` retries, and does nothing when there is nothing left. `--no-cleanup` keeps the funds, to look at the wallets after a run.
+
+Both single-key destinations, `simple` and `shielded`, belong to the peer, a seed the runner holds (`peer.seed`), so what they receive comes back too.
 
 ## Between scenarios
 
