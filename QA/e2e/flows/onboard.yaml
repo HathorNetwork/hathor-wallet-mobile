@@ -41,10 +41,13 @@ appId: network.hathor.wallet
       - runScript: captureWord.js
 - tapOn:
     id: new-words-next
+# The app asks for 5 words. The success modal is drawn over the screen, whose question stays in
+# the view tree under it: the loop stops on the modal too, or it taps on through it.
 - repeat:
     times: 10
     while:
       visible: "Please select the word that corresponds to the number below:"
+      notVisible: "Words saved correctly"
     commands:
       - copyTextFrom:
           id: backup-words-position
@@ -59,10 +62,8 @@ appId: network.hathor.wallet
 - extendedWaitUntil:
     visible: "Words saved correctly"
     timeout: 10000
-    optional: true
 - tapOn:
     point: "50%,10%"
-    optional: true
 - runFlow: pin.yaml
 - tapOn:
     id: choose-pin-start-wallet

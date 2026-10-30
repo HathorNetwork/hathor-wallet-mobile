@@ -49,7 +49,7 @@ $ADB push -q "$SQL" /data/local/tmp/e2e-network.sql
 # Written as root, so hand the files to the app's user and give them the app's SELinux label.
 DATA=/data/data/$APP
 $ADB shell "mkdir -p $DATA/databases && sqlite3 $DATA/databases/RKStorage < /data/local/tmp/e2e-network.sql \
-  && chown -R \$(stat -c %u:%g $DATA) $DATA/databases && restorecon -R $DATA/databases >/dev/null"
+  && chown -R \$(stat -c %u:%g $DATA) $DATA/databases && restorecon -R $DATA/databases >/dev/null 2>&1"
 $ADB shell "sqlite3 $DATA/databases/RKStorage \"SELECT value FROM catalystLocalStorage WHERE key = 'networkSettings:networkSettings'\"" \
   | grep -q "\"fullNetwork\":\"$NETWORK\"" || { echo "app-on-privnet: the network was not written" >&2; exit 1; }
 echo "app-on-privnet: the app starts on $NETWORK at $NODE_URL"
