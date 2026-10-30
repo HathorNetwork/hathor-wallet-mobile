@@ -58,6 +58,8 @@ import MultichainMockSettings from './screens/Multichain/MultichainMockSettings'
 import NextTokenScreen from './screens/Multichain/NextTokenScreen';
 import ChainTransferScreen from './screens/Multichain/ChainTransferScreen';
 import ChainTransferConfirmScreen from './screens/Multichain/ChainTransferConfirmScreen';
+import NextSendAmountInput from './screens/Multichain/NextSendAmountInput';
+import NextSendConfirmScreen from './screens/Multichain/NextSendConfirmScreen';
 import { isWaitingForNext } from './multichain/gating';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
@@ -212,6 +214,8 @@ const SendStack = () => {
       <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
       <Stack.Screen name='SendAmountInput' component={SendAmountInput} />
       <Stack.Screen name='SendConfirmScreen' component={SendConfirmScreen} />
+      <Stack.Screen name='NextSendAmountInput' component={NextSendAmountInput} />
+      <Stack.Screen name='NextSendConfirmScreen' component={NextSendConfirmScreen} />
     </Stack.Navigator>
   );
 };

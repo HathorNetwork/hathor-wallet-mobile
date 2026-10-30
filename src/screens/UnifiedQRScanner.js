@@ -18,6 +18,8 @@ import OfflineBar from '../components/OfflineBar';
 import { reownUriInputted } from '../actions';
 import { COLORS } from '../styles/themes';
 import { NANO_CONTRACT_FEATURE_TOGGLE, REOWN_FEATURE_TOGGLE } from '../constants';
+import { parseNextQrCode } from '../multichain/address';
+import { isSideChainConnected } from '../multichain/gating';
 
 const UnifiedQRScanner = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -26,6 +28,7 @@ const UnifiedQRScanner = ({ navigation }) => {
   const serverInfo = useSelector((state) => state.serverInfo);
   const isReownEnabled = featureToggles[REOWN_FEATURE_TOGGLE] && get(serverInfo, 'nano_contracts_enabled', false);
   const isNanoContractEnabled = featureToggles[NANO_CONTRACT_FEATURE_TOGGLE] && get(serverInfo, 'nano_contracts_enabled', false);
+  const sideChainConnected = useSelector(isSideChainConnected);
 
   const showAlert = (title, message) => {
     if (isProcessing) return;
@@ -45,6 +48,17 @@ const UnifiedQRScanner = ({ navigation }) => {
     const reownPattern = /^wc:[a-f0-9]+@\d+\?.*$/;
     const tokenPattern = /^\[.*:.*:.*:.*\]$/;
     const nanoContractPattern = /^[a-f0-9]{64}$/;
+
+    // With the side chain connected, a Hathor Next address opens Send with it: the address says
+    // the send is on Hathor Next.
+    const nextAddress = sideChainConnected ? parseNextQrCode(qrData) : null;
+    if (nextAddress) {
+      navigation.navigate('Main', {
+        screen: 'Send',
+        params: { screen: 'SendAddressInput', params: { address: nextAddress } },
+      });
+      return;
+    }
 
     // Check if it's a reown URI
     if (reownPattern.test(qrData)) {
