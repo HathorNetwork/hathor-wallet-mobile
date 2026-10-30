@@ -118,6 +118,13 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
+        // The build the e2e kit runs (QA/e2e): a release build, JS bundled and no dev mode, that
+        // may also talk plain HTTP to a node on the device or its host, as the local privnet is
+        // (src/e2e). ./gradlew assembleE2e
+        e2e {
+            initWith release
+            matchingFallbacks = ['release']
+        }
     }
 }
 

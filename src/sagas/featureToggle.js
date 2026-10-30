@@ -50,14 +50,12 @@ const log = logger('featureToggle');
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]', '10.0.2.2'];
 
 /**
- * Debug builds on a local network read their flags from the e2e fake Unleash next to the node,
- * so a test run controls every flag. Public networks and release builds always read the real one:
- * a public network can misbehave with a flag on that its servers expect off.
+ * On a node on this device or its host (the e2e kit's local privnet), the app reads its flags from
+ * the e2e fake Unleash next to the node, so a test run controls every flag, in debug and release
+ * builds alike: e2e runs use release builds. Public networks always read the real one: a public
+ * network can misbehave with a flag on that its servers expect off.
  */
 export function getUnleashUrl(nodeUrl) {
-  if (!__DEV__) {
-    return UNLEASH_URL;
-  }
   const match = /^(https?):\/\/(\[[^\]]+\]|[^/:]+)/.exec(nodeUrl || '');
   if (!match || !LOCAL_HOSTS.includes(match[2])) {
     return UNLEASH_URL;

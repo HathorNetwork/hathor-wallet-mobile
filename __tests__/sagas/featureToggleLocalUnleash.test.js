@@ -53,7 +53,7 @@ async function unleashUrlFor(networkSettings) {
   return String(mockClients[0].options.url);
 }
 
-describe('the Unleash a debug build reads on a local network', () => {
+describe('the Unleash the app reads', () => {
   const dev = global.__DEV__;
   afterEach(() => {
     global.__DEV__ = dev;
@@ -75,8 +75,14 @@ describe('the Unleash a debug build reads on a local network', () => {
     expect(await unleashUrlFor(PRE_SETTINGS_TESTNET)).toBe(UNLEASH_URL);
   });
 
-  test('is the real Unleash in a release build, even on a local network', async () => {
+  // e2e runs use release builds, so the local network decides, not the build.
+  test('is the e2e fake Unleash in a release build on a local network', async () => {
     global.__DEV__ = false;
-    expect(await unleashUrlFor(localNetwork)).toBe(UNLEASH_URL);
+    expect(await unleashUrlFor(localNetwork)).toBe('http://localhost:18042/proxy');
+  });
+
+  test('is the real Unleash in a release build on a public network', async () => {
+    global.__DEV__ = false;
+    expect(await unleashUrlFor(PRE_SETTINGS_TESTNET)).toBe(UNLEASH_URL);
   });
 });

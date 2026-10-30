@@ -11,7 +11,9 @@
 #   app-on-privnet.sh [--fresh]   --fresh: wipe the app's data first (a new install, no wallet)
 #
 # Emulators only: store builds share this app id, so --fresh on a phone would erase its wallet.
-# Needs a debuggable build (run-as) and the privnet running. Uses adb from $ADB or the SDK.
+# Needs the privnet running and an emulator image without Play Store, where adb can run as root:
+# it writes into the app's storage as root, which works for release builds too (run-as needs a
+# debuggable one). Uses adb from $ADB or the SDK.
 set -euo pipefail
 ADB=${ADB:-~/Android/Sdk/platform-tools/adb}
 [ "$($ADB shell getprop ro.boot.qemu)" = 1 ] || { echo "app-on-privnet: emulators only" >&2; exit 1; }
@@ -26,8 +28,12 @@ SETTINGS+=",\"explorerUrl\":\"https://explorer.testnet.hathor.network/\""
 SETTINGS+=",\"explorerServiceUrl\":\"https://explorer-service.testnet.hathor.network/\""
 SETTINGS+=",\"txMiningServiceUrl\":\"http://localhost:18035/\",\"walletServiceUrl\":\"\",\"walletServiceWsUrl\":\"\"}"
 
+# adbd restarts as root, which drops the reverse ports: set them after.
+$ADB root >/dev/null
+$ADB wait-for-device
 $ADB shell am force-stop $APP
 if [ "${1:-}" = --fresh ]; then $ADB shell pm clear $APP >/dev/null; fi
+# 8081: Metro, for a debug build.
 for port in 8081 18083 18035 18042; do $ADB reverse tcp:$port tcp:$port >/dev/null; done
 
 # AsyncStorage's table as @react-native-async-storage creates it, and its schema version: it
@@ -39,8 +45,11 @@ printf '%s\n' \
   "CREATE TABLE IF NOT EXISTS catalystLocalStorage (key TEXT PRIMARY KEY, value TEXT NOT NULL);" \
   "INSERT OR REPLACE INTO catalystLocalStorage VALUES ('networkSettings:networkSettings', '$SETTINGS');" \
   > "$SQL"
-$ADB push "$SQL" /data/local/tmp/e2e-network.sql >/dev/null
-$ADB shell "run-as $APP mkdir -p databases && run-as $APP sqlite3 databases/RKStorage < /data/local/tmp/e2e-network.sql"
-$ADB shell "run-as $APP sqlite3 databases/RKStorage \"SELECT value FROM catalystLocalStorage WHERE key = 'networkSettings:networkSettings'\"" \
+$ADB push -q "$SQL" /data/local/tmp/e2e-network.sql
+# Written as root, so hand the files to the app's user and give them the app's SELinux label.
+DATA=/data/data/$APP
+$ADB shell "mkdir -p $DATA/databases && sqlite3 $DATA/databases/RKStorage < /data/local/tmp/e2e-network.sql \
+  && chown -R \$(stat -c %u:%g $DATA) $DATA/databases && restorecon -R $DATA/databases >/dev/null"
+$ADB shell "sqlite3 $DATA/databases/RKStorage \"SELECT value FROM catalystLocalStorage WHERE key = 'networkSettings:networkSettings'\"" \
   | grep -q "\"fullNetwork\":\"$NETWORK\"" || { echo "app-on-privnet: the network was not written" >&2; exit 1; }
 echo "app-on-privnet: the app starts on $NETWORK at $NODE_URL"
