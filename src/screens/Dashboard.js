@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
@@ -27,6 +27,9 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
 import { isNanoContractsEnabled, getDisplayAmountFormat } from '../utils';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
+import { SimulatedTagIfMock } from '../components/Multichain/SimulatedTag';
+import { isSideChainConnected } from '../multichain/gating';
+import { useCombinedTokens } from '../multichain/hooks';
 
 /**
  * State filter to retrieve token-related data from root state.
@@ -98,12 +101,25 @@ export const Dashboard = () => {
   const isNanoEnabled = useSelector(isNanoContractsEnabled);
   const amountFormat = useSelector(getDisplayAmountFormat);
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+  // With the side chain connected, the list holds both chains' tokens.
+  const sideChainConnected = useSelector(isSideChainConnected);
+  const combinedTokens = useCombinedTokens();
+  const combinedBalances = useMemo(() => Object.fromEntries(combinedTokens.map((row) => [
+    row.uid,
+    { status: row.status, data: { available: row.available } },
+  ])), [combinedTokens]);
 
   const [currList, selectList] = useState(listOption.tokens);
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  const onTokenPress = (token) => {
+  const onTokenPress = (item) => {
+    // A token only Hathor Next has opens Hathor Next's token screen.
+    if (sideChainConnected && item.hathorUid === null) {
+      navigation.navigate('NextTokenScreen', { tokenId: item.nextId });
+      return;
+    }
+    const token = sideChainConnected ? tokens[item.hathorUid] : item;
     const status = getTokensBalanceStatus(tokensBalance, token);
 
     if (isTokensBalanceLoading(status)) {
@@ -153,14 +169,14 @@ export const Dashboard = () => {
           <TokenSelect
             header={(
               <>
-                <TokensHeader isNanoEnabled={isNanoEnabled} />
+                <TokensHeader isNanoEnabled={isNanoEnabled} showSimulated={sideChainConnected} />
                 <TokenImportBanner />
               </>
             )}
             onItemPress={onTokenPress}
             selectedToken={selectedToken}
-            tokens={tokens}
-            tokensBalance={tokensBalance}
+            tokens={sideChainConnected ? combinedTokens : tokens}
+            tokensBalance={sideChainConnected ? combinedBalances : tokensBalance}
             tokenMetadata={tokensMetadata}
             useHomeDisplay
             amountFormat={amountFormat}
@@ -198,13 +214,16 @@ const DashBoardHeader = ({ children }) => {
   );
 };
 
-const TokensHeader = ({ isNanoEnabled }) => {
+const TokensHeader = ({ isNanoEnabled, showSimulated }) => {
   const navigation = useNavigation();
 
   return (
     <HathorHeader>
       <HathorHeader.Left>
-        <Text style={[styles.headerTitle]}>{t`Tokens`}</Text>
+        <View style={styles.headerTitleRow}>
+          <Text style={[styles.headerTitle]}>{t`Tokens`}</Text>
+          {showSimulated && <SimulatedTagIfMock style={styles.simulated} />}
+        </View>
       </HathorHeader.Left>
       {!isNanoEnabled && (
         <HathorHeader.Right>
@@ -220,6 +239,13 @@ const TokensHeader = ({ isNanoEnabled }) => {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  simulated: {
+    marginLeft: 8,
   },
   headerWrapper: {
     flexDirection: 'row',

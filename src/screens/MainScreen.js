@@ -44,6 +44,8 @@ import { createPrivateBalanceRequests } from '../shielded/balance';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
+import { MultichainTokenBody } from '../components/Multichain/MultichainTokenBody';
+import { selectMappedNextId } from '../multichain/gating';
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -72,6 +74,9 @@ const mapStateToProps = (state) => ({
   shieldedCapability: selectShieldedCapability(state),
   shieldedEnvironment: isShieldedEnvironment(state),
   nativeSymbol: state.serverInfo?.native_token?.symbol ?? DEFAULT_TOKEN.symbol,
+  // The token's id on Hathor Next, when the side chain is connected and its bridge carries it:
+  // the screen then shows the token on both chains.
+  nextTokenId: selectMappedNextId(state, state.selectedToken.uid),
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -173,6 +178,49 @@ class MainScreen extends React.Component {
   retryTxHistory = () => {
     this.props.getHistory(this.props.selectedToken);
   }
+
+  /**
+   * Loads the next page of the token's history, for a screen that shows it with Hathor Next's.
+   *
+   * @returns {Promise<number>} How many transactions it added
+   */
+  fetchMoreHathorHistory = async () => {
+    const txList = get(this.props.tokenHistory, 'data', []);
+    const newHistory = await fetchMoreHistory(
+      this.props.wallet,
+      this.props.selectedToken.uid,
+      txList,
+    );
+    if (newHistory.length) {
+      this.props.updateTokenHistory(this.props.selectedToken.uid, newHistory);
+    }
+    return newHistory.length;
+  }
+
+  renderBalance = () => (
+    <BalanceView
+      balance={this.props.balance}
+      token={this.props.selectedToken}
+      isNFT={this.isNFT()}
+      amountFormat={this.props.amountFormat}
+      decimalPlaces={this.props.decimalPlaces}
+      shieldedAvailable={this.props.shieldedAvailable}
+      shieldedCapability={this.props.shieldedCapability}
+      navigation={this.props.navigation}
+    />
+  )
+
+  renderMultichainTx = (tx, accessory) => (
+    <TxListItem
+      item={tx}
+      token={this.props.selectedToken}
+      onTxPress={this.onTxPress}
+      isNFT={this.isNFT()}
+      amountFormat={this.props.amountFormat}
+      decimalPlaces={this.props.decimalPlaces}
+      accessory={accessory}
+    />
+  )
 
   render() {
     const renderEmptyHistory = () => (
@@ -278,17 +326,22 @@ class MainScreen extends React.Component {
           onBackPress={IS_MULTI_TOKEN ? () => this.props.navigation.goBack() : null}
           rightElement={renderRightElement()}
         />
-        <BalanceView
-          balance={this.props.balance}
-          token={this.props.selectedToken}
-          isNFT={this.isNFT()}
-          amountFormat={this.props.amountFormat}
-          decimalPlaces={this.props.decimalPlaces}
-          shieldedAvailable={this.props.shieldedAvailable}
-          shieldedCapability={this.props.shieldedCapability}
-          navigation={this.props.navigation}
-        />
-        {renderTxHistory()}
+        {this.props.nextTokenId ? (
+          <MultichainTokenBody
+            token={this.props.selectedToken}
+            nextTokenId={this.props.nextTokenId}
+            hathorHistory={this.props.tokenHistory}
+            fetchMoreHathor={this.fetchMoreHathorHistory}
+            retryHathor={this.retryTxHistory}
+            renderHathorBalance={this.renderBalance}
+            renderHathorTx={this.renderMultichainTx}
+          />
+        ) : (
+          <>
+            {this.renderBalance()}
+            {renderTxHistory()}
+          </>
+        )}
         <OfflineBar />
       </View>
     );
@@ -546,6 +599,7 @@ class TxListItem extends React.Component {
             <Text style={style.description}>{description}</Text>
             <Text style={style.secondaryText}>{timestamp}</Text>
             <Text style={[style.secondaryText, style.bold]}>{item.getVersionInfo()}</Text>
+            {this.props.accessory ?? null}
           </View>
           <Text style={style.balance}>{balanceStr}</Text>
         </View>
