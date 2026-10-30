@@ -19,6 +19,7 @@ import { renderValue, renderHomeValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from './HathorFlatList';
+import { TokenChains } from './Multichain/TokenChains';
 
 /**
  * @typedef TokenBalance
@@ -41,7 +42,10 @@ import { HathorFlatList } from './HathorFlatList';
  * @param {string} [props.amountFormat] AMOUNT_FORMAT for the Home display
  *   (defaults to Expanded; ignored unless useHomeDisplay).
  * @param {number} [props.decimalPlaces] Network decimal places (serverInfo.decimal_places),
- *   used by both display modes.
+ *   used by both display modes. An item's own `decimalPlaces` wins: a list of both chains has
+ *   amounts in Hathor Next's units.
+ *
+ * An item with `chains` (the Dashboard's list of both chains) shows them under its name.
  */
 const TokenSelect = (props) => {
   const tokens = Object.values(props.tokens);
@@ -49,9 +53,10 @@ const TokenSelect = (props) => {
     const balance = get(props.tokensBalance, `${item.uid}.data.available`, 0);
     const tokenState = get(props.tokensBalance, `${item.uid}.status`, props.ignoreLoading ? 'ready' : 'loading');
     const isNFT = isTokenNFT(item.uid, props.tokenMetadata);
+    const decimalPlaces = item.decimalPlaces ?? props.decimalPlaces;
     const balanceLabel = props.useHomeDisplay
-      ? renderHomeValue(balance, isNFT, props.decimalPlaces, props.amountFormat)
-      : renderValue(balance, isNFT, props.decimalPlaces);
+      ? renderHomeValue(balance, isNFT, decimalPlaces, props.amountFormat)
+      : renderValue(balance, isNFT, decimalPlaces);
 
     return (
       <TouchableHighlight
@@ -68,6 +73,13 @@ const TokenSelect = (props) => {
             >
               {item.name}
             </Text>
+            {item.chains && (
+              <TokenChains
+                chains={item.chains}
+                arriving={item.arriving}
+                amountFormat={props.amountFormat}
+              />
+            )}
           </View>
           <View style={styles.itemRightWrapper}>
             {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
