@@ -49,6 +49,7 @@ const ImportTokensModal = ({ status, onDismiss, onRetry }) => {
           <View style={styles.actionContainer}>
             <NewHathorButton
               discrete
+              testID='import-tokens-see-all'
               title={t`See all tokens`}
               onPress={onDismiss}
             />

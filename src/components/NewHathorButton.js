@@ -47,6 +47,7 @@ const NewHathorButton = (props) => {
 
   return (
     <TouchableOpacity
+      testID={props.testID}
       onPress={props.onPress}
       disabled={props.disabled}
       style={[
@@ -69,6 +70,9 @@ const NewHathorButton = (props) => {
 NewHathorButton.propTypes = {
   // The title of the button.
   title: PropTypes.string,
+
+  // Optional. The id e2e tests find the button by.
+  testID: PropTypes.string,
 
   // Optional. Used to disable the button.
   disabled: PropTypes.bool,

@@ -11,6 +11,7 @@ import { COLORS } from '../styles/themes';
 
 const InputLabel = (props) => (
   <Text
+    testID={props.testID}
     style={[styles.text, props.style]}
   >
     {props.children}
