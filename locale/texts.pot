@@ -1054,7 +1054,7 @@ msgstr ""
 msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
-#: src/screens/Receive.js:19
+#: src/screens/Receive.js:38
 msgid "RECEIVE"
 msgstr ""
 
@@ -2493,6 +2493,7 @@ msgstr ""
 msgid "New address"
 msgstr ""
 
+#: src/components/Multichain/NextReceiveAddress.js:58
 #: src/components/ReceiveMyAddress.js:107
 #: src/components/TokenDetails.js:102
 msgid "Share"
@@ -3486,6 +3487,11 @@ msgstr ""
 #: src/components/Multichain/MultichainTokenBody.js:223
 #, javascript-format
 msgid "${ arrivingText } ${ token.symbol } arriving"
+msgstr ""
+
+#: src/components/Multichain/NextReceiveAddress.js:36
+#, javascript-format
+msgid "Here is my Hathor Next address: ${ address }"
 msgstr ""
 
 #: src/components/Multichain/NextTxDetailsModal.js:90
