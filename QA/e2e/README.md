@@ -14,14 +14,14 @@ The host setup (KVM, JDK 17, NDK, Maestro, the AVD) and the Android and Maestro 
 | `bin/fund.js` | Sends HTR from the genesis wallet to a public address: `fund.js W... 10.50`. Uses the helper's `POST /fund`; shielded addresses are refused. |
 | `tools/` | A small Node package of its own (wallet-lib 4.3.0, ct-crypto-node 0.5.0; `npm install` there once). `wallet.js` derives the app wallet's addresses from its seed, gives a peer wallet's shielded address, mints custom tokens (`mint <address> <deposit\|fee> <name> <symbol> <units> <treasury-seed-file>`), gives a run's funds back to genesis (`cleanup <evidence dir>`), and sends private outputs (temporary, see below). |
 | `run.js` | The runner: `node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,...] [--dry-run] [--no-cleanup] [--no-record]`. Runs that setup's send scenarios and writes a results file to `QA/graph/runs/`; evidence goes to `evidence/` (git-ignored). |
-| `bin/app-on-privnet.sh` | Points the debug app at the privnet before it starts. `--fresh` wipes it first. Refuses anything but an emulator: store builds share the app id, so a wipe on a phone would erase its wallet. |
+| `bin/app-on-privnet.sh` | Points the app at the privnet before it starts, writing its storage as root. `--fresh` wipes it first. Refuses anything but an emulator: store builds share the app id, so a wipe on a phone would erase its wallet. |
 | `lib/` | `sendFlow.js` turns a send scenario into a Maestro flow; `runOrder.js` orders a setup's scenarios; `recorder.js` records the screen; `timeline.js` turns Maestro's logs into the viewer's timeline. |
 | `viewer/` | `viewer.html`, the run viewer; `bin/serve-viewer.js` serves the runs' viewers. |
 | `flows/` | Maestro flows. `onboard.yaml`: new wallet on the privnet, ending on the dashboard. `import_tokens.yaml`: registers the minted tokens through the dashboard's "New tokens" banner. |
 
 ## How the flags work
 
-A debug build whose node is local (`localhost`, `127.0.0.1`, `[::1]` or `10.0.2.2`) fetches its flags from the fake Unleash on port 18042 of that host, instead of the real Unleash (`getUnleashUrl` in `src/sagas/featureToggle.js`). Release builds and public networks always read the real one: a public network's servers can misbehave with a flag on that they expect off.
+The app on a local node (`localhost`, `127.0.0.1`, `[::1]` or `10.0.2.2`) fetches its flags from the fake Unleash on port 18042 of that host, instead of the real Unleash (`getUnleashUrl` in `src/sagas/featureToggle.js`), in debug and release builds alike, since runs use a release build. Public networks always read the real one: a public network's servers can misbehave with a flag on that they expect off.
 
 The app fetches flags when it connects to a network and then every 15 s. Set flags before the app reaches the privnet and they apply from the start. A change mid-run takes up to 15 s; `--wait` returns once the app has fetched it.
 
@@ -67,22 +67,43 @@ The index there lists the runs. An evidence dir also holds the run's seeds and M
 
 The Send tab keeps the last address typed, and a flow can't clear it reliably: `eraseText` deletes only what's before the cursor, and a tap can land mid-way through a 3-line shielded address. So before each scenario the runner taps into the field with adb and sends Ctrl+A, then Delete (`clearSendAddress` in `run.js`). Each flow then asserts that the field holds exactly the new address. Restarting the app instead also works, but takes about 1.5 min per scenario.
 
-Maestro's on-device driver sometimes fails to start or dies under load (`MaestroDriverStartupException`, `DeviceServerDiedException`). The runner retries a flow once when the driver doesn't start. A crash during a flow still fails the scenario; re-run it with `--scenarios`. The debug build's LogBox toasts ("Open debugger to view warnings") can also cover the tab bar and block the point taps.
+Maestro's on-device driver sometimes fails to start or dies under load (`MaestroDriverStartupException`, `DeviceServerDiedException`). The runner retries a flow once when the driver doesn't start. A crash during a flow still fails the scenario; re-run it with `--scenarios`. On a debug build, LogBox toasts ("Open debugger to view warnings") can also cover the tab bar.
 
 ## Temporary: private payments come from `tools/wallet.js send-private`
 
 The funding helper's `POST /fund` (0.0.2) pays public addresses only: a shielded `K...` address gets a 500. Until it can pay a shielded address with a private output, `wallet.js send-private <address> <HTR> <amount|full>` does it: it funds a throwaway wallet through the helper, then sends from it with wallet-lib (the old kit's `sender.js`, moved here). When the helper gains that, use `/fund` instead and delete `sendPrivate`, its command, and `@hathor/ct-crypto-node` if nothing else needs it. The function's comment says the same.
 
+## Selectors
+
+Flows find what they tap, type into and read by the app's `testID`s (Maestro's `id:`, Android's resource-id), and check what the user should see by its text. A `testID` doesn't move with the layout, the screen size, the copy or the language; the outcomes' messages are what a scenario verifies, so they stay text.
+
+- Ids are kebab-case, `<screen or component>-<element>`: `send-amount-next`, `transaction-privacy-done`. Repeated elements end in a stable key, never in translated text or user data: `numpad-key-1`, `privacy-mode-switch-hide_amount` (the app's mode), `new-words-word-3` (a position).
+- A shared component takes a `testID` prop and puts it on its native view (`NewHathorButton`, `TokenBox`, `InputLabel`, `PrivacyModeSelector`); one shown once, whatever the screen, sets its own (`NumPad`, `PrivacyModeCard`).
+- Put the id on a view that is on screen where a tap lands: Maestro taps an element's centre. The tab bar's buttons reach under Android's navigation bar, so the ids `tab-home`, `tab-send` and so on are on the tabs' icons, in a view kept with `collapsable={false}` so React Native doesn't flatten it away.
+- A `<Text>` inside another `<Text>` is part of its parent on Android, with no view of its own, so its `testID` never shows: the dashboard banner's "Import tokens" link is found by its text.
+- A modal's backdrop can't be tapped by id, since its centre is under the modal: the success modal after the backup check, which has no button, is closed with a tap at a screen point.
+
+The runner reads ids too: it finds where to tap with adb (`centreOf` in `run.js`) from a uiautomator dump.
+
+## The e2e build
+
+Runs use the `e2e` build type (`android/app/build.gradle`): the release build, with its JS bundled and no dev mode, which may also talk plain HTTP to a node on the device or its host (`android/app/src/e2e`); a release build allows only HTTPS, and the privnet is plain HTTP. It needs no Metro, shows no LogBox toasts, and has no dev keys to trip on.
+
+`app-on-privnet.sh` writes the app's storage as root (`adb root`), which the emulator allows on an image without Play Store (the `default` system image), so it works on a build that isn't debuggable. A debug build with Metro still runs: the runner records which build it found in the results file.
+
 ## Run
 
 ```bash
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 MAESTRO_CLI_NO_ANALYTICS=1
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 MAESTRO_CLI_NO_ANALYTICS=1 ANDROID_HOME=~/Android/Sdk
+# The app: the checkout needs the placeholder android/app/google-services.json and the generated
+# translations (src/locale/*/texts.po.json). Cold about 4 min, about 1.5 min after a JS change.
+(cd android && ./gradlew assembleE2e -PreactNativeArchitectures=x86_64)
 cd QA/e2e/privnet && docker compose up -d && cd ..
 ~/Android/Sdk/emulator/emulator -avd hnni -no-window -no-audio -no-snapshot -gpu swiftshader_indirect &
-npx react-native start --port 8081 &          # from the checkout under test, with its debug APK installed
-bin/app-on-privnet.sh --fresh
-~/.maestro/maestro/bin/maestro test --test-output-dir=/tmp/e2e-run flows/onboard.yaml
-node bin/flags.js set shielded-outputs.rollout=off --wait
+adb install -r ../../android/app/build/outputs/apk/e2e/app-e2e.apk
+node run.js --setup pn-fn-seed-multi
 ```
 
-Always tear down afterwards, or the miner and the emulator keep the CPU busy: `adb emu kill`, stop Metro, `docker compose down` in `privnet/`, and close the React Native DevTools windows Metro opened (`close_devtools` in the `mobile-e2e-flows` kit).
+To drive one flow by hand: `bin/app-on-privnet.sh --fresh`, then `~/.maestro/maestro/bin/maestro test flows/onboard.yaml`.
+
+Always tear down afterwards, or the miner and the emulator keep the CPU busy: `adb emu kill` and `docker compose down` in `privnet/`. With a debug build, also stop Metro and close the React Native DevTools windows it opened (`close_devtools` in the `mobile-e2e-flows` kit).

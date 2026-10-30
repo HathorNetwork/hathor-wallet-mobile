@@ -21,8 +21,9 @@
 // tools/wallet.js), so a privnet lasts hundreds of runs. --no-cleanup keeps them, to look at the
 // wallets afterwards; `node QA/e2e/tools/wallet.js cleanup <evidence dir>` gives them back later.
 //
-// Needs the privnet up (QA/e2e/privnet), the emulator running the debug app, and Metro serving
-// it. Scenarios the kit can't set up yet are recorded as skipped, with the reason.
+// Needs the privnet up (QA/e2e/privnet) and the emulator running the app: a release build (README
+// "Run"), or a debug build with Metro serving its JS. Scenarios the kit can't set up yet are
+// recorded as skipped, with the reason.
 
 const crypto = require('crypto');
 const fs = require('fs');
@@ -128,7 +129,6 @@ async function preflight() {
     ['privnet fullnode', () => getJson(`${NODE_URL}status`)],
     ['funding helper', async () => { if (!(await getJson(`${FUNDING_URL}/ready`)).ready) throw new Error('not ready'); }],
     ['fake Unleash', () => getJson(`${UNLEASH_URL}/flags`)],
-    ['Metro', async () => { if (!(await (await fetch('http://localhost:8081/status')).text()).includes('running')) throw new Error('not running'); }],
     ['emulator', async () => assertEmulator(ADB)],
   ];
   for (const [name, check] of checks) {
@@ -239,8 +239,8 @@ function writeViewer(ctx) {
 
 /** A digest of the flow a scenario runs, the same in every run while the flow is: the viewer
  * uses it to tell which scenarios changed since someone watched them. */
-function flowVersion(scenario, outcome, token, symbols) {
-  const flow = buildSendFlow(scenario, outcome, { address: '<address>', token, symbols });
+function flowVersion(scenario, outcome, token) {
+  const flow = buildSendFlow(scenario, outcome, { address: '<address>', token });
   return crypto.createHash('sha1').update(flow).digest('hex').slice(0, 12);
 }
 
@@ -303,15 +303,33 @@ async function prepareSetup(setup, runDir, ctx) {
 }
 
 /**
+ * The centre of the element with this testID, from uiautomator dumps: it waits up to 10 s for
+ * the element to show, as a screen opens.
+ */
+async function centreOf(testID) {
+  const pattern = new RegExp(`resource-id="${testID}"[^>]*bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"`);
+  for (let i = 0; i < 10; i += 1) {
+    const xml = execFileSync(ADB, ['exec-out', 'uiautomator', 'dump', '/dev/tty'], { encoding: 'utf8' });
+    const node = pattern.exec(xml);
+    if (node) {
+      const [x1, y1, x2, y2] = node.slice(1).map(Number);
+      return [String(Math.round((x1 + x2) / 2)), String(Math.round((y1 + y2) / 2))];
+    }
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(1000);
+  }
+  throw new Error(`${testID} did not show`);
+}
+
+/**
  * Empties the address the Send tab keeps from the last scenario. A flow can't do it reliably:
  * eraseText deletes only what's before the cursor, and a tap can land mid-way through a 3-line
- * shielded address. Ctrl+A then Delete clears it wherever the cursor is.
+ * shielded address. Ctrl+A then Delete clears it wherever the cursor is; Maestro sends neither.
  */
 async function clearSendAddress() {
   const input = (...args) => execFileSync(ADB, ['shell', 'input', ...args]);
-  input('tap', '540', '2232'); // the Send tab
-  await sleep(2000);
-  input('tap', '540', '576'); // the address field
+  input('tap', ...(await centreOf('tab-send')));
+  input('tap', ...(await centreOf('send-address-input')));
   await sleep(1000); // Ctrl+A goes nowhere until the field has focus
   input('keycombination', '113', '29'); // Ctrl+A
   input('keyevent', '67'); // Delete
@@ -329,8 +347,7 @@ async function runScenario(scenario, outcome, ctx, dir, { step, flow }) {
   const token = ctx.tokens[tokenFor(values)];
   const before = values.dest !== 'shielded' ? await receivedBy(address, token.uid) : null;
   const flowFile = path.join(dir, 'flow.yaml');
-  const symbols = Object.values(ctx.tokens).map((t) => t.symbol);
-  fs.writeFileSync(flowFile, buildSendFlow(scenario, outcome, { address, token, symbols }));
+  fs.writeFileSync(flowFile, buildSendFlow(scenario, outcome, { address, token }));
   // The generated flow refers to ../enter_pin.yaml; keep a copy of the sub-flows beside it.
   fs.copyFileSync(path.join(E2E, 'flows', 'enter_pin.yaml'), path.join(dir, '..', 'enter_pin.yaml'));
   await step('runner: empty the Send tab\'s address field (adb)', clearSendAddress);
@@ -347,6 +364,16 @@ async function runScenario(scenario, outcome, ctx, dir, { step, flow }) {
   return { status: ok ? 'passed' : 'failed', notes };
 }
 
+/** Which build of the app the emulator has: debug or release, its version, when installed. */
+function appBuild(toolsCommit) {
+  const info = execFileSync(ADB, ['shell', 'dumpsys', 'package', 'network.hathor.wallet'], { encoding: 'utf8' });
+  const field = (name) => ((new RegExp(`${name}=(\\S+)`).exec(info) || [])[1] || '?');
+  const installed = (/lastUpdateTime=([\d-]+ [\d:]+)/.exec(info) || [])[1] || '?';
+  // A debug build takes its JS from Metro, which serves the checkout at hand.
+  if (/flags=\[[^\]]*DEBUGGABLE/.test(info)) return `debug build ${field('versionName')}, JS from Metro at ${toolsCommit}`;
+  return `release build ${field('versionName')}, installed ${installed}`;
+}
+
 function writeResults(setupId, results, startedAt) {
   const graphFile = 'QA/graph/graph.yaml';
   const yamlCommit = git('log', '-1', '--format=%h', '--', graphFile);
@@ -357,7 +384,7 @@ function writeResults(setupId, results, startedAt) {
     yamlCommit,
     yamlDate,
     toolsCommit: `${toolsCommit}${dirty}`,
-    appBuild: `debug build, JS from Metro at ${toolsCommit}${dirty}`,
+    appBuild: appBuild(`${toolsCommit}${dirty}`),
     device: 'Android emulator (AVD hnni, android-36 x86_64)',
     platform: 'android',
     environment: 'local-privnet',
@@ -413,7 +440,7 @@ async function main() {
       }
     }
   }
-  log('when done: tear down the emulator, Metro and the privnet (QA/e2e/README.md)');
+  log('when done: tear down the emulator and the privnet, and Metro if a debug build ran (README)');
 }
 
 async function runPlan(setup, plan, runDir, startedAt, record) {
@@ -422,7 +449,6 @@ async function runPlan(setup, plan, runDir, startedAt, record) {
   };
   const ctx = { record, runDir, runInfo, chapters: [] };
   Object.assign(ctx, await prepareSetup(setup, runDir, ctx));
-  const symbols = Object.values(ctx.tokens).map((t) => t.symbol);
   const results = [];
   for (const [i, p] of plan.entries()) {
     const info = {
@@ -439,7 +465,7 @@ async function runPlan(setup, plan, runDir, startedAt, record) {
       continue;
     }
     const token = ctx.tokens[tokenFor(p.scenario.values)];
-    info.flowVersion = flowVersion(p.scenario, p.outcome, token, symbols);
+    info.flowVersion = flowVersion(p.scenario, p.outcome, token);
     const dir = path.join(runDir, 'scenarios', String(i + 1).padStart(2, '0'));
     log(`run  ${p.scenario.id} -> ${p.outcome.id}`);
     let result;

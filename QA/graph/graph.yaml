@@ -770,12 +770,12 @@ axes:
       - { id: testnet, name: Public testnet }
       - { id: testnet-shielded, name: Shielded testnet (testnet-shielded-outputs) }
       - { id: local-privnet, name: Local privnet (mobile-e2e-flows) }
-    how: QA.md "Common Activities" > "Changing Networks" (Settings > Network Settings > "I Understand" > pick a pre-setting or "Customize"); "Identifying the current network" to check it. The wallet restarts and flags are read again for the new network. The Shielded Testnet preset shows only with shielded-outputs-network.rollout on for the device on the current network (QA_SHIELDED.md). The local privnet is a Customize to the emulator's forwarded fullnode, in the debug build of `../mobile-e2e-flows`.
+    how: QA.md "Common Activities" > "Changing Networks" (Settings > Network Settings > "I Understand" > pick a pre-setting or "Customize"); "Identifying the current network" to check it. The wallet restarts and flags are read again for the new network. The Shielded Testnet preset shows only with shielded-outputs-network.rollout on for the device on the current network (QA_SHIELDED.md). The local privnet is a Customize to the emulator's forwarded fullnode, in the e2e kit's emulator build (`QA/e2e`, README "The e2e build").
     switch:
       cost: expensive # QA: confirm
       transitions:
-        - { from: testnet, to: local-privnet, cost: very-expensive, when: The privnet runs only in the e2e kit's emulator debug build; the run moves to another install } # QA: confirm
-        - { from: testnet-shielded, to: local-privnet, cost: very-expensive, when: The privnet runs only in the e2e kit's emulator debug build; the run moves to another install } # QA: confirm
+        - { from: testnet, to: local-privnet, cost: very-expensive, when: The privnet runs only in the e2e kit's emulator build; the run moves to another install } # QA: confirm
+        - { from: testnet-shielded, to: local-privnet, cost: very-expensive, when: The privnet runs only in the e2e kit's emulator build; the run moves to another install } # QA: confirm
         - { from: local-privnet, to: testnet, cost: very-expensive, when: Leaving the e2e kit's emulator for a normal build } # QA: confirm
         - { from: local-privnet, to: testnet-shielded, cost: very-expensive, when: Leaving the e2e kit's emulator for a normal build } # QA: confirm
 
