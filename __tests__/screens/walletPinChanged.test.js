@@ -132,6 +132,7 @@ describe('PinScreen as the lock screen of a running wallet', () => {
     onExceptionCaptured: jest.fn(),
     walletPinChanged: jest.fn(),
     shieldedViewUnlockRequested: jest.fn(),
+    multichainNextKeysUnlockRequested: jest.fn(),
   });
 
   test('hands the password over when the biometry migration re-encrypts the access data', async () => {
@@ -175,6 +176,17 @@ describe('PinScreen as the lock screen of a running wallet', () => {
     });
   });
 
+  test('asks for the Hathor Next keys with the password the biometry migration set', async () => {
+    jest.spyOn(STORE, 'handleDataMigration').mockResolvedValue(undefined);
+    biometricsMigration.mockResolvedValue(PASSWORD);
+    const props = lockScreenProps();
+    const screen = instantiate(PinScreen, props);
+
+    await screen.dismiss(PIN);
+
+    expect(props.multichainNextKeysUnlockRequested).toHaveBeenCalledWith({ pinCode: PASSWORD });
+  });
+
   test('asks to unlock the shielded view with the PIN when nothing was re-encrypted', async () => {
     jest.spyOn(STORE, 'handleDataMigration').mockResolvedValue(undefined);
     biometricsMigration.mockResolvedValue(PIN);
@@ -203,6 +215,7 @@ describe('PinScreen as the lock screen of a cold start', () => {
       onExceptionCaptured: jest.fn(),
       walletPinChanged: jest.fn(),
       shieldedViewUnlockRequested: jest.fn(),
+      multichainNextKeysUnlockRequested: jest.fn(),
     };
     const screen = instantiate(PinScreen, props);
 
@@ -211,5 +224,29 @@ describe('PinScreen as the lock screen of a cold start', () => {
     expect(props.startWalletRequested).toHaveBeenCalledWith({ words: 'seed words', pin: PIN });
     expect(props.shieldedViewUnlockRequested).not.toHaveBeenCalled();
     expect(props.walletPinChanged).not.toHaveBeenCalled();
+    expect(props.onExceptionCaptured).not.toHaveBeenCalled();
+  });
+
+  // A wallet that used Hathor Next derives its keys at the cold start's unlock, so switching to it
+  // needs no PIN.
+  test('asks for the Hathor Next keys with the PIN', async () => {
+    jest.spyOn(STORE, 'handleDataMigration').mockResolvedValue(undefined);
+    jest.spyOn(STORE, 'getWalletWords').mockResolvedValue('seed words');
+    biometricsMigration.mockResolvedValue(PIN);
+    const props = {
+      isLockScreen: true,
+      wallet: null,
+      unlockScreen: jest.fn(),
+      startWalletRequested: jest.fn(),
+      onExceptionCaptured: jest.fn(),
+      walletPinChanged: jest.fn(),
+      shieldedViewUnlockRequested: jest.fn(),
+      multichainNextKeysUnlockRequested: jest.fn(),
+    };
+    const screen = instantiate(PinScreen, props);
+
+    await screen.dismiss(PIN);
+
+    expect(props.multichainNextKeysUnlockRequested).toHaveBeenCalledWith({ pinCode: PIN });
   });
 });

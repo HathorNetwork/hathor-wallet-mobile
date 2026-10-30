@@ -27,6 +27,7 @@ import {
   onExceptionCaptured,
   walletPinChanged,
   shieldedViewUnlockRequested,
+  multichainNextKeysUnlockRequested,
 } from '../actions';
 import { PIN_SIZE, SHIELDED_UNLOCK_SOURCE } from '../constants';
 import { COLORS } from '../styles/themes';
@@ -58,6 +59,9 @@ const mapDispatchToProps = (dispatch) => ({
   onExceptionCaptured: (error, isFatal) => dispatch(onExceptionCaptured(error, isFatal)),
   walletPinChanged: (pin) => dispatch(walletPinChanged(pin)),
   shieldedViewUnlockRequested: (payload) => dispatch(shieldedViewUnlockRequested(payload)),
+  multichainNextKeysUnlockRequested: (payload) => dispatch(
+    multichainNextKeysUnlockRequested(payload)
+  ),
 });
 
 export class PinScreen extends React.Component {
@@ -162,6 +166,8 @@ export class PinScreen extends React.Component {
 
           const words = await STORE.getWalletWords(actualPin);
           this.props.startWalletRequested({ words, pin: actualPin });
+          // A wallet that used Hathor Next derives its keys now, so switching to it needs no PIN.
+          this.props.multichainNextKeysUnlockRequested({ pinCode: actualPin });
         } else {
           if (actualPin !== pin) {
             // The biometry migration re-encrypted the running wallet's access data, so a reload
@@ -174,6 +180,7 @@ export class PinScreen extends React.Component {
             pinCode: actualPin,
             source: SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN,
           });
+          this.props.multichainNextKeysUnlockRequested({ pinCode: actualPin });
         }
         this.props.unlockScreen();
       } catch (e) {

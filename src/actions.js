@@ -291,6 +291,30 @@ export const types = {
   // Shielded outputs: the unlock and the retry the user asks for
   SHIELDED_UNLOCK_STATUS_UPDATE: 'SHIELDED_UNLOCK_STATUS_UPDATE',
   SHIELDED_REPROCESS_REQUESTED: 'SHIELDED_REPROCESS_REQUESTED',
+
+  // Multichain: the side chain setting and the selected chain. Every type starts with
+  // MULTICHAIN_, which is how the reducer hands them to src/multichain/state.js.
+  MULTICHAIN_CONNECTED_NETWORKS_SET: 'MULTICHAIN_CONNECTED_NETWORKS_SET',
+  MULTICHAIN_CONNECT_SETTING_CHANGED: 'MULTICHAIN_CONNECT_SETTING_CHANGED',
+  MULTICHAIN_CONNECT_UPDATE: 'MULTICHAIN_CONNECT_UPDATE',
+  MULTICHAIN_LOAD_REQUESTED: 'MULTICHAIN_LOAD_REQUESTED',
+  // Multichain: Hathor Next's keys, data, sends and the transfer to it
+  MULTICHAIN_NEXT_KEYS_UNLOCK_REQUESTED: 'MULTICHAIN_NEXT_KEYS_UNLOCK_REQUESTED',
+  MULTICHAIN_NEXT_UPDATE: 'MULTICHAIN_NEXT_UPDATE',
+  MULTICHAIN_NEXT_RESET: 'MULTICHAIN_NEXT_RESET',
+  MULTICHAIN_NEXT_HISTORY_REQUESTED: 'MULTICHAIN_NEXT_HISTORY_REQUESTED',
+  MULTICHAIN_NEXT_HISTORY_UPDATE: 'MULTICHAIN_NEXT_HISTORY_UPDATE',
+  MULTICHAIN_NEXT_SEND_REQUESTED: 'MULTICHAIN_NEXT_SEND_REQUESTED',
+  MULTICHAIN_NEXT_SEND_UPDATE: 'MULTICHAIN_NEXT_SEND_UPDATE',
+  MULTICHAIN_NEXT_SEND_RESET: 'MULTICHAIN_NEXT_SEND_RESET',
+  MULTICHAIN_TRANSFERS_SET: 'MULTICHAIN_TRANSFERS_SET',
+  MULTICHAIN_TRANSFER_REQUESTED: 'MULTICHAIN_TRANSFER_REQUESTED',
+  MULTICHAIN_TRANSFER_UPDATE: 'MULTICHAIN_TRANSFER_UPDATE',
+  MULTICHAIN_TRANSFER_RESET: 'MULTICHAIN_TRANSFER_RESET',
+  // Multichain: the simulated Hathor Next
+  MULTICHAIN_MOCK_SCENARIO_SET: 'MULTICHAIN_MOCK_SCENARIO_SET',
+  MULTICHAIN_MOCK_RESET: 'MULTICHAIN_MOCK_RESET',
+  MULTICHAIN_MOCK_UPDATE: 'MULTICHAIN_MOCK_UPDATE',
 };
 
 /**
@@ -2009,4 +2033,191 @@ export const shieldedUnlockStatusUpdate = ({ status, errorCode = null, message =
  */
 export const shieldedReprocessRequested = () => ({
   type: types.SHIELDED_REPROCESS_REQUESTED,
+});
+
+/**
+ * The networks where the user turned "Connect to side chain" on, as saved.
+ *
+ * @param {{ [network: string]: true }} connectedNetworks
+ */
+export const multichainConnectedNetworksSet = (connectedNetworks) => ({
+  type: types.MULTICHAIN_CONNECTED_NETWORKS_SET,
+  payload: connectedNetworks,
+});
+
+/**
+ * The user turned "Connect to side chain" on or off for the network the wallet runs on. Turning it
+ * on carries the PIN that derives the Hathor Next keys, for a seed wallet whose keys aren't in
+ * memory; no reducer stores it. A passkey wallet's carries none: the saga runs the passkey
+ * ceremony.
+ *
+ * @param {boolean} connected
+ * @param {Object} [options]
+ * @param {string} [options.pinCode]
+ */
+export const multichainConnectSettingChanged = (connected, { pinCode } = {}) => ({
+  type: types.MULTICHAIN_CONNECT_SETTING_CHANGED,
+  payload: { connected, pinCode },
+});
+
+/**
+ * Where turning "Connect to side chain" on stands.
+ *
+ * @param {Object} payload
+ * @param {string} payload.status One of CONNECT_STATUS
+ * @param {string|null} [payload.error] What the user is told about a failure
+ */
+export const multichainConnectUpdate = ({ status, error = null }) => ({
+  type: types.MULTICHAIN_CONNECT_UPDATE,
+  payload: { status, error },
+});
+
+/**
+ * The loading screen's Try again: load Hathor Next again. The PIN is a seed wallet's whose keys
+ * aren't in memory; no reducer stores it.
+ *
+ * @param {Object} [payload]
+ * @param {string} [payload.pinCode]
+ */
+export const multichainLoadRequested = ({ pinCode } = {}) => ({
+  type: types.MULTICHAIN_LOAD_REQUESTED,
+  payload: { pinCode },
+});
+
+/**
+ * The lock screen asks to derive Hathor Next's keys with the PIN it took, when the wallet used
+ * Hathor Next before. No reducer handles it, so the PIN never enters the redux state.
+ *
+ * @param {Object} payload
+ * @param {string} payload.pinCode
+ */
+export const multichainNextKeysUnlockRequested = ({ pinCode }) => ({
+  type: types.MULTICHAIN_NEXT_KEYS_UNLOCK_REQUESTED,
+  payload: { pinCode },
+});
+
+/**
+ * @param {Object} payload Part of state.multichain.next
+ */
+export const multichainNextUpdate = (payload) => ({
+  type: types.MULTICHAIN_NEXT_UPDATE,
+  payload,
+});
+
+/**
+ * Clears Hathor Next's data. What the wallet saved about it stays: its address and whether its
+ * keys are in memory.
+ */
+export const multichainNextReset = () => ({
+  type: types.MULTICHAIN_NEXT_RESET,
+});
+
+/**
+ * @param {Object} payload
+ * @param {string} payload.tokenId
+ * @param {boolean} [payload.more] Load the next page instead of the first
+ */
+export const multichainNextHistoryRequested = ({ tokenId, more = false }) => ({
+  type: types.MULTICHAIN_NEXT_HISTORY_REQUESTED,
+  payload: { tokenId, more },
+});
+
+/**
+ * @param {Object} payload
+ * @param {string} payload.tokenId
+ * @param {string} payload.status One of TOKEN_DOWNLOAD_STATUS
+ * @param {Object[]} [payload.data] The rows, newest first
+ * @param {number|null} [payload.cursor] Where the next page starts, or null at the end
+ */
+export const multichainNextHistoryUpdate = ({ tokenId, status, data, cursor }) => ({
+  type: types.MULTICHAIN_NEXT_HISTORY_UPDATE,
+  payload: { tokenId, status, data, cursor },
+});
+
+/**
+ * Signs and submits a Hathor Next payment. Sign-once: a draft is sent at most once. The PIN is a
+ * seed wallet's; no reducer stores it.
+ *
+ * @param {Object} payload
+ * @param {string} payload.tokenId
+ * @param {string} payload.to A Hathor Next address
+ * @param {bigint} payload.amount In Hathor Next's units
+ * @param {string} payload.draftId The draft this send spends
+ * @param {string} [payload.pinCode]
+ */
+export const multichainNextSendRequested = ({ tokenId, to, amount, draftId, pinCode }) => ({
+  type: types.MULTICHAIN_NEXT_SEND_REQUESTED,
+  payload: { tokenId, to, amount, draftId, pinCode },
+});
+
+/**
+ * @param {Object} payload Part of state.multichain.send
+ */
+export const multichainNextSendUpdate = (payload) => ({
+  type: types.MULTICHAIN_NEXT_SEND_UPDATE,
+  payload,
+});
+
+export const multichainNextSendReset = () => ({
+  type: types.MULTICHAIN_NEXT_SEND_RESET,
+});
+
+/**
+ * The transfers between chains, newest first.
+ *
+ * @param {Object[]} transfers TransferRecord (src/multichain/bridge.js)
+ */
+export const multichainTransfersSet = (transfers) => ({
+  type: types.MULTICHAIN_TRANSFERS_SET,
+  payload: transfers,
+});
+
+/**
+ * Transfers a token from one chain to the other. The PIN is a seed wallet's; no reducer stores
+ * it.
+ *
+ * @param {Object} payload
+ * @param {string} payload.from One of CHAIN
+ * @param {string} payload.to One of CHAIN
+ * @param {string} payload.tokenId The token's id on the source chain
+ * @param {bigint} payload.amount In the source chain's units
+ * @param {string} payload.toAddress An address on the destination chain
+ * @param {string} [payload.pinCode]
+ */
+export const multichainTransferRequested = ({ from, to, tokenId, amount, toAddress, pinCode }) => ({
+  type: types.MULTICHAIN_TRANSFER_REQUESTED,
+  payload: { from, to, tokenId, amount, toAddress, pinCode },
+});
+
+/**
+ * @param {Object} payload Part of state.multichain.transfer
+ */
+export const multichainTransferUpdate = (payload) => ({
+  type: types.MULTICHAIN_TRANSFER_UPDATE,
+  payload,
+});
+
+export const multichainTransferReset = () => ({
+  type: types.MULTICHAIN_TRANSFER_RESET,
+});
+
+/**
+ * @param {string} scenario One of MOCK_SCENARIO
+ */
+export const multichainMockScenarioSet = (scenario) => ({
+  type: types.MULTICHAIN_MOCK_SCENARIO_SET,
+  payload: scenario,
+});
+
+/** Starts the simulated Hathor Next ledger over, in its scenario. */
+export const multichainMockReset = () => ({
+  type: types.MULTICHAIN_MOCK_RESET,
+});
+
+/**
+ * @param {{ scenario: string }} payload
+ */
+export const multichainMockUpdate = (payload) => ({
+  type: types.MULTICHAIN_MOCK_UPDATE,
+  payload,
 });
