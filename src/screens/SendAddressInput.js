@@ -30,12 +30,17 @@ import OfflineBar from '../components/OfflineBar';
 import { COLORS } from '../styles/themes';
 import { isShieldedEnvironment } from '../shielded/gating';
 import { isSideChainConnected } from '../multichain/gating';
+import { addressChain } from '../multichain/address';
+import { CHAIN } from '../multichain/chains';
+import { ChainTag } from '../components/Multichain/ChainTag';
 
 /**
  * First screen of the Send flow. The address is typed or pasted here; the QR code scanner, which
  * the icon at the top right opens, fills it in.
  *
- * With the side chain connected, "Transfer between chains" at the bottom opens the transfer.
+ * With the side chain connected, the address says which chain the send is on: a Hathor Next
+ * address sends on Hathor Next, and its chain shows under it. "Transfer between chains" at the
+ * bottom opens the transfer.
  */
 export const SendAddressInput = () => {
   const route = useRoute();
@@ -70,7 +75,15 @@ export const SendAddressInput = () => {
     setFormModel({ address: text, error: null });
   };
 
-  const validate = () => validateAddress(formModel.address, network, { allowShielded });
+  // The chain of a valid address, once the side chain is connected: before, a Hathor Next address
+  // is an invalid address, as it always was.
+  const chain = sideChainConnected
+    ? addressChain(formModel.address, network, { allowShielded })
+    : null;
+
+  const validate = () => (chain === CHAIN.HATHOR_NEXT
+    ? { isValid: true }
+    : validateAddress(formModel.address, network, { allowShielded }));
 
   const isAddressValid = () => {
     if (!formModel.address) return false;
@@ -83,7 +96,10 @@ export const SendAddressInput = () => {
       setFormModel((prev) => ({ ...prev, error: validation.message }));
       return;
     }
-    navigation.navigate('SendAmountInput', { address: formModel.address });
+    navigation.navigate(
+      chain === CHAIN.HATHOR_NEXT ? 'NextSendAmountInput' : 'SendAmountInput',
+      { address: formModel.address.trim() },
+    );
   };
 
   const onScanPress = () => {
@@ -150,6 +166,9 @@ export const SendAddressInput = () => {
               {formModel.error ? (
                 <Text style={styles.errorText}>{formModel.error}</Text>
               ) : null}
+              {chain && !formModel.error ? (
+                <ChainTag chain={chain} style={styles.chain} />
+              ) : null}
             </View>
             <View>
               <NewHathorButton
@@ -175,6 +194,10 @@ export const SendAddressInput = () => {
 };
 
 const styles = StyleSheet.create({
+  chain: {
+    marginTop: 8,
+    marginLeft: 4,
+  },
   transfer: {
     marginTop: 8,
   },

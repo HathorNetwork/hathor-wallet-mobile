@@ -441,7 +441,8 @@ msgid "Back"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:129
+#: src/screens/Multichain/NextSendAmountInput.js:111
+#: src/screens/SendAmountInput.js:165
 msgid "Invalid amount"
 msgstr ""
 
@@ -469,8 +470,9 @@ msgstr ""
 
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
-#: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:156
-#: src/screens/SendAmountInput.js:251
+#: src/screens/InitWallet.js:421
+#: src/screens/Multichain/NextSendAmountInput.js:173
+#: src/screens/SendAddressInput.js:175 src/screens/SendAmountInput.js:287
 msgid "Next"
 msgstr "Далее"
 
@@ -538,6 +540,7 @@ msgstr "Депозит"
 #: src/screens/CreateTokenConfirm.js:293
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:157
 #: src/screens/Multichain/ChainTransferScreen.js:237
+#: src/screens/Multichain/NextSendConfirmScreen.js:237
 #: src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
 msgstr ""
@@ -955,7 +958,7 @@ msgstr "Доступный Баланс"
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/NanoContractRegisterQrCodeScreen.js:26
-#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:88
+#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:102
 msgid "Manual"
 msgstr ""
 
@@ -1074,22 +1077,22 @@ msgid "You can register Tokens, Nano Contracts or Reown manually."
 msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:43
-#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:52
-#: src/screens/UnifiedQRScanner.js:69
+#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:66
+#: src/screens/UnifiedQRScanner.js:83
 msgid "Feature Not Available"
 msgstr ""
 
-#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:69
+#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:83
 msgid "The nano contract feature is not enabled."
 msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:45
-#: src/screens/RegisterOptionsScreen.js:57 src/screens/SendScanQRCode.js:37
-#: src/screens/UnifiedQRScanner.js:36
+#: src/screens/RegisterOptionsScreen.js:57 src/screens/SendScanQRCode.js:40
+#: src/screens/UnifiedQRScanner.js:39
 msgid "OK"
 msgstr "OK"
 
-#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:52
+#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:66
 msgid "The reown feature is not enabled."
 msgstr ""
 
@@ -1211,51 +1214,53 @@ msgstr "Изменить PIN-код"
 msgid "Lock wallet"
 msgstr "Заблокировать кошелек"
 
-#: src/screens/SendAddressInput.js:94
+#: src/screens/SendAddressInput.js:110
 msgid "Scan QR code"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:110
+#: src/screens/SendAddressInput.js:126
 msgid "SEND TOKENS"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:122
+#: src/screens/SendAddressInput.js:138
 msgid "Address to send"
 msgstr "Адрес отправки"
 
-#: src/screens/SendAddressInput.js:136
+#: src/screens/SendAddressInput.js:152
 msgid "Paste or type address"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:163
+#: src/screens/Multichain/NextSendAmountInput.js:163
+#: src/screens/SendAddressInput.js:182
 msgid "Transfer between chains"
 msgstr ""
 
 #: src/multichain/nextClientErrors.js:48
 #: src/screens/Multichain/ChainTransferScreen.js:138
-#: src/screens/SendAmountInput.js:134
+#: src/screens/Multichain/NextSendAmountInput.js:117
+#: src/screens/SendAmountInput.js:170
 msgid "Insufficient funds"
 msgstr "Недостаточно средств"
 
-#: src/screens/SendAmountInput.js:144
+#: src/screens/SendAmountInput.js:180
 msgid ""
 "The selected privacy mode requires a shielded address as the recipient. The "
 "address you entered is not shielded — change the address or switch to Public."
 msgstr ""
 
-#: src/screens/SendAmountInput.js:157
+#: src/screens/SendAmountInput.js:193
 #, javascript-format
 msgid "A private send can be at most ${ max } ${ symbol }."
 msgstr ""
 
-#: src/screens/SendAmountInput.js:188
+#: src/screens/SendAmountInput.js:224
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:202 src/screens/SendConfirmScreen.js:543
+#: src/screens/SendAmountInput.js:238 src/screens/SendConfirmScreen.js:543
 #, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
@@ -1406,25 +1411,27 @@ msgstr[2] ""
 msgid "Network Fee"
 msgstr ""
 
+#: src/screens/Multichain/NextSendConfirmScreen.js:238
 #: src/screens/SendConfirmScreen.js:724
 msgid "Total"
 msgstr ""
 
+#: src/screens/Multichain/NextSendConfirmScreen.js:248
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
 #: src/screens/SendConfirmScreen.js:733
 msgid "Send"
 msgstr "Отправить"
 
-#: src/screens/SendScanQRCode.js:34
+#: src/screens/SendScanQRCode.js:37
 msgid "Invalid QR code"
 msgstr "Неверный QR-код"
 
-#: src/screens/SendScanQRCode.js:69
+#: src/screens/SendScanQRCode.js:80
 msgid "SEND"
 msgstr "ОТПРАВИТЬ"
 
-#: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:76
-#: src/screens/UnifiedQRScanner.js:96
+#: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:87
+#: src/screens/UnifiedQRScanner.js:110
 msgid "Scan the QR code"
 msgstr "Сканировать QR-код"
 
@@ -1547,16 +1554,16 @@ msgid "TOKENS"
 msgstr ""
 
 #.  If none of the patterns match, show an error or handle accordingly
-#: src/screens/UnifiedQRScanner.js:77
+#: src/screens/UnifiedQRScanner.js:91
 msgid "Invalid QR Code"
 msgstr ""
 
 #.  If none of the patterns match, show an error or handle accordingly
-#: src/screens/UnifiedQRScanner.js:77
+#: src/screens/UnifiedQRScanner.js:91
 msgid "The scanned QR code is not in a recognized format."
 msgstr ""
 
-#: src/screens/UnifiedQRScanner.js:83
+#: src/screens/UnifiedQRScanner.js:97
 msgid "Scan QR Code"
 msgstr ""
 
@@ -1930,6 +1937,10 @@ msgstr ""
 #: src/components/AmountInputAccessory.js:105
 #: src/components/Multichain/TransferDetailsModal.js:101
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:111
+#: src/screens/Multichain/NextSendConfirmScreen.js:185
+#: src/screens/Multichain/NextSendConfirmScreen.js:194
+#: src/screens/Multichain/NextSendConfirmScreen.js:206
+#: src/screens/Multichain/NextSendConfirmScreen.js:215
 msgid "Done"
 msgstr ""
 
@@ -2023,6 +2034,7 @@ msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:103
 #: src/screens/Multichain/ChainTransferScreen.js:222
+#: src/screens/Multichain/NextSendConfirmScreen.js:232
 msgid "Amount"
 msgstr "Количество"
 
@@ -2054,6 +2066,53 @@ msgstr ""
 
 #: src/screens/Multichain/MultichainMockSettings.js:56
 msgid "Reset simulated ledger"
+msgstr ""
+
+#: src/screens/Multichain/NextSendAmountInput.js:131
+#: src/screens/Multichain/NextSendConfirmScreen.js:227
+#, javascript-format
+msgid "SEND ${ symbol }"
+msgstr ""
+
+#: src/screens/Multichain/NextSendAmountInput.js:153
+#, javascript-format
+msgid "${ availableText } ${ symbol } available"
+msgstr ""
+
+#: src/screens/Multichain/NextSendAmountInput.js:155
+msgid "Network fee: ${ feeText } ${ symbol }"
+msgstr ""
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:128
+msgid "The passkey couldn't authorize the payment."
+msgstr ""
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:144
+msgid "Enter your 6-digit pin to authorize the payment"
+msgstr ""
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:145
+msgid "Authorize the payment"
+msgstr ""
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:213
+msgid "The payment couldn't be sent."
+msgstr ""
+
+#: src/components/Multichain/NextTxDetailsModal.js:100
+#: src/components/NanoContract/EditAddressModal.js:63
+#: src/components/NanoContract/SelectAddressModal.js:131
+#: src/components/Reown/GetAddressRequest.js:42
+#: src/components/Reown/SendTransactionRequest.js:343
+#: src/components/Reown/SignMessageRequest.js:40
+#: src/components/Reown/SignOracleDataRequest.js:59
+#: src/screens/Multichain/NextSendConfirmScreen.js:234
+msgid "Address"
+msgstr "Адрес"
+
+#: src/components/PrivacyModeCard.js:50
+#: src/screens/Multichain/NextSendConfirmScreen.js:242
+msgid "Private"
 msgstr ""
 
 #: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:79
@@ -2564,10 +2623,6 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
-#: src/components/PrivacyModeCard.js:50
-msgid "Private"
-msgstr ""
-
 #: src/components/PrivacyModeCard.js:52
 msgid "Token and amount hidden on all new transactions"
 msgstr ""
@@ -3059,16 +3114,6 @@ msgstr ""
 #: src/components/Reown/GetAddressRequest.js:40
 msgid "Address at index ${ data.index }"
 msgstr ""
-
-#: src/components/Multichain/NextTxDetailsModal.js:100
-#: src/components/NanoContract/EditAddressModal.js:63
-#: src/components/NanoContract/SelectAddressModal.js:131
-#: src/components/Reown/GetAddressRequest.js:42
-#: src/components/Reown/SendTransactionRequest.js:343
-#: src/components/Reown/SignMessageRequest.js:40
-#: src/components/Reown/SignOracleDataRequest.js:59
-msgid "Address"
-msgstr "Адрес"
 
 #: src/components/Reown/GetAddressRequest.js:78
 msgid ""
