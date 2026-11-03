@@ -6,12 +6,15 @@
  */
 
 import { describe, test, expect } from '@jest/globals';
-import { CHAIN, getSideChainConfig } from '../../src/multichain/chains';
-import { nextToHathorRoundedUp, shortBalanceAdvice } from '../../src/multichain/transfer';
+import { CHAIN, getSideChainConfig, transferReceiveSymbol } from '../../src/multichain/chains';
+import { shortBalanceAdvice } from '../../src/multichain/transfer';
+import { nextToHathorRoundedUp } from '../../src/multichain/amount';
+import { progressText } from '../../src/components/Multichain/TransferRow';
+import { mockPeerAddress } from '../../src/multichain/mock/mockAddress';
 
 const config = getSideChainConfig('testnet-juliet');
-const NEXT_ADDRESS = `samba:${'ab12'.repeat(32)}`;
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
+const NEXT_ADDRESS = mockPeerAddress('ab12');
+const OWN_ADDRESS = mockPeerAddress('cd34');
 // The mock bridge's quote: 0.10 HTR bridge fee, no network fee, in Hathor Network's units.
 const quote = { bridgeFee: 10n, networkFee: 0n, etaSeconds: 120 };
 
@@ -73,7 +76,26 @@ describe('a send short on Hathor Network', () => {
 
 describe('amounts across chains', () => {
   test('round up what has to leave Hathor Network for an amount to arrive', () => {
-    expect(nextToHathorRoundedUp(3000000000n, 2)).toBe(3000n);
-    expect(nextToHathorRoundedUp(3000000001n, 2)).toBe(3001n);
+    expect(nextToHathorRoundedUp(3000000000n, 1000000n)).toBe(3000n);
+    expect(nextToHathorRoundedUp(3000000001n, 1000000n)).toBe(3001n);
+    expect(nextToHathorRoundedUp(700n, 1n)).toBe(700n);
+  });
+});
+
+describe('a transfer\'s progress, as its bridge follows it', () => {
+  test('counts the burn\'s confirmations, then says it is minting', () => {
+    expect(progressText({ stage: 'confirming', confirmations: 5, needed: 21 }))
+      .toBe('Confirming 5 of 21 on Hathor Network');
+    expect(progressText({ stage: 'eligible', confirmations: 21, needed: 21 }))
+      .toBe('Minting on Hathor Next');
+    expect(progressText(undefined)).toBeNull();
+    expect(progressText({ stage: 'arrived' })).toBeNull();
+  });
+});
+
+describe('what a transfer of HTR becomes on Hathor Next', () => {
+  test('HTR where the bridge carries it as HTR, the native token where it mints that', () => {
+    expect(transferReceiveSymbol(getSideChainConfig('testnet-juliet'))).toBe('HTR');
+    expect(transferReceiveSymbol({ tokenMap: [], nativeTokenSymbol: 'USDT' })).toBe('USDT');
   });
 });

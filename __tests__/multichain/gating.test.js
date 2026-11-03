@@ -8,19 +8,23 @@
 import { describe, test, expect } from '@jest/globals';
 import {
   FULL_NETWORK_JULIET_TESTNET,
+  MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
   PRE_SETTINGS_JULIET_TESTNET,
 } from '../../src/constants';
 import { canTransfer, CHAIN, getSideChainConfig, otherChain } from '../../src/multichain/chains';
 import {
+  getMultichainDevBackendFeatureToggle,
   getMultichainFeatureToggle,
   getMultichainNetworkPresetFeatureToggle,
   isSideChainAvailable,
   isSideChainConnected,
   isSideChainSimulated,
   isWaitingForNext,
+  selectDevBackend,
   selectMappedNextId,
+  selectSideChainConfig,
   selectTokenMap,
 } from '../../src/multichain/gating';
 import { MULTICHAIN_INITIAL_STATE, NEXT_STATUS } from '../../src/multichain/state';
@@ -78,6 +82,47 @@ describe('the flags', () => {
     expect(getMultichainNetworkPresetFeatureToggle({
       featureToggles: { [MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]: true },
     })).toBe(true);
+  });
+});
+
+describe('the backend for local testing', () => {
+  const DEV_BACKEND = {
+    url: 'http://192.168.0.10:8930',
+    pins: {
+      next: {
+        network_id: 1777,
+        native_token: 'aa'.repeat(32),
+        service_view_pub: 'bb'.repeat(32),
+        wire_format: 'v2',
+      },
+      transfer: null,
+    },
+  };
+  const withBackend = ({ flag = true, devFlag = true } = {}) => {
+    const base = state({ flag });
+    return {
+      ...base,
+      featureToggles: { ...base.featureToggles, [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: devFlag },
+      multichain: { ...base.multichain, devBackend: DEV_BACKEND },
+    };
+  };
+
+  test('is in force only with its own flag and the multichain flag on', () => {
+    expect(getMultichainDevBackendFeatureToggle({ featureToggles: {} })).toBe(false);
+    expect(selectDevBackend(withBackend())).toBe(DEV_BACKEND);
+    expect(selectSideChainConfig(withBackend())).toMatchObject({
+      client: 'backend',
+      backendUrl: DEV_BACKEND.url,
+    });
+  });
+
+  test('is ignored, saved but unused, with either flag off', () => {
+    for (const flags of [{ devFlag: false }, { flag: false }]) {
+      const s = withBackend(flags);
+      expect(getMultichainDevBackendFeatureToggle(s)).toBe(false);
+      expect(selectDevBackend(s)).toBeNull();
+      expect(selectSideChainConfig(s)?.client).not.toBe('backend');
+    }
   });
 });
 

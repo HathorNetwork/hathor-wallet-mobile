@@ -13,14 +13,19 @@ import { ensureNextClient } from './nextClient';
 const log = logger('multichain-keys');
 
 /**
- * What the wallet saved about Hathor Next. All of it is public: the address, and the networks the
- * wallet was registered on. Its keys are never saved.
+ * What the wallet saved about Hathor Next. All of it is public: the address, the public spend key,
+ * and the networks the wallet was registered on. Its keys are never saved.
  *
- * @returns {{ address: string|null, registered: { [network: string]: true } }}
+ * @returns {{
+ *   address: string|null,
+ *   pubB: string|null,
+ *   registered: { [network: string]: true },
+ * }}
  */
 export function loadSavedNext() {
   return {
     address: null,
+    pubB: null,
     registered: {},
     ...(STORE.getItem(multichainKeyMap.next) ?? {}),
   };
@@ -30,7 +35,8 @@ export function loadSavedNext() {
  * @param {Object} patch Part of what loadSavedNext returns
  */
 export function saveNext(patch) {
-  STORE.setItem(multichainKeyMap.next, { ...loadSavedNext(), ...patch });
+  const saved = STORE.getItem(multichainKeyMap.next) ?? {};
+  STORE.setItem(multichainKeyMap.next, { ...saved, ...patch });
 }
 
 /**
@@ -40,37 +46,56 @@ export function saveNext(patch) {
  * @returns {boolean}
  */
 export function hasUsedNext() {
-  return Boolean(loadSavedNext().address);
+  const saved = loadSavedNext();
+  return Boolean(saved.address || saved.pubB);
 }
 
 /**
- * Derives the wallet's Hathor Next keys from its words into the running client, and saves the
- * address they give. The caller drops the words.
+ * Derives the wallet's Hathor Next keys from its words into the running client, and saves what
+ * public they give: the address, or the public spend key of a client that knows its address only
+ * once connected. The caller drops the words.
  *
  * @param {string} words
- * @returns {string} The Hathor Next address
+ * @returns {Promise<string|null>} The Hathor Next address, when already known
  */
-export function prepareNextKeys(words) {
-  const { address } = ensureNextClient().prepareKeys({ words });
-  saveNext({ address });
+export async function prepareNextKeys(words) {
+  const { address = null, pubB = null } = await ensureNextClient().prepareKeys({ words });
+  saveNext(address ? { address } : { pubB });
   return address;
 }
 
+// The derivation an unlock started, while it runs: a load that needs the keys waits for it
+// instead of failing for want of them (the passkey unlock doesn't wait for it to finish).
+let unlockDerivation = null;
+
 /**
  * At an unlock, with the words the PIN or the passkey gave: derives the Hathor Next keys if the
- * wallet used Hathor Next before. It never throws, so it can't fail an unlock.
+ * wallet used Hathor Next before. It never rejects, so it can't fail an unlock.
  *
  * @param {string} words
- * @returns {string|null} The Hathor Next address, or null when nothing was derived
+ * @returns {Promise<string|null>} The Hathor Next address, or null when none is known yet
  */
 export function prepareNextKeysAtUnlock(words) {
   if (!hasUsedNext()) {
-    return null;
+    return Promise.resolve(null);
   }
-  try {
-    return prepareNextKeys(words);
-  } catch (e) {
-    log.error('Could not derive the Hathor Next keys at unlock.', e);
-    return null;
-  }
+  const derivation = (async () => {
+    try {
+      return await prepareNextKeys(words);
+    } catch (e) {
+      log.error('Could not derive the Hathor Next keys at unlock.', e);
+      return null;
+    } finally {
+      if (unlockDerivation === derivation) {
+        unlockDerivation = null;
+      }
+    }
+  })();
+  unlockDerivation = derivation;
+  return derivation;
+}
+
+/** @returns {Promise<string|null>|null} The unlock's derivation while it runs */
+export function pendingUnlockDerivation() {
+  return unlockDerivation;
 }

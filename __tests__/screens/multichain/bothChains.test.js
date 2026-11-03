@@ -42,10 +42,11 @@ import { TransferRow } from '../../../src/components/Multichain/TransferRow';
 import { CHAIN } from '../../../src/multichain/chains';
 import { HISTORY_ROW, HISTORY_VIEW } from '../../../src/multichain/history';
 import { NEXT_STATUS, TRANSFER_STATUS } from '../../../src/multichain/state';
+import { mockPeerAddress } from '../../../src/multichain/mock/mockAddress';
 /* eslint-enable import/first */
 
 const NETWORK = 'testnet-juliet';
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
+const OWN_ADDRESS = mockPeerAddress('cd34');
 const HTR = { uid: '00', name: 'Hathor', symbol: 'HTR' };
 const MY_TOKEN = { uid: 'a1', name: 'My Token', symbol: 'MTK' };
 const ready = (available) => ({ status: 'ready', data: { available } });

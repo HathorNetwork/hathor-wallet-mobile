@@ -38,10 +38,11 @@ import ReceiveScreen from '../../../src/screens/Receive';
 import { TwoOptionsToggle } from '../../../src/components/TwoOptionsToggle';
 import { PortalProvider } from '../../../src/components/Portal';
 import { NEXT_STATUS } from '../../../src/multichain/state';
+import { mockPeerAddress } from '../../../src/multichain/mock/mockAddress';
 /* eslint-enable import/first */
 
 const NETWORK = 'testnet-juliet';
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
+const OWN_ADDRESS = mockPeerAddress('cd34');
 
 let mounted = null;
 

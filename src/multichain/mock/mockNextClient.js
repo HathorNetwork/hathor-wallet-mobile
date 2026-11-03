@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import CryptoJS from 'crypto-js';
 import { getIntegerAmount } from '../../utils';
 import { NEXT_DECIMAL_PLACES } from '../chains';
 import { NEXT_CLIENT_EVENT, NextClientError, NEXT_CLIENT_ERROR } from '../nextClientErrors';
@@ -20,6 +19,7 @@ import {
   saveLedger,
 } from './mockLedger';
 import { MOCK_SCENARIO } from './scenarios';
+import { deriveMockNextAddress } from './mockAddress';
 import {
   CONNECT_DELAY_MS,
   NEXT_SEND_FEE,
@@ -29,22 +29,13 @@ import {
   SLOW_SYNC_MS,
 } from './mockValues';
 
+export { deriveMockNextAddress, mockPeerAddress } from './mockAddress';
+
 const HISTORY_PAGE_SIZE = 20;
 
 const REJECTION_REASON = 'Rejected by the network: the transaction failed validation.';
 
 const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
-
-/**
- * The simulated address of a wallet: `samba:` and 128 hex characters, the live form, derived from
- * the words so it is the same on every start and every device holding them.
- *
- * @param {string} words
- * @returns {string}
- */
-export function deriveMockNextAddress(words) {
-  return `samba:${CryptoJS.SHA512(`hathor-next-mock:${words}`).toString(CryptoJS.enc.Hex)}`;
-}
 
 /**
  * A simulated Hathor Next client, with the interface of the real one
@@ -113,16 +104,25 @@ export function createMockNextClient() {
      * Derives the wallet's Hathor Next keys from its words. No network.
      *
      * @param {{ words: string }} params
-     * @returns {{ address: string }}
+     * @returns {Promise<{ address: string }>}
      */
-    prepareKeys({ words }) {
-      address = deriveMockNextAddress(words);
+    async prepareKeys({ words }) {
+      address = await deriveMockNextAddress(words);
       return { address };
     },
 
     /** @returns {boolean} Whether the keys were derived */
     hasKeys() {
       return address !== null;
+    },
+
+    /**
+     * The simulated keys are no secret, so a lock keeps them.
+     *
+     * @returns {boolean} false: nothing was dropped
+     */
+    forgetKeys() {
+      return false;
     },
 
     /**
@@ -335,6 +335,17 @@ export function createMockNextClient() {
       }, SEND_DELAY_MS);
 
       return { sendId };
+    },
+
+    /**
+     * A payment's state as the simulated ledger has it.
+     *
+     * @param {string} sendId
+     * @returns {{ sendId: string, status: string, reason: string|null, txId: string|null }|null}
+     */
+    getSend(sendId) {
+      const row = connected ? ledger().rows.find((r) => r.id === sendId) : null;
+      return row ? { sendId, status: row.status, reason: row.reason, txId: row.txId } : null;
     },
 
     /**

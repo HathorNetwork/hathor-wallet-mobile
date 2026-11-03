@@ -52,11 +52,12 @@ import QRCodeReader from '../../../src/components/QRCodeReader';
 import { PortalProvider } from '../../../src/components/Portal';
 import { ChainTag } from '../../../src/components/Multichain/ChainTag';
 import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { mockPeerAddress } from '../../../src/multichain/mock/mockAddress';
 /* eslint-enable import/first */
 
 const NETWORK = 'testnet-juliet';
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
-const NEXT_ADDRESS = `samba:${'ab12'.repeat(32)}`;
+const OWN_ADDRESS = mockPeerAddress('cd34');
+const NEXT_ADDRESS = mockPeerAddress('ab12');
 const HATHOR_ADDRESS = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';
 const HTR = { uid: '00', name: 'Hathor', symbol: 'HTR' };
 
@@ -153,6 +154,16 @@ describe('the Send address step', () => {
     expect(navigation.navigate).toHaveBeenCalledWith('SendAmountInput', { address: HATHOR_ADDRESS });
   });
 
+  test.each([true, false])(
+    'refuses the transfer address at once, and says to transfer instead (connected: %s)',
+    async (connected) => {
+      const { renderer, navigation } = await typeAddress('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL', { connected });
+      expect(textOf(renderer).join(' ')).toContain('HTR sent to it directly is lost');
+      expect(button(renderer, 'Next').props.disabled).toBe(true);
+      expect(navigation.navigate).not.toHaveBeenCalled();
+    },
+  );
+
   test('takes no Hathor Next address before the side chain is connected', async () => {
     const { renderer } = await typeAddress(NEXT_ADDRESS, { connected: false });
     expect(button(renderer, 'Next').props.disabled).toBe(true);
@@ -214,7 +225,13 @@ describe('the Hathor Next send confirmation (sign-once)', () => {
     STORE.isPasskeyWallet.mockReturnValue(true);
     const ceremony = jest.spyOn(passkeySigner, 'withPasskeyWords')
       .mockImplementation(async (fn) => fn('words'));
-    const navigation = { navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn() };
+    const navigation = {
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      popToTop: jest.fn(),
+      setOptions: jest.fn(),
+      addListener: jest.fn(() => jest.fn()),
+    };
     useNavigation.mockReturnValue(navigation);
     useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS, amount: '100000000' } });
     const env = makeStore({ next });

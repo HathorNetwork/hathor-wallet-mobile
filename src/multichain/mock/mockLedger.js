@@ -11,6 +11,7 @@ import { getIntegerAmount } from '../../utils';
 import { CHAIN, NEXT_DECIMAL_PLACES } from '../chains';
 import { TRANSFER_STATUS } from '../state';
 import { DEFAULT_MOCK_SCENARIO, isFundedScenario } from './scenarios';
+import { mockPeerAddress } from './mockAddress';
 
 /**
  * The simulated Hathor Next ledger of a network: its tokens, the wallet's transaction rows and
@@ -69,7 +70,7 @@ const MOCK_TOKEN_B = {
   symbol: 'TST',
 };
 
-const MOCK_PEER = `samba:${'4b7f'.repeat(32)}`;
+const MOCK_PEER = mockPeerAddress('peer');
 
 const units = (amount) => getIntegerAmount(amount, NEXT_DECIMAL_PLACES).toString();
 

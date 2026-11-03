@@ -13,7 +13,12 @@ import BackdropModal from '../BackdropModal';
 import CopyClipboard from '../CopyClipboard';
 import { ChainTag } from './ChainTag';
 import { SimulatedTagIfMock } from './SimulatedTag';
-import { arrivingText, renderChainValue, transferTitle } from './TransferRow';
+import {
+  arrivingText,
+  progressText,
+  renderChainValue,
+  transferTitle,
+} from './TransferRow';
 import { CHAIN_NAME, NEXT_COLORS } from '../../multichain/chains';
 import { HISTORY_ROW } from '../../multichain/history';
 import { TRANSFER_STATUS } from '../../multichain/state';
@@ -62,6 +67,7 @@ export const TransferDetailsModal = ({ transfer, symbol, hathorDecimalPlaces, on
     return null;
   }
   const pending = transfer.status === TRANSFER_STATUS.PENDING;
+  const failed = transfer.status === TRANSFER_STATUS.FAILED;
   const source = CHAIN_NAME[transfer.from];
   const destination = CHAIN_NAME[transfer.to];
   const onSource = (amount) => renderChainValue(amount, transfer.from, hathorDecimalPlaces);
@@ -98,18 +104,25 @@ export const TransferDetailsModal = ({ transfer, symbol, hathorDecimalPlaces, on
           index={1}
           title={t`Sent on ${source}`}
           amount={`-${sent} ${symbol}`}
-          status={t`Done`}
+          status={failed ? progressText({ stage: 'failed' }) : t`Done`}
           txId={transfer.sourceTxId}
         />
+        {!failed && (
         <Step
           index={2}
           title={t`Received on ${destination}`}
           amount={`+${received} ${symbol}`}
           status={pending
-            ? `${arrivingText(transfer.arriveAt)} · ${t`Usually about ${usualMinutes} min`}`
+            ? [
+              progressText(transfer.progress),
+              arrivingText(transfer.arriveAt),
+              t`Usually about ${usualMinutes} min`,
+            ].filter(Boolean).join(' · ')
             : t`Done · ${arrivedAt}`}
           pending={pending}
         />
+        )}
+        {failed && transfer.reason && <Text style={styles.value}>{transfer.reason}</Text>}
         <Text style={styles.label}>{t`To`}</Text>
         {transfer.toOwn && <Text style={styles.value}>{t`Your ${destination} address`}</Text>}
         <CopyClipboard text={transfer.toAddress} textStyle={styles.copyText} />

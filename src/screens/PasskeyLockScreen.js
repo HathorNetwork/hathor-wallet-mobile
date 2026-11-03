@@ -20,6 +20,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import Logo from '../components/Logo';
 import Spinner from '../components/Spinner';
 import {
+  multichainNextKeysDerived,
   onExceptionCaptured,
   resetOnLockScreen,
   shieldedViewUnlockRequested,
@@ -91,8 +92,9 @@ const PasskeyLockScreen = () => {
         onWords: (words) => {
           rememberPasskeyShieldedKeys(words);
           // A wallet that used Hathor Next derives its keys in the same ceremony, so switching to
-          // it needs no second passkey prompt. It never throws.
-          prepareNextKeysAtUnlock(words);
+          // it needs no second passkey prompt. It never throws, and the unlock doesn't wait: a
+          // load that comes first waits for it, and one that failed runs again once it's done.
+          prepareNextKeysAtUnlock(words).then(() => dispatch(multichainNextKeysDerived()));
           return register ? register(words) : undefined;
         },
       });

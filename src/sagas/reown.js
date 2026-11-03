@@ -79,6 +79,7 @@ import {
   PromptRejectedError,
   InvalidParamsError,
 } from '@hathor/hathor-rpc-handler';
+import { t } from 'ttag';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
@@ -135,6 +136,8 @@ import { passkeyFullTokenHook } from '../passkey/walletServiceRegistration';
 import { isShieldedAddress, shieldedAddressNotSupportedText } from '../utils';
 import { mapDappSendPrepareError } from '../utils/shieldedSend';
 import { isShieldedEnvironment } from '../shielded/gating';
+import { isTransferAddress } from '../multichain/chains';
+import { getMultichainFeatureToggle, selectSideChainConfig } from '../multichain/gating';
 import { newAddressErrorText } from '../shielded/newAddress';
 import { logger } from '../logger';
 
@@ -881,7 +884,12 @@ export function* processRequest(action) {
     // build it. In the shielded environment, a shielded address goes to the rpc handler as any
     // other. In every environment, the request's addresses and nano arguments are checked first.
     const acceptsShieldedAddresses = yield select(isShieldedEnvironment);
+    // A dApp may never pay the chain transfer's address: paid directly, the HTR burns and nothing
+    // arrives on Hathor Next. Like everything multichain, only behind its flag.
+    const multichainOn = yield select(getMultichainFeatureToggle);
+    const sideChainConfig = yield select(selectSideChainConfig);
     let hasShieldedAddress = false;
+    let paysTransferAddress = false;
     try {
       const { fields, others } = getRequestAddressStrings(params.request);
       // No address is longer than a shielded one. A longer string in an address field is
@@ -891,6 +899,8 @@ export function* processRequest(action) {
         throw new AddressTooLongError();
       }
       const requestAddresses = [...fields, ...others];
+      paysTransferAddress = multichainOn
+        && requestAddresses.some((address) => isTransferAddress(address, sideChainConfig));
       if (!acceptsShieldedAddresses && requestAddresses.length > 0) {
         const network = wallet.getNetworkObject();
         // Decoding base58 takes time quadratic in the length of the string, and the dApp decides
@@ -927,6 +937,30 @@ export function* processRequest(action) {
           error: {
             code: isInvalidPayload ? ERROR_CODES.INVALID_PAYLOAD : ERROR_CODES.INTERNAL_ERROR,
             message: errorDetails.message,
+          },
+        },
+      }));
+      return false;
+    }
+
+    if (paysTransferAddress) {
+      log.debug(`Rejecting ${params.request.method}: it pays the chain transfer's address.`);
+      yield put(setReownError());
+      yield put(setReownModal({
+        show: true,
+        type: ReownModalTypes.REQUEST_ERROR,
+        data: {
+          errorMessage: t`This request pays the address that moves HTR to Hathor Next. HTR sent to it directly is lost, so the request was refused.`,
+        },
+      }));
+      yield call(() => walletKit.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: ERROR_CODES.INVALID_PAYLOAD,
+            message: 'The chain transfer address can only be paid by a transfer.',
           },
         },
       }));

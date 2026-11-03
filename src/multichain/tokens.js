@@ -58,10 +58,10 @@ export function nextTokenList(tokens, nativeTokenId) {
  *
  * @param {Object[]} transfers TransferRecord (src/multichain/bridge.js)
  * @param {{ hathor: string|null, next: string|null }} ids The token's id on each chain
- * @param {number} hathorDecimalPlaces
+ * @param {bigint} scale mintScaleOf(config): a transfer's scale between the chains
  * @returns {{ arriving: bigint, inFlight: bigint }}
  */
-export function arrivingAmounts(transfers, ids, hathorDecimalPlaces) {
+export function arrivingAmounts(transfers, ids, scale) {
   let arriving = 0n;
   let inFlight = 0n;
   for (const transfer of transfers) {
@@ -74,7 +74,7 @@ export function arrivingAmounts(transfers, ids, hathorDecimalPlaces) {
     const received = BigInt(transfer.receiveAmount);
     const amount = transfer.to === CHAIN.HATHOR_NEXT
       ? received
-      : hathorToNextAmount(received, hathorDecimalPlaces);
+      : hathorToNextAmount(received, scale);
     arriving += amount;
     if (transfer.debitedOnSource) {
       inFlight += amount;
@@ -101,6 +101,7 @@ export function arrivingAmounts(transfers, ids, hathorDecimalPlaces) {
  * @param {{ hathor: string, next: string }[]} params.tokenMap
  * @param {string} params.nativeTokenId Hathor Next's native token
  * @param {Object[]} params.transfers TransferRecord (src/multichain/bridge.js)
+ * @param {bigint} [params.mintScale] mintScaleOf(config)
  * @returns {{
  *   uid: string,
  *   hathorUid: string|null,
@@ -124,6 +125,7 @@ export function combinedTokenList({
   tokenMap,
   nativeTokenId,
   transfers,
+  mintScale = 1n,
 }) {
   const nextIdOf = Object.fromEntries(tokenMap.map((pair) => [pair.hathor, pair.next]));
   const mappedNext = new Set(tokenMap.map((pair) => pair.next));
@@ -149,9 +151,9 @@ export function combinedTokenList({
     const { arriving, inFlight } = arrivingAmounts(
       transfers,
       { hathor: token.uid, next: nextId },
-      hathorDecimalPlaces,
+      mintScale,
     );
-    const total = hathorToNextAmount(balance?.data?.available ?? 0n, hathorDecimalPlaces)
+    const total = hathorToNextAmount(balance?.data?.available ?? 0n, mintScale)
       + nextAvailable(nextId)
       + inFlight;
     const shown = nextAmountForDisplay(total, hathorDecimalPlaces);

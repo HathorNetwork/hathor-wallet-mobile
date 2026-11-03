@@ -7,6 +7,7 @@
 
 import {
   FEATURE_TOGGLE_DEFAULTS,
+  MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
 } from '../constants';
@@ -41,6 +42,34 @@ export function getMultichainNetworkPresetFeatureToggle(state) {
 }
 
 /**
+ * Whether the Hathor Next backend for local testing may show and run: its own flag, on top of the
+ * multichain one.
+ *
+ * @param {Object} state Redux state
+ * @returns {boolean}
+ */
+export function getMultichainDevBackendFeatureToggle(state) {
+  return getMultichainFeatureToggle(state) && Boolean(
+    state.featureToggles?.[MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]
+      ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]
+  );
+}
+
+/**
+ * The backend for local testing that is in force: the one set in Settings, and only while its
+ * flag is on. A saved one waits, unused, while the flag is off.
+ *
+ * @param {Object} state Redux state
+ * @returns {{ url: string, pins: Object }|null}
+ */
+export function selectDevBackend(state) {
+  if (!getMultichainDevBackendFeatureToggle(state)) {
+    return null;
+  }
+  return state.multichain?.devBackend ?? null;
+}
+
+/**
  * The network the side chain setting is kept for: the name the fullnode reports. Null until the
  * wallet has started.
  *
@@ -58,7 +87,7 @@ export function selectMultichainNetwork(state) {
  * @returns {Object|null}
  */
 export function selectSideChainConfig(state) {
-  return getSideChainConfig(selectMultichainNetwork(state));
+  return getSideChainConfig(selectMultichainNetwork(state), selectDevBackend(state));
 }
 
 /**

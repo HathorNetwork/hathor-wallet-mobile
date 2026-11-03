@@ -9,20 +9,38 @@ import { renderValue } from '../utils';
 import { NEXT_DECIMAL_PLACES } from './chains';
 
 /**
- * An HTR amount of Hathor Network, in Hathor Next's units. Hathor Network amounts have the
- * network's decimal places (2 on every network so far) and Hathor Next amounts have 8, so 1.00
- * HTR (100) is 1.00000000 HTR (100000000) on Hathor Next.
+ * How many of Hathor Next's base units one base unit of Hathor Network's HTR becomes in a
+ * transfer: the side chain's own pinned value (its config's mintScale), never worked out from the
+ * decimal places. hathor-next's devnet mints one base unit for one; the hosted network's scale is
+ * the hathor-next team's decision.
+ *
+ * @param {Object|null} config The side chain config
+ * @returns {bigint}
+ */
+export function mintScaleOf(config) {
+  return BigInt(config?.mintScale ?? 1);
+}
+
+/**
+ * An HTR amount of Hathor Network, in Hathor Next's units, at the transfer's scale.
  *
  * @param {bigint} amount In Hathor Network's units
- * @param {number} hathorDecimalPlaces serverInfo.decimal_places
+ * @param {bigint} scale mintScaleOf(config)
  * @returns {bigint} In Hathor Next's units
  */
-export function hathorToNextAmount(amount, hathorDecimalPlaces) {
-  const diff = NEXT_DECIMAL_PLACES - hathorDecimalPlaces;
-  if (diff >= 0) {
-    return amount * (10n ** BigInt(diff));
-  }
-  return amount / (10n ** BigInt(-diff));
+export function hathorToNextAmount(amount, scale) {
+  return amount * scale;
+}
+
+/**
+ * The least Hathor Network amount that becomes at least `amount` on Hathor Next.
+ *
+ * @param {bigint} amount In Hathor Next's units
+ * @param {bigint} scale mintScaleOf(config)
+ * @returns {bigint} In Hathor Network's units
+ */
+export function nextToHathorRoundedUp(amount, scale) {
+  return (amount + scale - 1n) / scale;
 }
 
 /**

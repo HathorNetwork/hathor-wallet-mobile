@@ -18,15 +18,17 @@ import { ChainTag } from '../../components/Multichain/ChainTag';
 import { SimulatedTagIfMock } from '../../components/Multichain/SimulatedTag';
 import { multichainTransferRequested, multichainTransferReset } from '../../actions';
 import { authorizeTransaction } from '../../passkey/authorizeTransaction';
-import { CHAIN } from '../../multichain/chains';
+import { CHAIN, transferReceiveSymbol } from '../../multichain/chains';
 import { renderNextValue } from '../../multichain/amount';
-import { isSideChainSimulated } from '../../multichain/gating';
+import { isSideChainSimulated, selectSideChainConfig } from '../../multichain/gating';
 import { OPERATION_STATUS } from '../../multichain/state';
 import NavigationService from '../../NavigationService';
 import { renderValue } from '../../utils';
 import { COLORS } from '../../styles/themes';
 import { arrivalText } from '../../multichain/transfer';
 import { SummaryRow, useTransferContext } from './ChainTransferScreen';
+import { sameNextAddress } from '../../multichain/address';
+import { useHoldScreen } from '../../multichain/hooks';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
@@ -58,7 +60,9 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
   const { bridge, decimalPlaces, available } = useTransferContext();
   const ownAddress = useSelector((state) => state.multichain.next.address);
   const simulated = useSelector(isSideChainSimulated);
+  const sideChainConfig = useSelector(selectSideChainConfig);
   const transfer = useSelector((state) => state.multichain.transfer);
+  useHoldScreen(navigation, transfer.status === OPERATION_STATUS.SENDING);
 
   // A transfer's outcome belongs to this screen: a new one starts clean.
   useEffect(() => {
@@ -73,8 +77,9 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
   }
 
   const quote = bridge.quote({ from, to, amount, available });
+  const receiveSymbol = transferReceiveSymbol(sideChainConfig);
   const htr = (value) => `${renderValue(value, false, decimalPlaces)} HTR`;
-  const isOwnAddress = ownAddress && toAddress === ownAddress;
+  const isOwnAddress = sameNextAddress(toAddress, ownAddress);
 
   const send = (pinCode) => dispatch(multichainTransferRequested({
     from, to, tokenId, amount, toAddress, pinCode,
@@ -111,6 +116,16 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
             action={<NewHathorButton title={t`Done`} onPress={done} />}
           />
         );
+      case OPERATION_STATUS.UNCONFIRMED:
+        // Signed, with no answer yet: the app keeps asking, and no other transfer starts.
+        return (
+          <FeedbackModal
+            icon={<Spinner />}
+            text={transfer.error ?? t`We couldn't confirm the transfer yet.`}
+            onDismiss={done}
+            action={<NewHathorButton secondary title={t`Close`} onPress={done} />}
+          />
+        );
       case OPERATION_STATUS.ERROR:
         return (
           <FeedbackModal
@@ -129,7 +144,9 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
       <HathorHeader
         withBorder
         title={t`CONFIRM TRANSFER`}
-        onBackPress={() => navigation.goBack()}
+        onBackPress={transfer.status === OPERATION_STATUS.SENDING
+          ? null
+          : () => navigation.goBack()}
       />
       <ScrollView contentContainerStyle={styles.body}>
         <SimulatedTagIfMock />
@@ -144,7 +161,7 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
             <ChainTag chain={to} />
             <Text style={styles.routeLabel}>{t`You receive`}</Text>
             <Text style={styles.routeAmount}>
-              {`${renderNextValue(quote.receiveAmount, decimalPlaces)} HTR`}
+              {`${renderNextValue(quote.receiveAmount, decimalPlaces)} ${receiveSymbol}`}
             </Text>
           </View>
         </View>

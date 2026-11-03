@@ -29,7 +29,7 @@ import { SimulatedTagIfMock } from '../../components/Multichain/SimulatedTag';
 import { validateTransferAddress } from '../../multichain/address';
 import { arrivalText } from '../../multichain/transfer';
 import { createBridge } from '../../multichain/bridge';
-import { canTransfer, CHAIN, CHAIN_NAME } from '../../multichain/chains';
+import { CHAIN, CHAIN_NAME, canTransfer, transferReceiveSymbol } from '../../multichain/chains';
 import { renderNextValue } from '../../multichain/amount';
 import { selectMultichainNetwork, selectSideChainConfig } from '../../multichain/gating';
 import { getKeyboardAvoidingViewTopDistance, renderValue } from '../../utils';
@@ -82,7 +82,10 @@ export default function ChainTransferScreen({ navigation, route }) {
   const networkName = useSelector((state) => state.networkSettings.network);
   const ownAddress = useSelector((state) => state.multichain.next.address);
   const prefill = route?.params ?? {};
-  const [address, setAddress] = useState(prefill.toAddress ?? '');
+  // A bridge that moves HTR only to the wallet's own address gets no other: the field holds it.
+  const ownOnly = Boolean(bridge?.ownAddressOnly);
+  const [typedAddress, setAddress] = useState(prefill.toAddress ?? '');
+  const address = ownOnly ? (ownAddress ?? '') : typedAddress;
   const [addressError, setAddressError] = useState(null);
   const [amountText, setAmountText] = useState(
     prefill.amount ? plainAmount(BigInt(prefill.amount), decimalPlaces) : '',
@@ -187,15 +190,18 @@ export default function ChainTransferScreen({ navigation, route }) {
               <Text style={styles.fixedValue}>{t`HTR · ${availableText} available`}</Text>
             </View>
 
-            <Text style={styles.label}>{t`Hathor Next address`}</Text>
+            <Text style={styles.label}>
+              {ownOnly ? t`Your Hathor Next address` : t`Hathor Next address`}
+            </Text>
             <Pressable
-              onPress={() => addressRef.current?.focus()}
+              onPress={() => !ownOnly && addressRef.current?.focus()}
               style={[styles.inputCard, addressError && styles.inputCardError]}
             >
               <TextInput
                 ref={addressRef}
                 style={styles.addressInput}
                 value={address}
+                editable={!ownOnly}
                 onChangeText={(text) => {
                   setAddress(text);
                   setAddressError(null);
@@ -211,7 +217,7 @@ export default function ChainTransferScreen({ navigation, route }) {
               />
             </Pressable>
             {addressError && <Text style={styles.error}>{addressError}</Text>}
-            {ownAddress && (
+            {ownAddress && !ownOnly && (
               <View style={styles.linkRow}>
                 <Text style={styles.link} onPress={fillOwnAddress} accessibilityRole='button'>
                   {t`Use my Hathor Next address`}
@@ -232,7 +238,11 @@ export default function ChainTransferScreen({ navigation, route }) {
             {amountError && <Text style={styles.error}>{amountError}</Text>}
 
             <View style={styles.summary}>
-              <SummaryRow label={t`You'll receive`} value={`${receive} HTR`} strong />
+              <SummaryRow
+                label={t`You'll receive`}
+                value={`${receive} ${transferReceiveSymbol(config)}`}
+                strong
+              />
               <SummaryRow label={t`Bridge fee`} value={htr(quote.bridgeFee)} />
               <SummaryRow label={t`Network fee`} value={htr(quote.networkFee)} />
               <SummaryRow label={t`Arrives in`} value={arrivalText(quote.etaSeconds)} />

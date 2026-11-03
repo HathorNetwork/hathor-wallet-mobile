@@ -45,6 +45,7 @@ import { COLORS } from '../../styles/themes';
 import { selectNextSendFee } from './NextSendAmountInput';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import errorIcon from '../../assets/images/icErrorBig.png';
+import { useHoldScreen } from '../../multichain/hooks';
 
 const log = logger('next-send');
 
@@ -101,6 +102,8 @@ export default function NextSendConfirmScreen() {
   const hathorDecimalPlaces = useSelector((state) => state.serverInfo?.decimal_places ?? 2);
   const render = (value) => `${renderNextValue(value, hathorDecimalPlaces)} ${symbol}`;
   const outcome = send.draftId === draftId ? send.status : OPERATION_STATUS.IDLE;
+  // No way back while the payment is on its way: the outcome shows here.
+  useHoldScreen(navigation, outcome === OPERATION_STATUS.SENDING || outcome === 'pending');
 
   const submit = (pinCode) => {
     setAuthorized(true);
@@ -157,6 +160,17 @@ export default function NextSendConfirmScreen() {
       navigation.reset({ index: 0, routes: [{ name: 'SendAddressInput' }] });
     }, 500);
   };
+
+  // Leaving Hathor Next (the setting turned off, the network changed) drops the payment's state:
+  // this screen has nothing left to show, so it closes.
+  const sawDraft = useRef(false);
+  useEffect(() => {
+    if (send.draftId === draftId) {
+      sawDraft.current = true;
+    } else if (authorized && sawDraft.current) {
+      exit();
+    }
+  }, [send.draftId]);
 
   const icon = (source) => (
     <Image source={source} style={styles.feedbackIcon} resizeMode='contain' />

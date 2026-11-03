@@ -103,6 +103,7 @@ export default function NextSendAmountInput() {
       hathorDecimalPlaces,
       toAddress: address,
       ownAddress,
+      ownAddressOnly: Boolean(bridge?.ownAddressOnly),
     });
   };
 

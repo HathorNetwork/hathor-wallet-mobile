@@ -5,7 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
+import {
+  jest, describe, test, expect, beforeAll, beforeEach, afterEach,
+} from '@jest/globals';
 
 // One shared logger object, so the tests can assert on what the saga logs.
 jest.mock('../../src/logger', () => {
@@ -24,26 +26,33 @@ jest.mock('../../src/passkey/passkeySigner', () => ({
 import { runSaga, stdChannel } from 'redux-saga';
 import { reducer } from '../../src/reducers/reducer';
 import {
+  lockScreen,
   multichainConnectSettingChanged,
   multichainLoadRequested,
   multichainMockScenarioSet,
   multichainNextHistoryRequested,
+  multichainNextKeysDerived,
   multichainNextKeysUnlockRequested,
   multichainNextSendRequested,
+  multichainNextUpdate,
   multichainTransferRequested,
   networkChanged,
   resetWallet,
+  featureToggleInitialized,
   setFeatureToggles,
   setFullNodeNetworkName,
   setServerInfo,
   startWalletSuccess,
   types,
+  unlockScreen,
 } from '../../src/actions';
 import { MULTICHAIN_FEATURE_TOGGLE, multichainKeyMap } from '../../src/constants';
 import { STORE } from '../../src/store';
-import { saga } from '../../src/sagas/multichain';
+import { resolveUncertainTransfer, saga } from '../../src/sagas/multichain';
+import { prepareNextKeysAtUnlock } from '../../src/multichain/keys';
 import { getNextClient, setNextClient } from '../../src/multichain/nextClient';
 import { deriveMockNextAddress } from '../../src/multichain/mock/mockNextClient';
+import { mockPeerAddress } from '../../src/multichain/mock/mockAddress';
 import { loadLedger, resetLedger } from '../../src/multichain/mock/mockLedger';
 import { MOCK_SCENARIO } from '../../src/multichain/mock/scenarios';
 import {
@@ -58,7 +67,10 @@ import { PasskeyCancelledError, withPasskeyWords } from '../../src/passkey/passk
 const NETWORK = 'testnet-juliet';
 const WORDS = 'abandon ability able';
 const PIN = '123456';
-const ADDRESS = deriveMockNextAddress(WORDS);
+let ADDRESS = null;
+beforeAll(async () => {
+  ADDRESS = await deriveMockNextAddress(WORDS);
+});
 const HTR = '00';
 
 let task = null;
@@ -75,6 +87,7 @@ function setup({ flag = true, scenario = MOCK_SCENARIO.FUNDED, start = true } = 
   };
   task = runSaga({ channel, dispatch, getState: () => state }, saga);
   dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: flag }));
+  dispatch(featureToggleInitialized());
   dispatch(setServerInfo({ decimal_places: 2 }));
   dispatch(setFullNodeNetworkName(NETWORK));
   if (start) {
@@ -191,6 +204,35 @@ describe('loading Hathor Next when the wallet starts', () => {
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.CONNECTING);
     await wait(2000);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+  });
+
+  test("waits for a passkey unlock's keys still being derived", async () => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
+    const env = setup({ start: false });
+    // The passkey unlock starts the derivation and doesn't wait for it; the wallet starts.
+    const derivation = prepareNextKeysAtUnlock(WORDS);
+    env.dispatch(startWalletSuccess());
+    await derivation;
+    await wait(2000);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+  });
+
+  test('runs a load that failed without the keys again once a passkey unlock derives them', async () => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
+    const env = setup();
+    await wait(10);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.FAILED);
+    await prepareNextKeysAtUnlock(WORDS);
+    env.dispatch(multichainNextKeysDerived());
+    await wait(2000);
+    expect(env.getState().multichain.next).toMatchObject({
+      status: NEXT_STATUS.READY,
+      keysReady: true,
+    });
   });
 
   test('fails without the keys, and loads once the PIN derives them', async () => {
@@ -327,7 +369,7 @@ describe('the ways out of Hathor Next', () => {
 describe('a Hathor Next payment', () => {
   const draft = (draftId) => multichainNextSendRequested({
     tokenId: HTR,
-    to: deriveMockNextAddress('someone'),
+    to: mockPeerAddress('someone'),
     amount: 100000000n,
     draftId,
     pinCode: PIN,
@@ -356,6 +398,26 @@ describe('a Hathor Next payment', () => {
     await wait(1000);
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(env.getState().multichain.next.balances[HTR].data.available).toBe(2395000000n);
+  });
+
+  test('settles even when it settled before send() returned', async () => {
+    const env = setup();
+    await connect(env);
+    const client = getNextClient();
+    const original = client.send.bind(client);
+    // The node records in about 130 ms, so the feed's event can come before the backend's
+    // answer: the event fires while the saga doesn't know the payment's id yet.
+    client.send = async (params) => {
+      const result = await original(params);
+      await jest.advanceTimersByTimeAsync(1000);
+      return result;
+    };
+    env.dispatch(draft('draft-1'));
+    await wait(1000);
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.RECORDED,
+      draftId: 'draft-1',
+    });
   });
 
   test("carries the network's words when it is turned down", async () => {
@@ -418,5 +480,81 @@ describe('a transfer between chains', () => {
       status: OPERATION_STATUS.IDLE,
       error: null,
     });
+  });
+});
+
+describe('a transfer signed without an answer', () => {
+  const run = (bridge, tries) => {
+    const dispatched = [];
+    const done = runSaga(
+      { dispatch: (action) => dispatched.push(action), getState: () => ({}) },
+      resolveUncertainTransfer,
+      bridge,
+      'transfer-1',
+      tries,
+    ).toPromise();
+    return { dispatched, done };
+  };
+
+  test('is asked about until the backend answers, and ends as not sent when it never left', async () => {
+    const bridge = {
+      resolveTransfer: jest.fn()
+        .mockRejectedValueOnce(new Error('unreachable'))
+        .mockResolvedValueOnce(null),
+    };
+    const { dispatched, done } = run(bridge, 3);
+    await jest.advanceTimersByTimeAsync(3000);
+    await expect(done).resolves.toBe(true);
+    expect(bridge.resolveTransfer).toHaveBeenCalledTimes(2);
+    expect(dispatched).toContainEqual(expect.objectContaining({
+      payload: expect.objectContaining({ status: OPERATION_STATUS.ERROR, uncertainId: null }),
+    }));
+  });
+
+  test('stays unsettled while the backend can\'t be read', async () => {
+    const bridge = { resolveTransfer: jest.fn().mockRejectedValue(new Error('unreachable')) };
+    const { dispatched, done } = run(bridge, 2);
+    await jest.advanceTimersByTimeAsync(3000);
+    await expect(done).resolves.toBe(false);
+    expect(dispatched).toEqual([]);
+  });
+});
+
+describe('the backend for local testing', () => {
+  test('stays unused while its flag is off, even when one was saved', async () => {
+    STORE.setItem(multichainKeyMap.devBackend, {
+      url: 'http://192.168.0.10:8930',
+      pins: { next: { network_id: 1777 }, transfer: null },
+    });
+    try {
+      const env = setup();
+      await connect(env);
+      expect(getNextClient().simulated).toBe(true);
+      expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+    } finally {
+      STORE.removeItem(multichainKeyMap.devBackend);
+    }
+  });
+});
+
+describe('locking the app', () => {
+  test('drops the Hathor Next keys of a client that holds real ones, and only on lock', async () => {
+    const env = setup();
+    const forgetKeys = jest.fn(() => true);
+    setNextClient({ forgetKeys, disconnect: jest.fn() });
+    env.dispatch(multichainNextUpdate({ keysReady: true }));
+    env.dispatch(unlockScreen());
+    expect(forgetKeys).not.toHaveBeenCalled();
+    env.dispatch(lockScreen());
+    expect(forgetKeys).toHaveBeenCalledTimes(1);
+    expect(env.getState().multichain.next.keysReady).toBe(false);
+  });
+
+  test('keeps the simulated keys, which are no secret', async () => {
+    const env = setup();
+    await connect(env);
+    env.dispatch(lockScreen());
+    expect(getNextClient().hasKeys()).toBe(true);
+    expect(env.getState().multichain.next.keysReady).toBe(true);
   });
 });

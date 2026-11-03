@@ -21,7 +21,9 @@ import { getSideChainConfig } from '../../src/multichain/chains';
 import { TRANSFER_STATUS } from '../../src/multichain/state';
 import { MOCK_SCENARIO } from '../../src/multichain/mock/scenarios';
 import { NEXT_CLIENT_EVENT, NEXT_CLIENT_ERROR } from '../../src/multichain/nextClientErrors';
-import { hathorToNextAmount } from '../../src/multichain/amount';
+import { hathorToNextAmount, mintScaleOf } from '../../src/multichain/amount';
+import { mockPeerAddress } from '../../src/multichain/mock/mockAddress';
+import { isNextAddress } from '../../src/multichain/address';
 
 const NETWORK = 'testnet-juliet';
 const WORDS = 'one two three';
@@ -30,7 +32,7 @@ const HTR = '00';
 const connected = async (scenario = MOCK_SCENARIO.FUNDED) => {
   resetLedger(NETWORK, scenario);
   const client = createMockNextClient();
-  client.prepareKeys({ words: WORDS });
+  await client.prepareKeys({ words: WORDS });
   const connecting = client.connect({ network: NETWORK, birthday: 'genesis' });
   await jest.advanceTimersByTimeAsync(2000);
   await connecting;
@@ -97,11 +99,11 @@ describe('the simulated ledger', () => {
 });
 
 describe('the simulated client', () => {
-  test('derives a live-form address from the words, the same every time', () => {
-    const address = deriveMockNextAddress(WORDS);
-    expect(address).toMatch(/^samba:[0-9a-f]{128}$/);
-    expect(deriveMockNextAddress(WORDS)).toBe(address);
-    expect(deriveMockNextAddress('other words')).not.toBe(address);
+  test('derives a real address from the words, the same every time', async () => {
+    const address = await deriveMockNextAddress(WORDS);
+    expect(isNextAddress(address)).toBe(true);
+    expect(await deriveMockNextAddress(WORDS)).toBe(address);
+    expect(await deriveMockNextAddress('other words')).not.toBe(address);
   });
 
   test('refuses to connect before its keys are derived', async () => {
@@ -112,7 +114,7 @@ describe('the simulated client', () => {
   test('fails a connect still waiting when it disconnects', async () => {
     resetLedger(NETWORK, MOCK_SCENARIO.FUNDED);
     const client = createMockNextClient();
-    client.prepareKeys({ words: WORDS });
+    await client.prepareKeys({ words: WORDS });
     const connecting = client.connect({ network: NETWORK });
     const assertion = expect(connecting)
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
@@ -125,7 +127,7 @@ describe('the simulated client', () => {
   test('fails to connect in the Connect fails scenario', async () => {
     resetLedger(NETWORK, MOCK_SCENARIO.CONNECT_FAILS);
     const client = createMockNextClient();
-    client.prepareKeys({ words: WORDS });
+    await client.prepareKeys({ words: WORDS });
     const connecting = client.connect({ network: NETWORK });
     const assertion = expect(connecting)
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.CONNECT_FAILED });
@@ -137,7 +139,7 @@ describe('the simulated client', () => {
     const client = await connected();
     const outcomes = [];
     client.on(NEXT_CLIENT_EVENT.SEND, (outcome) => outcomes.push(outcome));
-    const { sendId } = await client.send({ tokenId: HTR, to: deriveMockNextAddress('x'), amount: 100000000n });
+    const { sendId } = await client.send({ tokenId: HTR, to: mockPeerAddress('x'), amount: 100000000n });
     expect(client.getHistory(HTR).rows.slice(0, 2).map((row) => row.status)).toEqual(['pending', 'pending']);
     await jest.advanceTimersByTimeAsync(1000);
     expect(outcomes).toEqual([expect.objectContaining({ sendId, status: 'recorded' })]);
@@ -151,7 +153,7 @@ describe('the simulated client', () => {
     const client = await connected(MOCK_SCENARIO.SEND_REJECTED);
     const outcomes = [];
     client.on(NEXT_CLIENT_EVENT.SEND, (outcome) => outcomes.push(outcome));
-    await client.send({ tokenId: HTR, to: deriveMockNextAddress('x'), amount: 100000000n });
+    await client.send({ tokenId: HTR, to: mockPeerAddress('x'), amount: 100000000n });
     await jest.advanceTimersByTimeAsync(1000);
     expect(outcomes[0]).toMatchObject({ status: 'failed', reason: expect.any(String) });
     expect(client.getBalances().balances[HTR].available).toBe(2500000000n);
@@ -161,7 +163,7 @@ describe('the simulated client', () => {
     const client = await connected(MOCK_SCENARIO.SEND_UNCONFIRMED);
     const outcomes = [];
     client.on(NEXT_CLIENT_EVENT.SEND, (outcome) => outcomes.push(outcome));
-    await client.send({ tokenId: HTR, to: deriveMockNextAddress('x'), amount: 100000000n });
+    await client.send({ tokenId: HTR, to: mockPeerAddress('x'), amount: 100000000n });
     await jest.advanceTimersByTimeAsync(1000);
     expect(outcomes[0]).toMatchObject({ status: 'unconfirmed' });
     expect(client.getBalances().balances[HTR].available).toBe(2395000000n);
@@ -169,7 +171,7 @@ describe('the simulated client', () => {
 
   test('refuses a payment above the balance less the fee, before signing anything', async () => {
     const client = await connected();
-    await expect(client.send({ tokenId: HTR, to: deriveMockNextAddress('x'), amount: 2500000000n }))
+    await expect(client.send({ tokenId: HTR, to: mockPeerAddress('x'), amount: 2500000000n }))
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS });
     expect(client.getHistory(HTR).rows.every((row) => row.status === 'recorded')).toBe(true);
   });
@@ -178,9 +180,9 @@ describe('the simulated client', () => {
     const client = await connected();
     const token = Object.values(loadLedger(NETWORK).tokens).find((t) => t.symbol === 'TST');
     // The funded ledger holds 5.00 or 1.00 of each TST: 10.00 is more than either.
-    await expect(client.send({ tokenId: token.id, to: deriveMockNextAddress('x'), amount: 1000000000n }))
+    await expect(client.send({ tokenId: token.id, to: mockPeerAddress('x'), amount: 1000000000n }))
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS });
-    const { sendId } = await client.send({ tokenId: token.id, to: deriveMockNextAddress('x'), amount: 50000000n });
+    const { sendId } = await client.send({ tokenId: token.id, to: mockPeerAddress('x'), amount: 50000000n });
     const fee = loadLedger(NETWORK).rows.find((row) => row.id === `${sendId}:fee`);
     expect(fee.tokenId).toBe(HTR);
   });
@@ -188,7 +190,7 @@ describe('the simulated client', () => {
   test('refuses to send while the first sync runs, then ends it', async () => {
     const client = await connected(MOCK_SCENARIO.SLOW_SYNC);
     expect(client.getBalances().sweeping).toBe(true);
-    await expect(client.send({ tokenId: HTR, to: deriveMockNextAddress('x'), amount: 1n }))
+    await expect(client.send({ tokenId: HTR, to: mockPeerAddress('x'), amount: 1n }))
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.SWEEPING });
     await jest.advanceTimersByTimeAsync(21000);
     expect(client.getBalances().sweeping).toBe(false);
@@ -215,12 +217,13 @@ describe('the simulated transfer', () => {
     expect(bridge().quote({ amount: 10000n, available: 125000n })).toEqual({
       bridgeFee: 10n,
       networkFee: 0n,
-      receiveAmount: hathorToNextAmount(9990n, 2),
+      receiveAmount: hathorToNextAmount(9990n, 1000000n),
       etaSeconds: 120,
       min: 100n,
       max: 125000n,
     });
-    expect(hathorToNextAmount(100n, 2)).toBe(100000000n);
+    // Juliet's pinned scale: 1.00 HTR becomes 1.00000000.
+    expect(hathorToNextAmount(100n, mintScaleOf(getSideChainConfig('testnet-juliet')))).toBe(100000000n);
   });
 
   test("refuses the way the bridge doesn't go yet", () => {
@@ -261,7 +264,7 @@ describe('the simulated transfer', () => {
   test('records a transfer to another address, which never arrives here', async () => {
     resetLedger(NETWORK, MOCK_SCENARIO.EMPTY);
     const transferring = bridge().transfer({
-      amount: 10000n, toAddress: deriveMockNextAddress('someone'), ownAddress: deriveMockNextAddress(WORDS),
+      amount: 10000n, toAddress: mockPeerAddress('someone'), ownAddress: await deriveMockNextAddress(WORDS),
     });
     await jest.advanceTimersByTimeAsync(1000);
     const record = await transferring;

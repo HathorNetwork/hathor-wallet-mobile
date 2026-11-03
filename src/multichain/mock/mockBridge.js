@@ -8,7 +8,8 @@
 import { getIntegerAmount } from '../../utils';
 import { STORE } from '../../store';
 import { withPasskeyWords } from '../../passkey/passkeySigner';
-import { hathorToNextAmount } from '../amount';
+import { sameNextAddress } from '../address';
+import { hathorToNextAmount, mintScaleOf } from '../amount';
 import { canTransfer, CHAIN } from '../chains';
 import { NextClientError, NEXT_CLIENT_ERROR } from '../nextClientErrors';
 import { TRANSFER_STATUS } from '../state';
@@ -58,7 +59,7 @@ export function createMockBridge(config, { network, decimalPlaces }) {
     return {
       bridgeFee,
       networkFee,
-      receiveAmount: hathorToNextAmount(received, decimalPlaces),
+      receiveAmount: hathorToNextAmount(received, mintScaleOf(config)),
       etaSeconds: BRIDGE_ETA_SECONDS,
       min: units(BRIDGE_MIN_AMOUNT),
       max,
@@ -135,7 +136,7 @@ export function createMockBridge(config, { network, decimalPlaces }) {
         bridgeFee: bridgeFee.toString(),
         networkFee: networkFee.toString(),
         toAddress,
-        toOwn: Boolean(ownAddress) && toAddress === ownAddress,
+        toOwn: sameNextAddress(toAddress, ownAddress),
         sentAt,
         arriveAt: sentAt + BRIDGE_ETA_SECONDS * 1000,
         status: TRANSFER_STATUS.PENDING,
