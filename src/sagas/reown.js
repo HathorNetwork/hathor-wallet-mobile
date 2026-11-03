@@ -899,7 +899,13 @@ export function* processRequest(action) {
         throw new AddressTooLongError();
       }
       const requestAddresses = [...fields, ...others];
-      paysTransferAddress = multichainOn
+      // A UTXO query's filter and an oracle's address pay nothing. A nano contract's arguments
+      // stay in: a contract may pay an address it is given.
+      const paysNothing = [
+        AVAILABLE_METHODS.HATHOR_GET_UTXOS,
+        AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA,
+      ].includes(params.request.method);
+      paysTransferAddress = multichainOn && !paysNothing
         && requestAddresses.some((address) => isTransferAddress(address, sideChainConfig));
       if (!acceptsShieldedAddresses && requestAddresses.length > 0) {
         const network = wallet.getNetworkObject();

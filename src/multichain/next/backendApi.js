@@ -13,7 +13,8 @@
  * Amounts are decimal strings of base units and hex is lowercase, as the backend's contract says.
  */
 
-const REQUEST_TIMEOUT_MS = 15000;
+/** How long a call may take, its whole answer included, before it is given up. */
+export const REQUEST_TIMEOUT_MS = 15000;
 
 /**
  * A failed call: `status` is the HTTP status (0 when the backend couldn't be reached), and the
@@ -59,6 +60,8 @@ export function createBackendApi(baseUrl, { fetchImpl = (...args) => fetch(...ar
     const controller = typeof AbortController === 'undefined' ? null : new AbortController();
     const timer = controller ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS) : null;
     let response;
+    let text;
+    // The timer covers the body too: an answer whose body stalls is given up like no answer.
     try {
       response = await fetchImpl(`${root}${path}`, {
         method,
@@ -66,6 +69,7 @@ export function createBackendApi(baseUrl, { fetchImpl = (...args) => fetch(...ar
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: controller?.signal,
       });
+      text = await response.text();
     } catch (e) {
       throw new BackendError(0, 'The Hathor Next backend could not be reached.');
     } finally {
@@ -73,7 +77,6 @@ export function createBackendApi(baseUrl, { fetchImpl = (...args) => fetch(...ar
         clearTimeout(timer);
       }
     }
-    const text = await response.text();
     let data = null;
     try {
       data = text ? JSON.parse(text) : null;

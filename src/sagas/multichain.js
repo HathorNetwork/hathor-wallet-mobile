@@ -194,6 +194,7 @@ export function* ensureKeys({ pinCode, interactive }) {
  * The passkey unlock derived the keys: say so, and run a load that failed without them again.
  */
 export function* onNextKeysDerived() {
+  yield call(syncDevBackend);
   const client = ensureNextClient();
   if (!client.hasKeys()) {
     return;
@@ -256,12 +257,22 @@ export function* refreshNextData(client) {
 const TRANSFER_POLL_MS = 15000;
 
 /**
- * Reads the transfers again while one is on its way, so its progress ("Confirming k of N") moves.
- * Runs as long as the client is followed.
+ * Reads the transfers again while one is on its way, so its progress ("Confirming k of N") moves,
+ * and asks again about a transfer signed without an answer until it settles: its first tries may
+ * all fall while the backend can't be reached. Runs as long as the client is followed.
  */
 export function* pollPendingTransfers() {
   while (true) {
     yield delay(TRANSFER_POLL_MS);
+    const { status, uncertainId } = yield select((state) => state.multichain.transfer);
+    if (uncertainId && status === OPERATION_STATUS.UNCONFIRMED) {
+      try {
+        const bridge = yield call(currentBridge);
+        yield call(resolveUncertainTransfer, bridge, uncertainId, 1);
+      } catch (e) {
+        log.error('Could not ask about a transfer signed without an answer.', e);
+      }
+    }
     const pending = yield select((state) => state.multichain.transfers
       .some((transfer) => transfer.status === TRANSFER_STATUS.PENDING));
     if (pending) {
@@ -549,6 +560,7 @@ export function* onWalletStarted() {
  * The loading screen's Try again.
  */
 export function* onLoadRequested({ payload }) {
+  yield call(syncDevBackend);
   if (yield select(isSideChainConnected)) {
     yield call(runConnect, loadNext, { pinCode: payload.pinCode, interactive: true });
   }
@@ -558,6 +570,7 @@ export function* onLoadRequested({ payload }) {
  * The user turned "Connect to side chain" on or off for the network the wallet runs on.
  */
 export function* onConnectSettingChanged({ payload }) {
+  yield call(syncDevBackend);
   if (payload.connected) {
     yield call(runConnect, turnOnSideChain, payload.pinCode);
     return;
@@ -701,14 +714,19 @@ export function* onNextSendRequested({ payload }) {
   }
 }
 
-// How often, and how many times, a transfer signed without an answer is asked about.
+// How often, and how many times, a transfer signed without an answer is asked about at first.
+// After that, the transfers poll asks again (pollPendingTransfers).
 const RESOLVE_INTERVAL_MS = 3000;
 const RESOLVE_TRIES = 10;
+
+// Whether a transfer signed without an answer is being asked about: by one asker at a time.
+let resolving = false;
 
 /**
  * Settles a transfer signed without an answer: done when its burn reached the network, a plain
  * error when it never did (nothing left the wallet), still unconfirmed when the backend can't be
- * read. Until it settles no other transfer starts, so nothing burns twice.
+ * read, or when another asker is on it. Until it settles no other transfer starts, so nothing
+ * burns twice.
  *
  * @param {Object} bridge
  * @param {string} transferId
@@ -716,33 +734,41 @@ const RESOLVE_TRIES = 10;
  * @returns {boolean} Whether it settled
  */
 export function* resolveUncertainTransfer(bridge, transferId, tries) {
-  for (let i = 0; i < tries; i += 1) {
-    try {
-      const record = yield call([bridge, bridge.resolveTransfer], transferId);
-      if (record) {
-        yield put(multichainTransferUpdate({
-          status: OPERATION_STATUS.DONE,
-          record,
-          error: null,
-          uncertainId: null,
-        }));
-        yield call(refreshTransfers);
-      } else {
-        yield put(multichainTransferUpdate({
-          status: OPERATION_STATUS.ERROR,
-          error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT).message,
-          uncertainId: null,
-        }));
-      }
-      return true;
-    } catch (e) {
-      log.error('Could not read a transfer signed without an answer.', e);
-    }
-    if (i < tries - 1) {
-      yield delay(RESOLVE_INTERVAL_MS);
-    }
+  if (resolving) {
+    return false;
   }
-  return false;
+  resolving = true;
+  try {
+    for (let i = 0; i < tries; i += 1) {
+      try {
+        const record = yield call([bridge, bridge.resolveTransfer], transferId);
+        if (record) {
+          yield put(multichainTransferUpdate({
+            status: OPERATION_STATUS.DONE,
+            record,
+            error: null,
+            uncertainId: null,
+          }));
+          yield call(refreshTransfers);
+        } else {
+          yield put(multichainTransferUpdate({
+            status: OPERATION_STATUS.ERROR,
+            error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT).message,
+            uncertainId: null,
+          }));
+        }
+        return true;
+      } catch (e) {
+        log.error('Could not read a transfer signed without an answer.', e);
+      }
+      if (i < tries - 1) {
+        yield delay(RESOLVE_INTERVAL_MS);
+      }
+    }
+    return false;
+  } finally {
+    resolving = false;
+  }
 }
 
 /**
@@ -868,7 +894,10 @@ export function* onLockChanged({ payload: locked }) {
 }
 
 export function* saga() {
-  yield call(syncDevBackend);
+  // The watchers start at once, so nothing dispatched before Unleash answers is missed. The
+  // client's kind is settled as soon as it answers, and every handler that picks a client waits
+  // for that (syncDevBackend).
+  yield fork(syncDevBackend);
   yield all([
     takeEvery(types.START_WALLET_SUCCESS, onWalletStarted),
     takeLatest(types.MULTICHAIN_CONNECT_SETTING_CHANGED, onConnectSettingChanged),

@@ -117,6 +117,27 @@ describe("a dApp request that pays the chain transfer's address", () => {
     });
   });
 
+  test.each([
+    ['a UTXO query filtered by it', {
+      method: 'htr_getUtxos',
+      params: { network: 'testnet', filterAddress: TRANSFER_ADDRESS },
+    }],
+    ['oracle data signed with it as the oracle', {
+      method: 'htr_signOracleData',
+      params: {
+        network: 'testnet', oracle: TRANSFER_ADDRESS, data: 'result', nc_id: 'ab'.repeat(32),
+      },
+    }],
+  ])("doesn't cover %s, which pays nothing", async (_label, request) => {
+    handleRpcRequest.mockResolvedValue({ type: 'GetUtxosResponse', response: [] });
+    const dispatched = await runProcessRequest(request, { state: MULTICHAIN_ON });
+    expect(handleRpcRequest).toHaveBeenCalled();
+    expect(dispatched).not.toContainEqual(expect.objectContaining({
+      type: types.SET_REOWN_MODAL,
+      payload: expect.objectContaining({ type: 'RequestError' }),
+    }));
+  });
+
   test('goes on as before with the flag off', async () => {
     handleRpcRequest.mockResolvedValue({ type: 'SendTransactionResponse', response: {} });
     await runProcessRequest(sendTo(TRANSFER_ADDRESS), {

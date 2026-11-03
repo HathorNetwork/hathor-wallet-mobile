@@ -768,6 +768,14 @@ export function createBackendNextClient({
       } catch (e) {
         throw prepareError(e);
       }
+      const cancel = () => withSession((token) => api.cancelSend(request.id, token))
+        .catch((e) => log.error('Could not cancel an unsigned Hathor Next payment.', e));
+      // The app may have locked while the backend prepared it: the keys are gone, so nothing
+      // signs, and the backend lets its outputs go now rather than when it expires.
+      if (!keys) {
+        await cancel();
+        throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
+      }
       const context = {
         b: keys.b,
         pubB: keys.pubB,
@@ -778,8 +786,6 @@ export function createBackendNextClient({
         nowS: Math.floor(nowMs() / 1000),
         ledger,
       };
-      const cancel = () => withSession((token) => api.cancelSend(request.id, token))
-        .catch((e) => log.error('Could not cancel an unsigned Hathor Next payment.', e));
       let signed = null;
       // An earlier payment holding the same outputs is asked about first: if the network rejected
       // it, its outputs are free and this payment signs them; otherwise its saved bytes go out

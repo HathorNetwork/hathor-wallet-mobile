@@ -61,6 +61,8 @@ import {
   OPERATION_STATUS,
   TRANSFER_STATUS,
 } from '../../src/multichain/state';
+import * as bridgeModule from '../../src/multichain/bridge';
+import { NEXT_CLIENT_ERROR, NextClientError } from '../../src/multichain/nextClientErrors';
 import { PasskeyCancelledError, withPasskeyWords } from '../../src/passkey/passkeySigner';
 /* eslint-enable import/first */
 
@@ -75,7 +77,8 @@ const HTR = '00';
 
 let task = null;
 
-function setup({ flag = true, scenario = MOCK_SCENARIO.FUNDED, start = true } = {}) {
+function setup(options = {}) {
+  const { flag = true, scenario = MOCK_SCENARIO.FUNDED, start = true, toggles = true } = options;
   resetLedger(NETWORK, scenario);
   let state = reducer(undefined, { type: '@@INIT' });
   const channel = stdChannel();
@@ -86,8 +89,10 @@ function setup({ flag = true, scenario = MOCK_SCENARIO.FUNDED, start = true } = 
     channel.put(action);
   };
   task = runSaga({ channel, dispatch, getState: () => state }, saga);
-  dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: flag }));
-  dispatch(featureToggleInitialized());
+  if (toggles) {
+    dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: flag }));
+    dispatch(featureToggleInitialized());
+  }
   dispatch(setServerInfo({ decimal_places: 2 }));
   dispatch(setFullNodeNetworkName(NETWORK));
   if (start) {
@@ -129,6 +134,18 @@ afterEach(() => {
 });
 
 describe('turning "Connect to side chain" on', () => {
+  test('waits for Unleash, which picks the client, and then turns it on', async () => {
+    const env = setup({ toggles: false });
+    env.dispatch(multichainConnectSettingChanged(true, { pinCode: PIN }));
+    await wait(10);
+    expect(getNextClient()).toBeNull();
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
+    env.dispatch(featureToggleInitialized());
+    await wait(2000);
+    expect(env.getState().multichain.connectedNetworks).toEqual({ [NETWORK]: true });
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+  });
+
   test('derives the keys with the PIN, registers from the beginning, loads, then saves', async () => {
     const env = setup();
     const connectSpy = jest.fn();
@@ -202,6 +219,20 @@ describe('loading Hathor Next when the wallet starts', () => {
     await wait(10);
     env.dispatch(startWalletSuccess());
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.CONNECTING);
+    await wait(2000);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+  });
+
+  test('loads when the wallet started before Unleash answered', async () => {
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
+    const env = setup({ start: false, toggles: false });
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+    env.dispatch(startWalletSuccess());
+    await wait(10);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
+    env.dispatch(featureToggleInitialized());
     await wait(2000);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
   });
@@ -518,6 +549,49 @@ describe('a transfer signed without an answer', () => {
     await expect(done).resolves.toBe(false);
     expect(dispatched).toEqual([]);
   });
+
+  test('is asked about by one asker at a time', async () => {
+    const bridge = { resolveTransfer: jest.fn().mockRejectedValue(new Error('unreachable')) };
+    const first = run(bridge, 2);
+    const second = run(bridge, 2);
+    await expect(second.done).resolves.toBe(false);
+    expect(bridge.resolveTransfer).toHaveBeenCalledTimes(1);
+    await jest.advanceTimersByTimeAsync(3000);
+    await expect(first.done).resolves.toBe(false);
+    expect(bridge.resolveTransfer).toHaveBeenCalledTimes(2);
+  });
+
+  test('is asked about again while the transfers are read, after its first tries ran out', async () => {
+    const env = setup({ scenario: MOCK_SCENARIO.EMPTY });
+    await connect(env);
+    let reachable = false;
+    const bridge = {
+      transfer: jest.fn(async () => {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, { transferId: 'transfer-1' });
+      }),
+      // The backend answers again only after the first tries ran out: the burn never left.
+      resolveTransfer: jest.fn(async () => {
+        if (!reachable) {
+          throw new Error('unreachable');
+        }
+        return null;
+      }),
+      getTransfers: jest.fn(async () => []),
+    };
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+    env.dispatch(multichainTransferRequested({ amount: 10000n, toAddress: ADDRESS, pinCode: PIN }));
+    await wait(31000);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.UNCONFIRMED,
+      uncertainId: 'transfer-1',
+    });
+    reachable = true;
+    await wait(15000);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      uncertainId: null,
+    });
+  });
 });
 
 describe('the backend for local testing', () => {
@@ -548,6 +622,14 @@ describe('locking the app', () => {
     env.dispatch(lockScreen());
     expect(forgetKeys).toHaveBeenCalledTimes(1);
     expect(env.getState().multichain.next.keysReady).toBe(false);
+  });
+
+  test('drops them even before Unleash answered', async () => {
+    const env = setup({ start: false, toggles: false });
+    const forgetKeys = jest.fn(() => true);
+    setNextClient({ forgetKeys, disconnect: jest.fn() });
+    env.dispatch(lockScreen());
+    expect(forgetKeys).toHaveBeenCalledTimes(1);
   });
 
   test('keeps the simulated keys, which are no secret', async () => {

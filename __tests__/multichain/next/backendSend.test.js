@@ -293,6 +293,29 @@ describe('a locked app', () => {
       amount: BigInt(PAYMENT.amount),
     })).resolves.toMatchObject({ sendId: 'send-1' });
   });
+
+  it('cancels a payment the backend prepared while the app locked, and signs nothing', async () => {
+    const backend = fakeBackend();
+    // The app locks while the backend prepares the payment.
+    const { fetchImpl } = backend;
+    backend.fetchImpl = async (url, options) => {
+      const response = await fetchImpl(url, options);
+      if (options.method === 'POST' && url.endsWith('/sends')) {
+        client.forgetKeys();
+      }
+      return response;
+    };
+    client = await connected(backend);
+    await expect(client.send({
+      tokenId: NATIVE,
+      to: PAYMENT.address,
+      amount: BigInt(PAYMENT.amount),
+    })).rejects.toMatchObject({ code: 'no-keys' });
+    expect(backend.signatures()).toBeNull();
+    expect(backend.calls).toContainEqual(expect.objectContaining({
+      method: 'DELETE', path: '/v1/sends/send-1',
+    }));
+  });
 });
 
 describe('what the user is told when the backend can\'t prepare a payment', () => {
