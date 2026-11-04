@@ -21,7 +21,7 @@ The host setup (KVM, JDK 17, NDK, Maestro, the AVD) and the Android and Maestro 
 
 ## How the flags work
 
-The app on a local node (`localhost`, `127.0.0.1`, `[::1]` or `10.0.2.2`) fetches its flags from the fake Unleash on port 18042 of that host, instead of the real Unleash (`getUnleashUrl` in `src/sagas/featureToggle.js`), in debug and release builds alike, since runs use a release build. Public networks always read the real one: a public network's servers can misbehave with a flag on that they expect off.
+The e2e build and debug builds, on a local node (`localhost`, `127.0.0.1` or `10.0.2.2`), fetch their flags from the fake Unleash on port 18042 of that host, instead of the real Unleash (`getUnleashUrl` in `src/sagas/featureToggle.js`). The e2e build is told apart by the `-e2e` suffix its build type adds to the version, which a store user can't set. Store builds and public networks always read the real one: a public network's servers can misbehave with a flag on that they expect off.
 
 The app fetches flags when it connects to a network and then every 15 s. Set flags before the app reaches the privnet and they apply from the start. A change mid-run takes up to 15 s; `--wait` returns once the app has fetched it.
 
@@ -91,7 +91,7 @@ The runner reads ids too: it finds where to tap with adb (`centreOf` in `run.js`
 
 ## The e2e build
 
-Runs use the `e2e` build type (`android/app/build.gradle`): the release build, with its JS bundled and no dev mode, which may also talk plain HTTP to a node on the device or its host (`android/app/src/e2e`); a release build allows only HTTPS, and the privnet is plain HTTP. It needs no Metro, shows no LogBox toasts, and has no dev keys to trip on.
+Runs use the `e2e` build type (`android/app/build.gradle`): the release build, with its JS bundled and no dev mode, which may also talk plain HTTP to a node on the device or its host (`android/app/src/e2e`) and reads its flags from the fake Unleash there; a release build allows only HTTPS, and the privnet is plain HTTP. It needs no Metro, shows no LogBox toasts, and has no dev keys to trip on.
 
 `app-on-privnet.sh` writes the app's storage as root (`adb root`), which the emulator allows on an image without Play Store (the `default` system image), so it works on a build that isn't debuggable. It stops if adb didn't get root, and it refuses anything but an emulator. A debug build with Metro still runs: the runner records which build it found in the results file.
 

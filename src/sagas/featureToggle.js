@@ -19,7 +19,7 @@ import {
   spawn,
   takeEvery,
 } from 'redux-saga/effects';
-import { getUniqueId } from 'react-native-device-info';
+import { getUniqueId, getVersion } from 'react-native-device-info';
 import {
   types,
   setUnleashClient,
@@ -47,15 +47,22 @@ const MAX_RETRIES = 5;
 const log = logger('featureToggle');
 
 // Hosts a local node is reached through: the emulator's adb reverse and its alias for the host.
-const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]', '10.0.2.2'];
+const LOCAL_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2'];
+
+// The e2e build type adds this to the native version (android/app/build.gradle).
+const E2E_VERSION_SUFFIX = '-e2e';
 
 /**
- * On a node on this device or its host (the e2e kit's local privnet), the app reads its flags from
- * the e2e fake Unleash next to the node, so a test run controls every flag, in debug and release
- * builds alike: e2e runs use release builds. Public networks always read the real one: a public
- * network can misbehave with a flag on that its servers expect off.
+ * Debug builds and the e2e build, on a node on this device or its host (the e2e kit's local
+ * privnet), read their flags from the e2e fake Unleash next to the node, so a test run controls
+ * every flag. Store builds always read the real one: that port is unauthenticated, and anything
+ * answering on it would set their flags. So do public networks: they can misbehave with a flag on
+ * that their servers expect off.
  */
 export function getUnleashUrl(nodeUrl) {
+  if (!__DEV__ && !getVersion().endsWith(E2E_VERSION_SUFFIX)) {
+    return UNLEASH_URL;
+  }
   const match = /^(https?):\/\/(\[[^\]]+\]|[^/:]+)/.exec(nodeUrl || '');
   if (!match || !LOCAL_HOSTS.includes(match[2])) {
     return UNLEASH_URL;

@@ -120,9 +120,11 @@ android {
         }
         // The build the e2e kit runs (QA/e2e): a release build, JS bundled and no dev mode, that
         // may also talk plain HTTP to a node on the device or its host, as the local privnet is
-        // (src/e2e). ./gradlew assembleE2e
+        // (src/e2e). The suffix tells the app this is the e2e build (getUnleashUrl in
+        // src/sagas/featureToggle.js). ./gradlew assembleE2e
         e2e {
             initWith release
+            versionNameSuffix "-e2e"
             matchingFallbacks = ['release']
         }
     }

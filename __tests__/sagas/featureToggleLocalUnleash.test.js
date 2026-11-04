@@ -5,7 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { jest, describe, test, expect, afterEach } from '@jest/globals';
+import fs from 'fs';
+import path from 'path';
+import { jest, describe, test, expect, afterEach, beforeEach } from '@jest/globals';
+
+const STORE_VERSION = '0.40.1';
+let mockVersion = STORE_VERSION;
+jest.mock('react-native-device-info', () => ({
+  ...jest.requireActual('react-native-device-info/jest/react-native-device-info-mock'),
+  getVersion: () => mockVersion,
+}));
 
 const mockClients = [];
 jest.mock('@hathor/unleash-client', () => {
@@ -57,32 +66,73 @@ describe('the Unleash the app reads', () => {
   const dev = global.__DEV__;
   afterEach(() => {
     global.__DEV__ = dev;
+    mockVersion = STORE_VERSION;
   });
 
-  test('is the e2e fake Unleash next to the local node', async () => {
-    global.__DEV__ = true;
-    expect(await unleashUrlFor(localNetwork)).toBe('http://localhost:18042/proxy');
+  describe('in a debug build', () => {
+    beforeEach(() => {
+      global.__DEV__ = true;
+    });
+
+    test('is the e2e fake Unleash next to a local node', async () => {
+      expect(await unleashUrlFor(localNetwork)).toBe('http://localhost:18042/proxy');
+    });
+
+    test('keeps the host the node is reached through', async () => {
+      const viaHostAlias = { ...localNetwork, nodeUrl: 'http://10.0.2.2:18083/v1a/' };
+      expect(await unleashUrlFor(viaHostAlias)).toBe('http://10.0.2.2:18042/proxy');
+    });
+
+    test('is the real Unleash on a public network', async () => {
+      expect(await unleashUrlFor(PRE_SETTINGS_TESTNET)).toBe(UNLEASH_URL);
+    });
+
+    // The e2e build's network security config doesn't allow plain HTTP to it either.
+    test('is the real Unleash on an IPv6 loopback node', async () => {
+      const onIpv6 = { ...localNetwork, nodeUrl: 'http://[::1]:18083/v1a/' };
+      expect(await unleashUrlFor(onIpv6)).toBe(UNLEASH_URL);
+    });
   });
 
-  test('keeps the host the node is reached through', async () => {
-    global.__DEV__ = true;
-    const viaHostAlias = { ...localNetwork, nodeUrl: 'http://10.0.2.2:18083/v1a/' };
-    expect(await unleashUrlFor(viaHostAlias)).toBe('http://10.0.2.2:18042/proxy');
+  describe('in the e2e build', () => {
+    beforeEach(() => {
+      global.__DEV__ = false;
+      mockVersion = `${STORE_VERSION}-e2e`;
+    });
+
+    test('is the e2e fake Unleash next to a local node', async () => {
+      expect(await unleashUrlFor(localNetwork)).toBe('http://localhost:18042/proxy');
+    });
+
+    test('is the real Unleash on a public network', async () => {
+      expect(await unleashUrlFor(PRE_SETTINGS_TESTNET)).toBe(UNLEASH_URL);
+    });
   });
 
-  test('is the real Unleash on a public network', async () => {
-    global.__DEV__ = true;
-    expect(await unleashUrlFor(PRE_SETTINGS_TESTNET)).toBe(UNLEASH_URL);
+  describe('in a store build', () => {
+    beforeEach(() => {
+      global.__DEV__ = false;
+    });
+
+    test.each([
+      ['a release', STORE_VERSION],
+      ['a release candidate', `${STORE_VERSION}-rc.1`],
+    ])('is the real Unleash on a local node, as %s', async (_, version) => {
+      mockVersion = version;
+      expect(await unleashUrlFor(localNetwork)).toBe(UNLEASH_URL);
+    });
+
+    test('is the real Unleash on a public network', async () => {
+      expect(await unleashUrlFor(PRE_SETTINGS_TESTNET)).toBe(UNLEASH_URL);
+    });
   });
 
-  // e2e runs use release builds, so the local network decides, not the build.
-  test('is the e2e fake Unleash in a release build on a local network', async () => {
-    global.__DEV__ = false;
-    expect(await unleashUrlFor(localNetwork)).toBe('http://localhost:18042/proxy');
-  });
-
-  test('is the real Unleash in a release build on a public network', async () => {
-    global.__DEV__ = false;
-    expect(await unleashUrlFor(PRE_SETTINGS_TESTNET)).toBe(UNLEASH_URL);
+  // What getUnleashUrl trusts: only the e2e build type may carry the suffix.
+  test('gets the e2e version suffix from the e2e build type alone', () => {
+    const gradle = fs.readFileSync(path.resolve(__dirname, '../../android/app/build.gradle'), 'utf8');
+    const suffixes = gradle.match(/versionNameSuffix\s+"[^"]*"/g);
+    expect(suffixes).toEqual(['versionNameSuffix "-e2e"']);
+    const e2eBlock = /\n {8}e2e \{.*?\n {8}\}/s.exec(gradle)[0];
+    expect(e2eBlock).toContain(suffixes[0]);
   });
 });
