@@ -4,7 +4,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-# Points the debug app on the emulator at the local privnet (../privnet) before it starts, by
+# Points the app on the emulator at the local privnet (../privnet) before it starts, by
 # writing the custom network the app keeps in its storage. The app's first flag fetch then goes
 # to the fake Unleash, so no flag from the real one (push notifications, say) is ever on.
 #
@@ -28,9 +28,11 @@ SETTINGS+=",\"explorerUrl\":\"https://explorer.testnet.hathor.network/\""
 SETTINGS+=",\"explorerServiceUrl\":\"https://explorer-service.testnet.hathor.network/\""
 SETTINGS+=",\"txMiningServiceUrl\":\"http://localhost:18035/\",\"walletServiceUrl\":\"\",\"walletServiceWsUrl\":\"\"}"
 
-# adbd restarts as root, which drops the reverse ports: set them after.
+# adbd restarts as root, which drops the reverse ports: set them after. adb root exits 0 even when
+# adbd refuses, and everything below needs root, so check it took.
 $ADB root >/dev/null
 $ADB wait-for-device
+[ "$($ADB shell id -u)" = 0 ] || { echo "app-on-privnet: adb has no root here; use an image without Play Store" >&2; exit 1; }
 $ADB shell am force-stop $APP
 if [ "${1:-}" = --fresh ]; then $ADB shell pm clear $APP >/dev/null; fi
 # 8081: Metro, for a debug build.

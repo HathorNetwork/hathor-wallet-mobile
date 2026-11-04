@@ -93,7 +93,7 @@ The runner reads ids too: it finds where to tap with adb (`centreOf` in `run.js`
 
 Runs use the `e2e` build type (`android/app/build.gradle`): the release build, with its JS bundled and no dev mode, which may also talk plain HTTP to a node on the device or its host (`android/app/src/e2e`); a release build allows only HTTPS, and the privnet is plain HTTP. It needs no Metro, shows no LogBox toasts, and has no dev keys to trip on.
 
-`app-on-privnet.sh` writes the app's storage as root (`adb root`), which the emulator allows on an image without Play Store (the `default` system image), so it works on a build that isn't debuggable. A debug build with Metro still runs: the runner records which build it found in the results file.
+`app-on-privnet.sh` writes the app's storage as root (`adb root`), which the emulator allows on an image without Play Store (the `default` system image), so it works on a build that isn't debuggable. It stops if adb didn't get root, and it refuses anything but an emulator. A debug build with Metro still runs: the runner records which build it found in the results file.
 
 ## Run
 

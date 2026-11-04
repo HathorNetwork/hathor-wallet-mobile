@@ -24,6 +24,8 @@ case "$*" in
   "shell getprop ro.boot.qemu")
     if [ -n "$STUB_NO_DEVICE" ]; then echo "adb: no devices/emulators found" >&2; exit 1; fi
     echo "$STUB_QEMU" ;;
+  "shell id -u") echo "$STUB_UID" ;;
+  root) echo "$STUB_ROOT_ANSWER" ;;
   *SELECT*) echo '{"fullNetwork":"stub-net"}' ;;
 esac
 `;
@@ -42,8 +44,10 @@ const stub = (name, body) => {
 };
 const adbCalls = () => (fs.existsSync(logFile) ? fs.readFileSync(logFile, 'utf8').trim().split('\n') : []);
 
-const PHONE = { STUB_QEMU: '' };
-const EMULATOR = { STUB_QEMU: '1' };
+// A production adbd refuses root, and the adb client still exits 0.
+const PHONE = { STUB_QEMU: '', STUB_UID: '2000', STUB_ROOT_ANSWER: 'adbd cannot run as root in production builds' };
+const EMULATOR = { STUB_QEMU: '1', STUB_UID: '0', STUB_ROOT_ANSWER: 'restarting adbd as root' };
+const EMULATOR_WITHOUT_ROOT = { ...EMULATOR, STUB_UID: '2000', STUB_ROOT_ANSWER: 'adbd cannot run as root in production builds' };
 const NO_DEVICE = { STUB_NO_DEVICE: '1' };
 
 function runScript(device, ...args) {
@@ -75,6 +79,13 @@ describe('app-on-privnet.sh', () => {
   it('refuses when adb reaches no single device', () => {
     expect(runScript(NO_DEVICE, '--fresh').status).toBe(1);
     expect(adbCalls()).toEqual(['shell getprop ro.boot.qemu']);
+  });
+
+  it('refuses an emulator where adb did not get root, though adb root exits 0', () => {
+    const { status, stderr } = runScript(EMULATOR_WITHOUT_ROOT, '--fresh');
+    expect(status).toBe(1);
+    expect(stderr).toContain('root');
+    expect(adbCalls().join('\n')).not.toMatch(/pm clear|force-stop/);
   });
 
   it('wipes the app on an emulator', () => {
