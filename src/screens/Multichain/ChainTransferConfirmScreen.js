@@ -33,14 +33,15 @@ import checkIcon from '../../assets/images/icCheckBig.png';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
 /**
- * What a transfer's success says. There is no tracking yet, so it says when to expect the HTR.
+ * What a transfer's success says. There is no tracking yet, so it says when to expect the tokens.
  *
  * @param {number} etaSeconds
+ * @param {string} symbol The symbol of what arrives
  * @returns {string}
  */
-export const transferSentText = (etaSeconds) => {
+export const transferSentText = (etaSeconds, symbol) => {
   const eta = arrivalText(etaSeconds);
-  return t`Your HTR will arrive on Hathor Next in ${eta}.`;
+  return t`Your ${symbol} will arrive on Hathor Next in ${eta}.`;
 };
 
 /**
@@ -57,7 +58,7 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
     tokenId = '00',
     toAddress,
   } = route.params;
-  const { bridge, decimalPlaces, available } = useTransferContext();
+  const { bridge, decimalPlaces, available, symbol } = useTransferContext();
   const ownAddress = useSelector((state) => state.multichain.next.address);
   const simulated = useSelector(isSideChainSimulated);
   const sideChainConfig = useSelector(selectSideChainConfig);
@@ -77,8 +78,8 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
   }
 
   const quote = bridge.quote({ from, to, amount, available });
-  const receiveSymbol = transferReceiveSymbol(sideChainConfig);
-  const htr = (value) => `${renderValue(value, false, decimalPlaces)} HTR`;
+  const receiveSymbol = transferReceiveSymbol(sideChainConfig, symbol);
+  const render = (value) => `${renderValue(value, false, decimalPlaces)} ${symbol}`;
   const isOwnAddress = sameNextAddress(toAddress, ownAddress);
 
   const send = (pinCode) => dispatch(multichainTransferRequested({
@@ -111,7 +112,7 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
         return (
           <FeedbackModal
             icon={<Image source={checkIcon} style={styles.feedbackIcon} resizeMode='contain' />}
-            text={transferSentText(quote.etaSeconds)}
+            text={transferSentText(quote.etaSeconds, receiveSymbol)}
             onDismiss={done}
             action={<NewHathorButton title={t`Done`} onPress={done} />}
           />
@@ -154,7 +155,7 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
           <View style={styles.routeSide}>
             <ChainTag chain={from} />
             <Text style={styles.routeLabel}>{t`You send`}</Text>
-            <Text style={styles.routeAmount}>{htr(amount)}</Text>
+            <Text style={styles.routeAmount}>{render(amount)}</Text>
           </View>
           <Text style={styles.routeArrow}>→</Text>
           <View style={[styles.routeSide, styles.routeSideEnd]}>
@@ -170,8 +171,8 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
         <Text style={styles.address} selectable>{toAddress}</Text>
 
         <View style={styles.summary}>
-          <SummaryRow label={t`Bridge fee`} value={htr(quote.bridgeFee)} />
-          <SummaryRow label={t`Network fee`} value={htr(quote.networkFee)} />
+          <SummaryRow label={t`Bridge fee`} value={render(quote.bridgeFee)} />
+          <SummaryRow label={t`Network fee`} value={render(quote.networkFee)} />
           <SummaryRow label={t`Arrives in`} value={arrivalText(quote.etaSeconds)} />
         </View>
         <View style={styles.warning}>

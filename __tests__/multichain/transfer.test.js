@@ -93,9 +93,9 @@ describe('a transfer\'s progress, as its bridge follows it', () => {
   });
 });
 
-describe('what a transfer of HTR becomes on Hathor Next', () => {
-  test('HTR where the bridge carries it as HTR, the native token where it mints that', () => {
-    expect(transferReceiveSymbol(getSideChainConfig('testnet-juliet'))).toBe('HTR');
-    expect(transferReceiveSymbol({ tokenMap: [], nativeTokenSymbol: 'USDT' })).toBe('USDT');
+describe("what a transfer of Hathor Network's native token becomes on Hathor Next", () => {
+  test('the same token where the bridge carries it, the native token where it mints that', () => {
+    expect(transferReceiveSymbol(getSideChainConfig('testnet-juliet'), 'TNT')).toBe('TNT');
+    expect(transferReceiveSymbol({ tokenMap: [], nativeTokenSymbol: 'USDT' }, 'TNT')).toBe('USDT');
   });
 });

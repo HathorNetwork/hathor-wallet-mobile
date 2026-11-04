@@ -64,7 +64,8 @@ afterEach(async () => {
   jest.restoreAllMocks();
 });
 
-function makeStore({ connected = true } = {}) {
+// `nativeToken` is what the fullnode reports; none until its version data is read.
+function makeStore({ connected = true, nativeToken } = {}) {
   const initial = reducer(undefined, { type: '@@INIT' });
   const actions = [];
   const record = () => (nextFn) => (action) => {
@@ -75,7 +76,7 @@ function makeStore({ connected = true } = {}) {
     ...initial,
     networkSettings: PRE_SETTINGS_TESTNET,
     featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [MULTICHAIN_FEATURE_TOGGLE]: true },
-    serverInfo: { decimal_places: 2 },
+    serverInfo: { decimal_places: 2, native_token: nativeToken },
     fullNodeNetworkName: NETWORK,
     tokensBalance: { '00': { status: 'ready', data: { available: 125000n } } },
     multichain: {
@@ -265,6 +266,40 @@ describe('the transfer between chains', () => {
       status: OPERATION_STATUS.UNCONFIRMED,
       uncertainId: 'transfer-1',
     });
+  });
+
+  test("names Hathor Network's native token by the symbol the fullnode reports", async () => {
+    const { store } = makeStore({ nativeToken: { name: 'Test Native', symbol: 'TNT' } });
+    const params = { amount: '10000', toAddress: OWN_ADDRESS };
+    const form = await mount(
+      store, (
+        <ChainTransferScreen
+          navigation={{ navigate: jest.fn(), goBack: jest.fn() }}
+          route={{ params }}
+        />
+      )
+    );
+    const formText = textOf(form);
+    expect(formText).toEqual(expect.arrayContaining([
+      'TNT · 1,250.00 TNT available',
+      'TNT',
+      '99.90 TNT',
+      '0.10 TNT',
+    ]));
+    expect(formText.join(' ')).not.toContain('HTR');
+    await act(async () => { form.unmount(); });
+
+    const confirm = await mount(
+      store,
+      <ChainTransferConfirmScreen navigation={holdableNavigation()} route={{ params }} />,
+    );
+    expect(textOf(confirm)).toContain('100.00 TNT');
+    expect(textOf(confirm).join(' ')).not.toContain('HTR');
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE }));
+    });
+    expect(confirm.root.findByType(FeedbackModal).props.text)
+      .toBe('Your TNT will arrive on Hathor Next in about 2 minutes.');
   });
 });
 

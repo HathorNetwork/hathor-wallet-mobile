@@ -86,6 +86,11 @@ const SEND_INITIAL_STATE = {
   error: null,
 };
 
+/**
+ * A Hathor Next payment in these states is on its way: its outcome is still to come.
+ */
+export const SEND_IN_FLIGHT = [OPERATION_STATUS.SENDING, 'pending'];
+
 // A transfer in these states is still being decided: a reset leaves it as it is.
 const TRANSFER_IN_FLIGHT = [OPERATION_STATUS.SENDING, OPERATION_STATUS.UNCONFIRMED];
 
@@ -172,7 +177,7 @@ export function multichainReducer(state = MULTICHAIN_INITIAL_STATE, action) {
     case types.MULTICHAIN_NEXT_SEND_RESET:
       // A payment on its way outlives the screen that sent it: its outcome is still to come.
       // Leaving Hathor Next (MULTICHAIN_NEXT_RESET) is what drops it.
-      if ([OPERATION_STATUS.SENDING, 'pending'].includes(state.send.status)) {
+      if (SEND_IN_FLIGHT.includes(state.send.status)) {
         return state;
       }
       return { ...state, send: SEND_INITIAL_STATE };

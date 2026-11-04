@@ -71,6 +71,7 @@ import {
   CONNECT_STATUS,
   NEXT_STATUS,
   OPERATION_STATUS,
+  SEND_IN_FLIGHT,
   TRANSFER_STATUS,
 } from '../multichain/state';
 
@@ -678,12 +679,19 @@ export function* onNextHistoryRequested({ payload }) {
  * Signs and submits a Hathor Next payment. Sign-once: a draft is sent at most once, so a second
  * request for the same draft does nothing, whatever the first one's outcome. The outcome arrives
  * from the client's events.
+ *
+ * One payment is followed at a time: while one is on its way, another draft sends nothing, so the
+ * outcome of the first is never lost to the second.
  */
 export function* onNextSendRequested({ payload }) {
   const { tokenId, to, amount, draftId } = payload;
   const send = yield select((state) => state.multichain.send);
   if (send.draftId === draftId) {
     log.error('A Hathor Next draft was asked to be sent twice; the second request was ignored.');
+    return;
+  }
+  if (SEND_IN_FLIGHT.includes(send.status)) {
+    log.error('A Hathor Next draft was asked to be sent while another payment is on its way; it was ignored.');
     return;
   }
   yield put(multichainNextSendUpdate({

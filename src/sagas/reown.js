@@ -956,7 +956,7 @@ export function* processRequest(action) {
         show: true,
         type: ReownModalTypes.REQUEST_ERROR,
         data: {
-          errorMessage: t`This request pays the address that moves HTR to Hathor Next. HTR sent to it directly is lost, so the request was refused.`,
+          errorMessage: t`This request pays an address that is only for transfers to Hathor Next. Anything sent to it directly is lost, so the request was refused.`,
         },
       }));
       yield call(() => walletKit.respondSessionRequest({

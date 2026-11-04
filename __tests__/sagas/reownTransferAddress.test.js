@@ -112,7 +112,7 @@ describe("a dApp request that pays the chain transfer's address", () => {
       payload: {
         show: true,
         type: 'RequestError',
-        data: { errorMessage: expect.stringContaining('moves HTR to Hathor Next') },
+        data: { errorMessage: expect.stringContaining('only for transfers to Hathor Next') },
       },
     });
   });

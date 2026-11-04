@@ -431,6 +431,28 @@ describe('a Hathor Next payment', () => {
     expect(env.getState().multichain.next.balances[HTR].data.available).toBe(2395000000n);
   });
 
+  test('waits for the one on its way: another draft sends nothing until it settles', async () => {
+    const env = setup();
+    await connect(env);
+    const sendSpy = jest.spyOn(getNextClient(), 'send');
+    env.dispatch(draft('draft-1'));
+    env.dispatch(draft('draft-2'));
+    await wait(1000);
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.RECORDED,
+      draftId: 'draft-1',
+    });
+
+    env.dispatch(draft('draft-3'));
+    await wait(1000);
+    expect(sendSpy).toHaveBeenCalledTimes(2);
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.RECORDED,
+      draftId: 'draft-3',
+    });
+  });
+
   test('settles even when it settled before send() returned', async () => {
     const env = setup();
     await connect(env);

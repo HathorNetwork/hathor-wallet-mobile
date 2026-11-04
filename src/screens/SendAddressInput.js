@@ -70,7 +70,7 @@ export const SendAddressInput = () => {
   // burns, and only the transfer may pay it. Like everything multichain, only behind the flag.
   const transferAddressError = (address) => (multichainOn
     && isTransferAddress(address, sideChainConfig)
-    ? t`This address moves HTR to Hathor Next, and HTR sent to it directly is lost. Use Transfer between chains instead.`
+    ? t`This address is only for transfers to Hathor Next, and anything sent to it directly is lost. Use Transfer between chains instead.`
     : null);
   // A tap anywhere on the card around the input focuses it: an empty multiline input is one
   // line tall, so the card's padding wouldn't take the tap otherwise.

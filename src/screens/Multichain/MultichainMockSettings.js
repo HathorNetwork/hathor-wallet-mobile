@@ -47,7 +47,7 @@ export default function MultichainMockSettings({ navigation }) {
           <>
             <SimulatedTag />
             <Text style={styles.body}>
-              {t`Nothing here reaches a network. Transfers to Hathor Next don't spend your Hathor Network HTR, and arrive here only when sent to your own Hathor Next address.`}
+              {t`Nothing here reaches a network. Transfers to Hathor Next don't spend your Hathor Network balance, and arrive here only when sent to your own Hathor Next address.`}
             </Text>
             <Text style={styles.label}>{t`Scenario`}</Text>
             <RadioGroup

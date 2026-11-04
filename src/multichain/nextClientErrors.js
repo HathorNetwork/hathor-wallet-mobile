@@ -75,11 +75,11 @@ export function nextClientErrorMessage(code) {
     case NEXT_CLIENT_ERROR.TRANSFER_REFUSED:
       return t`Hathor Next prepared a different transfer than the one you approved, so nothing was signed or sent.`;
     case NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN:
-      return t`We couldn't confirm the transfer yet. Check your HTR history before trying again.`;
+      return t`We couldn't confirm the transfer yet. Check your Hathor Network history before trying again.`;
     case NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT:
       return t`The transfer didn't go through. Nothing left your wallet.`;
     case NEXT_CLIENT_ERROR.TRANSFER_TOO_MANY_INPUTS:
-      return t`This amount needs too many of your HTR outputs for one transfer. Try a smaller amount.`;
+      return t`This amount needs too many of your Hathor Network outputs for one transfer. Try a smaller amount.`;
     default:
       return t`Something went wrong on Hathor Next.`;
   }

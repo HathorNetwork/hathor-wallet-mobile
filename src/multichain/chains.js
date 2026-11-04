@@ -110,18 +110,19 @@ export function isTransferAddress(address, config) {
 }
 
 /**
- * The symbol of what a transfer of Hathor Network's HTR becomes on Hathor Next: HTR where the
- * bridge's token map carries it as HTR, otherwise the side chain's native token, which the burn
- * mints one base unit for one base unit.
+ * The symbol of what a transfer of Hathor Network's native token becomes on Hathor Next: the
+ * same symbol where the bridge's token map carries the token, otherwise the side chain's native
+ * token, which the burn mints one base unit for one base unit.
  *
  * @param {Object|null} config The side chain config
+ * @param {string} hathorSymbol The symbol of Hathor Network's native token
  * @returns {string}
  */
-export function transferReceiveSymbol(config) {
+export function transferReceiveSymbol(config, hathorSymbol) {
   if (!config || config.tokenMap?.some((m) => m.hathor === '00')) {
-    return 'HTR';
+    return hathorSymbol;
   }
-  return config.nativeTokenSymbol ?? 'HTR';
+  return config.nativeTokenSymbol ?? hathorSymbol;
 }
 
 /**

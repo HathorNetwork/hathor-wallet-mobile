@@ -31,7 +31,7 @@ import {
   verdictLead,
 } from '../../multichain/content';
 import { selectSideChainConfig } from '../../multichain/gating';
-import { OPERATION_STATUS } from '../../multichain/state';
+import { OPERATION_STATUS, SEND_IN_FLIGHT } from '../../multichain/state';
 import { authorizeTransaction } from '../../passkey/authorizeTransaction';
 import {
   isExpectedPasskeyError,
@@ -90,8 +90,10 @@ export default function NextSendConfirmScreen() {
   // While the passkey sheet is open.
   const [authorizing, setAuthorizing] = useState(false);
   const [passkeyError, setPasskeyError] = useState(null);
+  // Another draft's payment still on its way: this one waits for its outcome.
+  const earlierOnItsWay = send.draftId !== draftId && SEND_IN_FLIGHT.includes(send.status);
   // Sending also pauses while Hathor Next is offline or syncing: the draft would be refused.
-  const canSend = !authorized && !authorizing && online && !sweeping;
+  const canSend = !authorized && !authorizing && online && !sweeping && !earlierOnItsWay;
 
   useEffect(() => () => {
     dispatch(multichainNextSendReset());
@@ -103,7 +105,7 @@ export default function NextSendConfirmScreen() {
   const render = (value) => `${renderNextValue(value, hathorDecimalPlaces)} ${symbol}`;
   const outcome = send.draftId === draftId ? send.status : OPERATION_STATUS.IDLE;
   // No way back while the payment is on its way: the outcome shows here.
-  useHoldScreen(navigation, outcome === OPERATION_STATUS.SENDING || outcome === 'pending');
+  useHoldScreen(navigation, SEND_IN_FLIGHT.includes(outcome));
 
   const submit = (pinCode) => {
     setAuthorized(true);
@@ -252,6 +254,12 @@ export default function NextSendConfirmScreen() {
           <Row label={t`Total`} value={render(amount + fee)} strong />
         </View>
         {sweeping && <SyncingNotice text={syncingSendBody()} style={styles.syncing} />}
+        {earlierOnItsWay && (
+          <SyncingNotice
+            text={t`An earlier payment is still on its way. You can send once it settles.`}
+            style={styles.syncing}
+          />
+        )}
         <View style={styles.privacy}>
           <Text style={styles.privacyTitle}>{t`Private`}</Text>
           <Text style={styles.privacyText}>{privateSendStatement()}</Text>

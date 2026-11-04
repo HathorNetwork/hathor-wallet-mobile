@@ -7,12 +7,19 @@
 
 import { jest, describe, test, expect, afterEach } from '@jest/globals';
 
+// The screen's focus effect: running it again opens the screen again, as going back to its tab
+// does.
+const mockFocus = { effect: null };
+
 jest.mock('@react-navigation/native', () => {
   const ReactInMock = jest.requireActual('react');
   return {
     ...jest.requireActual('@react-navigation/native'),
-    // The screen opens once.
-    useFocusEffect: (effect) => ReactInMock.useEffect(() => effect(), []),
+    // The screen opens when it mounts.
+    useFocusEffect: (effect) => {
+      mockFocus.effect = effect;
+      ReactInMock.useEffect(() => effect(), []);
+    },
   };
 });
 
@@ -103,5 +110,20 @@ describe('Receive', () => {
     const texts = textOf(renderer);
     expect(texts).not.toContain('Hathor Network address');
     expect(texts).toEqual(expect.arrayContaining([OWN_ADDRESS, 'Share', 'Simulated']));
+  });
+
+  test('opens on Hathor Network again after it was left on Hathor Next', async () => {
+    const renderer = await mount(makeStore({ connected: true }));
+    // The toggle's own option, pressed as the user does: it marks itself and tells the screen.
+    const option = (name) => renderer.root.findByType(TwoOptionsToggle)
+      .find((node) => node.props.optionValue === name);
+    await act(async () => { option('Hathor Next').props.onTap(); });
+    expect(option('Hathor Next').props.isActive).toBe(true);
+    expect(textOf(renderer)).not.toContain('Hathor Network address');
+
+    await act(async () => { mockFocus.effect(); });
+    expect(textOf(renderer)).toContain('Hathor Network address');
+    expect(option('Hathor Network').props.isActive).toBe(true);
+    expect(option('Hathor Next').props.isActive).toBe(false);
   });
 });
