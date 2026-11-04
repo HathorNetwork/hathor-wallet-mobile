@@ -10,9 +10,11 @@
 #
 #   app-on-privnet.sh [--fresh]   --fresh: wipe the app's data first (a new install, no wallet)
 #
+# Emulators only: store builds share this app id, so --fresh on a phone would erase its wallet.
 # Needs a debuggable build (run-as) and the privnet running. Uses adb from $ADB or the SDK.
 set -euo pipefail
 ADB=${ADB:-~/Android/Sdk/platform-tools/adb}
+[ "$($ADB shell getprop ro.boot.qemu)" = 1 ] || { echo "app-on-privnet: emulators only" >&2; exit 1; }
 APP=network.hathor.wallet
 NODE_URL=http://localhost:18083/v1a/
 NETWORK=$(curl -sf "${NODE_URL}status" | python3 -c 'import json, sys; print(json.load(sys.stdin)["server"]["network"])') \

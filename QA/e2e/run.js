@@ -22,6 +22,7 @@ const { execFileSync, spawnSync } = require('child_process');
 const YAML = require('yaml');
 const { loadGraph } = require('../graph/tools/load');
 const { allScenarios } = require('../graph/tools/scenarios');
+const { assertEmulator } = require('./lib/device');
 const { buildSendFlow, unrunnableReason } = require('./lib/sendFlow');
 
 const E2E = __dirname;
@@ -93,7 +94,7 @@ async function preflight() {
     ['funding helper', async () => { if (!(await getJson(`${FUNDING_URL}/ready`)).ready) throw new Error('not ready'); }],
     ['fake Unleash', () => getJson(`${UNLEASH_URL}/flags`)],
     ['Metro', async () => { if (!(await (await fetch('http://localhost:8081/status')).text()).includes('running')) throw new Error('not running'); }],
-    ['emulator', async () => { if (!execFileSync(ADB, ['devices'], { encoding: 'utf8' }).includes('\tdevice')) throw new Error('no device'); }],
+    ['emulator', async () => assertEmulator(ADB)],
   ];
   for (const [name, check] of checks) {
     try {
@@ -133,7 +134,7 @@ async function prepareSetup(setup, runDir) {
     });
   }
   log('app: fresh install on the privnet');
-  execFileSync(path.join(E2E, 'bin', 'app-on-privnet.sh'), ['--fresh'], { stdio: 'ignore' });
+  execFileSync(path.join(E2E, 'bin', 'app-on-privnet.sh'), ['--fresh'], { stdio: ['ignore', 'ignore', 'inherit'] });
   const onboardDir = path.join(runDir, 'onboard');
   fs.mkdirSync(onboardDir, { recursive: true });
   const onboard = maestro(path.join(E2E, 'flows', 'onboard.yaml'), onboardDir);
