@@ -23,6 +23,7 @@
 const fs = require('fs');
 const path = require('path');
 const { walletUtils, addressUtils, HathorWallet, Connection, config, TokenVersion } = require('@hathor/wallet-lib');
+const { isLocalNode } = require('../lib/localNode');
 
 const NODE_URL = process.env.NODE_URL || 'http://localhost:18083/v1a/';
 const TX_MINING_URL = process.env.TX_MINING_URL || 'http://localhost:18035/';
@@ -184,8 +185,14 @@ async function sendAll(wallet, address, uid) {
  *
  * The run dir holds tokens.json ([{ uid, kind, symbol }]), treasury.seed and the seeds of the
  * run's other wallets (app.seed, peer.seed), as run.js writes them.
+ *
+ * Refuses a node off this machine: it spends all those seeds hold, to an address whose seed is
+ * public (privnet.yml).
  */
 async function cleanup(runDir) {
+  if (!isLocalNode(NODE_URL)) {
+    throw new Error(`cleanup runs only on the local privnet, and NODE_URL is ${NODE_URL}`);
+  }
   if (!runDir || !fs.existsSync(path.join(runDir, 'treasury.seed'))) {
     throw new Error('usage: cleanup <run-dir with treasury.seed>');
   }
