@@ -115,8 +115,9 @@ export const UNLEASH_URL = 'https://unleash-proxy.b7e6a7f52ee9fefaf0c53e300cfcb0
 export const UNLEASH_CLIENT_KEY = 'wKNhpEXKa39aTRgIjcNsO4Im618bRGTq';
 export const UNLEASH_POLLING_INTERVAL = 15 * 1000; // 15s
 /**
- * Port of the fake Unleash the e2e kit (QA/e2e) runs next to a local node. Debug builds on a
- * local network read their flags from it, so a test run can set every flag.
+ * Port of the fake Unleash the e2e kit (QA/e2e) runs next to a local node. Debug builds and the
+ * e2e build on a local node read their flags from it, so a test run can set every flag; store
+ * builds never do.
  */
 export const E2E_UNLEASH_PORT = 18042;
 export const unleashStorageKey = {

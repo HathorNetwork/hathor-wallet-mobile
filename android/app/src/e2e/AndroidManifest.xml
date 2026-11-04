@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The e2e build (QA/e2e) reaches the local privnet over plain HTTP: see the config. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application android:networkSecurityConfig="@xml/e2e_network_security_config" />
+
+</manifest>

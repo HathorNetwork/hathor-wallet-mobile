@@ -6,9 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// A fake Unleash proxy for e2e runs on the local privnet. Debug builds on a local network fetch
-// their flags here (see getUnleashUrl in src/sagas/featureToggle.js), and the test run sets them
-// through /flags.
+// A fake Unleash proxy for e2e runs on the local privnet. The e2e build and debug builds on a local
+// network fetch their flags here (see getUnleashUrl in src/sagas/featureToggle.js), and the test
+// run sets them through /flags.
 //
 //   GET  /proxy        what the app fetches: the enabled flags, as the Unleash proxy returns them
 //   GET  /flags        { flags, served }: served = the app has fetched the current flags

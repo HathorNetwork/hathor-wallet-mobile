@@ -22,15 +22,23 @@ const quote = (text) => {
   return `"${s.length > 60 ? `${s.slice(0, 57)}...` : s}"`;
 };
 
+/** An element as a flow finds it: #<testID>, or its text in quotes, and which match. */
+function selectorText(selector = {}) {
+  let what = 'an element';
+  if (selector.idRegex) what = `#${selector.idRegex}`;
+  else if (selector.textRegex) what = quote(selector.textRegex);
+  return selector.index ? `${what}, index ${selector.index}` : what;
+}
+
 function conditionText(condition = {}) {
   if (condition.visible) {
-    const { textRegex, enabled, checked } = condition.visible;
-    const what = textRegex ? quote(textRegex) : 'the element';
+    const { enabled, checked } = condition.visible;
+    const what = selectorText(condition.visible);
     if (enabled === false) return `${what} is visible and disabled`;
     if (checked) return `${what} is checked`;
     return `${what} is visible`;
   }
-  if (condition.notVisible) return `${quote(condition.notVisible.textRegex)} is gone`;
+  if (condition.notVisible) return `${selectorText(condition.notVisible)} is gone`;
   return 'the condition holds';
 }
 
@@ -40,15 +48,12 @@ function describe(command) {
   const c = command[type];
   if (c.label) return c.label;
   switch (type) {
-    case 'tapOnElement': {
-      const index = c.selector.index ? `, index ${c.selector.index}` : '';
-      return `Tap on ${quote(c.selector.textRegex || c.selector.idRegex || 'the element')}${index}`;
-    }
+    case 'tapOnElement': return `Tap on ${selectorText(c.selector)}`;
     case 'tapOnPointV2Command': return `Tap on point (${c.point})`;
     case 'inputTextCommand': return `Type ${quote(c.text)}`;
     case 'assertConditionCommand':
       return `${c.timeout ? 'Wait until' : 'Check that'} ${conditionText(c.condition)}`;
-    case 'copyTextCommand': return `Copy the text of ${quote(c.selector.textRegex)}`;
+    case 'copyTextCommand': return `Copy the text of ${selectorText(c.selector)}`;
     case 'backPressCommand': return 'Press back';
     case 'launchAppCommand': return `Launch ${c.appId}`;
     case 'repeatCommand': return c.condition ? `Repeat while ${conditionText(c.condition)}` : `Repeat ${c.times} times`;
