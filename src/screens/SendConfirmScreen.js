@@ -730,6 +730,7 @@ const SendConfirmScreen = () => {
             </View>
           </View>
           <NewHathorButton
+            testID='send-confirm-send'
             title={t`Send`}
             onPress={onSendPress}
             // Disable once tapped (isSending) and while the feedback modal is

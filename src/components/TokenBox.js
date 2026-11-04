@@ -16,7 +16,7 @@ import { COLORS } from '../styles/themes';
 
 const TokenBox = (props) => (
   <TouchableWithoutFeedback onPress={props.onPress}>
-    <View style={styles.wrapper}>
+    <View style={styles.wrapper} testID={props.testID}>
       <Text style={styles.label}>{props.label}</Text>
       <FontAwesomeIcon
         icon={faSortDown}

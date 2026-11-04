@@ -67,6 +67,7 @@ const TransactionPrivacyModal = ({
         </Text>
 
         <NewHathorButton
+          testID='transaction-privacy-done'
           title={t`DONE`}
           onPress={() => onConfirm(localMode)}
         />

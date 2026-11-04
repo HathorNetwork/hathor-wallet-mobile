@@ -217,6 +217,7 @@ const SendAmountInput = () => {
               >
                 {renderGhostElement()}
                 <AmountTextInput
+                  testID='send-amount-input'
                   ref={inputRef}
                   autoFocus
                   onAmountUpdate={onAmountChange}
@@ -228,10 +229,10 @@ const SendAmountInput = () => {
                 // https://github.com/facebook/react-native/issues/30666
                 />
                 {IS_MULTI_TOKEN
-                  ? <TokenBox onPress={onTokenBoxPress} label={token.symbol} />
+                  ? <TokenBox testID='send-amount-token' onPress={onTokenBoxPress} label={token.symbol} />
                   : renderGhostElement()}
               </View>
-              <InputLabel style={{ textAlign: 'center', marginTop: 8 }}>
+              <InputLabel testID='send-amount-available' style={{ textAlign: 'center', marginTop: 8 }}>
                 {getAvailableString()}
               </InputLabel>
               {lockedCount > 0 && (
@@ -243,11 +244,13 @@ const SendAmountInput = () => {
             <View>
               {privateSendsAvailable && (
                 <PrivacyModeSelector
+                  testID='send-amount-privacy-mode'
                   mode={privacyMode}
                   onPress={() => setIsPrivacyModalShown(true)}
                 />
               )}
               <NewHathorButton
+                testID='send-amount-next'
                 title={t`Next`}
                 disabled={isButtonDisabled()}
                 onPress={onButtonPress}
