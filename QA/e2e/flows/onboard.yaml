@@ -46,6 +46,8 @@ appId: network.hathor.wallet
       - evalScript: ${console.log("asked " + maestro.copiedText + " -> " + output.correctWord)}
       - tapOn:
           text: "${output.correctWord.toUpperCase()}"
+          # What the run's logs and viewer show in place of the seed word.
+          label: "Tap the word asked for"
 # Success modal after the backup check: dismiss by tapping the backdrop (as the PoC does).
 - extendedWaitUntil:
     visible: "Words saved correctly"
