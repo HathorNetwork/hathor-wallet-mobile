@@ -12,9 +12,10 @@
 //   node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,<id>] [--dry-run] [--no-cleanup]
 //                      [--no-record]
 //
-// The run records the emulator's screen through each flow, and writes viewer.html in its evidence
-// dir: the recordings as a playlist, each beside its steps, the running one marked, for a person
-// to watch what the run did (README "Watching a run"). --no-record skips the recordings.
+// The run records the emulator's screen through each flow but onboarding, and writes viewer.html
+// in its evidence dir: the recordings as a playlist, each beside its steps, the running one
+// marked, for a person to watch what the run did (README "Watching a run"). --no-record skips the
+// recordings.
 //
 // After the scenarios, the run's HTR and token deposits go back to the genesis wallet (cleanup in
 // tools/wallet.js), so a privnet lasts hundreds of runs. --no-cleanup keeps them, to look at the
@@ -254,7 +255,8 @@ async function prepareSetup(setup, runDir, ctx) {
   execFileSync(path.join(E2E, 'bin', 'app-on-privnet.sh'), ['--fresh'], { stdio: ['ignore', 'ignore', 'inherit'] });
   const onboardDir = path.join(runDir, 'onboard');
   const onboardInfo = { kind: 'setup', id: 'onboard', title: 'Onboarding: a new wallet on the privnet' };
-  await chapter(ctx, onboardInfo, onboardDir, async ({ flow }) => {
+  // Not recorded: its screen shows the seed, and the viewer and recordings are made to be shared.
+  await chapter({ ...ctx, record: false }, onboardInfo, onboardDir, async ({ flow }) => {
     const onboard = flow(path.join(E2E, 'flows', 'onboard.yaml'), onboardDir);
     if (!onboard.ok) throw new Error(`onboarding failed: ${onboard.failed}`);
   });

@@ -41,7 +41,7 @@ Both single-key destinations, `simple` and `shielded`, belong to the peer, a see
 
 ## Watching a run
 
-Every run records the emulator's screen through each flow, with Android's own `screenrecord`: the device encodes, so a recording costs no time and is ready when the run ends (about 10 MB a minute). The run then writes `evidence/<run>/viewer.html`, the recordings as a playlist: onboarding, the token import, then each scenario, in the order they ran, with the skipped ones listed and their reasons. Each recording plays beside its steps, the graph's (`1/4 address: type the simple address`, `2/4 amount: ...`, the expected outcome last) with their Maestro commands under them and the runner's own steps (a top-up, the adb taps that empty the address field) in italics. The running step is highlighted and captioned over the video; done ones get a tick or a cross; a click on a step seeks to it, and the strip under the video shows the steps and the long waits.
+Every run records the emulator's screen through each flow but onboarding, whose screen shows the seed, with Android's own `screenrecord`: the device encodes, so a recording costs no time and is ready when the run ends (about 10 MB a minute). The run then writes `evidence/<run>/viewer.html`, the recordings as a playlist: the token import, then each scenario, in the order they ran, with the skipped ones listed and their reasons. Each recording plays beside its steps, the graph's (`1/4 address: type the simple address`, `2/4 amount: ...`, the expected outcome last) with their Maestro commands under them and the runner's own steps (a top-up, the adb taps that empty the address field) in italics. The running step is highlighted and captioned over the video; done ones get a tick or a cross; a click on a step seeks to it, and the strip under the video shows the steps and the long waits.
 
 | Key | |
 |---|---|
@@ -54,14 +54,14 @@ Every run records the emulator's screen through each flow, with Android's own `s
 
 "Skip long waits" jumps over any stretch of more than 3 s where no command starts or ends (a wait for the app, the runner's sleeps), keeping a second at each end; seeking into one on purpose plays it. "Mark validated" keeps, in the browser, the version of the scenario's flow you watched: a hash of the generated flow, the same from run to run until the flow changes. The playlist marks scenarios validated or "changed since validated", and "Show: not validated, or changed since" plays only those, for a sample after a change.
 
-The viewer is one HTML file with the run's data in it, and the recordings are files beside it, so it also works from a copy of the run dir. To watch from another machine on the tailnet:
+The viewer is one HTML file with the run's data in it, and the recordings are files beside it, so it also works from a copy of them. To watch from another machine on the tailnet:
 
 ```bash
 node QA/e2e/bin/serve-viewer.js &      # localhost:18090; serves only the viewers and the recordings
 tailscale serve --bg 18090             # https://<this machine>.<tailnet>.ts.net/, tailnet only
 ```
 
-The index there lists the runs. An evidence dir also holds the run's seeds and Maestro's logs, which `serve-viewer.js` doesn't serve. `tailscale serve --https=443 off` stops it. Timing: the recording's first frame is taken from screenrecord's "Configuring recorder" line on the host clock, and Maestro times its commands on the host clock too; the steps match the screen to about 0.2 s. `--no-record` skips the recordings and the viewer.
+The index there lists the runs. An evidence dir also holds the run's seeds and Maestro's logs, which `serve-viewer.js` doesn't serve, so copy only the viewer and the recordings when sharing a run. Runs from before onboarding stopped being recorded still show the seed: the server withholds their `onboard/screen.mp4`, but their `viewer.html` lists five of its words. `tailscale serve --https=443 off` stops it. Timing: the recording's first frame is taken from screenrecord's "Configuring recorder" line on the host clock, and Maestro times its commands on the host clock too; the steps match the screen to about 0.2 s. `--no-record` skips the recordings and the viewer.
 
 ## Between scenarios
 

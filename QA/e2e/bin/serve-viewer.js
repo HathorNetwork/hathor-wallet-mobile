@@ -13,8 +13,9 @@
 //   tailscale serve --bg <port>                       https://<this machine>.<tailnet>.ts.net/
 //
 // Only the viewers, the runs' index and the recordings are served: an evidence dir also holds
-// the run's seeds and Maestro's logs. Recordings are served in byte ranges, which Safari needs to
-// play a video at all and every browser needs to seek one.
+// the run's seeds and Maestro's logs. Onboarding isn't recorded, as its screen shows the seed, and
+// an onboard/ recording from an older run isn't served. Recordings are served in byte ranges,
+// which Safari needs to play a video at all and every browser needs to seek one.
 
 const fs = require('fs');
 const http = require('http');
@@ -22,7 +23,7 @@ const path = require('path');
 
 const EVIDENCE = path.resolve(__dirname, '..', 'evidence');
 const PORT = Number(process.argv[2] || 18090);
-const ALLOWED = /^\/(index\.html|[\w-]+\/viewer\.html|[\w-]+\/([\w-]+\/)*screen\.mp4)$/;
+const ALLOWED = /^\/(index\.html|[\w-]+\/viewer\.html|[\w-]+\/(?!onboard\/)([\w-]+\/)*screen\.mp4)$/;
 const TYPES = { '.html': 'text/html; charset=utf-8', '.mp4': 'video/mp4' };
 
 http.createServer((req, res) => {
