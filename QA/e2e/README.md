@@ -13,7 +13,7 @@ The host setup (KVM, JDK 17, NDK, Maestro, the AVD) and the Android and Maestro 
 | `bin/flags.js` | Lists and sets the flags: `flags.js set fee-based-tokens.rollout=off --wait`. |
 | `bin/fund.js` | Sends HTR from the genesis wallet to a public address: `fund.js W... 10.50`. Uses the helper's `POST /fund`; shielded addresses are refused. |
 | `tools/` | A small Node package of its own (wallet-lib 4.3.0, ct-crypto-node 0.5.0; `npm install` there once). `wallet.js` derives the app wallet's addresses from its seed, gives a peer wallet's shielded address, mints custom tokens (`mint <address> <deposit\|fee> <name> <symbol> <units> <treasury-seed-file>`), gives a run's funds back to genesis (`cleanup <evidence dir>`), and sends private outputs (temporary, see below). |
-| `run.js` | The runner: `node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,...] [--dry-run] [--no-cleanup]`. Runs that setup's send scenarios and writes a results file to `QA/graph/runs/`; evidence goes to `evidence/` (git-ignored). |
+| `run.js` | The runner: `node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,...] [--dry-run] [--no-cleanup] [--video]`. Runs that setup's send scenarios and writes a results file to `QA/graph/runs/`; evidence goes to `evidence/` (git-ignored). |
 | `bin/app-on-privnet.sh` | Points the debug app at the privnet before it starts. `--fresh` wipes it first. Refuses anything but an emulator: store builds share the app id, so a wipe on a phone would erase its wallet. |
 | `lib/` | `sendFlow.js` turns a send scenario into a Maestro flow; `runOrder.js` orders a setup's scenarios. |
 | `flows/` | Maestro flows. `onboard.yaml`: new wallet on the privnet, ending on the dashboard. `import_tokens.yaml`: registers the minted tokens through the dashboard's "New tokens" banner. |
@@ -37,6 +37,14 @@ All of a setup's scenarios share one wallet, so the order matters (`lib/runOrder
 After the scenarios, even when the run stopped half-way, the runner gives back what it took (`cleanup` in `tools/wallet.js`): the app wallet and the peer send their deposit tokens to the treasury, which melts them and so frees their deposits, and all three send their HTR to the genesis address. Without it, E2EL's deposit would use up a privnet in about nine runs; with it, a run costs a few HTR: the fee-token fees, what the multisig destination received (the helper keeps its keys) and what the fee tokens hold (melting them frees nothing). Each step that fails is logged and the rest go on; `node QA/e2e/tools/wallet.js cleanup <evidence dir>` retries, and does nothing when there is nothing left. It refuses a `NODE_URL` off this machine. `--no-cleanup` keeps the funds, to look at the wallets after a run.
 
 Both single-key destinations, `simple` and `shielded`, belong to the peer, a seed the runner holds (`peer.seed`), so what they receive comes back too.
+
+## Videos for a person to check
+
+`--video` records each scenario it runs as `evidence/<run>/scenarios/<NN>/video.mp4`, for someone to watch what the run did and judge it. Each video shows the emulator's screen beside the scenario's steps: the scenario id on top, then the steps of the graph's send path (`1/4 address: type the simple address`, `2/4 amount: pick E2ED, type the normal amount, pick Hide amount`, and so on) and last the expected outcome with its message (`expect ok-sent: Your transfer of <amountAndToken> has been confirmed`). Done steps get a tick, the running one an hourglass, a failed one a cross; each step's Maestro commands are listed under it.
+
+It runs the flow with `maestro record --local`, which renders the video on this machine: nothing is uploaded. Rendering takes 10 to 20 minutes a scenario on this machine (a 30 to 50 s video) and keeps a CPU busy, so record only the scenarios to show: `--video --scenarios <id>,<id>`. A failing scenario still gets its video. Onboarding, the token import and the return to the dashboard between scenarios aren't recorded.
+
+The labels come from `lib/sendFlow.js`, which puts each step's commands in a labelled `runFlow`; they show in `maestro.out` too, without `--video`.
 
 ## Between scenarios
 

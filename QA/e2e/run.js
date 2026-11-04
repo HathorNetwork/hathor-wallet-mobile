@@ -10,6 +10,11 @@
 // and writes one results file in QA/graph/runs/.
 //
 //   node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,<id>] [--dry-run] [--no-cleanup]
+//                      [--video]
+//
+// --video records each scenario as an mp4 beside its evidence, for a person to check what the
+// run did: the emulator's screen next to the flow's steps, the running one marked. Rendering
+// takes 10 to 20 minutes a scenario, so pick the scenarios with --scenarios.
 //
 // After the scenarios, the run's HTR and token deposits go back to the genesis wallet (cleanup in
 // tools/wallet.js), so a privnet lasts hundreds of runs. --no-cleanup keeps them, to look at the
@@ -62,10 +67,11 @@ function parseArgs(argv) {
     else if (argv[i] === '--scenarios') args.scenarios = argv[i += 1].split(',');
     else if (argv[i] === '--dry-run') args.dryRun = true;
     else if (argv[i] === '--no-cleanup') args.noCleanup = true;
+    else if (argv[i] === '--video') args.video = true;
     else throw new Error(`unknown argument ${argv[i]}`);
   }
   if (!args.setup) {
-    throw new Error('usage: run.js --setup <setup id> [--scenarios <id>,<id>] [--dry-run] [--no-cleanup]');
+    throw new Error('usage: run.js --setup <setup id> [--scenarios <id>,<id>] [--dry-run] [--no-cleanup] [--video]');
   }
   return args;
 }
@@ -90,18 +96,26 @@ const walletTool = (...args) => execFileSync('node', [path.join(E2E, 'tools', 'w
   .trim().split('\n').pop();
 const git = (...args) => execFileSync('git', args, { cwd: REPO, encoding: 'utf8' }).trim();
 
-function maestro(flow, outDir, retries = 1) {
-  const result = spawnSync(MAESTRO, ['test', `--test-output-dir=${outDir}`, `--debug-output=${outDir}`, flow], {
+/**
+ * Runs a flow; with `video`, through `maestro record --local`, which renders video.mp4 in outDir
+ * on this machine (no upload): the device's screen beside the flow's steps.
+ */
+function maestro(flow, outDir, { retries = 1, video = false } = {}) {
+  const args = video
+    ? ['record', '--local', '--no-ansi', `--debug-output=${outDir}`, flow, path.join(outDir, 'video.mp4')]
+    : ['test', `--test-output-dir=${outDir}`, `--debug-output=${outDir}`, flow];
+  const result = spawnSync(MAESTRO, args, {
     encoding: 'utf8',
     env: { ...process.env, MAESTRO_CLI_NO_ANALYTICS: '1', JAVA_HOME: process.env.JAVA_HOME || '/usr/lib/jvm/java-17-openjdk-amd64' },
   });
   fs.writeFileSync(path.join(outDir, 'maestro.out'), `${result.stdout}\n${result.stderr}`);
   // Maestro's on-device driver sometimes fails to start; that's not the flow's doing.
   if (retries > 0 && `${result.stdout}${result.stderr}`.includes('MaestroDriverStartupException')) {
-    return maestro(flow, outDir, retries - 1);
+    return maestro(flow, outDir, { retries: retries - 1, video });
   }
-  const failed = (result.stdout.match(/^.*FAILED.*$/m) || [])[0];
-  return { ok: result.status === 0, failed: failed && failed.trim() };
+  // `test` marks the failed command FAILED; `record` marks it with a cross.
+  const failed = (result.stdout.match(/^.*(FAILED|\u274c).*$/m) || [])[0];
+  return { ok: result.status === 0, failed: failed && failed.replace(/[\u2551\u274c]/g, '').trim() };
 }
 
 // Maestro puts its logs in timestamped folders under --debug-output.
@@ -234,7 +248,8 @@ async function runScenario(scenario, outcome, ctx, dir) {
   // The generated flow refers to ../enter_pin.yaml; keep a copy of the sub-flows beside it.
   fs.copyFileSync(path.join(E2E, 'flows', 'enter_pin.yaml'), path.join(dir, '..', 'enter_pin.yaml'));
   await clearSendAddress();
-  const result = maestro(flowFile, dir);
+  const result = maestro(flowFile, dir, { video: ctx.video });
+  if (ctx.video) log(`     video: ${path.relative(REPO, path.join(dir, 'video.mp4'))}`);
   let notes = result.ok ? `reached: ${outcome.id}` : `${result.failed || 'flow failed'}`;
   let { ok } = result;
   if (ok && outcome.kind === 'success' && before !== null) {
@@ -298,7 +313,7 @@ async function main() {
   const runDir = path.join(E2E, 'evidence', startedAt.slice(0, 19).replace(/[:T]/g, '-'));
   fs.mkdirSync(runDir, { recursive: true });
   try {
-    await runPlan(setup, plan, runDir, startedAt);
+    await runPlan(setup, plan, runDir, startedAt, args.video);
   } finally {
     if (args.noCleanup) {
       log(`cleanup skipped; later: node QA/e2e/tools/wallet.js cleanup ${path.relative(REPO, runDir)}`);
@@ -316,8 +331,8 @@ async function main() {
   log('when done: tear down the emulator, Metro and the privnet (QA/e2e/README.md)');
 }
 
-async function runPlan(setup, plan, runDir, startedAt) {
-  const ctx = await prepareSetup(setup, runDir);
+async function runPlan(setup, plan, runDir, startedAt, video) {
+  const ctx = { ...(await prepareSetup(setup, runDir)), video };
   const results = [];
   for (const [i, p] of plan.entries()) {
     if (p.skip) {
