@@ -1,0 +1,28 @@
+appId: network.hathor.wallet
+---
+# Registers the custom tokens minted for the wallet, through the dashboard's "New tokens" banner.
+- extendedWaitUntil:
+    visible: "Import tokens"
+    timeout: 60000
+- tapOn: "Import tokens"
+- extendedWaitUntil:
+    visible: "Tokens found \\(3\\)"
+    timeout: 30000
+- tapOn: "E2E Deposit"
+- tapOn: "E2E Large"
+- tapOn: "E2E Fee"
+- tapOn: "CONTINUE"
+- extendedWaitUntil:
+    visible: "Confirm Import"
+    timeout: 15000
+# The header reads IMPORT TOKENS too; the button is the second match.
+- tapOn:
+    text: "IMPORT TOKENS"
+    index: 1
+- extendedWaitUntil:
+    visible: "New tokens added!"
+    timeout: 30000
+- tapOn: "SEE ALL TOKENS"
+- extendedWaitUntil:
+    visible: "E2E Fee"
+    timeout: 15000
