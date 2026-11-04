@@ -63,6 +63,10 @@ tailscale serve --bg 18090             # https://<this machine>.<tailnet>.ts.net
 
 The index there lists the runs. An evidence dir also holds the run's seeds and Maestro's logs, which `serve-viewer.js` doesn't serve, so copy only the viewer and the recordings when sharing a run. Runs from before onboarding stopped being recorded still show the seed: the server withholds their `onboard/screen.mp4`, but their `viewer.html` lists five of its words. `tailscale serve --https=443 off` stops it. Timing: the recording's first frame is taken from screenrecord's "Configuring recorder" line on the host clock, and Maestro times its commands on the host clock too; the steps match the screen to about 0.2 s. `--no-record` skips the recordings and the viewer.
 
+## Scenarios held back
+
+The runner lists these in each run as skipped, with the reason (`unrunnableReason` in `lib/sendFlow.js`), and they stay in the graph for manual QA: those that need a locked or broken-key private balance, and one on which the graph and the app disagree. `ROADMAP.md` has the finding and the next steps.
+
 ## Between scenarios
 
 The Send tab keeps the last address typed, and a flow can't clear it reliably: `eraseText` deletes only what's before the cursor, and a tap can land mid-way through a 3-line shielded address. So before each scenario the runner taps into the field with adb and sends Ctrl+A, then Delete (`clearSendAddress` in `run.js`). Each flow then asserts that the field holds exactly the new address. Restarting the app instead also works, but takes about 1.5 min per scenario.

@@ -40,6 +40,12 @@ function unrunnableReason({ values }) {
   if (values['private-balance'] !== 'unlocked') {
     return `the private balance state '${values['private-balance']}' can't be set up yet`;
   }
+  // ROADMAP.md "Findings". Remove once the app's copy or the graph's rule is decided.
+  if (values.dest === 'shielded' && values.token === 'deposit' && values.privacy === 'hide-amount'
+    && values.amount === 'max' && values.funding === 'zero-htr') {
+    return 'open finding: the graph expects "Insufficient HTR to cover the privacy fees of this transaction." '
+      + 'and the app shows "Insufficient HTR to cover this transaction and its fees."';
+  }
   return null;
 }
 

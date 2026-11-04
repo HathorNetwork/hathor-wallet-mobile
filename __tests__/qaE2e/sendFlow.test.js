@@ -133,4 +133,22 @@ describe('what the kit can run today', () => {
   it('says why it cannot run the rest', () => {
     expect(unrunnableReason(scenario({ 'private-balance': 'locked' }))).toMatch(/private balance/);
   });
+
+  describe('the zero-HTR message the graph and the app disagree on', () => {
+    const disputed = {
+      token: 'deposit', privacy: 'hide-amount', amount: 'max', funding: 'zero-htr',
+    };
+
+    it('holds it back and names both messages', () => {
+      const reason = unrunnableReason(scenario({ dest: 'shielded', ...disputed }));
+      expect(reason).toMatch(/privacy fees of this transaction/);
+      expect(reason).toMatch(/this transaction and its fees/);
+    });
+
+    it('still runs its neighbours, which pin down the rule', () => {
+      expect(unrunnableReason(scenario({ ...disputed, privacy: 'private', amount: 'normal' }))).toBeNull();
+      expect(unrunnableReason(scenario({ ...disputed, amount: 'normal' }))).toBeNull();
+      expect(unrunnableReason(scenario({ ...disputed, privacy: 'private' }))).toBeNull();
+    });
+  });
 });
