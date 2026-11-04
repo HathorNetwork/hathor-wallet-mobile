@@ -1,0 +1,8 @@
+appId: network.hathor.wallet
+---
+- tapOn: {text: "1", index: 0}
+- tapOn: {text: "2", index: 0}
+- tapOn: {text: "3", index: 0}
+- tapOn: {text: "4", index: 0}
+- tapOn: {text: "5", index: 0}
+- tapOn: {text: "6", index: 0}
