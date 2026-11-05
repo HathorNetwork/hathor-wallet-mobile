@@ -18,7 +18,7 @@ import { SignRefusedError } from './signer';
  * A Hathor Network transaction can be read whole, so every byte of it is checked here:
  *
  * - output 0 is the data output carrying `"CT" ‖ 1 ‖ dest_network ‖ A ‖ B`, naming the pinned
- *   Hathor Next network and this wallet's own Hathor Next address;
+ *   Hathor Next network and the Hathor Next address the user chose;
  * - one output pays the pinned transfer address exactly the amount the user chose;
  * - at most one more pays the change back to the address this wallet gave for it;
  * - the inputs are exactly the UTXOs this wallet chose, and nothing else is in it: a plain
@@ -99,7 +99,8 @@ const scriptOf = (address, network) => bytesToHex(new Address(address, { network
  * @param {string} expected.transferAddress The pinned transfer address
  * @param {string|null} expected.changeAddress Where the change goes, when there is change
  * @param {string} expected.destinationNetwork The pinned Hathor Next network id, hex
- * @param {string} expected.nextAddress This wallet's own Hathor Next address
+ * @param {string} expected.destination The Hathor Next address the user chose: this wallet's own
+ *   or anyone's
  * @returns {Object} The parsed transaction, ready to sign
  * @throws {SignRefusedError}
  */
@@ -110,7 +111,7 @@ export function checkBurn(txHex, {
   transferAddress,
   changeAddress,
   destinationNetwork,
-  nextAddress,
+  destination,
 }) {
   let tx;
   try {
@@ -142,15 +143,20 @@ export function checkBurn(txHex, {
   if (!data || BigInt(data.value) !== BURN_DATA_VALUE || data.tokenData !== 0) {
     refuse('The burn doesn\'t start with its data output.');
   }
-  const destination = parseBurnPayload(dataScriptPayload(Uint8Array.from(data.script)));
-  const own = decodeAddressKeys(nextAddress);
+  const named = parseBurnPayload(dataScriptPayload(Uint8Array.from(data.script)));
+  let wanted;
+  try {
+    wanted = decodeAddressKeys(destination);
+  } catch (e) {
+    refuse(`The chosen Hathor Next address can't be read: ${e.message}`);
+  }
   if (
-    !destination
-    || destination.destinationNetwork !== destinationNetwork
-    || destination.view !== bytesToHex(own.view)
-    || destination.spend !== bytesToHex(own.spend)
+    !named
+    || named.destinationNetwork !== destinationNetwork
+    || named.view !== bytesToHex(wanted.view)
+    || named.spend !== bytesToHex(wanted.spend)
   ) {
-    refuse('The burn sends the HTR somewhere else than this wallet on Hathor Next.');
+    refuse('The burn sends the HTR somewhere else than the chosen Hathor Next address.');
   }
 
   const transferScript = scriptOf(transferAddress, network);

@@ -66,7 +66,7 @@ function unsignedBurn({ spend = SPEND, amount = 700n } = {}) {
 }
 
 function fakes({ burn = unsignedBurn(), signTransfer = null, transfer = null } = {}) {
-  const calls = { signed: null, sign: 0, cancelled: [], markedUsed: 0 };
+  const calls = { created: null, signed: null, sign: 0, cancelled: [], markedUsed: 0 };
   const wallet = {
     getUtxosForAmount: async () => ({ utxos: UTXOS, changeAmount: 299n }),
     getCurrentAddress: async ({ markAsUsed } = {}) => {
@@ -83,11 +83,21 @@ function fakes({ burn = unsignedBurn(), signTransfer = null, transfer = null } =
   const client = {
     getNetwork: () => 'privatenet',
     getAddress: () => OWN,
-    createTransfer: async () => ({ id: 'transfer-1', unsigned_tx: burn }),
+    createTransfer: async (request) => {
+      calls.created = request;
+      return { id: 'transfer-1', unsigned_tx: burn };
+    },
+    // The backend reports the destination it was asked for.
     signTransfer: signTransfer ?? (async (id, inputData) => {
       calls.signed = { id, inputData };
       return {
-        id, amount: '700', burn_tx_id: 'ee'.repeat(32), status: 'pushed', confirmations: 0, needed: 21,
+        id,
+        amount: '700',
+        burn_tx_id: 'ee'.repeat(32),
+        status: 'pushed',
+        confirmations: 0,
+        needed: 21,
+        destination: calls.created.destination,
       };
     }),
     cancelTransfer: async (id) => { calls.cancelled.push(id); },
@@ -174,16 +184,33 @@ describe('the bridge through the Hathor Next backend', () => {
     expect(calls.markedUsed).toBe(1);
   });
 
-  it('moves HTR only to this wallet\'s own Hathor Next address, in any form', async () => {
-    const { wallet, client } = fakes();
-    const bridge = createBackendBridge(CONFIG, { wallet, network, client });
-    expect(bridge.ownAddressOnly).toBe(true);
-    const elsewhere = encodeAddress(VIEW, bytesToHex(publicKeyOf(13n)));
-    await expect(bridge.transfer({ ...transferArgs, toAddress: elsewhere })).rejects.toMatchObject({
-      code: NEXT_CLIENT_ERROR.TRANSFER_OWN_ONLY,
+  it('moves HTR to the Hathor Next address chosen, anyone\'s, and the burn must name it', async () => {
+    const theirSpend = bytesToHex(publicKeyOf(13n));
+    const elsewhere = encodeAddress(VIEW, theirSpend);
+    const { wallet, client, calls } = fakes({ burn: unsignedBurn({ spend: theirSpend }) });
+    const record = await createBackendBridge(CONFIG, { wallet, network, client })
+      .transfer({ ...transferArgs, toAddress: elsewhere });
+    expect(calls.created.destination).toBe(elsewhere);
+    expect(record).toMatchObject({ toAddress: elsewhere, toOwn: false });
+
+    // The backend can't send it elsewhere: not even to this wallet's own address.
+    const own = fakes();
+    await expect(createBackendBridge(CONFIG, { wallet: own.wallet, network, client: own.client })
+      .transfer({ ...transferArgs, toAddress: elsewhere })).rejects.toMatchObject({
+      code: NEXT_CLIENT_ERROR.TRANSFER_REFUSED,
     });
+    expect(own.calls.sign).toBe(0);
+  });
+
+  it('takes the address in any form, and refuses one that is not a Hathor Next address', async () => {
+    const { wallet, client, calls } = fakes();
+    const bridge = createBackendBridge(CONFIG, { wallet, network, client });
     await expect(bridge.transfer({ ...transferArgs, toAddress: OWN.toUpperCase() }))
-      .resolves.toMatchObject({ id: 'transfer-1' });
+      .resolves.toMatchObject({ id: 'transfer-1', toOwn: true });
+    expect(calls.created.destination).toBe(OWN);
+    await expect(bridge.transfer({ ...transferArgs, toAddress: CHANGE })).rejects.toMatchObject({
+      code: NEXT_CLIENT_ERROR.TRANSFER_BAD_ADDRESS,
+    });
   });
 
   it('never calls a signed transfer with no answer a failure: it is settled by asking', async () => {

@@ -891,13 +891,14 @@ export function createBackendNextClient({
     },
 
     /**
-     * Asks the backend for the burn that moves HTR to this wallet on Hathor Next.
+     * Asks the backend for the burn that moves HTR to an address on Hathor Next: this wallet's own,
+     * or anyone's.
      *
      * @param {{ amount: bigint, utxos: { txId: string, index: number }[],
-     *   changeAddress: string|null }} transfer
+     *   changeAddress: string|null, destination: string }} transfer
      * @returns {Promise<Object>} The transfer request, with its unsigned transaction
      */
-    async createTransfer({ amount, utxos, changeAddress }) {
+    async createTransfer({ amount, utxos, changeAddress, destination }) {
       requireConnected();
       const id = bytesToHex(walletId);
       return withSession((token) => api.createTransfer(id, token, {
@@ -905,6 +906,7 @@ export function createBackendNextClient({
         amount: amount.toString(),
         utxos: utxos.map((u) => ({ tx_id: u.txId, index: u.index })),
         change_address: changeAddress,
+        destination,
       }));
     },
 

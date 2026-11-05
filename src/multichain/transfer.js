@@ -12,7 +12,6 @@ import {
   nextToHathorRoundedUp,
   renderNextValue,
 } from './amount';
-import { sameNextAddress } from './address';
 import { canTransfer, CHAIN, CHAIN_NAME, otherChain } from './chains';
 import { renderValue } from '../utils';
 
@@ -49,7 +48,6 @@ export function arrivalText(seconds) {
  * @param {number} params.hathorDecimalPlaces
  * @param {string} params.toAddress The address being paid
  * @param {string|null} params.ownAddress The wallet's own address on this chain
- * @param {boolean} [params.ownAddressOnly] Whether the bridge moves tokens only to that address
  * @returns {{ message: string, transfer: { amount: bigint, toAddress: string }|null }|null}
  *   null when neither chain, alone or together, has enough
  */
@@ -65,7 +63,6 @@ export function shortBalanceAdvice({
   hathorDecimalPlaces,
   toAddress,
   ownAddress,
-  ownAddressOnly = false,
 }) {
   const other = otherChain(chain);
   // Hathor Next's amounts show as the rest of the app shows them (nextAmountForDisplay).
@@ -83,8 +80,6 @@ export function shortBalanceAdvice({
     const wanted = value + quote.bridgeFee;
     return quote.min > wanted ? quote.min : wanted;
   };
-  // A bridge that moves HTR only to the wallet's own address can't pay the address directly.
-  const direct = !ownAddressOnly || sameNextAddress(toAddress, ownAddress);
 
   const have = show(available, chain);
   const otherHave = show(otherAvailable, other);
@@ -93,7 +88,7 @@ export function shortBalanceAdvice({
   const transfers = canTransfer(config, other, chain) && quote;
 
   // Everything from the other chain, straight to the address being paid.
-  if (direct && transferCost(inOther(amount)) <= otherAvailable) {
+  if (transferCost(inOther(amount)) <= otherAvailable) {
     if (!transfers) {
       return {
         message: t`You have ${have} ${symbol} on ${chainName}. Transfers from ${otherName} to ${chainName} aren't available yet.`,

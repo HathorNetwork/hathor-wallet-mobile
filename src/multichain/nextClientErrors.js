@@ -35,8 +35,8 @@ export const NEXT_CLIENT_ERROR = {
   PREPARE_FAILED: 'prepare-failed',
   // An earlier payment signed the same outputs and hasn't settled: it was submitted again.
   EARLIER_PENDING: 'earlier-pending',
-  // A transfer can only go to the wallet's own Hathor Next address.
-  TRANSFER_OWN_ONLY: 'transfer-own-only',
+  // The transfer's destination is not a Hathor Next address.
+  TRANSFER_BAD_ADDRESS: 'transfer-bad-address',
   // The backend built a burn other than the one approved: nothing was signed.
   TRANSFER_REFUSED: 'transfer-refused',
   // Signed, but whether the burn reached the network is not known yet.
@@ -70,8 +70,8 @@ export function nextClientErrorMessage(code) {
       return t`Hathor Next couldn't prepare this payment. Nothing was sent.`;
     case NEXT_CLIENT_ERROR.EARLIER_PENDING:
       return t`An earlier payment from these funds hasn't settled yet, so it was sent again. Try this payment once it settles.`;
-    case NEXT_CLIENT_ERROR.TRANSFER_OWN_ONLY:
-      return t`Transfers to Hathor Next go to your own Hathor Next address.`;
+    case NEXT_CLIENT_ERROR.TRANSFER_BAD_ADDRESS:
+      return t`Invalid address`;
     case NEXT_CLIENT_ERROR.TRANSFER_REFUSED:
       return t`Hathor Next prepared a different transfer than the one you approved, so nothing was signed or sent.`;
     case NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN:

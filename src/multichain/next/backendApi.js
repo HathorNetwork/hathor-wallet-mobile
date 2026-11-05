@@ -184,7 +184,8 @@ export function createBackendApi(baseUrl, { fetchImpl = (...args) => fetch(...ar
      *
      * @param {string} walletId
      * @param {string} token
-     * @param {Object} transfer intent_id, amount, utxos [{ tx_id, index }], change_address
+     * @param {Object} transfer intent_id, amount, utxos [{ tx_id, index }], change_address,
+     *   destination (a Hathor Next address; the wallet's own when absent)
      */
     createTransfer: (walletId, token, transfer) => request(
       'POST',

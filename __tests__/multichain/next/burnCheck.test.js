@@ -87,7 +87,7 @@ const expected = {
   transferAddress: TRANSFER,
   changeAddress: CHANGE,
   destinationNetwork: DEST_NETWORK,
-  nextAddress: NEXT_ADDRESS,
+  destination: NEXT_ADDRESS,
 };
 
 const refusal = (fn) => {
@@ -126,9 +126,23 @@ describe('checking a burn before signing it', () => {
     })).not.toThrow();
   });
 
+  it('passes a burn to anyone\'s Hathor Next address, when that is the one chosen', () => {
+    const view = bytesToHex(publicKeyOf(13n));
+    const spend = bytesToHex(publicKeyOf(17n));
+    const theirs = { ...expected, destination: encodeAddress(view, spend) };
+    expect(() => checkBurn(burnHex({ data: payload({ view, spend }) }), theirs)).not.toThrow();
+    // The backend can't send it elsewhere: not even to this wallet's own address.
+    expect(refusal(() => checkBurn(burnHex(), theirs))).toBeInstanceOf(SignRefusedError);
+  });
+
+  it('refuses a burn when the chosen address can\'t be read', () => {
+    const unreadable = { ...expected, destination: NEXT_ADDRESS.slice(0, -1) };
+    expect(refusal(() => checkBurn(burnHex(), unreadable))).toBeInstanceOf(SignRefusedError);
+  });
+
   it.each([
     ['another Hathor Next network', { data: payload({ dest: '00'.repeat(32) }) }],
-    ['another Hathor Next wallet', { data: payload({ spend: bytesToHex(publicKeyOf(12n)) }) }],
+    ['another Hathor Next address', { data: payload({ spend: bytesToHex(publicKeyOf(12n)) }) }],
     ['another amount', { amount: 600n, change: 399n }],
     ['other inputs', { inputs: [UTXOS[0], { ...UTXOS[1], index: 4 }] }],
   ])('refuses a burn to %s', (name, patch) => {

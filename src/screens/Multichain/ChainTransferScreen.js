@@ -93,10 +93,7 @@ export default function ChainTransferScreen({ navigation, route }) {
   const networkName = useSelector((state) => state.networkSettings.network);
   const ownAddress = useSelector((state) => state.multichain.next.address);
   const prefill = route?.params ?? {};
-  // A bridge that moves HTR only to the wallet's own address gets no other: the field holds it.
-  const ownOnly = Boolean(bridge?.ownAddressOnly);
-  const [typedAddress, setAddress] = useState(prefill.toAddress ?? '');
-  const address = ownOnly ? (ownAddress ?? '') : typedAddress;
+  const [address, setAddress] = useState(prefill.toAddress ?? '');
   const [addressError, setAddressError] = useState(null);
   const [amountText, setAmountText] = useState(
     prefill.amount ? plainAmount(BigInt(prefill.amount), decimalPlaces) : '',
@@ -201,18 +198,15 @@ export default function ChainTransferScreen({ navigation, route }) {
               <Text style={styles.fixedValue}>{t`${symbol} · ${availableText} available`}</Text>
             </View>
 
-            <Text style={styles.label}>
-              {ownOnly ? t`Your Hathor Next address` : t`Hathor Next address`}
-            </Text>
+            <Text style={styles.label}>{t`Hathor Next address`}</Text>
             <Pressable
-              onPress={() => !ownOnly && addressRef.current?.focus()}
+              onPress={() => addressRef.current?.focus()}
               style={[styles.inputCard, addressError && styles.inputCardError]}
             >
               <TextInput
                 ref={addressRef}
                 style={styles.addressInput}
                 value={address}
-                editable={!ownOnly}
                 onChangeText={(text) => {
                   setAddress(text);
                   setAddressError(null);
@@ -228,7 +222,7 @@ export default function ChainTransferScreen({ navigation, route }) {
               />
             </Pressable>
             {addressError && <Text style={styles.error}>{addressError}</Text>}
-            {ownAddress && !ownOnly && (
+            {ownAddress && (
               <View style={styles.linkRow}>
                 <Text style={styles.link} onPress={fillOwnAddress} accessibilityRole='button'>
                   {t`Use my Hathor Next address`}

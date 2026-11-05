@@ -6,7 +6,7 @@
  */
 
 import { logger } from '../../logger';
-import { sameNextAddress } from '../address';
+import { normalizeNextAddress, sameNextAddress } from '../address';
 import { mintScaleOf } from '../amount';
 import { CHAIN } from '../chains';
 import { NEXT_CLIENT_ERROR, NextClientError } from '../nextClientErrors';
@@ -17,10 +17,10 @@ import { SignRefusedError } from './signer';
 const log = logger('multichain-backend-bridge');
 
 /**
- * The bridge to Hathor Next through the Hathor Next backend: Hathor Network's HTR moves to this
- * wallet on Hathor Next by a burn the backend builds and this wallet checks (burnCheck.js) and
- * signs with its own Hathor Network keys. The minted HTR arrives at the wallet's own Hathor Next
- * address, the one the burn names, as Hathor Next's native token, at the network's pinned scale.
+ * The bridge to Hathor Next through the Hathor Next backend: Hathor Network's HTR moves to an
+ * address on Hathor Next by a burn the backend builds and this wallet checks (burnCheck.js) and
+ * signs with its own Hathor Network keys. The minted HTR arrives at the address the burn names,
+ * this wallet's own or anyone's, as Hathor Next's native token, at the network's pinned scale.
  * Same interface as the simulated bridge (bridge.js).
  */
 
@@ -53,6 +53,8 @@ export function recordOf(status, config, ownAddress) {
   let state = TRANSFER_STATUS.PENDING;
   if (status.status === 'arrived') state = TRANSFER_STATUS.ARRIVED;
   if (failed) state = TRANSFER_STATUS.FAILED;
+  // A backend that doesn't say where a burn goes only ever named this wallet's own address.
+  const toAddress = status.destination ?? ownAddress;
   return {
     id: status.id,
     from: CHAIN.HATHOR,
@@ -63,8 +65,8 @@ export function recordOf(status, config, ownAddress) {
     receiveAmount: (BigInt(status.amount) * mintScaleOf(config)).toString(),
     bridgeFee: '0',
     networkFee: BURN_DATA_VALUE.toString(),
-    toAddress: ownAddress,
-    toOwn: true,
+    toAddress,
+    toOwn: Boolean(ownAddress) && sameNextAddress(toAddress, ownAddress),
     sentAt,
     arriveAt: Date.now() + left * blockMs,
     status: state,
@@ -104,8 +106,6 @@ export function createBackendBridge(config, { wallet, network, client }) {
   return {
     tokenMap: [{ hathor: NATIVE_HTR, next: config.nativeTokenId }],
     directions: config.directions,
-    // The burn names the wallet's own Hathor Next address, the one the backend registered.
-    ownAddressOnly: true,
 
     /**
      * What a transfer costs and gives. The burn's data output keeps one base unit of HTR, and
@@ -124,8 +124,9 @@ export function createBackendBridge(config, { wallet, network, client }) {
     },
 
     /**
-     * Moves HTR from Hathor Network to this wallet on Hathor Next. Only the wallet's own Hathor
-     * Next address: the burn names the address the backend registered for this wallet.
+     * Moves HTR from Hathor Network to an address on Hathor Next: this wallet's own or anyone's.
+     * The burn names the address, and a wrong one loses the HTR for good, so the burn is checked
+     * against the address the user chose, never against what the backend says.
      *
      * A burn refused before signing is cancelled on the backend. Once signed, a failure to hear
      * back is not a failure: it throws TRANSFER_UNCERTAIN with the transfer's id, for
@@ -138,8 +139,9 @@ export function createBackendBridge(config, { wallet, network, client }) {
       if (tokenId !== NATIVE_HTR) {
         throw new NextClientError(NEXT_CLIENT_ERROR.UNAVAILABLE);
       }
-      if (!ownAddress || !sameNextAddress(toAddress, ownAddress)) {
-        throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_OWN_ONLY);
+      const destination = normalizeNextAddress(toAddress);
+      if (!destination) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_BAD_ADDRESS);
       }
       const { utxos, changeAmount } = await wallet.getUtxosForAmount(
         amount + BURN_DATA_VALUE,
@@ -153,7 +155,12 @@ export function createBackendBridge(config, { wallet, network, client }) {
         ? (await wallet.getCurrentAddress()).address
         : null;
       const chosen = utxos.map((u) => ({ txId: u.txId, index: u.index, value: BigInt(u.value) }));
-      const request = await client.createTransfer({ amount, utxos: chosen, changeAddress });
+      const request = await client.createTransfer({
+        amount,
+        utxos: chosen,
+        changeAddress,
+        destination,
+      });
       let signed;
       try {
         const tx = checkBurn(request.unsigned_tx, {
@@ -163,7 +170,7 @@ export function createBackendBridge(config, { wallet, network, client }) {
           transferAddress: pins.transfer_address,
           changeAddress,
           destinationNetwork: pins.destination_network,
-          nextAddress: ownAddress,
+          destination,
         });
         signed = await wallet.signTx(tx, { pinCode });
       } catch (e) {
