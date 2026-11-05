@@ -50,6 +50,25 @@ describe('a send short on Hathor Next', () => {
   test('says nothing more when neither chain has it', () => {
     expect(onNext({ available: 100000000n, otherAvailable: 500n })).toBeNull();
   });
+
+  test("never offers a transfer Hathor Network can't pay, the bridge's minimum included", () => {
+    // 0.40 HTR to send, with nothing on Hathor Next; the bridge moves 1.00 HTR at the least.
+    const advise = (otherAvailable) => shortBalanceAdvice({
+      chain: CHAIN.HATHOR_NEXT,
+      amount: 40000000n,
+      fee: 5000000n,
+      available: 0n,
+      otherAvailable,
+      config,
+      quote: { bridgeFee: 0n, networkFee: 0n, etaSeconds: 120, min: 100n },
+      symbol: 'HTR',
+      hathorDecimalPlaces: 2,
+      toAddress: NEXT_ADDRESS,
+      ownAddress: OWN_ADDRESS,
+    });
+    expect(advise(60n)).toBeNull();
+    expect(advise(100n).transfer).toEqual({ amount: 100n, toAddress: NEXT_ADDRESS });
+  });
 });
 
 describe('a send short on Hathor Network', () => {

@@ -39,9 +39,10 @@ const NEVER_SENT = new Set(['awaiting_signatures', 'cancelled']);
  * @param {Object} status The backend's TransferStatus
  * @param {Object} config The side chain config
  * @param {string|null} ownAddress
+ * @param {string|null} [chosen] Where this transfer was asked to go, when it was asked here
  * @returns {Object|null} TransferRecord
  */
-export function recordOf(status, config, ownAddress) {
+export function recordOf(status, config, ownAddress, chosen = null) {
   if (NEVER_SENT.has(status.status)) {
     return null;
   }
@@ -53,8 +54,9 @@ export function recordOf(status, config, ownAddress) {
   let state = TRANSFER_STATUS.PENDING;
   if (status.status === 'arrived') state = TRANSFER_STATUS.ARRIVED;
   if (failed) state = TRANSFER_STATUS.FAILED;
-  // A backend that doesn't say where a burn goes only ever named this wallet's own address.
-  const toAddress = status.destination ?? ownAddress;
+  // Where the burn goes, as the backend reports it or as this transfer chose it. Unknown, it is
+  // never taken for this wallet's own address: someone else's HTR would count as arriving here.
+  const toAddress = status.destination ?? chosen ?? null;
   return {
     id: status.id,
     from: CHAIN.HATHOR,
@@ -66,7 +68,7 @@ export function recordOf(status, config, ownAddress) {
     bridgeFee: '0',
     networkFee: BURN_DATA_VALUE.toString(),
     toAddress,
-    toOwn: Boolean(ownAddress) && sameNextAddress(toAddress, ownAddress),
+    toOwn: sameNextAddress(toAddress, ownAddress),
     sentAt,
     arriveAt: Date.now() + left * blockMs,
     status: state,
@@ -191,7 +193,7 @@ export function createBackendBridge(config, { wallet, network, client }) {
         log.error('A signed transfer got no answer from the backend.', e);
         throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, { transferId: request.id });
       }
-      const record = recordOf(status, config, ownAddress);
+      const record = recordOf(status, config, ownAddress, destination);
       if (!record) {
         throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, { transferId: request.id });
       }

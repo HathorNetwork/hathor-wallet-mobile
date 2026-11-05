@@ -184,6 +184,23 @@ describe('the bridge through the Hathor Next backend', () => {
     expect(calls.markedUsed).toBe(1);
   });
 
+  it('never takes a transfer for this wallet\'s own unless its destination says so', async () => {
+    // A status that doesn't say where the burn goes: the transfer sent here keeps its own choice.
+    const { wallet, client } = fakes({
+      signTransfer: async (id) => ({
+        id, amount: '700', burn_tx_id: 'ee'.repeat(32), status: 'pushed', confirmations: 0, needed: 21,
+      }),
+    });
+    const bridge = createBackendBridge(CONFIG, { wallet, network, client });
+    await expect(bridge.transfer(transferArgs))
+      .resolves.toMatchObject({ toAddress: OWN, toOwn: true });
+    // Listed ones it can't place are nobody's: never counted as arriving here.
+    const listed = await bridge.getTransfers();
+    expect(listed.map((r) => [r.toAddress, r.toOwn])).toEqual([
+      [null, false], [null, false], [null, false],
+    ]);
+  });
+
   it('moves HTR to the Hathor Next address chosen, anyone\'s, and the burn must name it', async () => {
     const theirSpend = bytesToHex(publicKeyOf(13n));
     const elsewhere = encodeAddress(VIEW, theirSpend);

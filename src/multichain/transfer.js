@@ -74,12 +74,13 @@ export function shortBalanceAdvice({
   const inOther = (value) => (chain === CHAIN.HATHOR_NEXT
     ? nextToHathorRoundedUp(value, scale)
     : hathorToNextAmount(value, scale));
-  const transferCost = (value) => (quote ? quote.bridgeFee + quote.networkFee : 0n) + value;
   // What the transfer screen is opened with: never below the bridge's smallest transfer.
   const toSend = (value) => {
     const wanted = value + quote.bridgeFee;
     return quote.min > wanted ? quote.min : wanted;
   };
+  // What that transfer costs the other chain, so no advice offers more than it has.
+  const transferCost = (value) => (quote ? toSend(value) + quote.networkFee : value);
 
   const have = show(available, chain);
   const otherHave = show(otherAvailable, other);

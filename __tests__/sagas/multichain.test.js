@@ -243,7 +243,7 @@ describe('loading Hathor Next when the wallet starts', () => {
     STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
     const env = setup({ start: false });
     // The passkey unlock starts the derivation and doesn't wait for it; the wallet starts.
-    const derivation = prepareNextKeysAtUnlock(WORDS);
+    const derivation = prepareNextKeysAtUnlock(WORDS, true);
     env.dispatch(startWalletSuccess());
     await derivation;
     await wait(2000);
@@ -257,7 +257,7 @@ describe('loading Hathor Next when the wallet starts', () => {
     const env = setup();
     await wait(10);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.FAILED);
-    await prepareNextKeysAtUnlock(WORDS);
+    await prepareNextKeysAtUnlock(WORDS, true);
     env.dispatch(multichainNextKeysDerived());
     await wait(2000);
     expect(env.getState().multichain.next).toMatchObject({
@@ -296,7 +296,7 @@ describe('loading Hathor Next when the wallet starts', () => {
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
   });
 
-  test('waits for the flag: it loads when the flag comes back on', async () => {
+  test('waits for the flag: once it comes back on, the next PIN loads it', async () => {
     STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
     STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
     const env = setup({ flag: false, start: false });
@@ -304,8 +304,14 @@ describe('loading Hathor Next when the wallet starts', () => {
     env.dispatch(startWalletSuccess());
     await wait(2000);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
+    // Nothing of Hathor Next ran while the flag was off, not even its keys.
+    expect(STORE.getWalletWords).not.toHaveBeenCalled();
     env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
     env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+    await wait(2000);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.FAILED);
+    // The loading screen's Try again locks the app; its PIN derives the keys and loads.
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
     await wait(2000);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
   });
@@ -331,6 +337,24 @@ describe('the keys at unlock', () => {
       (_key, value) => (typeof value === 'bigint' ? value.toString() : value),
     );
     expect(serialized).not.toContain(PIN);
+  });
+
+  test('are left alone while the multichain flag is off, even when the wallet used it', async () => {
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    const env = setup({ flag: false });
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+    await wait(10);
+    expect(STORE.getWalletWords).not.toHaveBeenCalled();
+    expect(env.getState().multichain.next.keysReady).toBe(false);
+  });
+
+  test("are left alone by a passkey unlock while the flag is off, and derived while it's on", async () => {
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    setup();
+    await expect(prepareNextKeysAtUnlock(WORDS, false)).resolves.toBeNull();
+    expect(getNextClient()?.hasKeys() ?? false).toBe(false);
+    await prepareNextKeysAtUnlock(WORDS, true);
+    expect(getNextClient().hasKeys()).toBe(true);
   });
 });
 

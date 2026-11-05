@@ -919,7 +919,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28
-#: src/screens/PasskeyLockScreen.js:219
+#: src/screens/PasskeyLockScreen.js:224
 #: src/screens/PinScreen.js:341
 #: src/screens/Settings.js:303
 msgid "Reset wallet"
@@ -976,24 +976,24 @@ msgstr ""
 msgid "Scan the nano contract ID QR code"
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:114
+#: src/screens/PasskeyLockScreen.js:119
 msgid "Unlock cancelled."
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:130
+#: src/screens/PasskeyLockScreen.js:135
 msgid "Could not verify your passkey. Please try again."
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:183
+#: src/screens/PasskeyLockScreen.js:188
 #, javascript-format
 msgid "Unlock with the passkey \"${ passkeyLabel }\""
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:184
+#: src/screens/PasskeyLockScreen.js:189
 msgid "Unlock with your passkey"
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:204
+#: src/screens/PasskeyLockScreen.js:209
 msgid "Unlock"
 msgstr ""
 
@@ -2164,7 +2164,7 @@ msgid "Private"
 msgstr ""
 
 #: src/multichain/nextClientErrors.js:66
-#: src/sagas/multichain.js:119
+#: src/sagas/multichain.js:120
 msgid "Couldn't connect to Hathor Next."
 msgstr ""
 
@@ -2475,28 +2475,28 @@ msgstr ""
 msgid "about ${ minutes } minutes"
 msgstr ""
 
-#: src/multichain/transfer.js:94
+#: src/multichain/transfer.js:95
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName }. Transfers from ${ "
 "otherName } to ${ chainName } aren't available yet."
 msgstr ""
 
-#: src/multichain/transfer.js:100
+#: src/multichain/transfer.js:101
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName }. Send from ${ otherName } "
 "instead? It arrives in ${ eta }."
 msgstr ""
 
-#: src/multichain/transfer.js:110
+#: src/multichain/transfer.js:111
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName } and ${ otherHave } ${ "
 "symbol } on ${ otherName }."
 msgstr ""
 
-#: src/multichain/transfer.js:115
+#: src/multichain/transfer.js:116
 msgid "${ both } Transfer the rest to ${ chainName } first."
 msgstr ""
 

@@ -11,6 +11,7 @@ import {
   MULTICHAIN_FEATURE_TOGGLE,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
 } from '../constants';
+import { FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, STORE } from '../store';
 import { getSideChainConfig } from './chains';
 import { NEXT_STATUS } from './state';
 
@@ -25,6 +26,24 @@ export function getMultichainFeatureToggle(state) {
   return Boolean(
     state.featureToggles?.[MULTICHAIN_FEATURE_TOGGLE]
       ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_FEATURE_TOGGLE]
+  );
+}
+
+/**
+ * The flag as an unlock that can't wait for Unleash knows it: Unleash's answer once it came,
+ * otherwise the one this device saved from Unleash last time. A saved answer lists only the flags
+ * Unleash returned, so a flag missing from it was off. With neither, the default: off.
+ *
+ * @param {Object} state Redux state
+ * @returns {boolean}
+ */
+export function getMultichainFeatureToggleAtUnlock(state) {
+  if (state.featureTogglesInitialized) {
+    return getMultichainFeatureToggle(state);
+  }
+  const saved = STORE.getItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY);
+  return Boolean(
+    saved?.[MULTICHAIN_FEATURE_TOGGLE] ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_FEATURE_TOGGLE]
   );
 }
 

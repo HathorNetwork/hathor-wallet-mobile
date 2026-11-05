@@ -44,6 +44,7 @@ import { WALLET_STATUS } from './wallet';
 import { createBridge } from '../multichain/bridge';
 import { CHAIN, isSimulatedClient } from '../multichain/chains';
 import {
+  getMultichainFeatureToggle,
   isSideChainAvailable,
   isSideChainConnected,
   selectDevBackend,
@@ -209,13 +210,16 @@ export function* onNextKeysDerived() {
 }
 
 /**
- * The lock screen took the PIN: derive the Hathor Next keys if the wallet used Hathor Next
- * before, so loading it needs no prompt. A failure is only logged. A load that failed for want of
- * the keys (the loading screen's Try again locks the app to get the PIN) runs again.
+ * The lock screen took the PIN: derive the Hathor Next keys if the multichain flag is on and the
+ * wallet used Hathor Next before, so loading it needs no prompt. A failure is only logged. A load
+ * that failed for want of the keys (the loading screen's Try again locks the app to get the PIN)
+ * runs again.
  */
 export function* onNextKeysUnlockRequested({ payload }) {
+  // It waits for Unleash, so the flag below is Unleash's answer (or its default, off).
   yield call(syncDevBackend);
-  if (!hasUsedNext() || ensureNextClient().hasKeys()) {
+  const multichainOn = yield select(getMultichainFeatureToggle);
+  if (!multichainOn || !hasUsedNext() || ensureNextClient().hasKeys()) {
     return;
   }
   try {

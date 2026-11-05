@@ -70,13 +70,16 @@ let unlockDerivation = null;
 
 /**
  * At an unlock, with the words the PIN or the passkey gave: derives the Hathor Next keys if the
- * wallet used Hathor Next before. It never rejects, so it can't fail an unlock.
+ * multichain flag is on and the wallet used Hathor Next before. It never rejects, so it can't fail
+ * an unlock.
  *
  * @param {string} words
+ * @param {boolean} multichainOn The multichain flag, as the unlock knows it
+ *   (getMultichainFeatureToggleAtUnlock)
  * @returns {Promise<string|null>} The Hathor Next address, or null when none is known yet
  */
-export function prepareNextKeysAtUnlock(words) {
-  if (!hasUsedNext()) {
+export function prepareNextKeysAtUnlock(words, multichainOn) {
+  if (!multichainOn || !hasUsedNext()) {
     return Promise.resolve(null);
   }
   const derivation = (async () => {
