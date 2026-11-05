@@ -179,6 +179,8 @@ export function createBackendNextClient({
   sendPollMs = SEND_POLL_MS,
 } = {}) {
   let keys = null;
+  // How many times the keys were dropped: a derivation that a lock overtook keeps nothing.
+  let lockCount = 0;
   let api = null;
   let config = null;
   let network = null;
@@ -498,13 +500,20 @@ export function createBackendNextClient({
     simulated: false,
 
     /**
-     * Derives the wallet's Hathor Next keys from its words. No network.
+     * Derives the wallet's Hathor Next keys from its words. No network. The keys live from an
+     * unlock to the next lock: if the app locks while they are derived, they are never kept.
      *
      * @param {{ words: string }} params
      * @returns {Promise<{ pubB: string }>}
+     * @throws {NextClientError} NO_KEYS when the app locked meanwhile
      */
     async prepareKeys({ words }) {
+      const started = lockCount;
       const seed = await mnemonicToSeed(words);
+      if (lockCount !== started) {
+        seed.fill(0);
+        throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
+      }
       const { b } = deriveAccount(seed);
       seed.fill(0);
       const auth = authSecret(b);
@@ -532,6 +541,7 @@ export function createBackendNextClient({
      * @returns {boolean} Whether there were keys to drop
      */
     forgetKeys() {
+      lockCount += 1;
       const had = keys !== null;
       keys = null;
       return had;

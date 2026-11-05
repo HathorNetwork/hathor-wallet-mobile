@@ -51,7 +51,7 @@ describe('a send short on Hathor Next', () => {
     expect(onNext({ available: 100000000n, otherAvailable: 500n })).toBeNull();
   });
 
-  test("never offers a transfer Hathor Network can't pay, the bridge's minimum included", () => {
+  test("sends the bridge's minimum only to its own address, and only when it can pay it", () => {
     // 0.40 HTR to send, with nothing on Hathor Next; the bridge moves 1.00 HTR at the least.
     const advise = (otherAvailable) => shortBalanceAdvice({
       chain: CHAIN.HATHOR_NEXT,
@@ -67,7 +67,12 @@ describe('a send short on Hathor Next', () => {
       ownAddress: OWN_ADDRESS,
     });
     expect(advise(60n)).toBeNull();
-    expect(advise(100n).transfer).toEqual({ amount: 100n, toAddress: NEXT_ADDRESS });
+    // Paying the address the minimum would pay it more than asked: the minimum goes to the
+    // wallet's own address, and the payment follows from there.
+    expect(advise(100n)).toEqual({
+      message: 'You have 0.00 HTR on Hathor Next and 1.00 HTR on Hathor Network. Transfer the rest to Hathor Next first.',
+      transfer: { amount: 100n, toAddress: OWN_ADDRESS },
+    });
   });
 });
 

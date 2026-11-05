@@ -233,6 +233,18 @@ describe('the Hathor Next backend client', () => {
     }
   });
 
+  it('keeps no keys from a derivation the app locked during', async () => {
+    client = createBackendNextClient({ fetchImpl: fakeBackend().fetchImpl, WebSocketImpl: null });
+    const deriving = client.prepareKeys({ words: WORDS });
+    // The lock lands while the words become a seed, before any key exists.
+    expect(client.forgetKeys()).toBe(false);
+    await expect(deriving).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NO_KEYS });
+    expect(client.hasKeys()).toBe(false);
+    // The next unlock derives them as usual.
+    await client.prepareKeys({ words: WORDS });
+    expect(client.hasKeys()).toBe(true);
+  });
+
   it('refuses a backend on another network before registering', async () => {
     const backend = fakeBackend({
       remote: { ...REMOTE_CONFIG, next: { ...REMOTE_CONFIG.next, service_view_pub: 'cc'.repeat(32) } },

@@ -2453,28 +2453,28 @@ msgstr ""
 msgid "about ${ minutes } minutes"
 msgstr ""
 
-#: src/multichain/transfer.js:95
+#: src/multichain/transfer.js:98
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName }. Transfers from $"
 "{ otherName } to ${ chainName } aren't available yet."
 msgstr ""
 
-#: src/multichain/transfer.js:101
+#: src/multichain/transfer.js:104
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName }. Send from ${ otherName } "
 "instead? It arrives in ${ eta }."
 msgstr ""
 
-#: src/multichain/transfer.js:111
+#: src/multichain/transfer.js:114
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName } and ${ otherHave } $"
 "{ symbol } on ${ otherName }."
 msgstr ""
 
-#: src/multichain/transfer.js:116
+#: src/multichain/transfer.js:119
 msgid "${ both } Transfer the rest to ${ chainName } first."
 msgstr ""
 

@@ -2608,7 +2608,7 @@ msgstr "cerca de 1 minuto"
 msgid "about ${ minutes } minutes"
 msgstr "cerca de ${ minutes } minutos"
 
-#: src/multichain/transfer.js:95
+#: src/multichain/transfer.js:98
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName }. Transfers from $"
@@ -2617,7 +2617,7 @@ msgstr ""
 "Você tem ${ have } ${ symbol } na ${ chainName }. Transferências da $"
 "{ otherName } para a ${ chainName } ainda não estão disponíveis."
 
-#: src/multichain/transfer.js:101
+#: src/multichain/transfer.js:104
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName }. Send from ${ otherName } "
@@ -2626,7 +2626,7 @@ msgstr ""
 "Você tem ${ have } ${ symbol } na ${ chainName }. Enviar da ${ otherName } "
 "em vez disso? Chega em ${ eta }."
 
-#: src/multichain/transfer.js:111
+#: src/multichain/transfer.js:114
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName } and ${ otherHave } $"
@@ -2635,7 +2635,7 @@ msgstr ""
 "Você tem ${ have } ${ symbol } na ${ chainName } e ${ otherHave } $"
 "{ symbol } na ${ otherName }."
 
-#: src/multichain/transfer.js:116
+#: src/multichain/transfer.js:119
 msgid "${ both } Transfer the rest to ${ chainName } first."
 msgstr "${ both } Transfira o restante para a ${ chainName } primeiro."
 

@@ -88,8 +88,11 @@ export function shortBalanceAdvice({
   const otherName = CHAIN_NAME[other];
   const transfers = canTransfer(config, other, chain) && quote;
 
-  // Everything from the other chain, straight to the address being paid.
-  if (transferCost(inOther(amount)) <= otherAvailable) {
+  // Everything from the other chain, straight to the address being paid: unless the bridge's
+  // smallest transfer is more than the payment, which would pay that address more than asked.
+  const needed = inOther(amount);
+  const overpays = Boolean(transfers) && quote.min > needed + quote.bridgeFee;
+  if (!overpays && transferCost(needed) <= otherAvailable) {
     if (!transfers) {
       return {
         message: t`You have ${have} ${symbol} on ${chainName}. Transfers from ${otherName} to ${chainName} aren't available yet.`,
@@ -99,7 +102,7 @@ export function shortBalanceAdvice({
     const eta = arrivalText(quote.etaSeconds);
     return {
       message: t`You have ${have} ${symbol} on ${chainName}. Send from ${otherName} instead? It arrives in ${eta}.`,
-      transfer: { amount: toSend(inOther(amount)), toAddress },
+      transfer: { amount: toSend(needed), toAddress },
     };
   }
 
