@@ -8,11 +8,13 @@
 import { describe, it, expect } from '@jest/globals';
 import vectors from './fixtures/remote-signing.json';
 import {
-  parseTxV2,
+  parseTx,
   signingHashOf,
   txIdOf,
   withInputSignatures,
-} from '../../../src/multichain/next/kit/txV2';
+} from '../../../src/multichain/next/kit/tx';
+import { parseTxV2 } from '../../../src/multichain/next/kit/txV2';
+import { parseTxV3 } from '../../../src/multichain/next/kit/txV3';
 import {
   EXCESS_DOMAIN,
   INPUT_DOMAIN,
@@ -40,16 +42,18 @@ const recipientsOf = (vector) => vector.outputs.map((o) => ({
 
 describe.each(vectors.cases)('the remote-signing case "$name"', (vector) => {
   const bytes = hexToBytes(vector.unsigned_tx);
-  const tx = parseTxV2(bytes);
+  const tx = parseTx(bytes);
 
   it('reads the transaction and recomputes its signing hash', () => {
+    expect(tx.format).toBe(vector.format);
     expect(tx.nIn).toBe(vector.inputs.length);
     expect(tx.nOut).toBe(vector.outputs.length);
     expect(tx.feeAmount).toBe(BigInt(vector.fee));
     expect(bytesToHex(signingHashOf(bytes, tx))).toBe(vector.signing_hash);
-    // The signing hash zeroes every signature: the signed bytes give the same one.
+    // The signing hash zeroes (v2) or leaves out (v3) every signature: the signed bytes give the
+    // same one.
     const signed = hexToBytes(vector.signed_tx);
-    expect(bytesToHex(signingHashOf(signed, parseTxV2(signed)))).toBe(vector.signing_hash);
+    expect(bytesToHex(signingHashOf(signed, parseTx(signed)))).toBe(vector.signing_hash);
   });
 
   it('verifies the excess signature', () => {
@@ -109,18 +113,41 @@ describe.each(vectors.cases)('the remote-signing case "$name"', (vector) => {
 });
 
 describe('the transaction reader', () => {
-  const bytes = hexToBytes(vectors.cases[0].unsigned_tx);
+  const bytes = hexToBytes(vectors.cases.find((c) => c.format === 'v2').unsigned_tx);
+  const v3 = hexToBytes(vectors.cases.find((c) => c.format === 'v3').unsigned_tx);
+  const changed = (from, at, value) => {
+    const out = Uint8Array.from(from);
+    out[at] = value;
+    return out;
+  };
 
   it('refuses any other shape or length', () => {
-    const otherShape = Uint8Array.from(bytes);
-    otherShape[0] = 0x12;
-    expect(() => parseTxV2(otherShape)).toThrow();
+    expect(() => parseTxV2(changed(bytes, 0, 0x12))).toThrow();
     expect(() => parseTxV2(bytes.slice(0, bytes.length - 1))).toThrow();
     expect(() => parseTxV2(Uint8Array.from([...bytes, 0]))).toThrow();
+    expect(() => parseTx(changed(bytes, 0, 0x12))).toThrow();
+  });
+
+  it('reads v3 only as a plain transfer of shielded outputs, with an excess', () => {
+    expect(parseTxV3(v3).format).toBe('v3');
+    // The ring family, a set flag (fully transparent, or a mint), another kind.
+    expect(() => parseTx(changed(v3, 0, 0x42))).toThrow();
+    expect(() => parseTx(changed(v3, 1, 1))).toThrow();
+    expect(() => parseTx(changed(v3, 1, 2))).toThrow();
+    expect(() => parseTx(changed(v3, 2, 1))).toThrow();
+    // Amount-shielded or transparent outputs.
+    expect(() => parseTx(changed(v3, 5, 1))).toThrow();
+    expect(() => parseTx(changed(v3, 6, 1))).toThrow();
+    expect(() => parseTx(v3.slice(0, v3.length - 1))).toThrow();
+    expect(() => parseTx(Uint8Array.from([...v3, 0]))).toThrow();
+    // Each format's reader takes only its own.
+    expect(() => parseTxV2(v3)).toThrow();
+    expect(() => parseTxV3(bytes)).toThrow();
   });
 
   it('knows the native token only by its index', () => {
-    expect(parseTxV2(bytes).feeTokenIndex).toBe(255);
+    expect(parseTx(bytes).feeTokenIndex).toBe(255);
+    expect(parseTx(v3).feeTokenIndex).toBe(255);
     expect(NATIVE).toHaveLength(32);
   });
 });

@@ -15,13 +15,13 @@ import {
   hexToBytes,
   modOrder,
 } from './kit/scalar';
+import { TOKEN_INDEX_NATIVE } from './kit/txV2';
 import {
-  TOKEN_INDEX_NATIVE,
-  parseTxV2,
+  parseTx,
   signingHashOf,
   txIdOf,
   withInputSignatures,
-} from './kit/txV2';
+} from './kit/tx';
 
 /**
  * Checks a transaction the Hathor Next backend built against what the user asked for, then signs
@@ -70,6 +70,7 @@ const sameKeys = (a, b) => bytesToHex(a.view) === bytesToHex(b.view)
  * @param {{ to: string, amount: bigint, tokenId: string }} context.intent What the user approved
  * @param {string} context.nativeTokenId The network's native token (pinned)
  * @param {string} context.serviceViewPub The wallet service's view key (pinned)
+ * @param {string} [context.wireFormat] The network's wire format, 'v2' or 'v3' (pinned)
  * @param {bigint} context.maxFee The most the user agreed to pay
  * @param {number} [context.nowS] The time, in unix seconds
  * @returns {{ bytes: Uint8Array, tx: Object, signingHash: Uint8Array, secrets: bigint[],
@@ -81,6 +82,7 @@ export function checkSignRequest(request, {
   intent,
   nativeTokenId,
   serviceViewPub,
+  wireFormat,
   maxFee,
   nowS = Math.floor(Date.now() / 1000),
 }) {
@@ -93,9 +95,14 @@ export function checkSignRequest(request, {
   let tx;
   try {
     bytes = hexToBytes(request.unsigned_tx);
-    tx = parseTxV2(bytes);
+    tx = parseTx(bytes);
   } catch (e) {
     refuse(`The transaction can't be read: ${e.message}`);
+  }
+  // Another format than the network's is refused there, and its inputs would stay held by the
+  // sign-once ledger until then.
+  if (wireFormat && tx.format !== wireFormat) {
+    refuse(`The transaction is ${tx.format}; this network takes ${wireFormat}.`);
   }
   const signingHash = signingHashOf(bytes, tx);
   // This shape names no token: its outputs hide theirs and the fee is native. A table makes a

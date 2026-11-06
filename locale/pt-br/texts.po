@@ -65,7 +65,7 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "This wallet does not support shielded addresses."
 msgstr "Esta wallet não suporta endereços blindados."
 
-#: src/multichain/address.js:156 src/multichain/nextClientErrors.js:74
+#: src/multichain/address.js:156 src/multichain/nextClientErrors.js:79
 #: src/utils.js:305
 msgid "Invalid address"
 msgstr "Endereço inválido"
@@ -1311,7 +1311,7 @@ msgstr "Cole ou digite o endereço"
 msgid "Transfer between chains"
 msgstr "Transferir entre cadeias"
 
-#: src/multichain/nextClientErrors.js:63
+#: src/multichain/nextClientErrors.js:66
 #: src/screens/Multichain/ChainTransferScreen.js:149
 #: src/screens/Multichain/NextSendAmountInput.js:117
 #: src/screens/SendAmountInput.js:170
@@ -2249,7 +2249,7 @@ msgstr ""
 msgid "Private"
 msgstr "Privado"
 
-#: src/multichain/nextClientErrors.js:66 src/sagas/multichain.js:120
+#: src/multichain/nextClientErrors.js:69 src/sagas/multichain.js:120
 msgid "Couldn't connect to Hathor Next."
 msgstr "Não foi possível conectar à Hathor Next."
 
@@ -2539,15 +2539,15 @@ msgstr ""
 "Sincronizando seu saldo da Hathor Next. Ele ainda pode aumentar até a "
 "sincronização terminar."
 
-#: src/multichain/content.js:73 src/multichain/nextClientErrors.js:61
+#: src/multichain/content.js:73 src/multichain/nextClientErrors.js:64
 msgid "You can send once your balance finishes syncing."
 msgstr "Você poderá enviar quando seu saldo terminar de sincronizar."
 
-#: src/components/OfflineBar.js:60 src/multichain/nextClientErrors.js:59
+#: src/components/OfflineBar.js:60 src/multichain/nextClientErrors.js:62
 msgid "No internet connection"
 msgstr "Sem conexão com a internet"
 
-#: src/multichain/nextClientErrors.js:68
+#: src/multichain/nextClientErrors.js:71
 msgid ""
 "Hathor Next prepared a different payment than the one you approved, so "
 "nothing was signed or sent."
@@ -2555,11 +2555,19 @@ msgstr ""
 "A Hathor Next preparou um pagamento diferente do que você aprovou, então "
 "nada foi assinado nem enviado."
 
-#: src/multichain/nextClientErrors.js:70
+#: src/multichain/nextClientErrors.js:73
 msgid "Hathor Next couldn't prepare this payment. Nothing was sent."
 msgstr "A Hathor Next não conseguiu preparar este pagamento. Nada foi enviado."
 
-#: src/multichain/nextClientErrors.js:72
+#: src/multichain/nextClientErrors.js:75
+msgid ""
+"Sending all of these funds would make the amount public on Hathor Next. Send "
+"a little less, so some comes back to you as change."
+msgstr ""
+"Enviar todo este saldo deixaria o valor público na Hathor Next. Envie um "
+"pouco menos, para que uma parte volte para você como troco."
+
+#: src/multichain/nextClientErrors.js:77
 msgid ""
 "An earlier payment from these funds hasn't settled yet, so it was sent "
 "again. Try this payment once it settles."
@@ -2567,7 +2575,7 @@ msgstr ""
 "Um pagamento anterior com estes fundos ainda não foi concluído, então ele "
 "foi enviado de novo. Tente este pagamento depois que ele for concluído."
 
-#: src/multichain/nextClientErrors.js:76
+#: src/multichain/nextClientErrors.js:81
 msgid ""
 "Hathor Next prepared a different transfer than the one you approved, so "
 "nothing was signed or sent."
@@ -2575,7 +2583,7 @@ msgstr ""
 "A Hathor Next preparou uma transferência diferente da que você aprovou, "
 "então nada foi assinado nem enviado."
 
-#: src/multichain/nextClientErrors.js:78
+#: src/multichain/nextClientErrors.js:83
 msgid ""
 "We couldn't confirm the transfer yet. Check your Hathor Network history "
 "before trying again."
@@ -2583,11 +2591,11 @@ msgstr ""
 "Ainda não conseguimos confirmar a transferência. Confira seu histórico na "
 "Hathor Network antes de tentar de novo."
 
-#: src/multichain/nextClientErrors.js:80
+#: src/multichain/nextClientErrors.js:85
 msgid "The transfer didn't go through. Nothing left your wallet."
 msgstr "A transferência não foi concluída. Nada saiu da sua carteira."
 
-#: src/multichain/nextClientErrors.js:82
+#: src/multichain/nextClientErrors.js:87
 msgid ""
 "This amount needs too many of your Hathor Network outputs for one transfer. "
 "Try a smaller amount."
@@ -2595,7 +2603,7 @@ msgstr ""
 "Este valor precisa de saídas demais da Hathor Network para uma só "
 "transferência. Tente um valor menor."
 
-#: src/multichain/nextClientErrors.js:84
+#: src/multichain/nextClientErrors.js:89
 msgid "Something went wrong on Hathor Next."
 msgstr "Algo deu errado na Hathor Next."
 
@@ -3950,24 +3958,24 @@ msgstr "Cadeia"
 msgid "Connecting to Hathor Next…"
 msgstr "Conectando à Hathor Next…"
 
-#: src/components/Multichain/DevBackendSettings.js:59
+#: src/components/Multichain/DevBackendSettings.js:61
 msgid "This backend runs a Hathor Next network this app can't use."
 msgstr "Este backend roda uma rede Hathor Next que este app não pode usar."
 
-#: src/components/Multichain/DevBackendSettings.js:64
+#: src/components/Multichain/DevBackendSettings.js:66
 msgid "Couldn't reach this backend."
 msgstr "Não foi possível acessar este backend."
 
-#: src/components/Multichain/DevBackendSettings.js:76
+#: src/components/Multichain/DevBackendSettings.js:78
 msgid "Hathor Next backend"
 msgstr "Backend da Hathor Next"
 
-#: src/components/Multichain/DevBackendSettings.js:79
+#: src/components/Multichain/DevBackendSettings.js:81
 #, javascript-format
 msgid "Network ${ networkId }, native token ${ nativeToken }"
 msgstr "Rede ${ networkId }, token nativo ${ nativeToken }"
 
-#: src/components/Multichain/DevBackendSettings.js:82
+#: src/components/Multichain/DevBackendSettings.js:84
 msgid ""
 "Hathor Next runs on this backend on every network but mainnet. Its keys "
 "never leave this device: the backend only gets public keys and signatures."
@@ -3976,15 +3984,15 @@ msgstr ""
 "chaves nunca saem deste dispositivo: o backend recebe apenas chaves públicas "
 "e assinaturas."
 
-#: src/components/Multichain/DevBackendSettings.js:86
+#: src/components/Multichain/DevBackendSettings.js:88
 msgid "Stop using this backend"
 msgstr "Parar de usar este backend"
 
-#: src/components/Multichain/DevBackendSettings.js:95
+#: src/components/Multichain/DevBackendSettings.js:97
 msgid "Hathor Next backend (local testing)"
 msgstr "Backend da Hathor Next (teste local)"
 
-#: src/components/Multichain/DevBackendSettings.js:105
+#: src/components/Multichain/DevBackendSettings.js:107
 msgid ""
 "Runs Hathor Next on a backend you run, instead of the simulated one. After "
 "you set it, Hathor Next loads again and asks for your PIN or passkey."
@@ -3993,7 +4001,7 @@ msgstr ""
 "Depois de configurá-lo, a Hathor Next carrega de novo e pede seu PIN ou "
 "passkey."
 
-#: src/components/Multichain/DevBackendSettings.js:108
+#: src/components/Multichain/DevBackendSettings.js:110
 msgid "Use this backend"
 msgstr "Usar este backend"
 

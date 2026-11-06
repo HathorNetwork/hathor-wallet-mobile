@@ -5,7 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { beforeEach, describe, it, expect } from '@jest/globals';
+import {
+  beforeEach,
+  describe,
+  it,
+  expect,
+  test,
+} from '@jest/globals';
 import vectors from './fixtures/remote-signing.json';
 import {
   LedgerConflictError,
@@ -15,7 +21,7 @@ import {
   verifyAndSign,
 } from '../../../src/multichain/next/signer';
 import { INPUT_DOMAIN, verifyIn } from '../../../src/multichain/next/kit/inputSig';
-import { parseTxV2, signingHashOf, txIdOf } from '../../../src/multichain/next/kit/txV2';
+import { parseTx, signingHashOf, txIdOf } from '../../../src/multichain/next/kit/tx';
 import { encodeAddress } from '../../../src/multichain/next/kit/address';
 import { publicKeyOf } from '../../../src/multichain/next/kit/keys';
 import { bytesToBigintLE, bytesToHex, hexToBytes } from '../../../src/multichain/next/kit/scalar';
@@ -25,7 +31,7 @@ const NATIVE = vectors.native_token;
 
 // What an honest backend sends: each input with the output index the transaction spends there.
 const inputsOf = (vector) => {
-  const tx = parseTxV2(hexToBytes(vector.unsigned_tx));
+  const tx = parseTx(hexToBytes(vector.unsigned_tx));
   return vector.inputs.map((input, i) => ({
     ...input,
     global_index: Number(tx.inputs[i].outputIndex),
@@ -57,15 +63,17 @@ function memoryStorage({ failWrites = false } = {}) {
   };
 }
 
+// What the user approved in the app, as each vector states it: one payment and a fee ceiling.
 function contextOf(vector, overrides = {}) {
-  const payment = vector.outputs.find((o) => !o.is_change);
+  const [payment] = vector.approved.payments;
   return {
     b: bytesToBigintLE(hexToBytes(vector.b)),
     pubB: hexToBytes(vector.pub_b),
     intent: { to: payment.address, amount: BigInt(payment.amount), tokenId: payment.token },
     nativeTokenId: NATIVE,
     serviceViewPub: vector.pub_a,
-    maxFee: BigInt(vector.fee),
+    wireFormat: vector.format,
+    maxFee: BigInt(vector.approved.max_fee),
     ledger: createSignLedger(memoryStorage(), 'ledger'),
     ...overrides,
   };
@@ -89,7 +97,7 @@ describe('signing a Hathor Next sign request', () => {
   it('signs a request that makes exactly the approved payment, with valid signatures', async () => {
     const result = await verifyAndSign(requestOf(CASE), context);
     const unsigned = hexToBytes(CASE.unsigned_tx);
-    const hash = signingHashOf(unsigned, parseTxV2(unsigned));
+    const hash = signingHashOf(unsigned, parseTx(unsigned));
     result.signatures.forEach((sig, i) => {
       expect(verifyIn(INPUT_DOMAIN, hexToBytes(CASE.inputs[i].one_time_key), hash, hexToBytes(sig)))
         .toBe(true);
@@ -162,7 +170,7 @@ describe('signing a Hathor Next sign request', () => {
     // The same inputs, another transaction: a conflict the network would burn.
     const other = { ...CASE, unsigned_tx: CASE.unsigned_tx };
     const bytes = hexToBytes(other.unsigned_tx);
-    const tx = parseTxV2(bytes);
+    const tx = parseTx(bytes);
     const fakeHash = signingHashOf(bytes, tx);
     fakeHash[0] = fakeHash[0] === 0 ? 1 : 0;
     const inputKeys = CASE.inputs.map((i) => hexToBytes(i.one_time_key));
@@ -170,6 +178,51 @@ describe('signing a Hathor Next sign request', () => {
     expect(conflict).toBeInstanceOf(LedgerConflictError);
     expect(conflict.entry.txId).toBe(first.txId);
   });
+});
+
+describe.each(vectors.cases)('the remote-signing case "$name"', (vector) => {
+  it('is signed, in its own format', async () => {
+    const context = contextOf(vector);
+    const result = await verifyAndSign(requestOf(vector), context);
+    // Signatures are randomized: the same length as the builder's signed bytes, not the same bytes.
+    expect(result.signedTx).toHaveLength(vector.signed_tx.length);
+    const unsigned = hexToBytes(vector.unsigned_tx);
+    const hash = signingHashOf(unsigned, parseTx(unsigned));
+    expect(bytesToHex(hash)).toBe(vector.signing_hash);
+    result.signatures.forEach((sig, i) => {
+      const key = hexToBytes(vector.inputs[i].one_time_key);
+      expect(verifyIn(INPUT_DOMAIN, key, hash, hexToBytes(sig))).toBe(true);
+    });
+    expect(result.txId).toBe(bytesToHex(txIdOf(hexToBytes(result.signedTx))));
+  });
+
+  it('is refused on a network of the other format', () => {
+    const other = vector.format === 'v2' ? 'v3' : 'v2';
+    const context = contextOf(vector, { wireFormat: other });
+    expect(refusal(() => checkSignRequest(requestOf(vector), context)))
+      .toBeInstanceOf(SignRefusedError);
+  });
+});
+
+// Every refused case verifies once signed: the network would take it. The amount leak is the
+// one this signer does not refuse: it needs the wallet's own record of which outputs it holds are
+// public, and the app keeps none. Counting every input as public instead would refuse a token
+// payment whose native change is the only native output.
+const SIGNER_REFUSES = ['fee', 'output', 'input'];
+
+describe.each(vectors.refused_cases.filter((r) => SIGNER_REFUSES.includes(r.refusal)))(
+  'the refused case "$case.name"',
+  ({ case: vector }) => {
+    it('is refused', () => {
+      expect(refusal(() => checkSignRequest(requestOf(vector), contextOf(vector))))
+        .toBeInstanceOf(SignRefusedError);
+    });
+  },
+);
+
+test('the refused cases are the ones this signer knows of', () => {
+  expect(vectors.refused_cases.map((r) => r.refusal).sort())
+    .toEqual([...SIGNER_REFUSES, 'amount leak'].sort());
 });
 
 describe('what the sign-once ledger and the inputs guard', () => {
@@ -205,7 +258,7 @@ describe('what the sign-once ledger and the inputs guard', () => {
     const context = contextOf(CASE);
     const { txId } = await verifyAndSign(requestOf(CASE), context);
     const bytes = hexToBytes(CASE.unsigned_tx);
-    const otherHash = signingHashOf(bytes, parseTxV2(bytes));
+    const otherHash = signingHashOf(bytes, parseTx(bytes));
     otherHash[0] = otherHash[0] === 0 ? 1 : 0;
     const inputKeys = CASE.inputs.map((i) => hexToBytes(i.one_time_key));
     expect(refusal(() => context.ledger.check(otherHash, inputKeys)))

@@ -17,6 +17,8 @@ import { selectDevBackend } from '../../multichain/gating';
 import { COLORS } from '../../styles/themes';
 
 const HEX_64 = /^[0-9a-f]{64}$/;
+/** The wire formats the signer reads (kit/tx.js). */
+const SIGNED_FORMATS = ['v2', 'v3'];
 
 /**
  * Whether a backend's GET /v1/config is one this app can run on.
@@ -30,7 +32,7 @@ export function isUsableBackendConfig(pins) {
     && Number.isSafeInteger(next.network_id)
     && HEX_64.test(next.native_token ?? '')
     && HEX_64.test(next.service_view_pub ?? '')
-    && next.wire_format === 'v2'
+    && SIGNED_FORMATS.includes(next.wire_format)
     && Number.isSafeInteger(next.genesis_ms)
     && Number.isSafeInteger(next.epoch_ms);
 }

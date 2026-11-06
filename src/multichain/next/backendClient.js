@@ -149,6 +149,11 @@ export function prepareError(e) {
   if (e.status === 409 && /sweep/i.test(e.message)) {
     return new NextClientError(NEXT_CLIENT_ERROR.SWEEPING);
   }
+  // The wallet service's `amount-leak: ` refusal: funds that arrived in public (a transfer's
+  // mint) paying exactly one hidden output. Its text speaks of funding, so it goes first.
+  if (e.status === 422 && /amount-leak:/.test(e.message)) {
+    return new NextClientError(NEXT_CLIENT_ERROR.AMOUNT_VISIBLE);
+  }
   if (e.status === 422 && /insufficient|not enough|funds/i.test(e.message)) {
     return new NextClientError(NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS);
   }
@@ -792,6 +797,7 @@ export function createBackendNextClient({
         intent: { to, amount, tokenId },
         nativeTokenId: native,
         serviceViewPub: config.serviceViewPub,
+        wireFormat: config.wireFormat,
         maxFee: maxFee(),
         nowS: Math.floor(nowMs() / 1000),
         ledger,

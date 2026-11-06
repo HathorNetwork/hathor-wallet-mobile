@@ -325,6 +325,9 @@ describe('what the user is told when the backend can\'t prepare a payment', () =
     [new BackendError(409, 'the wallet is sweeping'), 'sweeping'],
     [new BackendError(422, 'insufficient funds for the payment'), 'insufficient-funds'],
     [new BackendError(422, 'stuck claim'), 'prepare-failed'],
+    // The wallet service's own words: they speak of what funds the output.
+    [new BackendError(422, 'amount-leak: token=00 hidden_outputs=1 only public inputs fund this '
+      + 'token\'s one hidden output, so its amount is readable on chain'), 'amount-visible'],
   ])('%s → %s', (error, code) => {
     expect(prepareError(error).code).toBe(code);
   });

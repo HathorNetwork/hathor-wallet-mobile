@@ -33,6 +33,9 @@ export const NEXT_CLIENT_ERROR = {
   // The backend built a payment other than the one approved: nothing was signed.
   REFUSED: 'refused',
   PREPARE_FAILED: 'prepare-failed',
+  // Public funds alone would pay the one hidden output of a token, whose amount would then be
+  // readable on chain: the wallet service refuses to prepare it.
+  AMOUNT_VISIBLE: 'amount-visible',
   // An earlier payment signed the same outputs and hasn't settled: it was submitted again.
   EARLIER_PENDING: 'earlier-pending',
   // The transfer's destination is not a Hathor Next address.
@@ -68,6 +71,8 @@ export function nextClientErrorMessage(code) {
       return t`Hathor Next prepared a different payment than the one you approved, so nothing was signed or sent.`;
     case NEXT_CLIENT_ERROR.PREPARE_FAILED:
       return t`Hathor Next couldn't prepare this payment. Nothing was sent.`;
+    case NEXT_CLIENT_ERROR.AMOUNT_VISIBLE:
+      return t`Sending all of these funds would make the amount public on Hathor Next. Send a little less, so some comes back to you as change.`;
     case NEXT_CLIENT_ERROR.EARLIER_PENDING:
       return t`An earlier payment from these funds hasn't settled yet, so it was sent again. Try this payment once it settles.`;
     case NEXT_CLIENT_ERROR.TRANSFER_BAD_ADDRESS:

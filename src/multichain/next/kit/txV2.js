@@ -29,13 +29,20 @@ export const SIGNED_SHIELDED_V2 = { 0x1a: 'u64', 0x1e: 'u128' };
 /** A fee token index of 255 is the network's native token, which the table never lists. */
 export const TOKEN_INDEX_NATIVE = 255;
 
-const MAX_INPUTS = 16;
-const MAX_OUTPUTS = 16;
-const MAX_TOKEN_TABLE = 16;
-const SIG_LEN = 64;
+export const MAX_INPUTS = 16;
+export const MAX_OUTPUTS = 16;
+export const MAX_TOKEN_TABLE = 16;
+export const SIG_LEN = 64;
 const EXCESS_LEN = 96;
 
-function rangeProofLen(u128, nOut) {
+/**
+ * The aggregated range proof's length for `nOut` committed outputs, in either format.
+ *
+ * @param {boolean} u128
+ * @param {number} nOut
+ * @returns {number}
+ */
+export function rangeProofLen(u128, nOut) {
   const limbs = u128 ? 2 * nOut : nOut;
   let m = 1;
   while (m < limbs) m *= 2;
@@ -110,6 +117,7 @@ export function parseTxV2(bytes) {
     });
   }
   return {
+    format: 'v2',
     width,
     nIn,
     nOut,

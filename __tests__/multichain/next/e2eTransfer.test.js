@@ -127,11 +127,12 @@ run('a transfer from Hathor Network to Hathor Next on the local stack', () => {
       const [mine] = (await bridge.getTransfers()).filter((t) => t.id === record.id);
       const stage = `${mine?.progress.stage} ${mine?.progress.confirmations}/${mine?.progress.needed}`;
       if (stages[stages.length - 1] !== stage) stages.push(stage);
-      return ['eligible', 'minting'].includes(mine?.progress.stage)
-        || mine?.status === 'arrived' ? mine : null;
-    }, 'the burn to be eligible');
+      return ['arrived', 'failed'].includes(mine?.status) ? mine : null;
+    }, 'the transfer to arrive');
     // eslint-disable-next-line no-console
     console.log(`burn ${record.sourceTxId}: ${stages.join(' → ')}`);
-    expect(['eligible', 'minting', 'arrived']).toContain(final.progress.stage);
+    // The backend relays the mint once the burn is eligible, and follows it into the ledger.
+    expect(final.status).toBe('arrived');
+    expect(final.progress.mintTxId).toMatch(/^[0-9a-f]{64}$/);
   });
 });
