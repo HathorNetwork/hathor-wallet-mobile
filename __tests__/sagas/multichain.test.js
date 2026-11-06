@@ -48,7 +48,7 @@ import {
 } from '../../src/actions';
 import { MULTICHAIN_FEATURE_TOGGLE, multichainKeyMap } from '../../src/constants';
 import { STORE } from '../../src/store';
-import { resolveUncertainTransfer, saga } from '../../src/sagas/multichain';
+import { nextClientChannel, resolveUncertainTransfer, saga } from '../../src/sagas/multichain';
 import { prepareNextKeysAtUnlock } from '../../src/multichain/keys';
 import { getNextClient, setNextClient } from '../../src/multichain/nextClient';
 import { deriveMockNextAddress } from '../../src/multichain/mock/mockNextClient';
@@ -62,7 +62,11 @@ import {
   TRANSFER_STATUS,
 } from '../../src/multichain/state';
 import * as bridgeModule from '../../src/multichain/bridge';
-import { NEXT_CLIENT_ERROR, NextClientError } from '../../src/multichain/nextClientErrors';
+import {
+  NEXT_CLIENT_ERROR,
+  NEXT_CLIENT_EVENT,
+  NextClientError,
+} from '../../src/multichain/nextClientErrors';
 import { PasskeyCancelledError, withPasskeyWords } from '../../src/passkey/passkeySigner';
 /* eslint-enable import/first */
 
@@ -456,6 +460,26 @@ describe('a Hathor Next payment', () => {
       reason: null,
     });
     expect(env.getState().multichain.next.balances[HTR].data.available).toBe(2395000000n);
+  });
+
+  test("keeps the client's events that come while the saga is busy with another", () => {
+    const listeners = {};
+    const client = {
+      on: (event, listener) => {
+        listeners[event] = listener;
+        return () => {};
+      },
+    };
+    const channel = nextClientChannel(client);
+    // One refresh, before anything takes from the channel: the balance it read and the payment
+    // it found recorded. Losing the second leaves the payment screen waiting for good.
+    listeners[NEXT_CLIENT_EVENT.BALANCE]();
+    listeners[NEXT_CLIENT_EVENT.SEND]({ sendId: 'send-1', status: 'recorded' });
+    const taken = [];
+    channel.take(({ event }) => taken.push(event));
+    channel.take(({ event }) => taken.push(event));
+    expect(taken).toEqual([NEXT_CLIENT_EVENT.BALANCE, NEXT_CLIENT_EVENT.SEND]);
+    channel.close();
   });
 
   test('is sent at most once per draft (sign-once)', async () => {

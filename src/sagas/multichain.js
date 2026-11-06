@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { eventChannel } from 'redux-saga';
+import { buffers, eventChannel } from 'redux-saga';
 import {
   all,
   call,
@@ -323,7 +323,9 @@ function* refreshLoadedHistories(client) {
 }
 
 /**
- * The client's events, as a channel.
+ * The client's events, as a channel. It keeps every event until the follower takes it: one that
+ * came while the follower was busy with another would be lost unbuffered, and a payment whose
+ * "recorded" was lost waits on its screen for good.
  *
  * @param {Object} client
  */
@@ -333,7 +335,7 @@ export function nextClientChannel(client) {
       client.on(event, (payload) => emitter({ event, payload: payload ?? {} }))
     ));
     return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
-  });
+  }, buffers.expanding(16));
 }
 
 /**
