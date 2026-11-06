@@ -280,6 +280,21 @@ describe('loading Hathor Next when the wallet starts', () => {
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
   });
 
+  test('loads once the PIN derives the keys when the backend for local testing forgot the address', async () => {
+    // What "Use this backend" leaves: the side chain still on, the saved address dropped.
+    STORE.setItem(multichainKeyMap.next, { address: null, registered: { [NETWORK]: true } });
+    STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
+    const env = setup();
+    await wait(10);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.FAILED);
+    // The loading screen's Try again locks the app; its PIN derives the keys and loads.
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+    await wait(2000);
+    expect(env.getState().multichain.next).toMatchObject({
+      status: NEXT_STATUS.READY, keysReady: true, address: ADDRESS,
+    });
+  });
+
   test('tries again from the loading screen', async () => {
     const env = setup();
     await connect(env);

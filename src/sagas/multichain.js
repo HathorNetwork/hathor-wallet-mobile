@@ -211,15 +211,20 @@ export function* onNextKeysDerived() {
 
 /**
  * The lock screen took the PIN: derive the Hathor Next keys if the multichain flag is on and the
- * wallet used Hathor Next before, so loading it needs no prompt. A failure is only logged. A load
- * that failed for want of the keys (the loading screen's Try again locks the app to get the PIN)
- * runs again.
+ * wallet used Hathor Next before or has the side chain on here, so loading it needs no prompt. A
+ * failure is only logged. A load that failed for want of the keys (the loading screen's Try again
+ * locks the app to get the PIN) runs again.
  */
 export function* onNextKeysUnlockRequested({ payload }) {
   // It waits for Unleash, so the flag below is Unleash's answer (or its default, off).
   yield call(syncDevBackend);
   const multichainOn = yield select(getMultichainFeatureToggle);
-  if (!multichainOn || !hasUsedNext() || ensureNextClient().hasKeys()) {
+  if (!multichainOn || ensureNextClient().hasKeys()) {
+    return;
+  }
+  // Switching the backend for local testing forgets the saved address, not the side chain
+  // setting: without the setting, its Try again would lock the app over and over.
+  if (!hasUsedNext() && !(yield select(isSideChainConnected))) {
     return;
   }
   try {
