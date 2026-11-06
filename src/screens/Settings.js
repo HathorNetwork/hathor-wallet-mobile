@@ -37,6 +37,7 @@ import {
   isSideChainAvailable,
   isSideChainConnected,
   isSideChainSimulated,
+  selectDevBackend,
 } from '../multichain/gating';
 import { CONNECT_STATUS } from '../multichain/state';
 import { multichainConnectSettingChanged } from '../actions';
@@ -77,6 +78,7 @@ const mapStateToProps = (state) => {
     sideChainConnecting: state.multichain.connect.status !== CONNECT_STATUS.IDLE
       && state.multichain.connect.status !== CONNECT_STATUS.FAILED,
     sideChainSimulated: isSideChainSimulated(state),
+    devBackendSet: Boolean(selectDevBackend(state)),
     nextKeysReady: state.multichain.next.keysReady,
   };
 };
@@ -263,10 +265,13 @@ export class Settings extends React.Component {
                   isFirst={firstAdvancedRoute === SIDE_CHAIN_ROW}
                 />
               )}
-            {this.props.sideChainConnected && this.props.sideChainSimulated
+            {this.props.sideChainConnected
+              && (this.props.sideChainSimulated || this.props.devBackendSet)
               && (
                 <ListMenu
-                  title={t`Hathor Next (simulated)`}
+                  title={this.props.devBackendSet
+                    ? t`Hathor Next (local backend)`
+                    : t`Hathor Next (simulated)`}
                   onPress={() => this.props.navigation.navigate('MultichainMockSettings')}
                 />
               )}

@@ -49,6 +49,8 @@ export const OPERATION_STATUS = {
 export const TRANSFER_STATUS = {
   PENDING: 'pending',
   ARRIVED: 'arrived',
+  // The burn reached the network and was refused there: nothing moved.
+  FAILED: 'failed',
 };
 
 export const NEXT_INITIAL_STATE = {
@@ -84,10 +86,20 @@ const SEND_INITIAL_STATE = {
   error: null,
 };
 
+/**
+ * A Hathor Next payment in these states is on its way: its outcome is still to come.
+ */
+export const SEND_IN_FLIGHT = [OPERATION_STATUS.SENDING, 'pending'];
+
+// A transfer in these states is still being decided: a reset leaves it as it is.
+const TRANSFER_IN_FLIGHT = [OPERATION_STATUS.SENDING, OPERATION_STATUS.UNCONFIRMED];
+
 const TRANSFER_INITIAL_STATE = {
   status: OPERATION_STATUS.IDLE,
   record: null,
   error: null,
+  // A transfer signed without an answer: no other one starts until it settles.
+  uncertainId: null,
 };
 
 export const MULTICHAIN_INITIAL_STATE = {
@@ -100,6 +112,8 @@ export const MULTICHAIN_INITIAL_STATE = {
   send: SEND_INITIAL_STATE,
   transfer: TRANSFER_INITIAL_STATE,
   mock: { scenario: DEFAULT_MOCK_SCENARIO },
+  // A Hathor Next backend for local testing: { url, pins }, or null for the simulated client
+  devBackend: null,
 };
 
 /**
@@ -161,13 +175,27 @@ export function multichainReducer(state = MULTICHAIN_INITIAL_STATE, action) {
     case types.MULTICHAIN_NEXT_SEND_UPDATE:
       return { ...state, send: { ...state.send, ...action.payload } };
     case types.MULTICHAIN_NEXT_SEND_RESET:
+      // A payment on its way outlives the screen that sent it: its outcome is still to come.
+      // Leaving Hathor Next (MULTICHAIN_NEXT_RESET) is what drops it.
+      if (SEND_IN_FLIGHT.includes(state.send.status)) {
+        return state;
+      }
       return { ...state, send: SEND_INITIAL_STATE };
     case types.MULTICHAIN_TRANSFER_UPDATE:
       return { ...state, transfer: { ...state.transfer, ...action.payload } };
     case types.MULTICHAIN_TRANSFER_RESET:
-      return { ...state, transfer: TRANSFER_INITIAL_STATE };
+      // A transfer on its way, or signed without an answer, outlives the screen that started it.
+      if (TRANSFER_IN_FLIGHT.includes(state.transfer.status)) {
+        return state;
+      }
+      return {
+        ...state,
+        transfer: { ...TRANSFER_INITIAL_STATE, uncertainId: state.transfer.uncertainId },
+      };
     case types.MULTICHAIN_MOCK_UPDATE:
       return { ...state, mock: { ...state.mock, ...action.payload } };
+    case types.MULTICHAIN_DEV_BACKEND_SET:
+      return { ...state, devBackend: action.payload ?? null };
     default:
       return state;
   }

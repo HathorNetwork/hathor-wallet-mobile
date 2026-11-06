@@ -13,17 +13,22 @@ import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
 import { RadioGroup } from '../../components/Radio';
 import { SimulatedTag } from '../../components/Multichain/SimulatedTag';
+import { DevBackendSettings } from '../../components/Multichain/DevBackendSettings';
 import { multichainMockReset, multichainMockScenarioSet } from '../../actions';
 import { mockScenarioOptions } from '../../multichain/mock/scenarios';
+import { getMultichainDevBackendFeatureToggle, selectDevBackend } from '../../multichain/gating';
 import { COLORS } from '../../styles/themes';
 
 /**
  * Settings → Hathor Next (simulated): how the simulated Hathor Next behaves, and a reset of its
- * ledger. It shows only while the Hathor Next client is the simulated one.
+ * ledger, while the client is the simulated one; and the Hathor Next backend for local testing,
+ * which takes its place, only while its own flag is on.
  */
 export default function MultichainMockSettings({ navigation }) {
   const dispatch = useDispatch();
   const scenario = useSelector((state) => state.multichain.mock.scenario);
+  const devBackend = useSelector(selectDevBackend);
+  const devBackendOn = useSelector(getMultichainDevBackendFeatureToggle);
   const options = mockScenarioOptions().map((option) => ({
     value: option.id,
     title: option.title,
@@ -33,29 +38,34 @@ export default function MultichainMockSettings({ navigation }) {
   return (
     <View style={styles.wrapper}>
       <HathorHeader
-        title={t`HATHOR NEXT (SIMULATED)`}
+        title={devBackend ? t`HATHOR NEXT (LOCAL BACKEND)` : t`HATHOR NEXT (SIMULATED)`}
         onBackPress={() => navigation.goBack()}
         withBorder
       />
       <ScrollView contentContainerStyle={styles.content}>
-        <SimulatedTag />
-        <Text style={styles.body}>
-          {t`Nothing here reaches a network. Transfers to Hathor Next don't spend your Hathor Network HTR, and arrive here only when sent to your own Hathor Next address.`}
-        </Text>
-        <Text style={styles.label}>{t`Scenario`}</Text>
-        <RadioGroup
-          value={scenario}
-          onChange={(value) => dispatch(multichainMockScenarioSet(value))}
-          options={options}
-        />
-        <Text style={styles.note}>
-          {t`Changing the scenario starts the simulated ledger over. Slow sync, Connect fails and Goes offline take effect the next time Hathor Next loads: turn Connect to side chain off and on, or restart the app.`}
-        </Text>
-        <NewHathorButton
-          secondary
-          title={t`Reset simulated ledger`}
-          onPress={() => dispatch(multichainMockReset())}
-        />
+        {!devBackend && (
+          <>
+            <SimulatedTag />
+            <Text style={styles.body}>
+              {t`Nothing here reaches a network. Transfers to Hathor Next don't spend your Hathor Network balance, and arrive here only when sent to your own Hathor Next address.`}
+            </Text>
+            <Text style={styles.label}>{t`Scenario`}</Text>
+            <RadioGroup
+              value={scenario}
+              onChange={(value) => dispatch(multichainMockScenarioSet(value))}
+              options={options}
+            />
+            <Text style={styles.note}>
+              {t`Changing the scenario starts the simulated ledger over. Slow sync, Connect fails and Goes offline take effect the next time Hathor Next loads: turn Connect to side chain off and on, or restart the app.`}
+            </Text>
+            <NewHathorButton
+              secondary
+              title={t`Reset simulated ledger`}
+              onPress={() => dispatch(multichainMockReset())}
+            />
+          </>
+        )}
+        {devBackendOn && <DevBackendSettings />}
       </ScrollView>
     </View>
   );

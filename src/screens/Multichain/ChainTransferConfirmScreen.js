@@ -18,27 +18,30 @@ import { ChainTag } from '../../components/Multichain/ChainTag';
 import { SimulatedTagIfMock } from '../../components/Multichain/SimulatedTag';
 import { multichainTransferRequested, multichainTransferReset } from '../../actions';
 import { authorizeTransaction } from '../../passkey/authorizeTransaction';
-import { CHAIN } from '../../multichain/chains';
+import { CHAIN, transferReceiveSymbol } from '../../multichain/chains';
 import { renderNextValue } from '../../multichain/amount';
-import { isSideChainSimulated } from '../../multichain/gating';
+import { isSideChainSimulated, selectSideChainConfig } from '../../multichain/gating';
 import { OPERATION_STATUS } from '../../multichain/state';
 import NavigationService from '../../NavigationService';
 import { renderValue } from '../../utils';
 import { COLORS } from '../../styles/themes';
 import { arrivalText } from '../../multichain/transfer';
 import { SummaryRow, useTransferContext } from './ChainTransferScreen';
+import { sameNextAddress } from '../../multichain/address';
+import { useHoldScreen } from '../../multichain/hooks';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
 /**
- * What a transfer's success says. There is no tracking yet, so it says when to expect the HTR.
+ * What a transfer's success says. There is no tracking yet, so it says when to expect the tokens.
  *
  * @param {number} etaSeconds
+ * @param {string} symbol The symbol of what arrives
  * @returns {string}
  */
-export const transferSentText = (etaSeconds) => {
+export const transferSentText = (etaSeconds, symbol) => {
   const eta = arrivalText(etaSeconds);
-  return t`Your HTR will arrive on Hathor Next in ${eta}.`;
+  return t`Your ${symbol} will arrive on Hathor Next in ${eta}.`;
 };
 
 /**
@@ -55,10 +58,12 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
     tokenId = '00',
     toAddress,
   } = route.params;
-  const { bridge, decimalPlaces, available } = useTransferContext();
+  const { bridge, decimalPlaces, available, symbol } = useTransferContext();
   const ownAddress = useSelector((state) => state.multichain.next.address);
   const simulated = useSelector(isSideChainSimulated);
+  const sideChainConfig = useSelector(selectSideChainConfig);
   const transfer = useSelector((state) => state.multichain.transfer);
+  useHoldScreen(navigation, transfer.status === OPERATION_STATUS.SENDING);
 
   // A transfer's outcome belongs to this screen: a new one starts clean.
   useEffect(() => {
@@ -73,8 +78,9 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
   }
 
   const quote = bridge.quote({ from, to, amount, available });
-  const htr = (value) => `${renderValue(value, false, decimalPlaces)} HTR`;
-  const isOwnAddress = ownAddress && toAddress === ownAddress;
+  const receiveSymbol = transferReceiveSymbol(sideChainConfig, symbol);
+  const render = (value) => `${renderValue(value, false, decimalPlaces)} ${symbol}`;
+  const isOwnAddress = sameNextAddress(toAddress, ownAddress);
 
   const send = (pinCode) => dispatch(multichainTransferRequested({
     from, to, tokenId, amount, toAddress, pinCode,
@@ -106,9 +112,19 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
         return (
           <FeedbackModal
             icon={<Image source={checkIcon} style={styles.feedbackIcon} resizeMode='contain' />}
-            text={transferSentText(quote.etaSeconds)}
+            text={transferSentText(quote.etaSeconds, receiveSymbol)}
             onDismiss={done}
             action={<NewHathorButton title={t`Done`} onPress={done} />}
+          />
+        );
+      case OPERATION_STATUS.UNCONFIRMED:
+        // Signed, with no answer yet: the app keeps asking, and no other transfer starts.
+        return (
+          <FeedbackModal
+            icon={<Spinner />}
+            text={transfer.error ?? t`We couldn't confirm the transfer yet.`}
+            onDismiss={done}
+            action={<NewHathorButton secondary title={t`Close`} onPress={done} />}
           />
         );
       case OPERATION_STATUS.ERROR:
@@ -129,7 +145,9 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
       <HathorHeader
         withBorder
         title={t`CONFIRM TRANSFER`}
-        onBackPress={() => navigation.goBack()}
+        onBackPress={transfer.status === OPERATION_STATUS.SENDING
+          ? null
+          : () => navigation.goBack()}
       />
       <ScrollView contentContainerStyle={styles.body}>
         <SimulatedTagIfMock />
@@ -137,14 +155,14 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
           <View style={styles.routeSide}>
             <ChainTag chain={from} />
             <Text style={styles.routeLabel}>{t`You send`}</Text>
-            <Text style={styles.routeAmount}>{htr(amount)}</Text>
+            <Text style={styles.routeAmount}>{render(amount)}</Text>
           </View>
           <Text style={styles.routeArrow}>→</Text>
           <View style={[styles.routeSide, styles.routeSideEnd]}>
             <ChainTag chain={to} />
             <Text style={styles.routeLabel}>{t`You receive`}</Text>
             <Text style={styles.routeAmount}>
-              {`${renderNextValue(quote.receiveAmount, decimalPlaces)} HTR`}
+              {`${renderNextValue(quote.receiveAmount, decimalPlaces)} ${receiveSymbol}`}
             </Text>
           </View>
         </View>
@@ -153,8 +171,8 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
         <Text style={styles.address} selectable>{toAddress}</Text>
 
         <View style={styles.summary}>
-          <SummaryRow label={t`Bridge fee`} value={htr(quote.bridgeFee)} />
-          <SummaryRow label={t`Network fee`} value={htr(quote.networkFee)} />
+          <SummaryRow label={t`Bridge fee`} value={render(quote.bridgeFee)} />
+          <SummaryRow label={t`Network fee`} value={render(quote.networkFee)} />
           <SummaryRow label={t`Arrives in`} value={arrivalText(quote.etaSeconds)} />
         </View>
         <View style={styles.warning}>

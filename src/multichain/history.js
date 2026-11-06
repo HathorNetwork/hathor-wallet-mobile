@@ -68,7 +68,8 @@ const transferTime = (transfer, kind) => (
  *   arrives here.
  *
  * A transfer's own transactions are hidden, since its row stands for them: the Hathor Network
- * transaction it was sent in (`sourceTxId`), and the Hathor Next row it arrived in (`transferId`).
+ * transaction it was sent in (`sourceTxId`), and the Hathor Next row it arrived in (the row's
+ * `transferId`, or the mint's transaction, `progress.mintTxId`).
  *
  * Each chain's history loads in pages. Rows older than the oldest row loaded from a chain that
  * has more pages are left out until that chain's next page loads, so no row shows out of order.
@@ -97,6 +98,7 @@ export function tokenHistory({
   const ownTransfers = transfers.filter((transfer) => movesToken(transfer, ids));
   const sourceTxIds = new Set(ownTransfers.map((transfer) => transfer.sourceTxId).filter(Boolean));
   const transferIds = new Set(ownTransfers.map((transfer) => transfer.id));
+  const mintTxIds = new Set(ownTransfers.map((t) => t.progress?.mintTxId).filter(Boolean));
 
   const rows = [];
   if (showHathor) {
@@ -114,7 +116,9 @@ export function tokenHistory({
   }
   if (showNext) {
     for (const row of nextRows) {
-      if (!row.transferId || !transferIds.has(row.transferId)) {
+      const isTransfers = (row.transferId && transferIds.has(row.transferId))
+        || (row.txId && mintTxIds.has(row.txId));
+      if (!isTransfers) {
         rows.push({
           key: `next:${row.id}`,
           kind: HISTORY_ROW.NEXT,

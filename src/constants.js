@@ -200,6 +200,7 @@ export const multichainKeyMap = {
   connectedNetworks: 'wallet:multichain:connectedNetworks',
   next: 'wallet:multichain:next',
   mock: (fullNetwork) => `wallet:multichain:mock:${fullNetwork}`,
+  devBackend: 'wallet:multichain:devBackend',
 };
 
 /**
@@ -281,6 +282,13 @@ export const MULTICHAIN_FEATURE_TOGGLE = 'multichain.rollout';
  * targeted at Juliet is off on the network the user switches from.
  */
 export const MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE = 'multichain-network.rollout';
+/**
+ * Shows the Hathor Next backend for local testing (Settings → Hathor Next) and lets a backend set
+ * there replace the side chain's own values. For the people who run a local Hathor Next network;
+ * it does nothing without MULTICHAIN_FEATURE_TOGGLE. Off by default, like every flag Unleash
+ * doesn't return.
+ */
+export const MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE = 'multichain-dev-backend.rollout';
 
 /**
  * Default feature toggle values.
@@ -306,6 +314,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: false,
   [MULTICHAIN_FEATURE_TOGGLE]: false,
   [MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]: false,
+  [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: false,
 };
 
 /**

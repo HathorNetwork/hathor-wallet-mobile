@@ -7,9 +7,11 @@
 
 import {
   FEATURE_TOGGLE_DEFAULTS,
+  MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
 } from '../constants';
+import { FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, STORE } from '../store';
 import { getSideChainConfig } from './chains';
 import { NEXT_STATUS } from './state';
 
@@ -28,6 +30,24 @@ export function getMultichainFeatureToggle(state) {
 }
 
 /**
+ * The flag as an unlock that can't wait for Unleash knows it: Unleash's answer once it came,
+ * otherwise the one this device saved from Unleash last time. A saved answer lists only the flags
+ * Unleash returned, so a flag missing from it was off. With neither, the default: off.
+ *
+ * @param {Object} state Redux state
+ * @returns {boolean}
+ */
+export function getMultichainFeatureToggleAtUnlock(state) {
+  if (state.featureTogglesInitialized) {
+    return getMultichainFeatureToggle(state);
+  }
+  const saved = STORE.getItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY);
+  return Boolean(
+    saved?.[MULTICHAIN_FEATURE_TOGGLE] ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_FEATURE_TOGGLE]
+  );
+}
+
+/**
  * Whether the flag that shows the Testnet Juliet preset in Network Settings is on.
  *
  * @param {Object} state Redux state
@@ -38,6 +58,34 @@ export function getMultichainNetworkPresetFeatureToggle(state) {
     state.featureToggles?.[MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]
       ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]
   );
+}
+
+/**
+ * Whether the Hathor Next backend for local testing may show and run: its own flag, on top of the
+ * multichain one.
+ *
+ * @param {Object} state Redux state
+ * @returns {boolean}
+ */
+export function getMultichainDevBackendFeatureToggle(state) {
+  return getMultichainFeatureToggle(state) && Boolean(
+    state.featureToggles?.[MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]
+      ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]
+  );
+}
+
+/**
+ * The backend for local testing that is in force: the one set in Settings, and only while its
+ * flag is on. A saved one waits, unused, while the flag is off.
+ *
+ * @param {Object} state Redux state
+ * @returns {{ url: string, pins: Object }|null}
+ */
+export function selectDevBackend(state) {
+  if (!getMultichainDevBackendFeatureToggle(state)) {
+    return null;
+  }
+  return state.multichain?.devBackend ?? null;
 }
 
 /**
@@ -58,7 +106,7 @@ export function selectMultichainNetwork(state) {
  * @returns {Object|null}
  */
 export function selectSideChainConfig(state) {
-  return getSideChainConfig(selectMultichainNetwork(state));
+  return getSideChainConfig(selectMultichainNetwork(state), selectDevBackend(state));
 }
 
 /**

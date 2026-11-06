@@ -8,19 +8,36 @@
 import { t } from 'ttag';
 import { validateAddress } from '../utils';
 import { CHAIN } from './chains';
+import { decodeAddressKeys, encodeAddress } from './next/kit/address';
+import { bytesToHex } from './next/kit/scalar';
 
 /**
- * The shapes of a Hathor Next address, from the Hathor Next wallet (hathor-next-wallet-mobile's
- * src/lib/format.ts), which is deliberately the only place there that decides what counts as one:
- * - live: `samba:` and 128 hex characters (the view and spend public keys). The prefix is part of
- *   the address and is lowercase: `SAMBA:` is refused, as Hathor Next's core refuses it;
- * - placeholder: `smb1…`, the bech32-like form the Hathor Next fixtures use.
- * The real encoding (bech32m) is still open; when it lands, these change and nothing else does.
+ * A Hathor Next address is read by the kit's codec (next/kit/address.js), a copy of Hathor Next's
+ * own: the bech32m form `samba1z…` (116 characters, all lowercase or all uppercase), and the
+ * legacy `samba:` + 128 hex on input. Both keys must be curve points. The codec is the only place
+ * that decides what counts as an address.
  */
-const NEXT_ADDRESS_RE = /^samba:[0-9a-fA-F]{128}$/;
-const NEXT_PLACEHOLDER_ADDRESS_RE = /^smb1[02-9ac-hj-np-z]{40,}$/i;
-// A live address followed by a payment request's query (`?amount=…`), or nothing.
-const NEXT_URI_RE = /^(samba:[0-9a-fA-F]{128})(\?.*)?$/;
+// A payment request: an address, optionally behind the `samba:` scheme, and an optional query.
+const SCHEME_RE = /^samba:(\/\/)?/i;
+
+/**
+ * The keys of a Hathor Next address, or null when the text isn't one.
+ *
+ * @param {string|null|undefined} text
+ * @returns {{ view: Uint8Array, spend: Uint8Array }|null}
+ */
+export function nextAddressKeys(text) {
+  const value = (text ?? '').trim();
+  if (!value) {
+    return null;
+  }
+  try {
+    const { view, spend } = decodeAddressKeys(value);
+    return { view, spend };
+  } catch (e) {
+    return null;
+  }
+}
 
 /**
  * Whether a text is a Hathor Next address.
@@ -29,24 +46,50 @@ const NEXT_URI_RE = /^(samba:[0-9a-fA-F]{128})(\?.*)?$/;
  * @returns {boolean}
  */
 export function isNextAddress(text) {
-  const value = (text ?? '').trim();
-  return NEXT_ADDRESS_RE.test(value) || NEXT_PLACEHOLDER_ADDRESS_RE.test(value);
+  return nextAddressKeys(text) !== null;
 }
 
 /**
- * The Hathor Next address a scanned QR code holds: the address alone, or a payment request on it.
- * The amount and token of a payment request are dropped, as Hathor Network's scanner drops them.
+ * The canonical form of a Hathor Next address: the lowercase `samba1z…` of its keys, whichever
+ * form was typed or scanned.
+ *
+ * @param {string|null|undefined} text
+ * @returns {string|null} null when the text isn't an address
+ */
+export function normalizeNextAddress(text) {
+  const keys = nextAddressKeys(text);
+  return keys ? encodeAddress(bytesToHex(keys.view), bytesToHex(keys.spend)) : null;
+}
+
+/**
+ * Whether two texts are the same Hathor Next address: the same keys, in any form or case.
+ *
+ * @param {string|null|undefined} a
+ * @param {string|null|undefined} b
+ * @returns {boolean}
+ */
+export function sameNextAddress(a, b) {
+  const one = normalizeNextAddress(a);
+  return one !== null && one === normalizeNextAddress(b);
+}
+
+/**
+ * The Hathor Next address a scanned QR code holds: the address alone, or a payment request on it
+ * (`samba:<address>?amount=…`). The amount and token of a payment request are dropped, as Hathor
+ * Network's scanner drops them.
  *
  * @param {string|null|undefined} data
- * @returns {string|null} The address, or null when the QR code holds none
+ * @returns {string|null} The address in its canonical form, or null when the QR code holds none
  */
 export function parseNextQrCode(data) {
   const value = (data ?? '').trim();
-  const match = NEXT_URI_RE.exec(value);
-  if (match) {
-    return match[1];
+  const [head] = value.split('?');
+  // The legacy form starts with the scheme's own letters: it is an address as it stands.
+  const direct = normalizeNextAddress(head);
+  if (direct) {
+    return direct;
   }
-  return NEXT_PLACEHOLDER_ADDRESS_RE.test(value) ? value : null;
+  return SCHEME_RE.test(head) ? normalizeNextAddress(head.replace(SCHEME_RE, '')) : null;
 }
 
 /**

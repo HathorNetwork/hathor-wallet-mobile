@@ -52,11 +52,12 @@ import QRCodeReader from '../../../src/components/QRCodeReader';
 import { PortalProvider } from '../../../src/components/Portal';
 import { ChainTag } from '../../../src/components/Multichain/ChainTag';
 import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { mockPeerAddress } from '../../../src/multichain/mock/mockAddress';
 /* eslint-enable import/first */
 
 const NETWORK = 'testnet-juliet';
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
-const NEXT_ADDRESS = `samba:${'ab12'.repeat(32)}`;
+const OWN_ADDRESS = mockPeerAddress('cd34');
+const NEXT_ADDRESS = mockPeerAddress('ab12');
 const HATHOR_ADDRESS = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';
 const HTR = { uid: '00', name: 'Hathor', symbol: 'HTR' };
 
@@ -153,6 +154,16 @@ describe('the Send address step', () => {
     expect(navigation.navigate).toHaveBeenCalledWith('SendAmountInput', { address: HATHOR_ADDRESS });
   });
 
+  test.each([true, false])(
+    'refuses the transfer address at once, and says to transfer instead (connected: %s)',
+    async (connected) => {
+      const { renderer, navigation } = await typeAddress('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL', { connected });
+      expect(textOf(renderer).join(' ')).toContain('anything sent to it directly is lost');
+      expect(button(renderer, 'Next').props.disabled).toBe(true);
+      expect(navigation.navigate).not.toHaveBeenCalled();
+    },
+  );
+
   test('takes no Hathor Next address before the side chain is connected', async () => {
     const { renderer } = await typeAddress(NEXT_ADDRESS, { connected: false });
     expect(button(renderer, 'Next').props.disabled).toBe(true);
@@ -210,18 +221,38 @@ describe('a send short on Hathor Network', () => {
 });
 
 describe('the Hathor Next send confirmation (sign-once)', () => {
-  async function renderConfirm({ next = {} } = {}) {
+  // `earlier` is another draft's payment, already in the state when the screen opens.
+  async function renderConfirm({ next = {}, earlier = null } = {}) {
     STORE.isPasskeyWallet.mockReturnValue(true);
     const ceremony = jest.spyOn(passkeySigner, 'withPasskeyWords')
       .mockImplementation(async (fn) => fn('words'));
-    const navigation = { navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn() };
+    const listeners = {};
+    const navigation = {
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      popToTop: jest.fn(),
+      setOptions: jest.fn(),
+      addListener: jest.fn((event, listener) => {
+        listeners[event] = listener;
+        return jest.fn();
+      }),
+    };
+    // Whether leaving now would be stopped.
+    const held = () => {
+      const preventDefault = jest.fn();
+      listeners.beforeRemove?.({ preventDefault });
+      return preventDefault.mock.calls.length > 0;
+    };
     useNavigation.mockReturnValue(navigation);
     useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS, amount: '100000000' } });
     const env = makeStore({ next });
+    if (earlier) {
+      env.store.dispatch(multichainNextSendUpdate(earlier));
+    }
     const renderer = await mount(env.store, <NextSendConfirmScreen />);
     const sendButton = () => button(renderer, 'Send');
     const sends = () => env.actions.filter((a) => a.type === types.MULTICHAIN_NEXT_SEND_REQUESTED);
-    return { ...env, renderer, sendButton, sends, ceremony };
+    return { ...env, renderer, navigation, held, sendButton, sends, ceremony };
   }
 
   test('sends once, and Send never turns back on, whatever the outcome', async () => {
@@ -279,6 +310,60 @@ describe('the Hathor Next send confirmation (sign-once)', () => {
     expect(syncing.sendButton().props.disabled).toBe(true);
     await act(async () => { syncing.sendButton().props.onPress(); });
     expect(syncing.sends()).toHaveLength(0);
+  });
+
+  test('stays while the payment is on its way, and keeps it when the screen goes', async () => {
+    const { store, renderer, navigation, held, sendButton, sends } = await renderConfirm();
+    expect(held()).toBe(false);
+    await act(async () => { sendButton().props.onPress(); });
+    const { draftId } = sends()[0].payload;
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: OPERATION_STATUS.SENDING, draftId }));
+    });
+    expect(held()).toBe(true);
+    expect(navigation.setOptions).toHaveBeenLastCalledWith({ gestureEnabled: false });
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: 'pending', sendId: 'send-1' }));
+    });
+    expect(held()).toBe(true);
+
+    // Gone anyway (Hathor Next's own reset is what drops a payment): its outcome is still to come.
+    await act(async () => { renderer.unmount(); });
+    mounted = null;
+    expect(store.getState().multichain.send).toMatchObject({ status: 'pending', draftId });
+  });
+
+  test('lets the screen go once the outcome shows', async () => {
+    const { store, held, sendButton, sends } = await renderConfirm();
+    await act(async () => { sendButton().props.onPress(); });
+    const { draftId } = sends()[0].payload;
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: 'pending', draftId }));
+    });
+    expect(held()).toBe(true);
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: OPERATION_STATUS.RECORDED }));
+    });
+    expect(held()).toBe(false);
+  });
+
+  test('Send waits for an earlier payment still on its way', async () => {
+    const { store, renderer, sendButton, sends } = await renderConfirm({
+      earlier: { status: 'pending', draftId: 'earlier-draft', sendId: 'send-1' },
+    });
+    expect(sendButton().props.disabled).toBe(true);
+    expect(textOf(renderer)).toContain(
+      'An earlier payment is still on its way. You can send once it settles.',
+    );
+    await act(async () => { sendButton().props.onPress(); });
+    expect(sends()).toHaveLength(0);
+
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: OPERATION_STATUS.RECORDED }));
+    });
+    expect(sendButton().props.disabled).toBe(false);
+    await act(async () => { sendButton().props.onPress(); });
+    expect(sends()).toHaveLength(1);
   });
 });
 
