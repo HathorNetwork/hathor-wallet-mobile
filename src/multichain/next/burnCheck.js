@@ -91,6 +91,36 @@ export function parseBurnPayload(payload) {
 const scriptOf = (address, network) => bytesToHex(new Address(address, { network }).getScript());
 
 /**
+ * Runs `parse` with a Buffer's subarray returning a Buffer, as on Node. Hermes ignores
+ * Symbol.species, so under the app's buffer@4 polyfill a Buffer's subarray is a plain Uint8Array,
+ * without the readers wallet-lib's transaction parser calls on it. The parse is synchronous, and
+ * the polyfill's own subarray is back before this returns.
+ *
+ * @param {Function} parse
+ * @returns {*} What `parse` returns
+ */
+function withBufferSubarray(parse) {
+  const own = Object.getOwnPropertyDescriptor(Buffer.prototype, 'subarray');
+  const typedSubarray = Uint8Array.prototype.subarray;
+  Buffer.prototype.subarray = function subarray(start, end) {
+    const view = typedSubarray.call(this, start, end);
+    if (!(view instanceof Buffer)) {
+      Object.setPrototypeOf(view, Buffer.prototype);
+    }
+    return view;
+  };
+  try {
+    return parse();
+  } finally {
+    if (own) {
+      Object.defineProperty(Buffer.prototype, 'subarray', own);
+    } else {
+      delete Buffer.prototype.subarray;
+    }
+  }
+}
+
+/**
  * @param {string} txHex The unsigned burn the backend built
  * @param {Object} expected
  * @param {Object} expected.network wallet-lib's Network
@@ -115,7 +145,7 @@ export function checkBurn(txHex, {
 }) {
   let tx;
   try {
-    tx = helpersUtils.createTxFromHex(txHex, network);
+    tx = withBufferSubarray(() => helpersUtils.createTxFromHex(txHex, network));
   } catch (e) {
     throw new SignRefusedError(`The burn can't be read: ${e.message}`);
   }

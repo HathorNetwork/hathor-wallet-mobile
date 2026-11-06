@@ -118,6 +118,27 @@ describe('checking a burn before signing it', () => {
     expect(tx.inputs).toHaveLength(2);
   });
 
+  it('reads the burn on Hermes, whose subarray hands back a plain Uint8Array', () => {
+    // Hermes ignores Symbol.species, so under the app's buffer@4 polyfill a Buffer's subarray has
+    // none of the readers wallet-lib's parser calls ("undefined is not a function" on a device).
+    const hex = burnHex();
+    const own = Object.getOwnPropertyDescriptor(Buffer.prototype, 'subarray');
+    Buffer.prototype.subarray = function hermesSubarray(start, end) {
+      return new Uint8Array(this.buffer, this.byteOffset, this.length).subarray(start, end);
+    };
+    try {
+      expect(checkBurn(hex, expected).inputs).toHaveLength(2);
+      // The polyfill's own subarray is back once the burn is read.
+      expect(Buffer.from([1, 2]).subarray(1)).not.toBeInstanceOf(Buffer);
+    } finally {
+      if (own) {
+        Object.defineProperty(Buffer.prototype, 'subarray', own);
+      } else {
+        delete Buffer.prototype.subarray;
+      }
+    }
+  });
+
   it('passes an exact spend with no change', () => {
     expect(() => checkBurn(burnHex({ change: 0n, amount: 999n }), {
       ...expected,
