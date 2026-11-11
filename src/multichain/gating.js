@@ -5,11 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import {
-  FEATURE_TOGGLE_DEFAULTS,
-  MULTICHAIN_FEATURE_TOGGLE,
-  MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
-} from '../constants';
+import { FEATURE_TOGGLE_DEFAULTS, MULTICHAIN_FEATURE_TOGGLE } from '../constants';
 import { getSideChainConfig } from './chains';
 import { NEXT_STATUS } from './state';
 
@@ -24,19 +20,6 @@ export function getMultichainFeatureToggle(state) {
   return Boolean(
     state.featureToggles?.[MULTICHAIN_FEATURE_TOGGLE]
       ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_FEATURE_TOGGLE]
-  );
-}
-
-/**
- * Whether the flag that shows the Testnet Juliet preset in Network Settings is on.
- *
- * @param {Object} state Redux state
- * @returns {boolean}
- */
-export function getMultichainNetworkPresetFeatureToggle(state) {
-  return Boolean(
-    state.featureToggles?.[MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]
-      ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]
   );
 }
 
@@ -93,16 +76,6 @@ export function isSideChainConnected(state) {
  */
 export function isWaitingForNext(state) {
   return isSideChainConnected(state) && state.multichain.next.status !== NEXT_STATUS.READY;
-}
-
-/**
- * Whether the Hathor Next data on screen is simulated, so it carries the Simulated tag.
- *
- * @param {Object} state Redux state
- * @returns {boolean}
- */
-export function isSideChainSimulated(state) {
-  return Boolean(selectSideChainConfig(state)?.simulated);
 }
 
 const NO_TOKEN_MAP = [];
