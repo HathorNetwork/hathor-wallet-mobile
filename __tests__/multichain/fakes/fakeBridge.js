@@ -5,29 +5,29 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { getIntegerAmount } from '../../utils';
-import { STORE } from '../../store';
-import { withPasskeyWords } from '../../passkey/passkeySigner';
-import { hathorToNextAmount } from '../amount';
-import { canTransfer, CHAIN } from '../chains';
-import { NextClientError, NEXT_CLIENT_ERROR } from '../nextClientErrors';
-import { TRANSFER_STATUS } from '../state';
-import { addTransfer, fakeTxId, ledgerTransfers, loadLedger } from './mockLedger';
+import { getIntegerAmount } from '../../../src/utils';
+import { STORE } from '../../../src/store';
+import { withPasskeyWords } from '../../../src/passkey/passkeySigner';
+import { hathorToNextAmount } from '../../../src/multichain/amount';
+import { canTransfer, CHAIN } from '../../../src/multichain/chains';
+import { NextClientError, NEXT_CLIENT_ERROR } from '../../../src/multichain/nextClientErrors';
+import { TRANSFER_STATUS } from '../../../src/multichain/state';
+import { addTransfer, fakeTxId, ledgerTransfers, loadLedger } from './fakeLedger';
 import {
   BRIDGE_ETA_SECONDS,
   BRIDGE_FEE,
   BRIDGE_MIN_AMOUNT,
   BRIDGE_NETWORK_FEE,
   TRANSFER_DELAY_MS,
-} from './mockValues';
+} from './fakeValues';
 
 const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 
 /**
- * A simulated bridge between Hathor Network and Hathor Next, with the interface of the real one
+ * A fake bridge between Hathor Network and Hathor Next, with the interface of the real one
  * (src/multichain/bridge.js). It broadcasts nothing: Hathor Network's balance doesn't move, so its
  * records say so (`debitedOnSource: false`, no `sourceTxId`). A transfer to the wallet's own
- * Hathor Next address arrives in the simulated ledger after the arrival time; one to another
+ * Hathor Next address arrives in the fake ledger after the arrival time; one to another
  * address leaves this wallet, so nothing arrives here.
  *
  * @param {Object} config The side chain config
@@ -35,7 +35,7 @@ const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
  * @param {string} options.network The fullnode's network name
  * @param {number} options.decimalPlaces Hathor Network's decimal places
  */
-export function createMockBridge(config, { network, decimalPlaces }) {
+export function createFakeBridge(config, { network, decimalPlaces }) {
   const units = (amount) => getIntegerAmount(amount, decimalPlaces);
   let transferCount = 0;
 
@@ -66,7 +66,7 @@ export function createMockBridge(config, { network, decimalPlaces }) {
   };
 
   return {
-    simulated: true,
+    fake: true,
 
     /** The tokens the bridge carries, by their id on each chain. */
     tokenMap: config.tokenMap,
@@ -114,7 +114,7 @@ export function createMockBridge(config, { network, decimalPlaces }) {
     }) {
       requireDirection(from, to);
       // A passkey wallet's Hathor Network send runs a passkey ceremony when the lib signs it. The
-      // simulated transfer signs nothing, so it runs one here, for the flow to feel the same.
+      // fake transfer signs nothing, so it runs one here, for the flow to feel the same.
       if (STORE.isPasskeyWallet()) {
         await withPasskeyWords(async () => {});
       }

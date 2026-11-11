@@ -25,7 +25,6 @@ import {
   types,
   multichainConnectedNetworksSet,
   multichainConnectUpdate,
-  multichainMockUpdate,
   multichainNextHistoryUpdate,
   multichainNextReset,
   multichainNextSendUpdate,
@@ -40,7 +39,7 @@ import { isExpectedPasskeyError, PasskeyCancelledError, withPasskeyWords } from 
 import { TOKEN_DOWNLOAD_STATUS } from './tokens';
 import { WALLET_STATUS } from './wallet';
 import { createBridge } from '../multichain/bridge';
-import { CHAIN, isSimulatedClient } from '../multichain/chains';
+import { CHAIN } from '../multichain/chains';
 import {
   isSideChainAvailable,
   isSideChainConnected,
@@ -50,7 +49,6 @@ import {
 import { loadSavedNext, prepareNextKeys, saveNext } from '../multichain/keys';
 import { ensureNextClient, getNextClient, setNextClient } from '../multichain/nextClient';
 import { NEXT_CLIENT_EVENT, NextClientError, NEXT_CLIENT_ERROR } from '../multichain/nextClientErrors';
-import { loadLedger, resetLedger } from '../multichain/mock/mockLedger';
 import {
   CONNECT_STATUS,
   NEXT_STATUS,
@@ -434,10 +432,6 @@ export function* onWalletStarted() {
     address: client?.getAddress() ?? loadSavedNext().address,
     keysReady: Boolean(client?.hasKeys()),
   }));
-  const network = yield select(selectMultichainNetwork);
-  if (isSimulatedClient() && network) {
-    yield put(multichainMockUpdate({ scenario: loadLedger(network).scenario }));
-  }
   if (yield select(isSideChainConnected)) {
     yield call(runConnect, loadNext, { interactive: false });
   }
@@ -623,27 +617,6 @@ export function* onTransferRequested({ payload }) {
   }
 }
 
-/**
- * The simulated Hathor Next: a new scenario, or a reset, starts its ledger over. What a scenario
- * does on connect takes effect the next time Hathor Next loads.
- */
-export function* onMockLedgerChanged(action) {
-  const network = yield select(selectMultichainNetwork);
-  if (!isSimulatedClient() || !network) {
-    return;
-  }
-  const scenario = action.type === types.MULTICHAIN_MOCK_SCENARIO_SET
-    ? action.payload
-    : yield select((state) => state.multichain.mock.scenario);
-  resetLedger(network, scenario);
-  yield put(multichainMockUpdate({ scenario }));
-  const client = getNextClient();
-  if (client && client.getNetwork() === network) {
-    yield call(refreshNextData, client);
-    yield call(refreshLoadedHistories, client);
-  }
-}
-
 export function* saga() {
   yield all([
     takeEvery(types.START_WALLET_SUCCESS, onWalletStarted),
@@ -653,10 +626,6 @@ export function* saga() {
     takeEvery(types.MULTICHAIN_NEXT_HISTORY_REQUESTED, onNextHistoryRequested),
     takeEvery(types.MULTICHAIN_NEXT_SEND_REQUESTED, onNextSendRequested),
     takeLeading(types.MULTICHAIN_TRANSFER_REQUESTED, onTransferRequested),
-    takeLatest(
-      [types.MULTICHAIN_MOCK_SCENARIO_SET, types.MULTICHAIN_MOCK_RESET],
-      onMockLedgerChanged,
-    ),
     takeLatest(types.FEATURE_TOGGLE_UPDATED, onFeatureToggleUpdated),
     takeLatest(types.NETWORK_CHANGED, onNetworkChanged),
     takeLatest(types.RESET_WALLET, onResetWallet),

@@ -311,10 +311,6 @@ export const types = {
   MULTICHAIN_TRANSFER_REQUESTED: 'MULTICHAIN_TRANSFER_REQUESTED',
   MULTICHAIN_TRANSFER_UPDATE: 'MULTICHAIN_TRANSFER_UPDATE',
   MULTICHAIN_TRANSFER_RESET: 'MULTICHAIN_TRANSFER_RESET',
-  // Multichain: the simulated Hathor Next
-  MULTICHAIN_MOCK_SCENARIO_SET: 'MULTICHAIN_MOCK_SCENARIO_SET',
-  MULTICHAIN_MOCK_RESET: 'MULTICHAIN_MOCK_RESET',
-  MULTICHAIN_MOCK_UPDATE: 'MULTICHAIN_MOCK_UPDATE',
 };
 
 /**
@@ -2199,25 +2195,4 @@ export const multichainTransferUpdate = (payload) => ({
 
 export const multichainTransferReset = () => ({
   type: types.MULTICHAIN_TRANSFER_RESET,
-});
-
-/**
- * @param {string} scenario One of MOCK_SCENARIO
- */
-export const multichainMockScenarioSet = (scenario) => ({
-  type: types.MULTICHAIN_MOCK_SCENARIO_SET,
-  payload: scenario,
-});
-
-/** Starts the simulated Hathor Next ledger over, in its scenario. */
-export const multichainMockReset = () => ({
-  type: types.MULTICHAIN_MOCK_RESET,
-});
-
-/**
- * @param {{ scenario: string }} payload
- */
-export const multichainMockUpdate = (payload) => ({
-  type: types.MULTICHAIN_MOCK_UPDATE,
-  payload,
 });

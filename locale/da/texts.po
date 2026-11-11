@@ -428,7 +428,7 @@ msgid "You are about to add these tokens to your wallet:"
 msgstr ""
 
 #: src/components/TokenImportBanner.js:77
-#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:210
+#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:208
 msgid "Import tokens"
 msgstr ""
 
@@ -771,7 +771,7 @@ msgstr ""
 msgid "You can register a new one manually."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:202
+#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:200
 msgid "Register a token"
 msgstr "Registrer en token"
 
@@ -910,7 +910,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:217
-#: src/screens/PinScreen.js:341 src/screens/Settings.js:298
+#: src/screens/PinScreen.js:341 src/screens/Settings.js:289
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
@@ -1027,7 +1027,7 @@ msgstr ""
 msgid "Export privacy keys"
 msgstr ""
 
-#: src/screens/PushNotification.js:58 src/screens/Settings.js:235
+#: src/screens/PushNotification.js:58 src/screens/Settings.js:233
 msgid "Push Notification"
 msgstr ""
 
@@ -1412,71 +1412,67 @@ msgstr "SEND"
 msgid "Scan the QR code"
 msgstr "Scan QR-koden"
 
-#: src/screens/Settings.js:170
+#: src/screens/Settings.js:168
 msgid "Enter your 6-digit pin to connect to Hathor Next"
 msgstr ""
 
-#: src/screens/Settings.js:171
+#: src/screens/Settings.js:169
 msgid "Connect to Hathor Next"
 msgstr ""
 
-#: src/screens/Settings.js:189
+#: src/screens/Settings.js:187
 msgid "You are connected to"
 msgstr "Du er tilsluttet til"
 
-#: src/screens/Settings.js:198
+#: src/screens/Settings.js:196
 msgid "General Settings"
 msgstr ""
 
-#: src/screens/Settings.js:217
+#: src/screens/Settings.js:215
 msgid "Create a new token"
 msgstr "Opret en ny token"
 
-#: src/screens/Settings.js:222
+#: src/screens/Settings.js:220
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:228
+#: src/screens/Settings.js:226
 msgid "Reown"
 msgstr ""
 
-#: src/screens/Settings.js:242
+#: src/screens/Settings.js:240
 msgid "Advanced Settings"
 msgstr ""
 
-#: src/screens/Settings.js:246
+#: src/screens/Settings.js:244
 msgid "Network Settings"
 msgstr ""
 
-#: src/screens/Settings.js:254
+#: src/screens/Settings.js:252
 msgid "Connect to side chain"
 msgstr ""
 
-#: src/screens/Settings.js:269
-msgid "Hathor Next (simulated)"
-msgstr ""
-
-#: src/screens/Settings.js:276
+#: src/screens/Settings.js:267
 msgid "Address Mode"
 msgstr ""
 
-#: src/screens/Settings.js:284
+#: src/screens/Settings.js:275
 msgid "Amount format"
 msgstr ""
 
-#: src/screens/Settings.js:292
+#: src/screens/Settings.js:283
 msgid "Privacy"
 msgstr ""
 
-#: src/screens/Settings.js:307
+#: src/screens/Settings.js:298
 msgid "About"
 msgstr "Om"
 
-#: src/screens/Settings.js:315
+#: src/screens/Settings.js:306
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:328
+#: src/screens/Settings.js:319
 msgid "Connected to"
 msgstr "Forbundet til"
 
@@ -1811,11 +1807,11 @@ msgstr ""
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:36
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:34
 msgid "Network Pre-Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:160
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:147
 msgid "Customize"
 msgstr ""
 
@@ -1892,33 +1888,7 @@ msgstr ""
 msgid "Contract successfully registered."
 msgstr ""
 
-#: src/screens/Multichain/MultichainMockSettings.js:36
-msgid "HATHOR NEXT (SIMULATED)"
-msgstr ""
-
-#: src/screens/Multichain/MultichainMockSettings.js:43
-msgid ""
-"Nothing here reaches a network. Transfers to Hathor Next don't spend your "
-"Hathor Network HTR, and arrive here only when sent to your own Hathor Next "
-"address."
-msgstr ""
-
-#: src/screens/Multichain/MultichainMockSettings.js:45
-msgid "Scenario"
-msgstr ""
-
-#: src/screens/Multichain/MultichainMockSettings.js:52
-msgid ""
-"Changing the scenario starts the simulated ledger over. Slow sync, Connect "
-"fails and Goes offline take effect the next time Hathor Next loads: turn "
-"Connect to side chain off and on, or restart the app."
-msgstr ""
-
-#: src/screens/Multichain/MultichainMockSettings.js:56
-msgid "Reset simulated ledger"
-msgstr ""
-
-#: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:79
+#: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:77
 msgid "Couldn't connect to Hathor Next."
 msgstr ""
 
@@ -2173,62 +2143,6 @@ msgstr "Ingen internetforbindelse"
 
 #: src/multichain/nextClientErrors.js:53
 msgid "Something went wrong on Hathor Next."
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:34
-msgid "Funded"
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:35
-msgid "25 HTR and two tokens that share a symbol."
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:39
-msgid "Empty"
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:40
-msgid "No tokens yet."
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:44
-msgid "Slow sync"
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:45
-msgid "The first sync takes 20 seconds, and sending waits for it."
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:49
-msgid "Connect fails"
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:50
-msgid "Connecting to Hathor Next fails."
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:54
-msgid "Goes offline"
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:55
-msgid "The connection drops 30 seconds after connecting, for 20 seconds."
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:59
-msgid "Send rejected"
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:60
-msgid "The network turns every payment down, with a reason."
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:64
-msgid "Send unconfirmed"
-msgstr ""
-
-#: src/multichain/mock/scenarios.js:65
-msgid "The network never answers a payment."
 msgstr ""
 
 #: src/components/AmountInputAccessory.js:98
@@ -3503,19 +3417,13 @@ msgstr ""
 msgid "Sent to ${ peer }"
 msgstr ""
 
-#: src/components/Multichain/SimulatedTag.js:23
-msgid "Simulated"
-msgstr ""
-
 #: src/components/Multichain/TokenChains.js:36
-#, javascript-format
 msgid "${ count } chain"
 msgid_plural "${ count } chains"
 msgstr[0] ""
 msgstr[1] ""
 
 #: src/components/Multichain/TokenChains.js:40
-#, javascript-format
 msgid "${ arrivingText } arriving"
 msgstr ""
 
