@@ -54,6 +54,12 @@ export function recordOf(status, config, ownAddress, chosen = null) {
   let state = TRANSFER_STATUS.PENDING;
   if (status.status === 'arrived') state = TRANSFER_STATUS.ARRIVED;
   if (failed) state = TRANSFER_STATUS.FAILED;
+  // One on its way arrives once the blocks it still waits for are mined. The backend reports no
+  // time for one that arrived, so the time its burn's confirmations take from when it was sent
+  // stands in: a time that stays put, so the transfer keeps its place in the history.
+  const arriveAt = state === TRANSFER_STATUS.ARRIVED
+    ? sentAt + needed * blockMs
+    : Date.now() + left * blockMs;
   // Where the burn goes, as the backend reports it or as this transfer chose it. Unknown, it is
   // never taken for this wallet's own address: someone else's HTR would count as arriving here.
   const toAddress = status.destination ?? chosen ?? null;
@@ -70,7 +76,7 @@ export function recordOf(status, config, ownAddress, chosen = null) {
     toAddress,
     toOwn: sameNextAddress(toAddress, ownAddress),
     sentAt,
-    arriveAt: Date.now() + left * blockMs,
+    arriveAt,
     status: state,
     sourceTxId: status.burn_tx_id ?? null,
     // A failed burn never left the balance; any other the backend pushed did.

@@ -5,7 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect } from '@jest/globals';
+import {
+  afterEach, describe, it, expect, jest,
+} from '@jest/globals';
 import {
   Address,
   Input,
@@ -14,12 +16,13 @@ import {
   Transaction,
 } from '@hathor/wallet-lib';
 import { NEXT_CLIENT_ERROR } from '../../../src/multichain/nextClientErrors';
-import { createBackendBridge } from '../../../src/multichain/next/backendBridge';
+import { createBackendBridge, recordOf } from '../../../src/multichain/next/backendBridge';
 import { BURN_DATA_VALUE } from '../../../src/multichain/next/burnCheck';
 import { encodeAddress } from '../../../src/multichain/next/kit/address';
 import { publicKeyOf } from '../../../src/multichain/next/kit/keys';
 import { bytesToHex, concatBytes, hexToBytes } from '../../../src/multichain/next/kit/scalar';
 import { CHAIN } from '../../../src/multichain/chains';
+import { HISTORY_VIEW, tokenHistory } from '../../../src/multichain/history';
 
 const network = new Network('privatenet');
 const TRANSFER = 'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL';
@@ -301,5 +304,51 @@ describe('the bridge through the Hathor Next backend', () => {
       ['old', 'pending', 'eligible', true],
       ['bad', 'failed', 'failed', false],
     ]);
+  });
+
+  describe('an arrived transfer', () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    // Sent at 12:00:00; the burn's 21 confirmations at 5 s blocks bring it at 12:01:45.
+    const sentAt = Date.UTC(2026, 10, 11, 12, 0, 0);
+    const arrived = {
+      id: 'arrived',
+      amount: '500',
+      status: 'arrived',
+      burn_tx_id: 'cc'.repeat(32),
+      mint_tx_id: 'dd'.repeat(32),
+      confirmations: 21,
+      needed: 21,
+      created_at: sentAt / 1000,
+      destination: OWN,
+    };
+    const readAt = (ms) => {
+      jest.spyOn(Date, 'now').mockReturnValue(ms);
+      return recordOf(arrived, CONFIG, OWN);
+    };
+
+    it('keeps the time it arrived, however much later it is read', () => {
+      const soon = readAt(sentAt + 3 * 60000);
+      const later = readAt(sentAt + 60 * 60000);
+      expect(soon.arriveAt).toBe(sentAt + 105000);
+      expect(later.arriveAt).toBe(soon.arriveAt);
+    });
+
+    it('stays below a payment made after it arrived', () => {
+      const paidAt = sentAt + 5 * 60000;
+      const transfer = readAt(sentAt + 10 * 60000);
+      const rows = tokenHistory({
+        view: HISTORY_VIEW.HATHOR_NEXT,
+        ids: { hathor: null, next: NATIVE },
+        hathorTxs: [],
+        hathorHasMore: false,
+        nextRows: [{
+          id: 'paid', txId: 'ef'.repeat(32), at: paidAt, direction: 'out', amount: '100',
+        }],
+        nextHasMore: false,
+        transfers: [transfer],
+      });
+      expect(rows.map((row) => row.key)).toEqual(['next:paid', 'transfer:arrived']);
+    });
   });
 });
