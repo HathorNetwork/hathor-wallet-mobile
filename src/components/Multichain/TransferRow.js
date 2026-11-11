@@ -139,6 +139,11 @@ export const TransferRow = ({
     hathorDecimalPlaces,
     amountFormat,
   );
+  // Between the wallet's own addresses on all chains, the row's amount is what the transfer cost,
+  // not what it moved: the line under the title says both.
+  const movedLine = amount > 0n
+    ? t`${moved} ${symbol} moved · ${shown} fee`
+    : t`${moved} ${symbol} moved`;
   let status = <Text style={styles.secondary}>{moment(transfer.sentAt).calendar()}</Text>;
   if (failed) {
     status = (
@@ -165,7 +170,7 @@ export const TransferRow = ({
         <View style={styles.middle}>
           <Text style={styles.title} numberOfLines={1}>{transferTitle(transfer, kind)}</Text>
           {kind === HISTORY_ROW.TRANSFER && transfer.toOwn && (
-            <Text style={styles.secondary}>{t`${moved} ${symbol} moved`}</Text>
+            <Text style={styles.secondary}>{movedLine}</Text>
           )}
           {status}
         </View>

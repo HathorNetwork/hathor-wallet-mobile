@@ -208,9 +208,27 @@ describe('the token screen of a token on both chains', () => {
     const { renderer } = await renderBody();
     const texts = textOf(renderer);
     expect(texts).toEqual(expect.arrayContaining([
-      '120.00 HTR', '25.00 HTR arriving', 'All chains', 'Moved to Hathor Next', '25.10 HTR moved',
+      '120.00 HTR', '25.00 HTR arriving', 'All chains', 'Moved to Hathor Next',
+      '25.10 HTR moved · 0.10 fee',
     ]));
     expect(renderer.root.findByType(TransferRow).props.kind).toBe(HISTORY_ROW.TRANSFER);
+  });
+
+  // On all chains the row's amount is the cost alone, so the line under it says what moved too.
+  test("says what a transfer moved and what it cost: the burn's data output", async () => {
+    const burn = {
+      ...pendingTransfer, amount: '1000', receiveAmount: '1000000000', bridgeFee: '0', networkFee: '1',
+    };
+    const { renderer } = await renderBody([burn]);
+    expect(textOf(renderer)).toEqual(expect.arrayContaining([
+      '10.00 HTR moved · 0.01 fee', '-0.01',
+    ]));
+  });
+
+  test('says only what a transfer that cost nothing moved', async () => {
+    const free = { ...pendingTransfer, amount: '2500', bridgeFee: '0', networkFee: '0' };
+    const { renderer } = await renderBody([free]);
+    expect(textOf(renderer)).toContain('25.00 HTR moved');
   });
 
   test("lists each chain's balance in the chain chip", async () => {

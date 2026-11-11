@@ -3797,7 +3797,16 @@ msgstr ""
 msgid "Transferred to ${ destination }"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:168
+#.  Between the wallet's own addresses on all chains, the row's amount is what the transfer cost,
+#.  not what it moved: the line under the title says both.
+#: src/components/Multichain/TransferRow.js:145
+#, javascript-format
+msgid "${ moved } ${ symbol } moved · ${ shown } fee"
+msgstr ""
+
+#.  Between the wallet's own addresses on all chains, the row's amount is what the transfer cost,
+#.  not what it moved: the line under the title says both.
+#: src/components/Multichain/TransferRow.js:146
 msgid "${ moved } ${ symbol } moved"
 msgstr ""
 
