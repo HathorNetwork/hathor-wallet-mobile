@@ -14,7 +14,6 @@ import { ChainFilter } from './ChainFilter';
 import { ChainMark } from './ChainTag';
 import { NextTxDetailsModal } from './NextTxDetailsModal';
 import { NextTxRow } from './NextTxRow';
-import { SimulatedTagIfMock } from './SimulatedTag';
 import { SyncingNotice } from './SyncingNotice';
 import { TokenHistoryList } from './TokenHistoryList';
 import { TransferDetailsModal } from './TransferDetailsModal';
@@ -51,7 +50,6 @@ export const NextBalanceView = ({ balance, symbol, sweeping, children = null }) 
       {sweeping ? t`Available Balance (so far)` : t`Available Balance`}
     </Text>
     {children}
-    <SimulatedTagIfMock style={styles.simulated} />
     {sweeping && <SyncingNotice style={styles.syncing} />}
   </View>
 );
@@ -281,10 +279,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: NEXT_COLORS.accentText,
-  },
-  simulated: {
-    marginTop: 8,
-    alignSelf: 'center',
   },
   syncing: {
     marginTop: 16,

@@ -533,7 +533,7 @@ msgstr "Символ токена"
 msgid "Deposit"
 msgstr "Депозит"
 
-#: src/components/Multichain/TransferDetailsModal.js:118
+#: src/components/Multichain/TransferDetailsModal.js:116
 #: src/components/Shielded/FeeBreakdown.js:70
 #: src/screens/CreateTokenConfirm.js:293 src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
@@ -665,13 +665,13 @@ msgid "FEE TOKEN"
 msgstr ""
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/screens/Dashboard.js:158 src/screens/Dashboard.js:224
+#: src/screens/Dashboard.js:157 src/screens/Dashboard.js:222
 msgid "Tokens"
 msgstr "ТокенЫ"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 #: src/components/NanoContract/NanoContractsList.js:75
-#: src/screens/Dashboard.js:159
+#: src/screens/Dashboard.js:158
 msgid "Nano Contracts"
 msgstr ""
 
@@ -943,7 +943,7 @@ msgstr ""
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/components/Multichain/MultichainTokenBody.js:51
+#: src/components/Multichain/MultichainTokenBody.js:50
 #: src/screens/MainScreen.js:674
 msgid "Available Balance"
 msgstr "Доступный Баланс"
@@ -1370,7 +1370,7 @@ msgstr ""
 msgid "Transaction summary"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:113
+#: src/components/Multichain/TransferDetailsModal.js:111
 #: src/screens/SendConfirmScreen.js:647
 msgid "To"
 msgstr ""
@@ -2156,7 +2156,7 @@ msgid "Max"
 msgstr ""
 
 #: src/components/AmountInputAccessory.js:105
-#: src/components/Multichain/TransferDetailsModal.js:101
+#: src/components/Multichain/TransferDetailsModal.js:99
 msgid "Done"
 msgstr ""
 
@@ -2484,7 +2484,7 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/Multichain/NextTxDetailsModal.js:106
+#: src/components/Multichain/NextTxDetailsModal.js:104
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
 #: src/components/TxDetailsModal.js:143
@@ -2816,7 +2816,7 @@ msgstr ""
 msgid "Address at index ${ data.index }"
 msgstr ""
 
-#: src/components/Multichain/NextTxDetailsModal.js:100
+#: src/components/Multichain/NextTxDetailsModal.js:98
 #: src/components/NanoContract/EditAddressModal.js:63
 #: src/components/NanoContract/SelectAddressModal.js:131
 #: src/components/Reown/GetAddressRequest.js:42
@@ -3375,24 +3375,24 @@ msgstr ""
 msgid "Loading Hathor Next…"
 msgstr ""
 
-#: src/components/Multichain/MultichainTokenBody.js:51
+#: src/components/Multichain/MultichainTokenBody.js:50
 msgid "Available Balance (so far)"
 msgstr ""
 
-#: src/components/Multichain/MultichainTokenBody.js:223
+#: src/components/Multichain/MultichainTokenBody.js:221
 #, javascript-format
 msgid "${ arrivingText } ${ token.symbol } arriving"
 msgstr ""
 
-#: src/components/Multichain/NextTxDetailsModal.js:90
+#: src/components/Multichain/NextTxDetailsModal.js:88
 msgid "Status"
 msgstr "Статус"
 
-#: src/components/Multichain/NextTxDetailsModal.js:96
+#: src/components/Multichain/NextTxDetailsModal.js:94
 msgid "Date"
 msgstr ""
 
-#: src/components/Multichain/NextTxDetailsModal.js:114
+#: src/components/Multichain/NextTxDetailsModal.js:112
 msgid "View on explorer"
 msgstr ""
 
@@ -3420,53 +3420,53 @@ msgstr[2] ""
 msgid "${ arrivingText } arriving"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:99
+#: src/components/Multichain/TransferDetailsModal.js:97
 #, javascript-format
 msgid "Sent on ${ source }"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:106
+#: src/components/Multichain/TransferDetailsModal.js:104
 #, javascript-format
 msgid "Received on ${ destination }"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:109
+#: src/components/Multichain/TransferDetailsModal.js:107
 msgid "Usually about ${ usualMinutes } min"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:110
+#: src/components/Multichain/TransferDetailsModal.js:108
 #, javascript-format
 msgid "Done · ${ arrivedAt }"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:114
+#: src/components/Multichain/TransferDetailsModal.js:112
 #, javascript-format
 msgid "Your ${ destination } address"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:116
+#: src/components/Multichain/TransferDetailsModal.js:114
 msgid "Bridge fee"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:30
+#: src/components/Multichain/TransferRow.js:29
 #, javascript-format
 msgid "Arriving in about ${ minutes } min"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:60
+#: src/components/Multichain/TransferRow.js:59
 msgid "Transfer from ${ source }"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:63
+#: src/components/Multichain/TransferRow.js:62
 #, javascript-format
 msgid "Moved to ${ destination }"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:65
+#: src/components/Multichain/TransferRow.js:64
 msgid "Transferred to ${ destination }"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:133
+#: src/components/Multichain/TransferRow.js:130
 #, javascript-format
 msgid "${ moved } ${ symbol } moved"
 msgstr ""
