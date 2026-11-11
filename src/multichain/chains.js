@@ -159,12 +159,17 @@ const DEV_MAX_SEND_FEE = '10000000';
 /**
  * Hathor Next through a backend set up for local testing (Settings → Hathor Next): its pins are
  * the backend's own GET /v1/config, read when the backend was set. Real side chains pin their
- * values in this file instead. Its tokens don't merge with Hathor Network's: nothing maps them yet.
+ * values in this file instead.
+ *
+ * A backend that transfers HTR mints it as its native token at the same value, so the two are
+ * one token, HTR on both chains, as on Juliet: one Dashboard row with both balances. A backend
+ * that transfers nothing keeps its native token apart, under its own name.
  *
  * @param {{ url: string, pins: Object }} devBackend
  * @returns {Object}
  */
 export function devBackendSideChain({ url, pins }) {
+  const carriesHtr = Boolean(pins.transfer);
   return {
     id: CHAIN.HATHOR_NEXT,
     name: CHAIN_NAME[CHAIN.HATHOR_NEXT],
@@ -172,8 +177,8 @@ export function devBackendSideChain({ url, pins }) {
     backendUrl: url,
     nextNetworkId: pins.next.network_id,
     nativeTokenId: pins.next.native_token,
-    nativeTokenSymbol: pins.next.native_token_symbol ?? 'USDT',
-    nativeTokenName: pins.next.native_token_name ?? 'Tether USD',
+    nativeTokenSymbol: carriesHtr ? 'HTR' : (pins.next.native_token_symbol ?? 'USDT'),
+    nativeTokenName: carriesHtr ? 'Hathor' : (pins.next.native_token_name ?? 'Tether USD'),
     serviceViewPub: pins.next.service_view_pub,
     wireFormat: pins.next.wire_format,
     // The app's own ceiling on a payment's fee, in the native token's base units, whatever the
@@ -181,7 +186,7 @@ export function devBackendSideChain({ url, pins }) {
     maxSendFee: DEV_MAX_SEND_FEE,
     explorerUrl: null,
     explorerApiBase: null,
-    tokenMap: [],
+    tokenMap: carriesHtr ? [{ hathor: '00', next: pins.next.native_token }] : [],
     // hathor-next mints a burn at the same value: 1.00 HTR becomes 1.00000000 of the native token.
     mintScale: '1000000',
     directions: pins.transfer ? [{ from: CHAIN.HATHOR, to: CHAIN.HATHOR_NEXT }] : [],
