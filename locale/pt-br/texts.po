@@ -2526,7 +2526,7 @@ msgstr "Esse é o meu endereço: ${ lastSharedAddress }"
 msgid "New address"
 msgstr "Novo endereço"
 
-#: src/components/Multichain/NextReceiveAddress.js:58
+#: src/components/Multichain/NextReceiveAddress.js:56
 #: src/components/ReceiveMyAddress.js:107 src/components/TokenDetails.js:102
 msgid "Share"
 msgstr "Compartilhar"
@@ -3570,7 +3570,7 @@ msgstr "Saldo Disponível (até agora)"
 msgid "${ arrivingText } ${ token.symbol } arriving"
 msgstr "${ arrivingText } ${ token.symbol } a caminho"
 
-#: src/components/Multichain/NextReceiveAddress.js:36
+#: src/components/Multichain/NextReceiveAddress.js:35
 #, javascript-format
 msgid "Here is my Hathor Next address: ${ address }"
 msgstr "Este é o meu endereço da Hathor Next: ${ address }"
