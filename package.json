@@ -164,6 +164,10 @@
     "setupFiles": [
       "<rootDir>/jestMockSetup.js"
     ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/__tests__/multichain/fakes/"
+    ],
     "cacheDirectory": ".jest/cache"
   },
   "lavamoat": {

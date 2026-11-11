@@ -25,7 +25,6 @@ import NewHathorButton from '../../components/NewHathorButton';
 import AmountTextInput from '../../components/AmountTextInput';
 import OfflineBar from '../../components/OfflineBar';
 import { ChainTag } from '../../components/Multichain/ChainTag';
-import { SimulatedTagIfMock } from '../../components/Multichain/SimulatedTag';
 import { validateTransferAddress } from '../../multichain/address';
 import { arrivalText } from '../../multichain/transfer';
 import { createBridge } from '../../multichain/bridge';
@@ -175,7 +174,6 @@ export default function ChainTransferScreen({ navigation, route }) {
           keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}
         >
           <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps='handled'>
-            <SimulatedTagIfMock />
             <View style={styles.fixedRow}>
               <Text style={styles.fixedLabel}>{t`From`}</Text>
               <ChainTag chain={from} />

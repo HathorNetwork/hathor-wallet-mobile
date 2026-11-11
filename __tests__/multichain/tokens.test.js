@@ -94,12 +94,13 @@ describe('the Dashboard list of both chains', () => {
   });
 
   test('says what is on its way, and counts it only once it left the other balance', () => {
-    const simulated = list({ transfers: [transfer({ debitedOnSource: false })] })[0];
-    expect(simulated.available).toBe(12000n);
-    expect(simulated.arriving).toEqual({ amount: 2500n, decimalPlaces: 2 });
+    // Its transaction hasn't reached Hathor Network yet: the balance there still holds it.
+    const notSent = list({ transfers: [transfer({ debitedOnSource: false })] })[0];
+    expect(notSent.available).toBe(12000n);
+    expect(notSent.arriving).toEqual({ amount: 2500n, decimalPlaces: 2 });
 
-    const real = list({ transfers: [transfer({ debitedOnSource: true })] })[0];
-    expect(real.available).toBe(14500n);
+    const sent = list({ transfers: [transfer({ debitedOnSource: true })] })[0];
+    expect(sent.available).toBe(14500n);
   });
 
   test('ignores a transfer that arrived, or that went to another address', () => {

@@ -6,9 +6,8 @@
  */
 
 /**
- * The numbers the simulated Hathor Next and the simulated transfer use, all in one place until the
- * real ones are known. Amounts are decimal strings in HTR; the code converts them to each chain's
- * units.
+ * The numbers the fake Hathor Next and the fake transfer use, all in one place. Amounts are
+ * decimal strings in HTR; the code converts them to each chain's units.
  */
 
 /** The flat fee of a Hathor Next payment: the real value (0.05, Hathor Next's FEE_BASE). */
@@ -26,7 +25,7 @@ export const BRIDGE_MIN_AMOUNT = '1.00';
 /** How long a transfer takes to arrive on Hathor Next. */
 export const BRIDGE_ETA_SECONDS = 120;
 
-/** How long connecting to the simulated Hathor Next takes. */
+/** How long connecting to the fake Hathor Next takes. */
 export const CONNECT_DELAY_MS = 1200;
 
 /** How long the first sync takes in the "Slow sync" scenario. */
@@ -39,5 +38,5 @@ export const OFFLINE_FOR_MS = 20000;
 /** How long the network takes to answer a payment. */
 export const SEND_DELAY_MS = 600;
 
-/** How long the simulated transfer's broadcast takes on Hathor Network. */
+/** How long the fake transfer's broadcast takes on Hathor Network. */
 export const TRANSFER_DELAY_MS = 800;

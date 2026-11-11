@@ -53,8 +53,8 @@ export function nextTokenList(tokens, nativeTokenId) {
 /**
  * What a transfer still on its way adds to a token, in Hathor Next's units: what will arrive in
  * this wallet, and the part of it that already left the other chain's balance. Only that part
- * counts in a combined total: a simulated transfer moves nothing on Hathor Network, so counting
- * it there would count it twice.
+ * counts in a combined total: a transfer whose transaction hasn't reached the source chain yet
+ * still counts in that chain's balance, so counting it there would count it twice.
  *
  * @param {Object[]} transfers TransferRecord (src/multichain/bridge.js)
  * @param {{ hathor: string|null, next: string|null }} ids The token's id on each chain

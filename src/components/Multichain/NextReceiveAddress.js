@@ -14,7 +14,6 @@ import { t } from 'ttag';
 import QRCode from 'react-native-qrcode-svg';
 import CopyClipboard from '../CopyClipboard';
 import SimpleButton from '../SimpleButton';
-import { SimulatedTagIfMock } from './SimulatedTag';
 import { receiveReuseBody } from '../../multichain/content';
 import { COLORS } from '../../styles/themes';
 
@@ -43,7 +42,6 @@ export function NextReceiveAddress() {
         <QRCode value={address} size={height < 650 ? 160 : 250} />
       </View>
       <View style={styles.note}>
-        <SimulatedTagIfMock style={styles.simulated} />
         <Text style={styles.noteText}>{receiveReuseBody()}</Text>
       </View>
       <View style={styles.addressWrapper}>
@@ -80,10 +78,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingBottom: 16,
-  },
-  simulated: {
-    alignSelf: 'center',
-    marginBottom: 8,
   },
   noteText: {
     fontSize: 13,
