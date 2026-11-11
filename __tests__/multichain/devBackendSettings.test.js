@@ -52,7 +52,7 @@ describe('a backend for local testing', () => {
     },
   });
 
-  test('carries HTR to its native token where it transfers HTR: one token, as on Juliet', () => {
+  test('carries HTR to its native token where it transfers HTR: one token', () => {
     const config = devBackendSideChain({ url: 'http://backend.test', pins: transferring() });
     expect(config.tokenMap).toEqual([{ hathor: '00', next: 'aa'.repeat(32) }]);
     expect(config).toMatchObject({ nativeTokenSymbol: 'HTR', nativeTokenName: 'Hathor' });

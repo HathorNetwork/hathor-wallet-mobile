@@ -22,6 +22,14 @@ jest.mock('../../src/passkey/passkeySigner', () => ({
   withPasskeyWords: jest.fn(),
 }));
 
+// Hathor Next is the test fake, on a network the tests give a side chain.
+// eslint-disable-next-line global-require
+jest.mock('../../src/multichain/chains', () => require('../multichain/fakes/chainsModule'));
+// eslint-disable-next-line global-require
+jest.mock('../../src/multichain/nextClient', () => require('../multichain/fakes/nextClientModule'));
+// eslint-disable-next-line global-require
+jest.mock('../../src/multichain/bridge', () => require('../multichain/fakes/bridgeModule'));
+
 /* eslint-disable import/first */
 import { runSaga, stdChannel } from 'redux-saga';
 import { reducer } from '../../src/reducers/reducer';
@@ -30,7 +38,6 @@ import {
   multichainConnectSettingChanged,
   multichainDevBackendSet,
   multichainLoadRequested,
-  multichainMockScenarioSet,
   multichainNextHistoryRequested,
   multichainNextKeysDerived,
   multichainNextKeysUnlockRequested,
@@ -47,15 +54,20 @@ import {
   types,
   unlockScreen,
 } from '../../src/actions';
-import { MULTICHAIN_FEATURE_TOGGLE, multichainKeyMap } from '../../src/constants';
+import {
+  MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
+  MULTICHAIN_FEATURE_TOGGLE,
+  multichainKeyMap,
+} from '../../src/constants';
 import { STORE } from '../../src/store';
 import { nextClientChannel, resolveUncertainTransfer, saga } from '../../src/sagas/multichain';
 import { prepareNextKeysAtUnlock } from '../../src/multichain/keys';
 import { getNextClient, setNextClient } from '../../src/multichain/nextClient';
-import { deriveMockNextAddress } from '../../src/multichain/mock/mockNextClient';
-import { mockPeerAddress } from '../../src/multichain/mock/mockAddress';
-import { loadLedger, resetLedger } from '../../src/multichain/mock/mockLedger';
-import { MOCK_SCENARIO } from '../../src/multichain/mock/scenarios';
+import { deriveFakeNextAddress, fakePeerAddress } from '../multichain/fakes/fakeAddress';
+import { fakeLedgerKey, loadLedger, resetLedger } from '../multichain/fakes/fakeLedger';
+import { FAKE_SCENARIO } from '../multichain/fakes/scenarios';
+import { FAKE_NETWORK, FAKE_SIDE_CHAIN } from '../multichain/fakes/sideChain';
+import { selectSideChainConfig } from '../../src/multichain/gating';
 import {
   CONNECT_STATUS,
   NEXT_STATUS,
@@ -71,19 +83,19 @@ import {
 import { PasskeyCancelledError, withPasskeyWords } from '../../src/passkey/passkeySigner';
 /* eslint-enable import/first */
 
-const NETWORK = 'testnet-juliet';
+const NETWORK = FAKE_NETWORK;
 const WORDS = 'abandon ability able';
 const PIN = '123456';
 let ADDRESS = null;
 beforeAll(async () => {
-  ADDRESS = await deriveMockNextAddress(WORDS);
+  ADDRESS = await deriveFakeNextAddress(WORDS);
 });
 const HTR = '00';
 
 let task = null;
 
 function setup(options = {}) {
-  const { flag = true, scenario = MOCK_SCENARIO.FUNDED, start = true, toggles = true } = options;
+  const { flag = true, scenario = FAKE_SCENARIO.FUNDED, start = true, toggles = true } = options;
   resetLedger(NETWORK, scenario);
   let state = reducer(undefined, { type: '@@INIT' });
   const channel = stdChannel();
@@ -125,8 +137,8 @@ beforeEach(() => {
   setNextClient(null);
   STORE.removeItem(multichainKeyMap.next);
   STORE.removeItem(multichainKeyMap.connectedNetworks);
-  // A reset of the simulated ledger keeps its transfers: each test starts with none.
-  STORE.removeItem(multichainKeyMap.mock(NETWORK));
+  // A reset of the fake ledger keeps its transfers: each test starts with none.
+  STORE.removeItem(fakeLedgerKey(NETWORK));
   jest.spyOn(STORE, 'getWalletWords').mockResolvedValue(WORDS);
   jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(false);
 });
@@ -179,7 +191,7 @@ describe('turning "Connect to side chain" on', () => {
   });
 
   test('stays off, with the reason, when Hathor Next fails to connect', async () => {
-    const env = setup({ scenario: MOCK_SCENARIO.CONNECT_FAILS });
+    const env = setup({ scenario: FAKE_SCENARIO.CONNECT_FAILS });
     await connect(env);
     const { multichain } = env.getState();
     expect(multichain.connectedNetworks).toEqual({});
@@ -303,14 +315,14 @@ describe('loading Hathor Next when the wallet starts', () => {
   test('tries again from the loading screen', async () => {
     const env = setup();
     await connect(env);
-    env.dispatch(multichainMockScenarioSet(MOCK_SCENARIO.CONNECT_FAILS));
+    resetLedger(NETWORK, FAKE_SCENARIO.CONNECT_FAILS);
     await wait(10);
     env.dispatch(networkChanged());
     await wait(10);
     env.dispatch(startWalletSuccess());
     await wait(2000);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.FAILED);
-    env.dispatch(multichainMockScenarioSet(MOCK_SCENARIO.FUNDED));
+    resetLedger(NETWORK, FAKE_SCENARIO.FUNDED);
     env.dispatch(multichainLoadRequested());
     await wait(2000);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
@@ -406,7 +418,7 @@ describe('the ways out of Hathor Next', () => {
   });
 
   test('cancel a connect still running, so it never comes back', async () => {
-    const env = setup({ scenario: MOCK_SCENARIO.FUNDED });
+    const env = setup({ scenario: FAKE_SCENARIO.FUNDED });
     env.dispatch(multichainConnectSettingChanged(true, { pinCode: PIN }));
     await wait(100);
     env.dispatch(networkChanged());
@@ -444,7 +456,7 @@ describe('the ways out of Hathor Next', () => {
 describe('a Hathor Next payment', () => {
   const draft = (draftId) => multichainNextSendRequested({
     tokenId: HTR,
-    to: mockPeerAddress('someone'),
+    to: fakePeerAddress('someone'),
     amount: 100000000n,
     draftId,
     pinCode: PIN,
@@ -538,7 +550,7 @@ describe('a Hathor Next payment', () => {
   });
 
   test("carries the network's words when it is turned down", async () => {
-    const env = setup({ scenario: MOCK_SCENARIO.SEND_REJECTED });
+    const env = setup({ scenario: FAKE_SCENARIO.SEND_REJECTED });
     await connect(env);
     env.dispatch(draft('draft-1'));
     await wait(1000);
@@ -555,7 +567,7 @@ describe('a transfer between chains', () => {
   });
 
   test("to the wallet's own address is recorded, and arrives after the arrival time", async () => {
-    const env = setup({ scenario: MOCK_SCENARIO.EMPTY });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
     await connect(env);
     env.dispatch(transferTo(ADDRESS));
     await wait(1000);
@@ -577,7 +589,7 @@ describe('a transfer between chains', () => {
   });
 
   test('runs once when asked twice while it runs', async () => {
-    const env = setup({ scenario: MOCK_SCENARIO.EMPTY });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
     await connect(env);
     env.dispatch(transferTo(ADDRESS));
     env.dispatch(transferTo(ADDRESS));
@@ -586,7 +598,7 @@ describe('a transfer between chains', () => {
   });
 
   test('from a passkey wallet asks for the passkey, and a dismissed one can be confirmed again', async () => {
-    const env = setup({ scenario: MOCK_SCENARIO.EMPTY });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
     await connect(env);
     STORE.isPasskeyWallet.mockReturnValue(true);
     withPasskeyWords.mockRejectedValue(new PasskeyCancelledError());
@@ -648,7 +660,7 @@ describe('a transfer signed without an answer', () => {
   });
 
   test('is asked about again while the transfers are read, after its first tries ran out', async () => {
-    const env = setup({ scenario: MOCK_SCENARIO.EMPTY });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
     await connect(env);
     let reachable = false;
     const bridge = {
@@ -689,14 +701,14 @@ describe('the backend for local testing', () => {
     try {
       const env = setup();
       await connect(env);
-      expect(getNextClient().simulated).toBe(true);
+      expect(selectSideChainConfig(env.getState())).toBe(FAKE_SIDE_CHAIN);
       expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
     } finally {
       STORE.removeItem(multichainKeyMap.devBackend);
     }
   });
 
-  // The keys belong to the client that ran, so a switch derives them again for the other one.
+  // The keys are the same on every backend: a switch keeps them, and only the address changes.
   test('loads Hathor Next again at once with the PIN Settings asked for the switch', async () => {
     const env = setup();
     await connect(env);
@@ -707,7 +719,7 @@ describe('the backend for local testing', () => {
     });
   });
 
-  test("loads it again with a passkey wallet's ceremony", async () => {
+  test('loads it again for a passkey wallet with the keys its first ceremony derived', async () => {
     STORE.isPasskeyWallet.mockReturnValue(true);
     withPasskeyWords.mockImplementation(async (fn) => fn(WORDS));
     const env = setup();
@@ -715,10 +727,77 @@ describe('the backend for local testing', () => {
     await wait(2000);
     env.dispatch(multichainDevBackendSet(null));
     await wait(2000);
-    expect(withPasskeyWords).toHaveBeenCalledTimes(2);
+    expect(withPasskeyWords).toHaveBeenCalledTimes(1);
     expect(env.getState().multichain.next).toMatchObject({
       status: NEXT_STATUS.READY, address: ADDRESS,
     });
+  });
+});
+
+describe('the flag of the backend for local testing', () => {
+  const LOCAL = {
+    url: 'http://192.168.0.10:8930',
+    pins: {
+      next: {
+        network_id: 1777, native_token: '00', service_view_pub: 'ab', wire_format: 'v3',
+      },
+      transfer: null,
+    },
+  };
+
+  // The keys are the same on every backend: only the backend and the address change.
+  test('loads Hathor Next again on the local backend when it turns on, with the same keys', async () => {
+    STORE.setItem(multichainKeyMap.devBackend, LOCAL);
+    try {
+      const env = setup();
+      await connect(env);
+      const client = getNextClient();
+      const connectSpy = jest.spyOn(client, 'connect');
+      env.dispatch(setFeatureToggles({
+        [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: true,
+      }));
+      env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+      await wait(2000);
+      expect(connectSpy).toHaveBeenCalledWith(expect.objectContaining({
+        config: expect.objectContaining({ backendUrl: LOCAL.url }),
+      }));
+      expect(getNextClient()).toBe(client);
+      expect(env.getState().multichain.next).toMatchObject({
+        status: NEXT_STATUS.READY, keysReady: true,
+      });
+    } finally {
+      STORE.removeItem(multichainKeyMap.devBackend);
+    }
+  });
+
+  test("goes back to the network's own side chain when it turns off", async () => {
+    STORE.setItem(multichainKeyMap.devBackend, LOCAL);
+    try {
+      const env = setup({ toggles: false });
+      env.dispatch(setFeatureToggles({
+        [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: true,
+      }));
+      env.dispatch(featureToggleInitialized());
+      await connect(env);
+      const connectSpy = jest.spyOn(getNextClient(), 'connect');
+      env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
+      env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+      await wait(2000);
+      expect(connectSpy).toHaveBeenCalledWith(expect.objectContaining({ config: FAKE_SIDE_CHAIN }));
+      expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+    } finally {
+      STORE.removeItem(multichainKeyMap.devBackend);
+    }
+  });
+
+  test('leaves Hathor Next alone when nothing about the backend changed', async () => {
+    const env = setup();
+    await connect(env);
+    const connectSpy = jest.spyOn(getNextClient(), 'connect');
+    env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+    await wait(2000);
+    expect(connectSpy).not.toHaveBeenCalled();
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
   });
 });
 
@@ -743,7 +822,7 @@ describe('locking the app', () => {
     expect(forgetKeys).toHaveBeenCalledTimes(1);
   });
 
-  test('keeps the simulated keys, which are no secret', async () => {
+  test('keeps keysReady when the client had nothing to drop', async () => {
     const env = setup();
     await connect(env);
     env.dispatch(lockScreen());

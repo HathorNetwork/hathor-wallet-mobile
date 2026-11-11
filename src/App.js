@@ -55,6 +55,7 @@ import ResetWallet from './screens/ResetWallet';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
 import { MultichainLoadScreen } from './components/Multichain/MultichainLoadScreen';
 import NextTokenScreen from './screens/Multichain/NextTokenScreen';
+import DevBackendScreen from './screens/Multichain/DevBackendScreen';
 import ChainTransferScreen from './screens/Multichain/ChainTransferScreen';
 import ChainTransferConfirmScreen from './screens/Multichain/ChainTransferConfirmScreen';
 import NextSendAmountInput from './screens/Multichain/NextSendAmountInput';
@@ -532,6 +533,7 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
         <Stack.Screen name='NextTokenScreen' component={NextTokenScreen} />
+        <Stack.Screen name='MultichainDevBackend' component={DevBackendScreen} />
         <Stack.Screen name='ChainTransfer' component={ChainTransferScreen} />
         <Stack.Screen name='ChainTransferConfirm' component={ChainTransferConfirmScreen} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />

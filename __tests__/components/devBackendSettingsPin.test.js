@@ -28,6 +28,10 @@ jest.mock('../../src/multichain/next/backendApi', () => ({
   createBackendApi: () => ({ getConfig: async () => mockPins }),
 }));
 
+// A network the tests give a side chain.
+// eslint-disable-next-line global-require
+jest.mock('../../src/multichain/chains', () => require('../multichain/fakes/chainsModule'));
+
 /* eslint-disable import/first */
 import React from 'react';
 import { act, create } from 'react-test-renderer';
@@ -41,13 +45,10 @@ import {
   setFullNodeNetworkName,
   types,
 } from '../../src/actions';
-import {
-  FULL_NETWORK_JULIET_TESTNET,
-  MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
-  MULTICHAIN_FEATURE_TOGGLE,
-} from '../../src/constants';
+import { MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE, MULTICHAIN_FEATURE_TOGGLE } from '../../src/constants';
 import { STORE } from '../../src/store';
 import { DevBackendSettings } from '../../src/components/Multichain/DevBackendSettings';
+import { FAKE_NETWORK } from '../multichain/fakes/sideChain';
 /* eslint-enable import/first */
 
 const URL = 'https://wallet-backend.devnet-alpha.samba.hathor.network';
@@ -76,8 +77,8 @@ async function render({ backend = null, passkey = false } = {}) {
     [MULTICHAIN_FEATURE_TOGGLE]: true,
     [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: true,
   }));
-  store.dispatch(setFullNodeNetworkName(FULL_NETWORK_JULIET_TESTNET));
-  store.dispatch(multichainConnectedNetworksSet({ [FULL_NETWORK_JULIET_TESTNET]: true }));
+  store.dispatch(setFullNodeNetworkName(FAKE_NETWORK));
+  store.dispatch(multichainConnectedNetworksSet({ [FAKE_NETWORK]: true }));
   if (backend) {
     store.dispatch(multichainDevBackendSet(backend, { persist: false }));
   }

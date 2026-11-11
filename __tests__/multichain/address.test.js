@@ -17,7 +17,7 @@ import {
   validateTransferAddress,
 } from '../../src/multichain/address';
 import { CHAIN } from '../../src/multichain/chains';
-import { mockPeerAddress } from '../../src/multichain/mock/mockAddress';
+import { fakePeerAddress } from './fakes/fakeAddress';
 
 // Hathor Next's own address vectors (clients/wallet-sdk/fixtures/address/v2.json): what the real
 // client emits is the first, `samba1z…`.
@@ -51,9 +51,9 @@ describe('isNextAddress', () => {
     expect(isNextAddress(null)).toBe(false);
   });
 
-  test('takes the simulated addresses, which are real ones', () => {
-    expect(isNextAddress(mockPeerAddress('someone'))).toBe(true);
-    expect(mockPeerAddress('someone')).toMatch(/^samba1z[02-9ac-hj-np-z]{109}$/);
+  test("takes the test fake's addresses, which are real ones", () => {
+    expect(isNextAddress(fakePeerAddress('someone'))).toBe(true);
+    expect(fakePeerAddress('someone')).toMatch(/^samba1z[02-9ac-hj-np-z]{109}$/);
   });
 });
 
@@ -68,7 +68,7 @@ describe('normalizeNextAddress and sameNextAddress', () => {
   test('compare the keys, not the text', () => {
     expect(sameNextAddress(UPPERCASE.address, UPPERCASE.address.toLowerCase())).toBe(true);
     expect(sameNextAddress(LEGACY.address, normalizeNextAddress(LEGACY.address))).toBe(true);
-    expect(sameNextAddress(V2.address, mockPeerAddress('someone'))).toBe(false);
+    expect(sameNextAddress(V2.address, fakePeerAddress('someone'))).toBe(false);
     expect(sameNextAddress(null, null)).toBe(false);
   });
 });

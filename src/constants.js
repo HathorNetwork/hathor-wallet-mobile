@@ -194,12 +194,11 @@ export const AMOUNT_FORMAT_KEY = 'wallet:amount_format';
  * - connectedNetworks: the networks where the user turned "Connect to side chain" on;
  * - next: what the wallet saved about Hathor Next, all of it public: its address (the same on
  *   every network, as it comes from the seed) and the networks it was registered on;
- * - mock: the simulated Hathor Next ledger of a network.
+ * - devBackend: the Hathor Next backend set for local testing.
  */
 export const multichainKeyMap = {
   connectedNetworks: 'wallet:multichain:connectedNetworks',
   next: 'wallet:multichain:next',
-  mock: (fullNetwork) => `wallet:multichain:mock:${fullNetwork}`,
   devBackend: 'wallet:multichain:devBackend',
 };
 
@@ -277,12 +276,6 @@ export const SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE = 'shielded-outputs-network.
  */
 export const MULTICHAIN_FEATURE_TOGGLE = 'multichain.rollout';
 /**
- * Shows the Testnet Juliet preset in Network Settings, and nothing else. It is separate from
- * MULTICHAIN_FEATURE_TOGGLE for the reason SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE is: a flag
- * targeted at Juliet is off on the network the user switches from.
- */
-export const MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE = 'multichain-network.rollout';
-/**
  * Shows the Hathor Next backend for local testing (Settings → Hathor Next) and lets a backend set
  * there replace the side chain's own values. For the people who run a local Hathor Next network;
  * it does nothing without MULTICHAIN_FEATURE_TOGGLE. Off by default, like every flag Unleash
@@ -313,7 +306,6 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false,
   [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: false,
   [MULTICHAIN_FEATURE_TOGGLE]: false,
-  [MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]: false,
   [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: false,
 };
 
@@ -406,30 +398,6 @@ export const PRE_SETTINGS_SHIELDED_TESTNET = {
   explorerUrl: EXPLORER_SHIELDED_TESTNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_SHIELDED_TESTNET_URL,
   txMiningServiceUrl: TX_MINING_SERVICE_SHIELDED_TESTNET_URL,
-};
-
-/**
- * Testnet Juliet: a testnet with a side chain, Hathor Next. Its nodes report the network name
- * 'testnet-juliet', which is what tells the app that the network has a side chain (see
- * src/multichain/chains.js). The URLs follow the other testnets' naming until Juliet is deployed.
- * It has no wallet-service, so a wallet runs on the fullnode facade there.
- */
-export const STAGE_JULIET_TESTNET = 'testnet';
-export const NETWORK_JULIET_TESTNET = 'testnet';
-export const FULL_NETWORK_JULIET_TESTNET = 'testnet-juliet';
-export const NODE_SERVER_JULIET_TESTNET_URL = 'https://node1.juliet.testnet.hathor.network/v1a/';
-export const EXPLORER_JULIET_TESTNET_URL = 'https://explorer.juliet.testnet.hathor.network/';
-export const EXPLORER_SERVICE_JULIET_TESTNET_URL = 'https://explorer-service.juliet.testnet.hathor.network/';
-export const TX_MINING_SERVICE_JULIET_TESTNET_URL = 'https://txmining.juliet.testnet.hathor.network/';
-
-export const PRE_SETTINGS_JULIET_TESTNET = {
-  stage: STAGE_JULIET_TESTNET,
-  network: NETWORK_JULIET_TESTNET,
-  fullNetwork: FULL_NETWORK_JULIET_TESTNET,
-  nodeUrl: NODE_SERVER_JULIET_TESTNET_URL,
-  explorerUrl: EXPLORER_JULIET_TESTNET_URL,
-  explorerServiceUrl: EXPLORER_SERVICE_JULIET_TESTNET_URL,
-  txMiningServiceUrl: TX_MINING_SERVICE_JULIET_TESTNET_URL,
 };
 
 /**

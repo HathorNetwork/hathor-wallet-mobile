@@ -6,16 +6,17 @@
  */
 
 import { describe, test, expect } from '@jest/globals';
-import { CHAIN, getSideChainConfig, transferReceiveSymbol } from '../../src/multichain/chains';
+import { CHAIN, transferReceiveSymbol } from '../../src/multichain/chains';
 import { shortBalanceAdvice } from '../../src/multichain/transfer';
 import { nextToHathorRoundedUp } from '../../src/multichain/amount';
 import { progressText } from '../../src/components/Multichain/TransferRow';
-import { mockPeerAddress } from '../../src/multichain/mock/mockAddress';
+import { fakePeerAddress } from './fakes/fakeAddress';
+import { FAKE_SIDE_CHAIN } from './fakes/sideChain';
 
-const config = getSideChainConfig('testnet-juliet');
-const NEXT_ADDRESS = mockPeerAddress('ab12');
-const OWN_ADDRESS = mockPeerAddress('cd34');
-// The mock bridge's quote: 0.10 HTR bridge fee, no network fee, in Hathor Network's units.
+const config = FAKE_SIDE_CHAIN;
+const NEXT_ADDRESS = fakePeerAddress('ab12');
+const OWN_ADDRESS = fakePeerAddress('cd34');
+// The fake bridge's quote: 0.10 HTR bridge fee, no network fee, in Hathor Network's units.
 const quote = { bridgeFee: 10n, networkFee: 0n, etaSeconds: 120 };
 
 const onNext = (fields) => shortBalanceAdvice({
@@ -119,7 +120,7 @@ describe('a transfer\'s progress, as its bridge follows it', () => {
 
 describe("what a transfer of Hathor Network's native token becomes on Hathor Next", () => {
   test('the same token where the bridge carries it, the native token where it mints that', () => {
-    expect(transferReceiveSymbol(getSideChainConfig('testnet-juliet'), 'TNT')).toBe('TNT');
+    expect(transferReceiveSymbol(config, 'TNT')).toBe('TNT');
     expect(transferReceiveSymbol({ tokenMap: [], nativeTokenSymbol: 'USDT' }, 'TNT')).toBe('USDT');
   });
 });

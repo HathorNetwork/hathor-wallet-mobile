@@ -18,6 +18,10 @@ jest.mock('../../../src/NavigationService', () => ({
   default: { navigate: jest.fn(), resetToMain: jest.fn() },
 }));
 
+// A network the tests give a side chain.
+// eslint-disable-next-line global-require
+jest.mock('../../../src/multichain/chains', () => require('../../multichain/fakes/chainsModule'));
+
 /* eslint-disable import/first */
 import React from 'react';
 import { Text } from 'react-native';
@@ -42,11 +46,12 @@ import { TransferRow } from '../../../src/components/Multichain/TransferRow';
 import { CHAIN } from '../../../src/multichain/chains';
 import { HISTORY_ROW, HISTORY_VIEW } from '../../../src/multichain/history';
 import { NEXT_STATUS, TRANSFER_STATUS } from '../../../src/multichain/state';
-import { mockPeerAddress } from '../../../src/multichain/mock/mockAddress';
+import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
+import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 /* eslint-enable import/first */
 
-const NETWORK = 'testnet-juliet';
-const OWN_ADDRESS = mockPeerAddress('cd34');
+const NETWORK = FAKE_NETWORK;
+const OWN_ADDRESS = fakePeerAddress('cd34');
 const HTR = { uid: '00', name: 'Hathor', symbol: 'HTR' };
 const MY_TOKEN = { uid: 'a1', name: 'My Token', symbol: 'MTK' };
 const ready = (available) => ({ status: 'ready', data: { available } });
@@ -149,7 +154,7 @@ describe('the Dashboard with the side chain connected', () => {
     expect(list.props.tokens.map((row) => row.uid)).toEqual(['00', 'a1', 'next:b1']);
     const texts = textOf(renderer);
     expect(texts).toEqual(expect.arrayContaining([
-      '120.00', '2 chains', ' · 25.00 arriving', 'Hathor Network', 'Hathor Next', 'Simulated',
+      '120.00', '2 chains', ' · 25.00 arriving', 'Hathor Network', 'Hathor Next',
     ]));
   });
 
@@ -225,7 +230,7 @@ describe('the token screen of a token on both chains', () => {
     ]));
     await pick(HISTORY_VIEW.HATHOR);
     expect(textOf(renderer)).toEqual(expect.arrayContaining([
-      'Hathor Network balance', 'Transferred to Hathor Next', 'Simulated',
+      'Hathor Network balance', 'Transferred to Hathor Next',
     ]));
   });
 

@@ -312,10 +312,6 @@ export const types = {
   MULTICHAIN_TRANSFER_REQUESTED: 'MULTICHAIN_TRANSFER_REQUESTED',
   MULTICHAIN_TRANSFER_UPDATE: 'MULTICHAIN_TRANSFER_UPDATE',
   MULTICHAIN_TRANSFER_RESET: 'MULTICHAIN_TRANSFER_RESET',
-  // Multichain: the simulated Hathor Next
-  MULTICHAIN_MOCK_SCENARIO_SET: 'MULTICHAIN_MOCK_SCENARIO_SET',
-  MULTICHAIN_MOCK_RESET: 'MULTICHAIN_MOCK_RESET',
-  MULTICHAIN_MOCK_UPDATE: 'MULTICHAIN_MOCK_UPDATE',
   // Multichain: a Hathor Next backend for local testing
   MULTICHAIN_DEV_BACKEND_SET: 'MULTICHAIN_DEV_BACKEND_SET',
 };
@@ -2213,28 +2209,8 @@ export const multichainTransferReset = () => ({
 });
 
 /**
- * @param {string} scenario One of MOCK_SCENARIO
- */
-export const multichainMockScenarioSet = (scenario) => ({
-  type: types.MULTICHAIN_MOCK_SCENARIO_SET,
-  payload: scenario,
-});
-
-/** Starts the simulated Hathor Next ledger over, in its scenario. */
-export const multichainMockReset = () => ({
-  type: types.MULTICHAIN_MOCK_RESET,
-});
-
-/**
- * @param {{ scenario: string }} payload
- */
-export const multichainMockUpdate = (payload) => ({
-  type: types.MULTICHAIN_MOCK_UPDATE,
-  payload,
-});
-
-/**
- * Points Hathor Next at a backend for local testing, or back at the simulated client.
+ * Points Hathor Next at a backend for local testing, or back at the side chain's own (none, where
+ * the network has no side chain).
  *
  * @param {{ url: string, pins: Object }|null} devBackend The backend and its GET /v1/config
  * @param {Object} [options]

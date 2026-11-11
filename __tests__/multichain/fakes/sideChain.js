@@ -31,5 +31,7 @@ export const FAKE_SIDE_CHAIN = {
   // The tokens the bridge carries, by their id on each chain. Only HTR, which becomes Hathor
   // Next's native token.
   tokenMap: [{ hathor: '00', next: '00' }],
+  // Hathor Next base units per HTR base unit in a transfer: 1.00 HTR becomes 1.00000000.
+  mintScale: '1000000',
   directions: [{ from: CHAIN.HATHOR, to: CHAIN.HATHOR_NEXT }],
 };

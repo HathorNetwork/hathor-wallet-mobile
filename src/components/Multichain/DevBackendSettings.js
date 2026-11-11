@@ -43,8 +43,8 @@ const shortHex = (hex) => `${hex.slice(0, 8)}…${hex.slice(-8)}`;
 
 /**
  * The Hathor Next backend for local testing: while one is set, Hathor Next runs on it instead of
- * the simulated client, on every network but mainnet. Its values come from the backend itself,
- * which is only right for a backend the tester runs.
+ * the network's own side chain, on every network but mainnet. Its values come from the backend
+ * itself, which is only right for a backend the tester runs.
  */
 export function DevBackendSettings() {
   const dispatch = useDispatch();
@@ -55,9 +55,9 @@ export function DevBackendSettings() {
   const [error, setError] = useState(null);
   const [checking, setChecking] = useState(false);
 
-  // Hathor Next loads again on the other client, with keys derived again: a seed wallet's PIN is
-  // asked here, before the switch, as "Connect to side chain" does. A passkey wallet runs its
-  // ceremony once the load starts.
+  // Hathor Next loads again on the other backend: a seed wallet's PIN is asked here, before the
+  // switch, as "Connect to side chain" does, for keys that aren't in memory. A passkey wallet runs
+  // its ceremony once the load starts, only if it needs them.
   const switchTo = (backend) => {
     if (!connected || STORE.isPasskeyWallet()) {
       dispatch(multichainDevBackendSet(backend));
@@ -124,7 +124,7 @@ export function DevBackendSettings() {
         error={error}
       />
       <Text style={styles.note}>
-        {t`Runs Hathor Next on a backend you run, instead of the simulated one. After you set it, Hathor Next loads again and asks for your PIN or passkey.`}
+        {t`Runs Hathor Next on a backend you run, instead of the network's own. After you set it, Hathor Next loads again on it.`}
       </Text>
       <NewHathorButton
         title={t`Use this backend`}

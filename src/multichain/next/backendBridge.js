@@ -21,7 +21,7 @@ const log = logger('multichain-backend-bridge');
  * address on Hathor Next by a burn the backend builds and this wallet checks (burnCheck.js) and
  * signs with its own Hathor Network keys. The minted HTR arrives at the address the burn names,
  * this wallet's own or anyone's, as Hathor Next's native token, at the network's pinned scale.
- * Same interface as the simulated bridge (bridge.js).
+ * Its interface is the bridge's (bridge.js).
  */
 
 const NATIVE_HTR = '00';

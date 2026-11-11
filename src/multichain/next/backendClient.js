@@ -172,7 +172,7 @@ function compareCursorsDesc(a, b) {
  * The Hathor Next client backed by the Hathor Next backend: the backend reads the wallet service
  * and builds transactions, and this client keeps the keys and signs. The keys live in this
  * closure only, from the unlock that derived them to the app's end; nothing secret is stored or
- * sent. Same interface as the simulated client (see nextClient.js).
+ * sent. Its interface is the client's (see nextClient.js).
  *
  * @param {{ fetchImpl?: Function, WebSocketImpl?: Function, nowMs?: Function }} [deps]
  */
@@ -510,8 +510,6 @@ export function createBackendNextClient({
   }
 
   return {
-    simulated: false,
-
     /**
      * Derives the wallet's Hathor Next keys from its words. No network. The keys live from an
      * unlock to the next lock: if the app locks while they are derived, they are never kept.

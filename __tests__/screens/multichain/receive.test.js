@@ -29,6 +29,10 @@ jest.mock('../../../src/components/ReceiveMyAddress', () => {
   return () => <Text>Hathor Network address</Text>;
 });
 
+// A network the tests give a side chain.
+// eslint-disable-next-line global-require
+jest.mock('../../../src/multichain/chains', () => require('../../multichain/fakes/chainsModule'));
+
 /* eslint-disable import/first */
 import React from 'react';
 import { Text } from 'react-native';
@@ -45,11 +49,12 @@ import ReceiveScreen from '../../../src/screens/Receive';
 import { TwoOptionsToggle } from '../../../src/components/TwoOptionsToggle';
 import { PortalProvider } from '../../../src/components/Portal';
 import { NEXT_STATUS } from '../../../src/multichain/state';
-import { mockPeerAddress } from '../../../src/multichain/mock/mockAddress';
+import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
+import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 /* eslint-enable import/first */
 
-const NETWORK = 'testnet-juliet';
-const OWN_ADDRESS = mockPeerAddress('cd34');
+const NETWORK = FAKE_NETWORK;
+const OWN_ADDRESS = fakePeerAddress('cd34');
 
 let mounted = null;
 
@@ -109,7 +114,7 @@ describe('Receive', () => {
     await act(async () => { toggle.props.options.second.onTap(); });
     const texts = textOf(renderer);
     expect(texts).not.toContain('Hathor Network address');
-    expect(texts).toEqual(expect.arrayContaining([OWN_ADDRESS, 'Share', 'Simulated']));
+    expect(texts).toEqual(expect.arrayContaining([OWN_ADDRESS, 'Share']));
   });
 
   test('opens on Hathor Network again after it was left on Hathor Next', async () => {

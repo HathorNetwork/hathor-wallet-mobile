@@ -15,12 +15,11 @@ import FeedbackModal from '../../components/FeedbackModal';
 import Spinner from '../../components/Spinner';
 import OfflineBar from '../../components/OfflineBar';
 import { ChainTag } from '../../components/Multichain/ChainTag';
-import { SimulatedTagIfMock } from '../../components/Multichain/SimulatedTag';
 import { multichainTransferRequested, multichainTransferReset } from '../../actions';
 import { authorizeTransaction } from '../../passkey/authorizeTransaction';
 import { CHAIN, transferReceiveSymbol } from '../../multichain/chains';
 import { renderNextValue } from '../../multichain/amount';
-import { isSideChainSimulated, selectSideChainConfig } from '../../multichain/gating';
+import { selectSideChainConfig } from '../../multichain/gating';
 import { OPERATION_STATUS } from '../../multichain/state';
 import NavigationService from '../../NavigationService';
 import { renderValue } from '../../utils';
@@ -60,7 +59,6 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
   } = route.params;
   const { bridge, decimalPlaces, available, symbol } = useTransferContext();
   const ownAddress = useSelector((state) => state.multichain.next.address);
-  const simulated = useSelector(isSideChainSimulated);
   const sideChainConfig = useSelector(selectSideChainConfig);
   const transfer = useSelector((state) => state.multichain.transfer);
   useHoldScreen(navigation, transfer.status === OPERATION_STATUS.SENDING);
@@ -150,7 +148,6 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
           : () => navigation.goBack()}
       />
       <ScrollView contentContainerStyle={styles.body}>
-        <SimulatedTagIfMock />
         <View style={styles.route}>
           <View style={styles.routeSide}>
             <ChainTag chain={from} />
@@ -180,11 +177,6 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
             {t`One-way: you can't move these tokens back to Hathor Network yet.`}
           </Text>
         </View>
-        {simulated && (
-          <Text style={styles.simulatedNote}>
-            {t`Simulated: nothing is broadcast on Hathor Network, and your Hathor Network balance doesn't change.`}
-          </Text>
-        )}
       </ScrollView>
       <View style={styles.footer}>
         <NewHathorButton
@@ -265,12 +257,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     color: COLORS.feedbackError600,
-  },
-  simulatedNote: {
-    marginTop: 16,
-    fontSize: 12,
-    lineHeight: 18,
-    color: COLORS.textColorShadow,
   },
   footer: {
     padding: 16,

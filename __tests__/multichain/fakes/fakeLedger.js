@@ -5,18 +5,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { multichainKeyMap } from '../../constants';
-import { STORE } from '../../store';
-import { getIntegerAmount } from '../../utils';
-import { CHAIN, NEXT_DECIMAL_PLACES } from '../chains';
-import { TRANSFER_STATUS } from '../state';
-import { DEFAULT_MOCK_SCENARIO, isFundedScenario } from './scenarios';
-import { mockPeerAddress } from './mockAddress';
+import { STORE } from '../../../src/store';
+import { getIntegerAmount } from '../../../src/utils';
+import { CHAIN, NEXT_DECIMAL_PLACES } from '../../../src/multichain/chains';
+import { TRANSFER_STATUS } from '../../../src/multichain/state';
+import { DEFAULT_FAKE_SCENARIO, isFundedScenario } from './scenarios';
+import { fakePeerAddress } from './fakeAddress';
 
 /**
- * The simulated Hathor Next ledger of a network: its tokens, the wallet's transaction rows and
+ * The test fake's Hathor Next ledger of a network: its tokens, the wallet's transaction rows and
  * the transfers between chains (TransferRecord, src/multichain/bridge.js). It is saved, so a
- * simulated balance survives a restart, and a reset of the wallet sweeps it (its key has the
+ * balance survives a restart of the saga, and a reset of the wallet sweeps it (its key has the
  * 'wallet:' prefix). A transfer arrives by the clock: one to the wallet's own address adds to its
  * Hathor Next balance once its arrival time passes.
  *
@@ -40,10 +39,20 @@ import { mockPeerAddress } from './mockAddress';
  * @property {string|null} [sendId] The send this row belongs to
  */
 
+/**
+ * Where the ledger of a network is saved.
+ *
+ * @param {string} network
+ * @returns {string}
+ */
+export function fakeLedgerKey(network) {
+  return `wallet:multichain:fake:${network}`;
+}
+
 // 2: transfer records replaced the credits on their way.
 const LEDGER_VERSION = 2;
 
-// The running simulated clients, told when a transfer is added so they announce its arrival.
+// The running fake clients, told when a transfer is added so they announce its arrival.
 const transferListeners = new Set();
 
 /**
@@ -55,7 +64,7 @@ export function onTransferAdded(listener) {
   return () => transferListeners.delete(listener);
 }
 
-export const MOCK_NATIVE_TOKEN = { id: '00', name: 'Hathor', symbol: 'HTR' };
+export const FAKE_NATIVE_TOKEN = { id: '00', name: 'Hathor', symbol: 'HTR' };
 
 // Two tokens with the same name and symbol and different ids: on Hathor Next a token's id is its
 // only identity, so the screens must tell these apart.
@@ -70,7 +79,7 @@ const MOCK_TOKEN_B = {
   symbol: 'TST',
 };
 
-const MOCK_PEER = mockPeerAddress('peer');
+const MOCK_PEER = fakePeerAddress('peer');
 
 const units = (amount) => getIntegerAmount(amount, NEXT_DECIMAL_PLACES).toString();
 
@@ -88,7 +97,7 @@ const fakeTxId = (seed) => {
  * A new ledger for a scenario: the funded scenarios hold 25.00 HTR and two tokens that share a
  * symbol.
  *
- * @param {string} scenario One of MOCK_SCENARIO
+ * @param {string} scenario One of FAKE_SCENARIO
  * @param {number} [now] Unix ms
  * @returns {Object}
  */
@@ -96,7 +105,7 @@ export function seedLedger(scenario, now = Date.now()) {
   const ledger = {
     version: LEDGER_VERSION,
     scenario,
-    tokens: { [MOCK_NATIVE_TOKEN.id]: MOCK_NATIVE_TOKEN },
+    tokens: { [FAKE_NATIVE_TOKEN.id]: FAKE_NATIVE_TOKEN },
     rows: [],
     transfers: [],
   };
@@ -142,11 +151,11 @@ export function seedLedger(scenario, now = Date.now()) {
  * @returns {Object}
  */
 export function loadLedger(network) {
-  const saved = STORE.getItem(multichainKeyMap.mock(network));
+  const saved = STORE.getItem(fakeLedgerKey(network));
   if (saved?.version === LEDGER_VERSION) {
     return saved;
   }
-  return seedLedger(DEFAULT_MOCK_SCENARIO);
+  return seedLedger(DEFAULT_FAKE_SCENARIO);
 }
 
 /**
@@ -154,7 +163,7 @@ export function loadLedger(network) {
  * @param {Object} ledger
  */
 export function saveLedger(network, ledger) {
-  STORE.setItem(multichainKeyMap.mock(network), ledger);
+  STORE.setItem(fakeLedgerKey(network), ledger);
 }
 
 /**
@@ -269,7 +278,7 @@ export function addTransfer(network, transfer) {
  * Starts the ledger over in a scenario. Transfers stay: they happened on Hathor Network too.
  *
  * @param {string} network
- * @param {string} scenario One of MOCK_SCENARIO
+ * @param {string} scenario One of FAKE_SCENARIO
  * @returns {Object} The new ledger
  */
 export function resetLedger(network, scenario) {

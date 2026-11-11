@@ -5,23 +5,23 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, test, expect, afterEach } from '@jest/globals';
+import { jest, describe, test, expect, afterEach } from '@jest/globals';
+
+// eslint-disable-next-line global-require
+jest.mock('../../src/multichain/chains', () => require('./fakes/chainsModule'));
+
+/* eslint-disable import/first */
 import {
-  FULL_NETWORK_JULIET_TESTNET,
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
-  MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
-  PRE_SETTINGS_JULIET_TESTNET,
 } from '../../src/constants';
 import { canTransfer, CHAIN, getSideChainConfig, otherChain } from '../../src/multichain/chains';
 import {
   getMultichainDevBackendFeatureToggle,
   getMultichainFeatureToggle,
   getMultichainFeatureToggleAtUnlock,
-  getMultichainNetworkPresetFeatureToggle,
   isSideChainAvailable,
   isSideChainConnected,
-  isSideChainSimulated,
   isWaitingForNext,
   selectDevBackend,
   selectMappedNextId,
@@ -30,10 +30,14 @@ import {
 } from '../../src/multichain/gating';
 import { MULTICHAIN_INITIAL_STATE, NEXT_STATUS } from '../../src/multichain/state';
 import { FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, STORE } from '../../src/store';
+import { FAKE_NETWORK } from './fakes/sideChain';
+/* eslint-enable import/first */
+
+const actualChains = jest.requireActual('../../src/multichain/chains');
 
 const state = ({
   flag = true,
-  network = FULL_NETWORK_JULIET_TESTNET,
+  network = FAKE_NETWORK,
   connected = true,
   nextStatus = NEXT_STATUS.READY,
 } = {}) => ({
@@ -46,44 +50,22 @@ const state = ({
   },
 });
 
-describe('the Testnet Juliet preset', () => {
-  test('names testnet-juliet, with no wallet-service', () => {
-    expect(PRE_SETTINGS_JULIET_TESTNET.fullNetwork).toBe('testnet-juliet');
-    expect(PRE_SETTINGS_JULIET_TESTNET.walletServiceUrl).toBeUndefined();
-  });
-});
-
 describe('getSideChainConfig', () => {
-  test('gives Juliet Hathor Next, native HTR, simulated while the client is the mock', () => {
-    expect(getSideChainConfig(FULL_NETWORK_JULIET_TESTNET)).toMatchObject({
-      id: CHAIN.HATHOR_NEXT,
-      name: 'Hathor Next',
-      nativeTokenId: '00',
-      nativeTokenSymbol: 'HTR',
-      simulated: true,
-    });
-  });
-
-  test('gives every testnet a simulated side chain while the client is the mock', () => {
-    expect(getSideChainConfig('testnet-hotel')).toMatchObject({ simulated: true });
-  });
-
-  test('never gives mainnet a side chain', () => {
-    expect(getSideChainConfig('mainnet')).toBeNull();
+  // A side chain is pinned once its network is deployed: none is yet.
+  test('gives no network a side chain until one is deployed', () => {
+    for (const network of ['testnet', 'testnet-hotel', 'privatenet', 'mainnet']) {
+      expect(actualChains.getSideChainConfig(network)).toBeNull();
+    }
   });
 
   test('gives no side chain before the wallet knows its network', () => {
-    expect(getSideChainConfig(null)).toBeNull();
+    expect(actualChains.getSideChainConfig(null)).toBeNull();
   });
 });
 
 describe('the flags', () => {
   test('are off unless Unleash returns them', () => {
     expect(getMultichainFeatureToggle({ featureToggles: {} })).toBe(false);
-    expect(getMultichainNetworkPresetFeatureToggle({ featureToggles: {} })).toBe(false);
-    expect(getMultichainNetworkPresetFeatureToggle({
-      featureToggles: { [MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]: true },
-    })).toBe(true);
   });
 });
 
@@ -162,7 +144,10 @@ describe('the backend for local testing', () => {
 describe('the side chain setting', () => {
   test('shows with the flag on a network with a side chain', () => {
     expect(isSideChainAvailable(state())).toBe(true);
-    expect(isSideChainSimulated(state())).toBe(true);
+  });
+
+  test('hides on a network without one', () => {
+    expect(isSideChainAvailable(state({ network: 'testnet' }))).toBe(false);
   });
 
   test('hides with the flag off, or on mainnet', () => {
@@ -202,7 +187,7 @@ describe('the token map', () => {
   });
 
   test('transfers only from Hathor Network to Hathor Next so far', () => {
-    const config = getSideChainConfig(FULL_NETWORK_JULIET_TESTNET);
+    const config = getSideChainConfig(FAKE_NETWORK);
     expect(canTransfer(config, CHAIN.HATHOR, CHAIN.HATHOR_NEXT)).toBe(true);
     expect(canTransfer(config, CHAIN.HATHOR_NEXT, CHAIN.HATHOR)).toBe(false);
     expect(canTransfer(null, CHAIN.HATHOR, CHAIN.HATHOR_NEXT)).toBe(false);

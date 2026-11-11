@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { FULL_NETWORK_JULIET_TESTNET, FULL_NETWORK_MAINNET } from '../constants';
+import { FULL_NETWORK_MAINNET } from '../constants';
 
 /**
  * The chains a wallet can use on a network with a side chain: the network's own chain, and its
@@ -41,46 +41,6 @@ export const NEXT_COLORS = {
  * Every Hathor Next amount has 8 decimal places.
  */
 export const NEXT_DECIMAL_PLACES = 8;
-
-/**
- * Which Hathor Next client the app runs where no backend is set up for local testing. Until a
- * Hathor Next test network is deployed, every side chain is simulated: nothing reaches a Hathor
- * Next network, and the transfer broadcasts nothing on Hathor Network either.
- */
-export const MULTICHAIN_CLIENT_KIND = 'mock';
-
-/**
- * Whether the app runs the simulated Hathor Next client.
- *
- * @returns {boolean}
- */
-export function isSimulatedClient() {
-  return MULTICHAIN_CLIENT_KIND === 'mock';
-}
-
-/**
- * Hathor Next on testnet Juliet. The native token is HTR: a transfer from Juliet turns its HTR
- * into Hathor Next's HTR. The service and explorer URLs follow Juliet's naming until Hathor Next
- * is deployed there.
- */
-const JULIET_HATHOR_NEXT = {
-  id: CHAIN.HATHOR_NEXT,
-  name: CHAIN_NAME[CHAIN.HATHOR_NEXT],
-  serviceUrl: 'https://wallet-service.next.juliet.testnet.hathor.network',
-  nativeTokenId: '00',
-  nativeTokenSymbol: 'HTR',
-  nativeTokenName: 'Hathor',
-  explorerUrl: 'https://explorer.next.juliet.testnet.hathor.network/',
-  explorerApiBase: 'https://explorer-api.next.juliet.testnet.hathor.network/',
-  // The tokens the bridge carries, by their id on each chain: each shows as one row, with its
-  // balance on both chains. Only HTR so far, which becomes Hathor Next's native token.
-  tokenMap: [{ hathor: '00', next: '00' }],
-  // Hathor Next base units per HTR base unit in a transfer: hathor-next mints a burn at the same
-  // value, so 1.00 HTR becomes 1.00000000.
-  mintScale: '1000000',
-  // The ways the bridge transfers. Hathor Next to Hathor Network is still to come.
-  directions: [{ from: CHAIN.HATHOR, to: CHAIN.HATHOR_NEXT }],
-};
 
 /**
  * The transfer addresses of the chain transfer to Hathor Next (hathor-next's plan §3.3): what pays
@@ -147,23 +107,26 @@ export function otherChain(chain) {
 }
 
 /**
- * The side chains, by the network name the fullnode reports.
+ * The side chains, by the network name the fullnode reports. A side chain is pinned here once its
+ * network is deployed, with what the app needs to reach it (the shape devBackendSideChain builds):
+ * its backend, its network id, native token, service view key and wire format, the app's ceiling
+ * on a payment's fee, its explorer or null, the tokens the bridge carries by their id on each
+ * chain (each shows as one row, with its balance on both chains), the mint scale, the ways the
+ * bridge transfers and the transfer's pinned values. None is deployed yet.
  */
-const SIDE_CHAINS = {
-  [FULL_NETWORK_JULIET_TESTNET]: JULIET_HATHOR_NEXT,
-};
+const SIDE_CHAINS = {};
 
 /** The most a payment may cost on a backend set up for local testing: 0.1 of the native token. */
 const DEV_MAX_SEND_FEE = '10000000';
 
 /**
- * Hathor Next through a backend set up for local testing (Settings → Hathor Next): its pins are
- * the backend's own GET /v1/config, read when the backend was set. Real side chains pin their
- * values in this file instead.
+ * Hathor Next through a backend set up for local testing (Settings → Hathor Next backend): its
+ * pins are the backend's own GET /v1/config, read when the backend was set. Real side chains pin
+ * their values in this file instead.
  *
  * A backend that transfers HTR mints it as its native token at the same value, so the two are
- * one token, HTR on both chains, as on Juliet: one Dashboard row with both balances. A backend
- * that transfers nothing keeps its native token apart, under its own name.
+ * one token, HTR on both chains: one Dashboard row with both balances. A backend that transfers
+ * nothing keeps its native token apart, under its own name.
  *
  * @param {{ url: string, pins: Object }} devBackend
  * @returns {Object}
@@ -196,39 +159,31 @@ export function devBackendSideChain({ url, pins }) {
 
 /**
  * The side chain of a network, or null when it has none. Pass the name the fullnode reports
- * (state.fullNodeNetworkName): a custom network pointed at Juliet's nodes has a side chain too.
- *
- * While the client is simulated, every network but mainnet has one, so the flows can be tried on
- * the testnets (whose nodes report names like `testnet-hotel`) before Juliet is deployed. A
- * backend set up for local testing takes the place of the simulated client on those networks.
+ * (state.fullNodeNetworkName): a custom network pointed at a side chain's nodes has it too. A
+ * backend set up for local testing gives every network but mainnet a side chain, in place of its
+ * own.
  *
  * @param {string|null|undefined} networkName
- * @param {{ url: string, pins: Object }|null} [devBackend] state.multichain.devBackend
- * @returns {Object|null} The side chain config, with `simulated` set when the client is the mock
+ * @param {{ url: string, pins: Object }|null} [devBackend] The backend for local testing in force
+ * @returns {Object|null} The side chain config
  */
 // The last answer of getSideChainConfig: selectors read it on every store change, and a new
 // object each time would render their screens again and rebuild the bridge.
 const NOT_YET = Symbol('not yet');
-let lastConfig = { networkName: NOT_YET, devBackend: null, simulated: null, value: null };
+let lastConfig = { networkName: NOT_YET, devBackend: null, value: null };
 
 export function getSideChainConfig(networkName, devBackend = null) {
-  const simulated = isSimulatedClient();
-  if (lastConfig.networkName === networkName && lastConfig.devBackend === devBackend
-    && lastConfig.simulated === simulated) {
+  if (lastConfig.networkName === networkName && lastConfig.devBackend === devBackend) {
     return lastConfig.value;
   }
   let value = null;
   if (networkName) {
     if (devBackend && networkName !== FULL_NETWORK_MAINNET) {
-      value = { ...devBackendSideChain(devBackend), simulated: false };
+      value = devBackendSideChain(devBackend);
     } else {
-      const simulatedOnly = simulated && networkName !== FULL_NETWORK_MAINNET
-        ? JULIET_HATHOR_NEXT
-        : null;
-      const config = SIDE_CHAINS[networkName] ?? simulatedOnly;
-      value = config ? { ...config, simulated } : null;
+      value = SIDE_CHAINS[networkName] ?? null;
     }
   }
-  lastConfig = { networkName, devBackend, simulated, value };
+  lastConfig = { networkName, devBackend, value };
   return value;
 }

@@ -16,7 +16,6 @@ import { HISTORY_ROW } from '../../multichain/history';
 import { TRANSFER_STATUS } from '../../multichain/state';
 import { renderValue } from '../../utils';
 import { COLORS } from '../../styles/themes';
-import { SimulatedTag } from './SimulatedTag';
 
 /**
  * How long a transfer on its way still takes, as the screens say it.
@@ -140,9 +139,6 @@ export const TransferRow = ({
     hathorDecimalPlaces,
     amountFormat,
   );
-  // The source side of a simulated transfer stands for a transaction that was never broadcast.
-  const simulatedSide = kind === HISTORY_ROW.TRANSFER_SOURCE && !transfer.debitedOnSource
-    && !failed;
   let status = <Text style={styles.secondary}>{moment(transfer.sentAt).calendar()}</Text>;
   if (failed) {
     status = (
@@ -172,7 +168,6 @@ export const TransferRow = ({
             <Text style={styles.secondary}>{t`${moved} ${symbol} moved`}</Text>
           )}
           {status}
-          {simulatedSide && <SimulatedTag style={styles.simulated} />}
         </View>
         <Text style={[styles.amount, incoming && styles.positive]} numberOfLines={1}>
           {signed}
@@ -214,9 +209,6 @@ const styles = StyleSheet.create({
   },
   failed: {
     color: COLORS.errorTextColor,
-  },
-  simulated: {
-    marginTop: 4,
   },
   amount: {
     fontSize: 16,

@@ -27,7 +27,6 @@ import {
   multichainConnectedNetworksSet,
   multichainConnectUpdate,
   multichainDevBackendSet,
-  multichainMockUpdate,
   multichainNextHistoryUpdate,
   multichainNextReset,
   multichainNextSendUpdate,
@@ -42,12 +41,11 @@ import { isExpectedPasskeyError, PasskeyCancelledError, withPasskeyWords } from 
 import { TOKEN_DOWNLOAD_STATUS } from './tokens';
 import { WALLET_STATUS } from './wallet';
 import { createBridge } from '../multichain/bridge';
-import { CHAIN, isSimulatedClient } from '../multichain/chains';
+import { CHAIN } from '../multichain/chains';
 import {
   getMultichainFeatureToggle,
   isSideChainAvailable,
   isSideChainConnected,
-  selectDevBackend,
   selectMultichainNetwork,
   selectSideChainConfig,
 } from '../multichain/gating';
@@ -59,15 +57,8 @@ import {
   saveNext,
   pendingUnlockDerivation,
 } from '../multichain/keys';
-import {
-  NEXT_CLIENT_KIND,
-  ensureNextClient,
-  getNextClient,
-  setNextClient,
-  setNextClientKind,
-} from '../multichain/nextClient';
+import { ensureNextClient, getNextClient, setNextClient } from '../multichain/nextClient';
 import { NEXT_CLIENT_EVENT, NextClientError, NEXT_CLIENT_ERROR } from '../multichain/nextClientErrors';
-import { loadLedger, resetLedger } from '../multichain/mock/mockLedger';
 import {
   CONNECT_STATUS,
   NEXT_STATUS,
@@ -95,15 +86,17 @@ let connectTask = null;
 let generation = 0;
 
 /**
- * Brings the backend saved for local testing into the state, when the state doesn't have it yet,
- * and runs the kind of client it needs: the backend client with one in force (its flag on), the
- * simulated client otherwise.
- *
- * @returns {boolean} Whether the client changed kind
+ * The side chain config Hathor Next connected with, until it stops: the backend for local testing
+ * can come into force or leave with its flag, while Hathor Next runs on the other backend.
+ */
+let connectedConfig = null;
+
+/**
+ * Brings the backend saved for local testing into the state, when the state doesn't have it yet.
  */
 export function* syncDevBackend() {
-  // The backend's flag decides the client's kind, so it is read once Unleash answered (or its
-  // defaults stand): keys derived on one kind are lost when it changes.
+  // The backend's flag decides whether it is in force, so it is read once Unleash answered (or its
+  // defaults stand).
   yield call(waitForFeatureToggleInitialization);
   const stored = yield select((state) => state.multichain.devBackend);
   if (!stored) {
@@ -112,8 +105,6 @@ export function* syncDevBackend() {
       yield put(multichainDevBackendSet(saved, { persist: false }));
     }
   }
-  const devBackend = yield select(selectDevBackend);
-  return setNextClientKind(devBackend ? NEXT_CLIENT_KIND.BACKEND : NEXT_CLIENT_KIND.MOCK);
 }
 
 /** What the user is told when Hathor Next can't be loaded. */
@@ -415,6 +406,7 @@ export function* connectNext() {
   }
   // Detached: the load that connected must end, and a later load must not cancel the feed.
   feedTask = yield spawn(followNextClient, client);
+  connectedConfig = config;
   yield put(multichainNextUpdate({
     status: NEXT_STATUS.READY,
     online: client.isOnline(),
@@ -431,6 +423,7 @@ export function* connectNext() {
  */
 function* stopNext({ dropKeys = false } = {}) {
   generation += 1;
+  connectedConfig = null;
   if (feedTask) {
     yield cancel(feedTask);
     feedTask = null;
@@ -559,10 +552,6 @@ export function* onWalletStarted() {
     address: client?.getAddress() ?? loadSavedNext().address,
     keysReady: Boolean(client?.hasKeys()),
   }));
-  const network = yield select(selectMultichainNetwork);
-  if (isSimulatedClient() && network) {
-    yield put(multichainMockUpdate({ scenario: loadLedger(network).scenario }));
-  }
   if (yield select(isSideChainConnected)) {
     yield call(runConnect, loadNext, { interactive: false });
   }
@@ -604,10 +593,13 @@ export function* onConnectSettingChanged({ payload }) {
  * side chain is connected, load it.
  */
 export function* onFeatureToggleUpdated() {
-  // The backend for local testing has a flag of its own: when it turns on or off, the client
-  // changes kind, and Hathor Next loads again on the other one.
-  if (yield call(syncDevBackend)) {
-    yield call(exitNext, { dropKeys: true });
+  // The backend for local testing has a flag of its own: when it turns on or off, Hathor Next
+  // runs on another backend, and loads again there. The keys stay: they are the same on every
+  // backend, while the address carries each one's view key.
+  yield call(syncDevBackend);
+  const config = yield select(selectSideChainConfig);
+  if (connectedConfig && connectedConfig.backendUrl !== config?.backendUrl) {
+    yield call(exitNext);
     saveNext({ address: null });
   }
   const available = yield select(isSideChainAvailable);
@@ -857,35 +849,14 @@ export function* onTransferRequested({ payload }) {
 }
 
 /**
- * The simulated Hathor Next: a new scenario, or a reset, starts its ledger over. What a scenario
- * does on connect takes effect the next time Hathor Next loads.
- */
-export function* onMockLedgerChanged(action) {
-  const network = yield select(selectMultichainNetwork);
-  if (!isSimulatedClient() || !network) {
-    return;
-  }
-  const scenario = action.type === types.MULTICHAIN_MOCK_SCENARIO_SET
-    ? action.payload
-    : yield select((state) => state.multichain.mock.scenario);
-  resetLedger(network, scenario);
-  yield put(multichainMockUpdate({ scenario }));
-  const client = getNextClient();
-  if (client && client.getNetwork() === network) {
-    yield call(refreshNextData, client);
-    yield call(refreshLoadedHistories, client);
-  }
-}
-
-/**
- * A backend for local testing was set or cleared: save it, leave the Hathor Next that ran (its
- * client and keys belong to the other kind) and load it again where the side chain is connected,
- * with keys derived again: from the PIN Settings asked for the switch, or by a passkey wallet's
- * ceremony, run now since the user asked for it.
+ * A backend for local testing was set or cleared: save it, leave the Hathor Next that ran on the
+ * other backend and load it again where the side chain is connected. The keys stay, as they are
+ * the same on every backend; were they missing, the PIN Settings asked for the switch derives
+ * them, or a passkey wallet's ceremony, run now since the user asked for it.
  */
 export function* onDevBackendSet({ payload, meta }) {
   if (!meta?.persist) {
-    // Read back from storage at the start: nothing ran on the other kind yet.
+    // Read back from storage at the start: nothing ran on another backend yet.
     return;
   }
   if (payload) {
@@ -893,8 +864,8 @@ export function* onDevBackendSet({ payload, meta }) {
   } else {
     STORE.removeItem(multichainKeyMap.devBackend);
   }
-  yield call(exitNext, { dropKeys: true });
-  setNextClientKind(payload ? NEXT_CLIENT_KIND.BACKEND : NEXT_CLIENT_KIND.MOCK);
+  yield call(exitNext);
+  // The address carries the backend's view key: the new backend's comes with its connect.
   saveNext({ address: null });
   if (yield select(isSideChainConnected)) {
     yield call(runConnect, loadNext, { pinCode: meta.pinCode, interactive: true });
@@ -915,8 +886,8 @@ export function* onLockChanged({ payload: locked }) {
 
 export function* saga() {
   // The watchers start at once, so nothing dispatched before Unleash answers is missed. The
-  // client's kind is settled as soon as it answers, and every handler that picks a client waits
-  // for that (syncDevBackend).
+  // backend for local testing is settled as soon as it answers, and every handler that reaches
+  // Hathor Next waits for that (syncDevBackend).
   yield fork(syncDevBackend);
   yield all([
     takeEvery(types.START_WALLET_SUCCESS, onWalletStarted),
@@ -927,10 +898,6 @@ export function* saga() {
     takeEvery(types.MULTICHAIN_NEXT_HISTORY_REQUESTED, onNextHistoryRequested),
     takeEvery(types.MULTICHAIN_NEXT_SEND_REQUESTED, onNextSendRequested),
     takeLeading(types.MULTICHAIN_TRANSFER_REQUESTED, onTransferRequested),
-    takeLatest(
-      [types.MULTICHAIN_MOCK_SCENARIO_SET, types.MULTICHAIN_MOCK_RESET],
-      onMockLedgerChanged,
-    ),
     takeLatest(types.FEATURE_TOGGLE_UPDATED, onFeatureToggleUpdated),
     takeLatest(types.NETWORK_CHANGED, onNetworkChanged),
     takeLatest(types.RESET_WALLET, onResetWallet),

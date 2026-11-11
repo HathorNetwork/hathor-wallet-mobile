@@ -93,7 +93,7 @@ afterEach(() => {
 describe("a dApp request that pays the chain transfer's address", () => {
   const MULTICHAIN_ON = {
     featureToggles: { [MULTICHAIN_FEATURE_TOGGLE]: true },
-    fullNodeNetworkName: 'testnet-juliet',
+    fullNodeNetworkName: 'testnet',
   };
 
   test('is refused before anything is built, behind the multichain flag', async () => {

@@ -6,7 +6,6 @@
  */
 
 import { types } from '../actions';
-import { DEFAULT_MOCK_SCENARIO } from './mock/scenarios';
 
 /**
  * Where turning "Connect to side chain" on stands: idle, unlocking (the passkey ceremony that
@@ -111,8 +110,7 @@ export const MULTICHAIN_INITIAL_STATE = {
   transfers: [],
   send: SEND_INITIAL_STATE,
   transfer: TRANSFER_INITIAL_STATE,
-  mock: { scenario: DEFAULT_MOCK_SCENARIO },
-  // A Hathor Next backend for local testing: { url, pins }, or null for the simulated client
+  // A Hathor Next backend for local testing: { url, pins }, or null for the side chain's own
   devBackend: null,
 };
 
@@ -192,8 +190,6 @@ export function multichainReducer(state = MULTICHAIN_INITIAL_STATE, action) {
         ...state,
         transfer: { ...TRANSFER_INITIAL_STATE, uncertainId: state.transfer.uncertainId },
       };
-    case types.MULTICHAIN_MOCK_UPDATE:
-      return { ...state, mock: { ...state.mock, ...action.payload } };
     case types.MULTICHAIN_DEV_BACKEND_SET:
       return { ...state, devBackend: action.payload ?? null };
     default:
