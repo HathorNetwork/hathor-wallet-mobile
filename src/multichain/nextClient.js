@@ -5,14 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { isSimulatedClient } from './chains';
-import { createMockNextClient } from './mock/mockNextClient';
 import { NextClientError, NEXT_CLIENT_ERROR } from './nextClientErrors';
 
 /**
- * The Hathor Next client: the one object that talks to Hathor Next. The real one is built on the
- * Hathor Next wallet's shell (@samba/wallet-shell) by the lib team; until then every side chain is
- * simulated (see MULTICHAIN_CLIENT_KIND), and the simulated client has the same interface:
+ * The Hathor Next client: the one object that talks to Hathor Next. None ships yet, so creating
+ * one fails as unavailable; the app reaches it only on a network with a side chain
+ * (src/multichain/chains.js), and none has one yet. Its interface:
  *
  * - prepareKeys({ words }) → { address }: derives the keys from the seed; no network. They stay
  *   in memory only, and are the same on every network.
@@ -37,9 +35,6 @@ import { NextClientError, NEXT_CLIENT_ERROR } from './nextClientErrors';
  * @returns {Object}
  */
 export function createNextClient() {
-  if (isSimulatedClient()) {
-    return createMockNextClient();
-  }
   throw new NextClientError(NEXT_CLIENT_ERROR.UNAVAILABLE);
 }
 

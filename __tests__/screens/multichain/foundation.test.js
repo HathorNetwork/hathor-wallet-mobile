@@ -12,6 +12,10 @@ jest.mock('../../../src/NavigationService', () => ({
   default: { navigate: jest.fn(), resetToMain: jest.fn() },
 }));
 
+// A network the tests give a side chain.
+// eslint-disable-next-line global-require
+jest.mock('../../../src/multichain/chains', () => require('../../multichain/fakes/chainsModule'));
+
 /* eslint-disable import/first */
 import React from 'react';
 import { Switch, Text } from 'react-native';
@@ -36,9 +40,10 @@ import { ConnectFeedback } from '../../../src/components/Multichain/ConnectFeedb
 import { MultichainLoadScreen } from '../../../src/components/Multichain/MultichainLoadScreen';
 import SimpleButton from '../../../src/components/SimpleButton';
 import { CONNECT_STATUS, NEXT_STATUS } from '../../../src/multichain/state';
+import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 /* eslint-enable import/first */
 
-const NETWORK = 'testnet-juliet';
+const NETWORK = FAKE_NETWORK;
 
 let mounted = null;
 
@@ -55,7 +60,7 @@ beforeEach(() => {
 });
 
 /**
- * A store on Testnet Juliet, with the flag on unless asked otherwise.
+ * A store on a network with a side chain, with the flag on unless asked otherwise.
  */
 function makeStore({
   flag = true,
@@ -118,7 +123,6 @@ describe('Settings', () => {
     const navigation = { navigate: jest.fn() };
     const renderer = await mount(makeStore().store, <Settings navigation={navigation} />);
     expect(titles(renderer)).toContain('Connect to side chain');
-    expect(titles(renderer)).not.toContain('Hathor Next (simulated)');
   });
 
   test('changes nothing with the flag off, or on mainnet', async () => {
@@ -168,7 +172,7 @@ describe('Settings', () => {
       <Settings navigation={{ navigate: jest.fn() }} />,
     );
     expect(titles(renderer)).toEqual(expect.arrayContaining([
-      'Register a token', 'Create a new token', 'Network Settings', 'Hathor Next (simulated)',
+      'Register a token', 'Create a new token', 'Network Settings', 'Connect to side chain',
     ]));
     expect(renderer.root.findByType(Switch).props.value).toBe(true);
   });
