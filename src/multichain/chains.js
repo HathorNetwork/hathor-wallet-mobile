@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { FULL_NETWORK_MAINNET } from '../constants';
+import { FULL_NETWORK_MAINNET, NODE_SERVER_NEXT_DEVNET_URL } from '../constants';
 
 /**
  * The chains a wallet can use on a network with a side chain: the network's own chain, and its
@@ -112,7 +112,8 @@ export function otherChain(chain) {
  * its backend, its network id, native token, service view key and wire format, the app's ceiling
  * on a payment's fee, its explorer or null, the tokens the bridge carries by their id on each
  * chain (each shows as one row, with its balance on both chains), the mint scale, the ways the
- * bridge transfers and the transfer's pinned values. None is deployed yet.
+ * bridge transfers and the transfer's pinned values. A network whose node reports a name others
+ * share is pinned by its node instead (SIDE_CHAINS_BY_NODE).
  */
 const SIDE_CHAINS = {};
 
@@ -158,22 +159,89 @@ export function devBackendSideChain({ url, pins }) {
 }
 
 /**
+ * The backend of devnet-alpha, hathor-next's deployed devnet, and its GET /v1/config as the app
+ * pins it. The client refuses a backend whose network, native token, view key or wire format
+ * differ from these, and the burn check pays only this transfer address: a devnet reset needs them
+ * updated here.
+ */
+const DEVNET_ALPHA_BACKEND_URL = 'https://wallet-backend.devnet-alpha.samba.hathor.network';
+const DEVNET_ALPHA_PINS = {
+  contract: 1,
+  hathor: { network: 'privatenet' },
+  next: {
+    network_id: 1003,
+    native_token: 'e5bcdd06b7d2b896fe194e09b55d687737af3767407d9efc957ac0ea84f1e54c',
+    service_view_pub: 'b292d1f347dd954a23814d66d60adc6848d89e97f09be952bb2f5f9025fe2e0e',
+    wire_format: 'v3',
+    native_token_symbol: 'nHTR',
+    native_token_name: 'new HTR (devnet-alpha play money)',
+  },
+  transfer: {
+    transfer_address: 'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL',
+    destination_network: '8822d70f304ab62d1198004dedeff39e2da86c259ca5669a2ad0b8c6bb641064',
+    confirmations: 21,
+    mean_block_ms: 5000,
+    data_output_value: '1',
+    hathor_network: 'privatenet',
+  },
+};
+
+/**
+ * Hathor Next on devnet-alpha, through its backend. A transfer mints HTR as its native token at
+ * the same value, so the two show as one token, HTR on both chains.
+ */
+const DEVNET_ALPHA_HATHOR_NEXT = devBackendSideChain({
+  url: DEVNET_ALPHA_BACKEND_URL,
+  pins: DEVNET_ALPHA_PINS,
+});
+
+/**
+ * The side chains of networks whose fullnode reports a name other networks share: every
+ * privatenet reports 'privatenet'. By the node the wallet runs on (its network settings' nodeUrl).
+ */
+const SIDE_CHAINS_BY_NODE = [
+  { nodeUrl: NODE_SERVER_NEXT_DEVNET_URL, config: DEVNET_ALPHA_HATHOR_NEXT },
+];
+
+function withoutTrailingSlashes(url) {
+  return url.trim().replace(/\/+$/, '');
+}
+
+/**
+ * The side chain pinned to a node, or null when none is: the node's URL tells the network apart.
+ *
+ * @param {string|null|undefined} nodeUrl The network settings' nodeUrl
+ * @returns {Object|null}
+ */
+export function nodeSideChain(nodeUrl) {
+  if (typeof nodeUrl !== 'string' || nodeUrl === '') {
+    return null;
+  }
+  const url = withoutTrailingSlashes(nodeUrl);
+  return SIDE_CHAINS_BY_NODE.find((entry) => withoutTrailingSlashes(entry.nodeUrl) === url)
+    ?.config ?? null;
+}
+
+/**
  * The side chain of a network, or null when it has none. Pass the name the fullnode reports
- * (state.fullNodeNetworkName): a custom network pointed at a side chain's nodes has it too. A
- * backend set up for local testing gives every network but mainnet a side chain, in place of its
- * own.
+ * (state.fullNodeNetworkName): a custom network pointed at a side chain's nodes has it too. Pass
+ * the node too (the network settings' nodeUrl): a network whose name others share, such as
+ * devnet-alpha's privatenet, is known by its node. A backend set up for local testing gives every
+ * network but mainnet a side chain, in place of its own.
  *
  * @param {string|null|undefined} networkName
  * @param {{ url: string, pins: Object }|null} [devBackend] The backend for local testing in force
+ * @param {string|null} [nodeUrl] The network settings' nodeUrl
  * @returns {Object|null} The side chain config
  */
 // The last answer of getSideChainConfig: selectors read it on every store change, and a new
 // object each time would render their screens again and rebuild the bridge.
 const NOT_YET = Symbol('not yet');
-let lastConfig = { networkName: NOT_YET, devBackend: null, value: null };
+let lastConfig = { networkName: NOT_YET, devBackend: null, nodeUrl: null, value: null };
 
-export function getSideChainConfig(networkName, devBackend = null) {
-  if (lastConfig.networkName === networkName && lastConfig.devBackend === devBackend) {
+export function getSideChainConfig(networkName, devBackend = null, nodeUrl = null) {
+  if (lastConfig.networkName === networkName && lastConfig.devBackend === devBackend
+    && lastConfig.nodeUrl === nodeUrl) {
     return lastConfig.value;
   }
   let value = null;
@@ -181,9 +249,9 @@ export function getSideChainConfig(networkName, devBackend = null) {
     if (devBackend && networkName !== FULL_NETWORK_MAINNET) {
       value = devBackendSideChain(devBackend);
     } else {
-      value = SIDE_CHAINS[networkName] ?? null;
+      value = SIDE_CHAINS[networkName] ?? nodeSideChain(nodeUrl);
     }
   }
-  lastConfig = { networkName, devBackend, value };
+  lastConfig = { networkName, devBackend, nodeUrl, value };
   return value;
 }

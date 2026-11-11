@@ -45,6 +45,7 @@ import {
   multichainNextUpdate,
   multichainTransferRequested,
   networkChanged,
+  networkSettingsUpdateState,
   resetWallet,
   featureToggleInitialized,
   setFeatureToggles,
@@ -58,16 +59,17 @@ import {
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   multichainKeyMap,
+  PRE_SETTINGS_NEXT_DEVNET,
 } from '../../src/constants';
 import { STORE } from '../../src/store';
 import { nextClientChannel, resolveUncertainTransfer, saga } from '../../src/sagas/multichain';
 import { prepareNextKeysAtUnlock } from '../../src/multichain/keys';
-import { getNextClient, setNextClient } from '../../src/multichain/nextClient';
+import { ensureNextClient, getNextClient, setNextClient } from '../../src/multichain/nextClient';
 import { deriveFakeNextAddress, fakePeerAddress } from '../multichain/fakes/fakeAddress';
 import { fakeLedgerKey, loadLedger, resetLedger } from '../multichain/fakes/fakeLedger';
 import { FAKE_SCENARIO } from '../multichain/fakes/scenarios';
 import { FAKE_NETWORK, FAKE_SIDE_CHAIN } from '../multichain/fakes/sideChain';
-import { selectSideChainConfig } from '../../src/multichain/gating';
+import { isSideChainAvailable, selectSideChainConfig } from '../../src/multichain/gating';
 import {
   CONNECT_STATUS,
   NEXT_STATUS,
@@ -95,7 +97,14 @@ const HTR = '00';
 let task = null;
 
 function setup(options = {}) {
-  const { flag = true, scenario = FAKE_SCENARIO.FUNDED, start = true, toggles = true } = options;
+  const {
+    flag = true,
+    scenario = FAKE_SCENARIO.FUNDED,
+    start = true,
+    toggles = true,
+    network = NETWORK,
+    networkSettings = null,
+  } = options;
   resetLedger(NETWORK, scenario);
   let state = reducer(undefined, { type: '@@INIT' });
   const channel = stdChannel();
@@ -106,12 +115,15 @@ function setup(options = {}) {
     channel.put(action);
   };
   task = runSaga({ channel, dispatch, getState: () => state }, saga);
+  if (networkSettings) {
+    dispatch(networkSettingsUpdateState(networkSettings));
+  }
   if (toggles) {
     dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: flag }));
     dispatch(featureToggleInitialized());
   }
   dispatch(setServerInfo({ decimal_places: 2 }));
-  dispatch(setFullNodeNetworkName(NETWORK));
+  dispatch(setFullNodeNetworkName(network));
   if (start) {
     dispatch(startWalletSuccess());
   }
@@ -731,6 +743,33 @@ describe('the backend for local testing', () => {
     expect(env.getState().multichain.next).toMatchObject({
       status: NEXT_STATUS.READY, address: ADDRESS,
     });
+  });
+});
+
+describe('Hathor Next Devnet', () => {
+  // The client here is the tests' fake: what matters is the side chain it connects with.
+  test("connects to devnet-alpha's backend, with no backend set for local testing", async () => {
+    const env = setup({ network: 'privatenet', networkSettings: PRE_SETTINGS_NEXT_DEVNET });
+    await wait(0);
+    const connectSpy = jest.spyOn(ensureNextClient(), 'connect');
+    await connect(env);
+    expect(connectSpy).toHaveBeenCalledWith(expect.objectContaining({
+      network: 'privatenet',
+      config: expect.objectContaining({
+        backendUrl: 'https://wallet-backend.devnet-alpha.samba.hathor.network',
+      }),
+    }));
+    expect(env.getState().multichain.connectedNetworks).toEqual({ privatenet: true });
+  });
+
+  test('has no side chain on another privatenet, so Settings offers none', async () => {
+    const env = setup({
+      network: 'privatenet',
+      networkSettings: { ...PRE_SETTINGS_NEXT_DEVNET, nodeUrl: 'http://192.168.0.10:8080/v1a/' },
+    });
+    await wait(0);
+    expect(selectSideChainConfig(env.getState())).toBeNull();
+    expect(isSideChainAvailable(env.getState())).toBe(false);
   });
 });
 

@@ -1845,11 +1845,11 @@ msgstr ""
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:34
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:37
 msgid "Network Pre-Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:147
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:162
 msgid "Customize"
 msgstr ""
 

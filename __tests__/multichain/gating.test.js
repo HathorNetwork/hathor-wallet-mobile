@@ -14,12 +14,15 @@ jest.mock('../../src/multichain/chains', () => require('./fakes/chainsModule'));
 import {
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
+  MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
+  PRE_SETTINGS_NEXT_DEVNET,
 } from '../../src/constants';
 import { canTransfer, CHAIN, getSideChainConfig, otherChain } from '../../src/multichain/chains';
 import {
   getMultichainDevBackendFeatureToggle,
   getMultichainFeatureToggle,
   getMultichainFeatureToggleAtUnlock,
+  getMultichainNetworkPresetFeatureToggle,
   isSideChainAvailable,
   isSideChainConnected,
   isWaitingForNext,
@@ -48,6 +51,89 @@ const state = ({
     connectedNetworks: connected ? { [network]: true } : {},
     next: { ...MULTICHAIN_INITIAL_STATE.next, status: nextStatus },
   },
+});
+
+describe('the Hathor Next Devnet preset', () => {
+  test("names devnet-alpha's hathor-core node and tx mining, with no wallet-service", () => {
+    expect(PRE_SETTINGS_NEXT_DEVNET).toMatchObject({
+      network: 'privatenet',
+      fullNetwork: 'privatenet',
+      nodeUrl: 'https://legacy-node.devnet-alpha.samba.hathor.network/v1a/',
+      txMiningServiceUrl: 'https://tx-mining.devnet-alpha.samba.hathor.network/',
+    });
+    expect(PRE_SETTINGS_NEXT_DEVNET.walletServiceUrl).toBeUndefined();
+  });
+
+  test('shows only with its own flag', () => {
+    expect(getMultichainNetworkPresetFeatureToggle({ featureToggles: {} })).toBe(false);
+    expect(getMultichainNetworkPresetFeatureToggle({
+      featureToggles: { [MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]: true },
+    })).toBe(true);
+  });
+});
+
+describe("devnet-alpha's side chain", () => {
+  const DEVNET_NODE = PRE_SETTINGS_NEXT_DEVNET.nodeUrl;
+  const NHTR = 'e5bcdd06b7d2b896fe194e09b55d687737af3767407d9efc957ac0ea84f1e54c';
+
+  test("is its backend's, with the values the app pins", () => {
+    const config = actualChains.getSideChainConfig('privatenet', null, DEVNET_NODE);
+    expect(config).toMatchObject({
+      client: 'backend',
+      backendUrl: 'https://wallet-backend.devnet-alpha.samba.hathor.network',
+      nextNetworkId: 1003,
+      nativeTokenId: NHTR,
+      serviceViewPub: 'b292d1f347dd954a23814d66d60adc6848d89e97f09be952bb2f5f9025fe2e0e',
+      wireFormat: 'v3',
+    });
+    expect(config.transfer).toMatchObject({
+      transfer_address: 'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL',
+      confirmations: 21,
+      hathor_network: 'privatenet',
+    });
+    expect(BigInt(config.maxSendFee)).toBeGreaterThan(0n);
+  });
+
+  test('carries HTR to nHTR as one token, HTR on both chains', () => {
+    const config = actualChains.getSideChainConfig('privatenet', null, DEVNET_NODE);
+    expect(config.tokenMap).toEqual([{ hathor: '00', next: NHTR }]);
+    expect(config.nativeTokenSymbol).toBe('HTR');
+    expect(actualChains.transferReceiveSymbol(config, 'HTR')).toBe('HTR');
+    expect(canTransfer(config, CHAIN.HATHOR, CHAIN.HATHOR_NEXT)).toBe(true);
+    expect(actualChains.isTransferAddress('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL', config)).toBe(true);
+  });
+
+  test('is known by the node, with or without its trailing slash', () => {
+    expect(actualChains.getSideChainConfig('privatenet', null, DEVNET_NODE.replace(/\/$/, '')))
+      .toMatchObject({ client: 'backend' });
+  });
+
+  test("is no other privatenet's", () => {
+    expect(actualChains.getSideChainConfig('privatenet', null, 'http://192.168.0.10:8080/v1a/'))
+      .toBeNull();
+  });
+
+  test('gives way to a backend set for local testing', () => {
+    const devBackend = {
+      url: 'http://192.168.0.10:8930',
+      pins: { next: { network_id: 1777, native_token: '00' }, transfer: null },
+    };
+    expect(actualChains.getSideChainConfig('privatenet', devBackend, DEVNET_NODE))
+      .toMatchObject({ backendUrl: 'http://192.168.0.10:8930' });
+  });
+
+  test('waits, like every side chain, for the wallet to know its network', () => {
+    expect(actualChains.getSideChainConfig(null, null, DEVNET_NODE)).toBeNull();
+  });
+
+  test('shows "Connect to side chain" there with the multichain flag alone', () => {
+    const devnet = {
+      ...state({ network: 'privatenet', connected: false }),
+      networkSettings: PRE_SETTINGS_NEXT_DEVNET,
+    };
+    expect(isSideChainAvailable(devnet)).toBe(true);
+    expect(isSideChainAvailable({ ...devnet, featureToggles: {} })).toBe(false);
+  });
 });
 
 describe('getSideChainConfig', () => {
