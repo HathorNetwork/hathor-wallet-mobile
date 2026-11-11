@@ -417,14 +417,24 @@ export function createBackendNextClient({
     await Promise.all([refreshBalances(), refreshHistory(), refreshTokens()]);
   }
 
+  // Online is whether the backend answers these reads. The feed only brings news sooner: one that
+  // closes or is refused leaves Send on, and the reads every REFRESH_INTERVAL_MS go on.
+  async function refreshReachability() {
+    try {
+      await refreshAll();
+      setOnline(true);
+    } catch (e) {
+      if (e.unreachable) setOnline(false);
+      throw e;
+    }
+  }
+
   function startRefreshing(mine) {
     schedule(async () => {
       if (mine !== generation) return;
       try {
-        await refreshAll();
-        setOnline(true);
+        await refreshReachability();
       } catch (e) {
-        if (e.unreachable) setOnline(false);
         log.error('Could not refresh Hathor Next.', e);
       }
       startRefreshing(mine);
@@ -442,7 +452,6 @@ export function createBackendNextClient({
     socket = ws;
     ws.onopen = () => {
       feedDelay = FEED_RETRY_MIN_MS;
-      setOnline(true);
     };
     ws.onmessage = (event) => {
       let frame;
@@ -462,7 +471,6 @@ export function createBackendNextClient({
         return;
       }
       socket = null;
-      setOnline(false);
       const delay = feedDelay;
       feedDelay = Math.min(feedDelay * 2, FEED_RETRY_MAX_MS);
       schedule(async () => {
@@ -471,7 +479,7 @@ export function createBackendNextClient({
           if (feedSession.expires_at - SESSION_RENEW_MARGIN_S <= nowS()) {
             feedSession = await openSession(SCOPE.READ);
           }
-          await refreshAll();
+          await refreshReachability();
         } catch (e) {
           log.error('Could not reach Hathor Next.', e);
         }

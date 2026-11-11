@@ -342,4 +342,78 @@ describe('losing the backend', () => {
       jest.useRealTimers();
     }
   });
+
+  it('stays online while the backend refuses its feed, as the reads still reach it', async () => {
+    jest.useFakeTimers();
+    const backend = fakeBackend();
+    let feeds = 0;
+    // What a wallet with all its feeds taken gets: the upgrade is refused, so the socket closes.
+    class RefusedSocket {
+      constructor() {
+        feeds += 1;
+        setTimeout(() => {
+          this.onerror?.();
+          this.onclose?.();
+        }, 0);
+      }
+
+      close() {}
+    }
+    const client = createBackendNextClient({
+      fetchImpl: backend.fetchImpl,
+      WebSocketImpl: RefusedSocket,
+    });
+    const events = [];
+    client.on(NEXT_CLIENT_EVENT.CONNECTION, (e) => events.push(e.online));
+    try {
+      await client.prepareKeys({ words: WORDS });
+      await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+      await jest.advanceTimersByTimeAsync(65000);
+      expect(feeds).toBeGreaterThan(3);
+      expect(client.isOnline()).toBe(true);
+      expect(events).toEqual([]);
+    } finally {
+      client.disconnect();
+      jest.useRealTimers();
+    }
+  });
+
+  it('goes offline once a dropped feed finds the backend gone, before the next read', async () => {
+    jest.useFakeTimers();
+    const backend = fakeBackend();
+    let down = false;
+    const fetchImpl = async (...args) => {
+      if (down) throw new Error('connection refused');
+      return backend.fetchImpl(...args);
+    };
+    const sockets = [];
+    // Opens while the backend is up; refused while it is down.
+    class Socket {
+      constructor() {
+        sockets.push(this);
+        setTimeout(() => (down ? this.onclose?.() : this.onopen?.()), 0);
+      }
+
+      close() {}
+    }
+    const client = createBackendNextClient({ fetchImpl, WebSocketImpl: Socket });
+    const events = [];
+    client.on(NEXT_CLIENT_EVENT.CONNECTION, (e) => events.push(e.online));
+    try {
+      await client.prepareKeys({ words: WORDS });
+      await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+      await jest.advanceTimersByTimeAsync(0);
+      down = true;
+      sockets[0].onclose();
+      await jest.advanceTimersByTimeAsync(1500);
+      expect(client.isOnline()).toBe(false);
+      down = false;
+      await jest.advanceTimersByTimeAsync(5000);
+      expect(client.isOnline()).toBe(true);
+      expect(events).toEqual([false, true]);
+    } finally {
+      client.disconnect();
+      jest.useRealTimers();
+    }
+  });
 });
