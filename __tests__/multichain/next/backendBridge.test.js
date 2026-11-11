@@ -280,10 +280,10 @@ describe('the bridge through the Hathor Next backend', () => {
     });
   });
 
-  it('gives what arrives at the network\'s pinned scale, one for one on the devnet', () => {
+  it('gives what arrives at the network\'s pinned scale', () => {
     const { wallet, client } = fakes();
-    const devnet = createBackendBridge({ ...CONFIG, mintScale: '1' }, { wallet, network, client });
-    expect(devnet.quote({ amount: 700n, available: 1000n }).receiveAmount).toBe(700n);
+    const unscaled = createBackendBridge({ ...CONFIG, mintScale: '1' }, { wallet, network, client });
+    expect(unscaled.quote({ amount: 700n, available: 1000n }).receiveAmount).toBe(700n);
     const scaled = createBackendBridge(
       { ...CONFIG, mintScale: '1000000' },
       { wallet, network, client },

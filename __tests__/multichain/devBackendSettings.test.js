@@ -7,6 +7,8 @@
 
 import { describe, test, expect } from '@jest/globals';
 import { isUsableBackendConfig } from '../../src/components/Multichain/DevBackendSettings';
+import { devBackendSideChain } from '../../src/multichain/chains';
+import { hathorToNextAmount, mintScaleOf } from '../../src/multichain/amount';
 
 const pinsOf = (next) => ({
   next: {
@@ -31,5 +33,10 @@ describe('a backend for local testing', () => {
     expect(isUsableBackendConfig(pinsOf({ wire_format: undefined }))).toBe(false);
     expect(isUsableBackendConfig(pinsOf({ native_token: 'aa' }))).toBe(false);
     expect(isUsableBackendConfig({})).toBe(false);
+  });
+
+  test('shows a transfer arriving at the same value: 1.00 HTR becomes 1.00000000', () => {
+    const config = devBackendSideChain({ url: 'http://backend.test', pins: pinsOf({ wire_format: 'v3' }) });
+    expect(hathorToNextAmount(100n, mintScaleOf(config)).toString()).toBe('100000000');
   });
 });

@@ -75,9 +75,8 @@ const JULIET_HATHOR_NEXT = {
   // The tokens the bridge carries, by their id on each chain: each shows as one row, with its
   // balance on both chains. Only HTR so far, which becomes Hathor Next's native token.
   tokenMap: [{ hathor: '00', next: '00' }],
-  // Hathor Next base units per HTR base unit in a transfer. A placeholder that keeps the value
-  // (1.00 HTR becomes 1.00000000): the network's real scale is the hathor-next team's to decide,
-  // and is pinned here before Juliet's token map turns on.
+  // Hathor Next base units per HTR base unit in a transfer: hathor-next mints a burn at the same
+  // value, so 1.00 HTR becomes 1.00000000.
   mintScale: '1000000',
   // The ways the bridge transfers. Hathor Next to Hathor Network is still to come.
   directions: [{ from: CHAIN.HATHOR, to: CHAIN.HATHOR_NEXT }],
@@ -183,8 +182,8 @@ export function devBackendSideChain({ url, pins }) {
     explorerUrl: null,
     explorerApiBase: null,
     tokenMap: [],
-    // hathor-next's devnet mints one base unit of its native token per base unit burned.
-    mintScale: '1',
+    // hathor-next mints a burn at the same value: 1.00 HTR becomes 1.00000000 of the native token.
+    mintScale: '1000000',
     directions: pins.transfer ? [{ from: CHAIN.HATHOR, to: CHAIN.HATHOR_NEXT }] : [],
     transfer: pins.transfer ?? null,
   };

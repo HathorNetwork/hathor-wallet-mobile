@@ -11,8 +11,7 @@ import { NEXT_DECIMAL_PLACES } from './chains';
 /**
  * How many of Hathor Next's base units one base unit of Hathor Network's HTR becomes in a
  * transfer: the side chain's own pinned value (its config's mintScale), never worked out from the
- * decimal places. hathor-next's devnet mints one base unit for one; the hosted network's scale is
- * the hathor-next team's decision.
+ * decimal places. hathor-next mints a burn at the same value, so 1.00 HTR becomes 1.00000000.
  *
  * @param {Object|null} config The side chain config
  * @returns {bigint}
