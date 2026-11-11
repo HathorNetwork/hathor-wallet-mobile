@@ -475,7 +475,7 @@ msgid "Back"
 msgstr "Voltar"
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/Multichain/NextSendAmountInput.js:111
+#: src/screens/Multichain/NextSendAmountInput.js:110
 #: src/screens/SendAmountInput.js:165
 msgid "Invalid amount"
 msgstr "Quantidade inválida"
@@ -505,7 +505,7 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421
-#: src/screens/Multichain/NextSendAmountInput.js:173
+#: src/screens/Multichain/NextSendAmountInput.js:171
 #: src/screens/SendAddressInput.js:175 src/screens/SendAmountInput.js:287
 msgid "Next"
 msgstr "Próximo"
@@ -578,7 +578,7 @@ msgstr "Depósito"
 #: src/screens/CreateTokenConfirm.js:293
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:153
 #: src/screens/Multichain/ChainTransferScreen.js:235
-#: src/screens/Multichain/NextSendConfirmScreen.js:237
+#: src/screens/Multichain/NextSendConfirmScreen.js:235
 #: src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
 msgstr "Taxa de Rede"
@@ -1297,14 +1297,14 @@ msgstr "Endereço para enviar"
 msgid "Paste or type address"
 msgstr "Cole ou digite o endereço"
 
-#: src/screens/Multichain/NextSendAmountInput.js:163
+#: src/screens/Multichain/NextSendAmountInput.js:161
 #: src/screens/SendAddressInput.js:182
 msgid "Transfer between chains"
 msgstr "Transferir entre cadeias"
 
 #: src/multichain/nextClientErrors.js:48
 #: src/screens/Multichain/ChainTransferScreen.js:137
-#: src/screens/Multichain/NextSendAmountInput.js:117
+#: src/screens/Multichain/NextSendAmountInput.js:116
 #: src/screens/SendAmountInput.js:170
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
@@ -1483,12 +1483,12 @@ msgstr[1] "Taxa de Privacidade (${ shieldedCount } saídas)"
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:238
+#: src/screens/Multichain/NextSendConfirmScreen.js:236
 #: src/screens/SendConfirmScreen.js:724
 msgid "Total"
 msgstr "Total"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:248
+#: src/screens/Multichain/NextSendConfirmScreen.js:246
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
 #: src/screens/SendConfirmScreen.js:733
 msgid "Send"
@@ -2017,10 +2017,10 @@ msgstr "Transferindo para a Hathor Next…"
 #: src/components/AmountInputAccessory.js:105
 #: src/components/Multichain/TransferDetailsModal.js:99
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:108
-#: src/screens/Multichain/NextSendConfirmScreen.js:185
-#: src/screens/Multichain/NextSendConfirmScreen.js:194
-#: src/screens/Multichain/NextSendConfirmScreen.js:206
-#: src/screens/Multichain/NextSendConfirmScreen.js:215
+#: src/screens/Multichain/NextSendConfirmScreen.js:184
+#: src/screens/Multichain/NextSendConfirmScreen.js:193
+#: src/screens/Multichain/NextSendConfirmScreen.js:205
+#: src/screens/Multichain/NextSendConfirmScreen.js:214
 msgid "Done"
 msgstr "Ok"
 
@@ -2112,7 +2112,7 @@ msgstr "Usar meu endereço da Hathor Next"
 
 #: src/components/Reown/CreateTokenRequest.js:103
 #: src/screens/Multichain/ChainTransferScreen.js:220
-#: src/screens/Multichain/NextSendConfirmScreen.js:232
+#: src/screens/Multichain/NextSendConfirmScreen.js:230
 msgid "Amount"
 msgstr "Quantidade"
 
@@ -2120,34 +2120,34 @@ msgstr "Quantidade"
 msgid "You'll receive"
 msgstr "Você receberá"
 
-#: src/screens/Multichain/NextSendAmountInput.js:131
-#: src/screens/Multichain/NextSendConfirmScreen.js:227
+#: src/screens/Multichain/NextSendAmountInput.js:130
+#: src/screens/Multichain/NextSendConfirmScreen.js:226
 #, javascript-format
 msgid "SEND ${ symbol }"
 msgstr "ENVIAR ${ symbol }"
 
-#: src/screens/Multichain/NextSendAmountInput.js:153
+#: src/screens/Multichain/NextSendAmountInput.js:152
 #, javascript-format
 msgid "${ availableText } ${ symbol } available"
 msgstr "${ availableText } ${ symbol } disponível"
 
-#: src/screens/Multichain/NextSendAmountInput.js:155
+#: src/screens/Multichain/NextSendAmountInput.js:154
 msgid "Network fee: ${ feeText } ${ symbol }"
 msgstr "Taxa de rede: ${ feeText } ${ symbol }"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:128
+#: src/screens/Multichain/NextSendConfirmScreen.js:127
 msgid "The passkey couldn't authorize the payment."
 msgstr "A passkey não conseguiu autorizar o pagamento."
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:144
+#: src/screens/Multichain/NextSendConfirmScreen.js:143
 msgid "Enter your 6-digit pin to authorize the payment"
 msgstr "Digite seu PIN de 6 dígitos para autorizar o pagamento"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:145
+#: src/screens/Multichain/NextSendConfirmScreen.js:144
 msgid "Authorize the payment"
 msgstr "Autorizar o pagamento"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:213
+#: src/screens/Multichain/NextSendConfirmScreen.js:212
 msgid "The payment couldn't be sent."
 msgstr "Não foi possível enviar o pagamento."
 
@@ -2158,12 +2158,12 @@ msgstr "Não foi possível enviar o pagamento."
 #: src/components/Reown/SendTransactionRequest.js:343
 #: src/components/Reown/SignMessageRequest.js:40
 #: src/components/Reown/SignOracleDataRequest.js:59
-#: src/screens/Multichain/NextSendConfirmScreen.js:234
+#: src/screens/Multichain/NextSendConfirmScreen.js:232
 msgid "Address"
 msgstr "Endereço"
 
 #: src/components/PrivacyModeCard.js:50
-#: src/screens/Multichain/NextSendConfirmScreen.js:242
+#: src/screens/Multichain/NextSendConfirmScreen.js:240
 msgid "Private"
 msgstr "Privado"
 

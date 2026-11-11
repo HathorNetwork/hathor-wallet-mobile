@@ -24,6 +24,12 @@ jest.mock('../../../src/NavigationService', () => ({
   default: { navigate: jest.fn(), resetToMain: jest.fn() },
 }));
 
+// A network the tests give a side chain, and the fake bridge for the transfer's quotes.
+// eslint-disable-next-line global-require
+jest.mock('../../../src/multichain/chains', () => require('../../multichain/fakes/chainsModule'));
+// eslint-disable-next-line global-require
+jest.mock('../../../src/multichain/bridge', () => require('../../multichain/fakes/bridgeModule'));
+
 /* eslint-disable import/first */
 import React from 'react';
 import { Text, TextInput } from 'react-native';
@@ -52,9 +58,10 @@ import QRCodeReader from '../../../src/components/QRCodeReader';
 import { PortalProvider } from '../../../src/components/Portal';
 import { ChainTag } from '../../../src/components/Multichain/ChainTag';
 import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 /* eslint-enable import/first */
 
-const NETWORK = 'testnet-juliet';
+const NETWORK = FAKE_NETWORK;
 const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
 const NEXT_ADDRESS = `samba:${'ab12'.repeat(32)}`;
 const HATHOR_ADDRESS = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';

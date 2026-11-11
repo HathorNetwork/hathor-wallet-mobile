@@ -21,7 +21,6 @@ import NewHathorButton from '../../components/NewHathorButton';
 import AmountTextInput from '../../components/AmountTextInput';
 import InputLabel from '../../components/InputLabel';
 import OfflineBar from '../../components/OfflineBar';
-import { SimulatedTagIfMock } from '../../components/Multichain/SimulatedTag';
 import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
 import { canTransfer, CHAIN, NEXT_DECIMAL_PLACES } from '../../multichain/chains';
 import { syncingSendBody } from '../../multichain/content';
@@ -153,7 +152,6 @@ export default function NextSendAmountInput() {
                 {t`${availableText} ${symbol} available`}
               </InputLabel>
               <Text style={styles.fee}>{t`Network fee: ${feeText} ${symbol}`}</Text>
-              <SimulatedTagIfMock style={styles.simulated} />
               {sweeping && <SyncingNotice text={syncingSendBody()} style={styles.syncing} />}
               <Text style={styles.error}>{error}</Text>
               {advice && <Text style={styles.advice}>{advice.message}</Text>}
@@ -208,10 +206,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     color: COLORS.textColorShadow,
-  },
-  simulated: {
-    alignSelf: 'center',
-    marginTop: 12,
   },
   syncing: {
     marginTop: 16,

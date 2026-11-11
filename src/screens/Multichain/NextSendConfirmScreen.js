@@ -14,7 +14,6 @@ import NewHathorButton from '../../components/NewHathorButton';
 import FeedbackModal from '../../components/FeedbackModal';
 import Spinner from '../../components/Spinner';
 import OfflineBar from '../../components/OfflineBar';
-import { SimulatedTagIfMock } from '../../components/Multichain/SimulatedTag';
 import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
 import { multichainNextSendRequested, multichainNextSendReset } from '../../actions';
 import { renderNextValue } from '../../multichain/amount';
@@ -228,7 +227,6 @@ export default function NextSendConfirmScreen() {
         onBackPress={authorized ? null : () => navigation.goBack()}
       />
       <ScrollView contentContainerStyle={styles.body}>
-        <SimulatedTagIfMock />
         <Text style={styles.label}>{t`Amount`}</Text>
         <Text style={styles.amount}>{render(amount)}</Text>
         <Text style={styles.label}>{t`Address`}</Text>
