@@ -475,7 +475,8 @@ msgid "Back"
 msgstr "Voltar"
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:129
+#: src/screens/Multichain/NextSendAmountInput.js:110
+#: src/screens/SendAmountInput.js:165
 msgid "Invalid amount"
 msgstr "Quantidade inválida"
 
@@ -503,8 +504,9 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
-#: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:156
-#: src/screens/SendAmountInput.js:251
+#: src/screens/InitWallet.js:421
+#: src/screens/Multichain/NextSendAmountInput.js:171
+#: src/screens/SendAddressInput.js:175 src/screens/SendAmountInput.js:287
 msgid "Next"
 msgstr "Próximo"
 
@@ -576,6 +578,7 @@ msgstr "Depósito"
 #: src/screens/CreateTokenConfirm.js:293
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:153
 #: src/screens/Multichain/ChainTransferScreen.js:235
+#: src/screens/Multichain/NextSendConfirmScreen.js:235
 #: src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
 msgstr "Taxa de Rede"
@@ -1016,7 +1019,7 @@ msgstr "Saldo Disponível"
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/NanoContractRegisterQrCodeScreen.js:26
-#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:88
+#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:102
 msgid "Manual"
 msgstr "Digitar"
 
@@ -1139,22 +1142,22 @@ msgid "You can register Tokens, Nano Contracts or Reown manually."
 msgstr "Você pode registrar Tokens, Nano Contracts ou o Reown manualmente."
 
 #: src/screens/RegisterOptionsScreen.js:43
-#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:52
-#: src/screens/UnifiedQRScanner.js:69
+#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:66
+#: src/screens/UnifiedQRScanner.js:83
 msgid "Feature Not Available"
 msgstr "Funcionalidade não disponível."
 
-#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:69
+#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:83
 msgid "The nano contract feature is not enabled."
 msgstr "Nano Contracts não estão habilitados."
 
 #: src/screens/RegisterOptionsScreen.js:45
-#: src/screens/RegisterOptionsScreen.js:57 src/screens/SendScanQRCode.js:37
-#: src/screens/UnifiedQRScanner.js:36
+#: src/screens/RegisterOptionsScreen.js:57 src/screens/SendScanQRCode.js:40
+#: src/screens/UnifiedQRScanner.js:39
 msgid "OK"
 msgstr "OK"
 
-#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:52
+#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:66
 msgid "The reown feature is not enabled."
 msgstr "Reown não está habilitado."
 
@@ -1278,33 +1281,35 @@ msgstr "Mudar PIN"
 msgid "Lock wallet"
 msgstr "Bloquear a wallet"
 
-#: src/screens/SendAddressInput.js:94
+#: src/screens/SendAddressInput.js:110
 msgid "Scan QR code"
 msgstr "Ler QR code"
 
-#: src/screens/SendAddressInput.js:110
+#: src/screens/SendAddressInput.js:126
 msgid "SEND TOKENS"
 msgstr "ENVIAR TOKENS"
 
-#: src/screens/SendAddressInput.js:122
+#: src/screens/SendAddressInput.js:138
 msgid "Address to send"
 msgstr "Endereço para enviar"
 
-#: src/screens/SendAddressInput.js:136
+#: src/screens/SendAddressInput.js:152
 msgid "Paste or type address"
 msgstr "Cole ou digite o endereço"
 
-#: src/screens/SendAddressInput.js:163
+#: src/screens/Multichain/NextSendAmountInput.js:161
+#: src/screens/SendAddressInput.js:182
 msgid "Transfer between chains"
 msgstr "Transferir entre cadeias"
 
 #: src/multichain/nextClientErrors.js:48
 #: src/screens/Multichain/ChainTransferScreen.js:137
-#: src/screens/SendAmountInput.js:134
+#: src/screens/Multichain/NextSendAmountInput.js:116
+#: src/screens/SendAmountInput.js:170
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:144
+#: src/screens/SendAmountInput.js:180
 msgid ""
 "The selected privacy mode requires a shielded address as the recipient. The "
 "address you entered is not shielded — change the address or switch to Public."
@@ -1313,18 +1318,18 @@ msgstr ""
 "destinatário. O endereço informado não é blindado — altere o endereço ou "
 "mude para Público."
 
-#: src/screens/SendAmountInput.js:157
+#: src/screens/SendAmountInput.js:193
 #, javascript-format
 msgid "A private send can be at most ${ max } ${ symbol }."
 msgstr "Um envio privado pode ter no máximo ${ max } ${ symbol }."
 
-#: src/screens/SendAmountInput.js:188
+#: src/screens/SendAmountInput.js:224
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:202 src/screens/SendConfirmScreen.js:543
+#: src/screens/SendAmountInput.js:238 src/screens/SendConfirmScreen.js:543
 #, javascript-format
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
@@ -1478,25 +1483,27 @@ msgstr[1] "Taxa de Privacidade (${ shieldedCount } saídas)"
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
+#: src/screens/Multichain/NextSendConfirmScreen.js:236
 #: src/screens/SendConfirmScreen.js:724
 msgid "Total"
 msgstr "Total"
 
+#: src/screens/Multichain/NextSendConfirmScreen.js:246
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
 #: src/screens/SendConfirmScreen.js:733
 msgid "Send"
 msgstr "Enviar"
 
-#: src/screens/SendScanQRCode.js:34
+#: src/screens/SendScanQRCode.js:37
 msgid "Invalid QR code"
 msgstr "QR code inválido"
 
-#: src/screens/SendScanQRCode.js:69
+#: src/screens/SendScanQRCode.js:80
 msgid "SEND"
 msgstr "ENVIAR"
 
-#: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:76
-#: src/screens/UnifiedQRScanner.js:96
+#: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:87
+#: src/screens/UnifiedQRScanner.js:110
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
@@ -1615,16 +1622,16 @@ msgid "TOKENS"
 msgstr "TOKENS"
 
 #.  If none of the patterns match, show an error or handle accordingly
-#: src/screens/UnifiedQRScanner.js:77
+#: src/screens/UnifiedQRScanner.js:91
 msgid "Invalid QR Code"
 msgstr "QR code inválido"
 
 #.  If none of the patterns match, show an error or handle accordingly
-#: src/screens/UnifiedQRScanner.js:77
+#: src/screens/UnifiedQRScanner.js:91
 msgid "The scanned QR code is not in a recognized format."
 msgstr "O QR code escaneado não está em um formato reconhecível."
 
-#: src/screens/UnifiedQRScanner.js:83
+#: src/screens/UnifiedQRScanner.js:97
 msgid "Scan QR Code"
 msgstr "Leia o QR code"
 
@@ -2010,6 +2017,10 @@ msgstr "Transferindo para a Hathor Next…"
 #: src/components/AmountInputAccessory.js:105
 #: src/components/Multichain/TransferDetailsModal.js:99
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:108
+#: src/screens/Multichain/NextSendConfirmScreen.js:184
+#: src/screens/Multichain/NextSendConfirmScreen.js:193
+#: src/screens/Multichain/NextSendConfirmScreen.js:205
+#: src/screens/Multichain/NextSendConfirmScreen.js:214
 msgid "Done"
 msgstr "Ok"
 
@@ -2101,12 +2112,60 @@ msgstr "Usar meu endereço da Hathor Next"
 
 #: src/components/Reown/CreateTokenRequest.js:103
 #: src/screens/Multichain/ChainTransferScreen.js:220
+#: src/screens/Multichain/NextSendConfirmScreen.js:230
 msgid "Amount"
 msgstr "Quantidade"
 
 #: src/screens/Multichain/ChainTransferScreen.js:233
 msgid "You'll receive"
 msgstr "Você receberá"
+
+#: src/screens/Multichain/NextSendAmountInput.js:130
+#: src/screens/Multichain/NextSendConfirmScreen.js:226
+#, javascript-format
+msgid "SEND ${ symbol }"
+msgstr "ENVIAR ${ symbol }"
+
+#: src/screens/Multichain/NextSendAmountInput.js:152
+#, javascript-format
+msgid "${ availableText } ${ symbol } available"
+msgstr "${ availableText } ${ symbol } disponível"
+
+#: src/screens/Multichain/NextSendAmountInput.js:154
+msgid "Network fee: ${ feeText } ${ symbol }"
+msgstr "Taxa de rede: ${ feeText } ${ symbol }"
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:127
+msgid "The passkey couldn't authorize the payment."
+msgstr "A passkey não conseguiu autorizar o pagamento."
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:143
+msgid "Enter your 6-digit pin to authorize the payment"
+msgstr "Digite seu PIN de 6 dígitos para autorizar o pagamento"
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:144
+msgid "Authorize the payment"
+msgstr "Autorizar o pagamento"
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:212
+msgid "The payment couldn't be sent."
+msgstr "Não foi possível enviar o pagamento."
+
+#: src/components/Multichain/NextTxDetailsModal.js:98
+#: src/components/NanoContract/EditAddressModal.js:63
+#: src/components/NanoContract/SelectAddressModal.js:131
+#: src/components/Reown/GetAddressRequest.js:42
+#: src/components/Reown/SendTransactionRequest.js:343
+#: src/components/Reown/SignMessageRequest.js:40
+#: src/components/Reown/SignOracleDataRequest.js:59
+#: src/screens/Multichain/NextSendConfirmScreen.js:232
+msgid "Address"
+msgstr "Endereço"
+
+#: src/components/PrivacyModeCard.js:50
+#: src/screens/Multichain/NextSendConfirmScreen.js:240
+msgid "Private"
+msgstr "Privado"
 
 #: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:77
 msgid "Couldn't connect to Hathor Next."
@@ -2621,10 +2680,6 @@ msgstr "e.g. Poupança"
 msgid "Create"
 msgstr "Criar"
 
-#: src/components/PrivacyModeCard.js:50
-msgid "Private"
-msgstr "Privado"
-
 #: src/components/PrivacyModeCard.js:52
 msgid "Token and amount hidden on all new transactions"
 msgstr "Token e valor ocultos em todas as novas transações"
@@ -3137,16 +3192,6 @@ msgstr ""
 #: src/components/Reown/GetAddressRequest.js:40
 msgid "Address at index ${ data.index }"
 msgstr "Endereço no índice ${ data.index }"
-
-#: src/components/Multichain/NextTxDetailsModal.js:98
-#: src/components/NanoContract/EditAddressModal.js:63
-#: src/components/NanoContract/SelectAddressModal.js:131
-#: src/components/Reown/GetAddressRequest.js:42
-#: src/components/Reown/SendTransactionRequest.js:343
-#: src/components/Reown/SignMessageRequest.js:40
-#: src/components/Reown/SignOracleDataRequest.js:59
-msgid "Address"
-msgstr "Endereço"
 
 #: src/components/Reown/GetAddressRequest.js:78
 msgid ""
@@ -3824,9 +3869,6 @@ msgstr "${ moved } ${ symbol } movidos"
 #~ msgstr[0] "${ count } saída privada"
 #~ msgstr[1] "${ count } saídas privadas"
 
-#~ msgid "The privacy keys could not be read."
-#~ msgstr "Não foi possível ler as chaves de privacidade."
-
 #~ msgid "Copied. The clipboard clears in one minute."
 #~ msgstr "Copiado. A área de transferência será limpa em um minuto."
 
@@ -3975,9 +4017,6 @@ msgstr "${ moved } ${ symbol } movidos"
 
 #~ msgid "Something went wrong while saving your wallet. Please try again."
 #~ msgstr "Algo deu errado ao salvar sua carteira. Por favor, tente novamente."
-
-#~ msgid "Could not authorize the swap"
-#~ msgstr "Erro ao autorizar troca"
 
 #~ msgid "Could not complete the swap. Please try again."
 #~ msgstr "Não foi possível completar a troca. Tente novamente."

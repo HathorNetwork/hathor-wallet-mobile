@@ -14,10 +14,13 @@ import QRCodeReader from '../components/QRCodeReader';
 import OfflineBar from '../components/OfflineBar';
 import HathorHeader from '../components/HathorHeader';
 import { parseQRCode } from '../utils';
+import { parseNextQrCode } from '../multichain/address';
+import { isSideChainConnected } from '../multichain/gating';
 import { COLORS } from '../styles/themes';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
+  sideChainConnected: isSideChainConnected(state),
 });
 
 class SendScanQRCode extends React.Component {
@@ -48,6 +51,14 @@ class SendScanQRCode extends React.Component {
   onSuccess = async (e) => {
     if (this.state.isWaitingForUserInput) {
       // Avoid multiple calls to this function while waiting for user input
+      return;
+    }
+
+    // With the side chain connected, a Hathor Next address goes to the address input as it is: the
+    // address says the send is on Hathor Next.
+    const nextAddress = this.props.sideChainConnected ? parseNextQrCode(e.data) : null;
+    if (nextAddress) {
+      this.props.navigation.navigate('SendAddressInput', { address: nextAddress });
       return;
     }
 
