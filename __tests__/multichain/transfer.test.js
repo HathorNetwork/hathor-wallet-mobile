@@ -6,13 +6,14 @@
  */
 
 import { describe, test, expect } from '@jest/globals';
-import { CHAIN, getSideChainConfig } from '../../src/multichain/chains';
+import { CHAIN } from '../../src/multichain/chains';
 import { nextToHathorRoundedUp, shortBalanceAdvice } from '../../src/multichain/transfer';
+import { FAKE_SIDE_CHAIN } from './fakes/sideChain';
 
-const config = getSideChainConfig('testnet-juliet');
+const config = FAKE_SIDE_CHAIN;
 const NEXT_ADDRESS = `samba:${'ab12'.repeat(32)}`;
 const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
-// The mock bridge's quote: 0.10 HTR bridge fee, no network fee, in Hathor Network's units.
+// The fake bridge's quote: 0.10 HTR bridge fee, no network fee, in Hathor Network's units.
 const quote = { bridgeFee: 10n, networkFee: 0n, etaSeconds: 120 };
 
 const onNext = (fields) => shortBalanceAdvice({
