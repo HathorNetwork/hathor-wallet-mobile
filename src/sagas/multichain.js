@@ -879,8 +879,9 @@ export function* onMockLedgerChanged(action) {
 
 /**
  * A backend for local testing was set or cleared: save it, leave the Hathor Next that ran (its
- * client and keys belong to the other kind) and load it again where the side chain is connected.
- * Without the keys, the load fails and its Try again asks for the PIN or the passkey.
+ * client and keys belong to the other kind) and load it again where the side chain is connected,
+ * with keys derived again: from the PIN Settings asked for the switch, or by a passkey wallet's
+ * ceremony, run now since the user asked for it.
  */
 export function* onDevBackendSet({ payload, meta }) {
   if (!meta?.persist) {
@@ -896,7 +897,7 @@ export function* onDevBackendSet({ payload, meta }) {
   setNextClientKind(payload ? NEXT_CLIENT_KIND.BACKEND : NEXT_CLIENT_KIND.MOCK);
   saveNext({ address: null });
   if (yield select(isSideChainConnected)) {
-    yield call(runConnect, loadNext, { interactive: false });
+    yield call(runConnect, loadNext, { pinCode: meta.pinCode, interactive: true });
   }
 }
 

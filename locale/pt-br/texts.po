@@ -1516,10 +1516,12 @@ msgstr "ENVIAR"
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
+#: src/components/Multichain/DevBackendSettings.js:69
 #: src/screens/Settings.js:172
 msgid "Enter your 6-digit pin to connect to Hathor Next"
 msgstr "Digite seu PIN de 6 dígitos para conectar à Hathor Next"
 
+#: src/components/Multichain/DevBackendSettings.js:70
 #: src/screens/Settings.js:173
 msgid "Connect to Hathor Next"
 msgstr "Conectar à Hathor Next"
@@ -3958,24 +3960,24 @@ msgstr "Cadeia"
 msgid "Connecting to Hathor Next…"
 msgstr "Conectando à Hathor Next…"
 
-#: src/components/Multichain/DevBackendSettings.js:61
+#: src/components/Multichain/DevBackendSettings.js:81
 msgid "This backend runs a Hathor Next network this app can't use."
 msgstr "Este backend roda uma rede Hathor Next que este app não pode usar."
 
-#: src/components/Multichain/DevBackendSettings.js:66
+#: src/components/Multichain/DevBackendSettings.js:86
 msgid "Couldn't reach this backend."
 msgstr "Não foi possível acessar este backend."
 
-#: src/components/Multichain/DevBackendSettings.js:78
+#: src/components/Multichain/DevBackendSettings.js:98
 msgid "Hathor Next backend"
 msgstr "Backend da Hathor Next"
 
-#: src/components/Multichain/DevBackendSettings.js:81
+#: src/components/Multichain/DevBackendSettings.js:101
 #, javascript-format
 msgid "Network ${ networkId }, native token ${ nativeToken }"
 msgstr "Rede ${ networkId }, token nativo ${ nativeToken }"
 
-#: src/components/Multichain/DevBackendSettings.js:84
+#: src/components/Multichain/DevBackendSettings.js:104
 msgid ""
 "Hathor Next runs on this backend on every network but mainnet. Its keys "
 "never leave this device: the backend only gets public keys and signatures."
@@ -3984,15 +3986,15 @@ msgstr ""
 "chaves nunca saem deste dispositivo: o backend recebe apenas chaves públicas "
 "e assinaturas."
 
-#: src/components/Multichain/DevBackendSettings.js:88
+#: src/components/Multichain/DevBackendSettings.js:108
 msgid "Stop using this backend"
 msgstr "Parar de usar este backend"
 
-#: src/components/Multichain/DevBackendSettings.js:97
+#: src/components/Multichain/DevBackendSettings.js:117
 msgid "Hathor Next backend (local testing)"
 msgstr "Backend da Hathor Next (teste local)"
 
-#: src/components/Multichain/DevBackendSettings.js:107
+#: src/components/Multichain/DevBackendSettings.js:127
 msgid ""
 "Runs Hathor Next on a backend you run, instead of the simulated one. After "
 "you set it, Hathor Next loads again and asks for your PIN or passkey."
@@ -4001,7 +4003,7 @@ msgstr ""
 "Depois de configurá-lo, a Hathor Next carrega de novo e pede seu PIN ou "
 "passkey."
 
-#: src/components/Multichain/DevBackendSettings.js:110
+#: src/components/Multichain/DevBackendSettings.js:130
 msgid "Use this backend"
 msgstr "Usar este backend"
 

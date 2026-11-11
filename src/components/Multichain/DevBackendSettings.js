@@ -12,8 +12,10 @@ import { t } from 'ttag';
 import NewHathorButton from '../NewHathorButton';
 import SimpleInput from '../SimpleInput';
 import { multichainDevBackendSet } from '../../actions';
+import { useNavigation } from '../../hooks/navigation';
 import { createBackendApi } from '../../multichain/next/backendApi';
-import { selectDevBackend } from '../../multichain/gating';
+import { isSideChainConnected, selectDevBackend } from '../../multichain/gating';
+import { STORE } from '../../store';
 import { COLORS } from '../../styles/themes';
 
 const HEX_64 = /^[0-9a-f]{64}$/;
@@ -46,10 +48,28 @@ const shortHex = (hex) => `${hex.slice(0, 8)}…${hex.slice(-8)}`;
  */
 export function DevBackendSettings() {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const devBackend = useSelector(selectDevBackend);
+  const connected = useSelector(isSideChainConnected);
   const [url, setUrl] = useState('');
   const [error, setError] = useState(null);
   const [checking, setChecking] = useState(false);
+
+  // Hathor Next loads again on the other client, with keys derived again: a seed wallet's PIN is
+  // asked here, before the switch, as "Connect to side chain" does. A passkey wallet runs its
+  // ceremony once the load starts.
+  const switchTo = (backend) => {
+    if (!connected || STORE.isPasskeyWallet()) {
+      dispatch(multichainDevBackendSet(backend));
+      return;
+    }
+    navigation.navigate('PinScreen', {
+      cb: (pinCode) => dispatch(multichainDevBackendSet(backend, { pinCode })),
+      canCancel: true,
+      screenText: t`Enter your 6-digit pin to connect to Hathor Next`,
+      biometryText: t`Connect to Hathor Next`,
+    });
+  };
 
   const useBackend = async () => {
     setError(null);
@@ -61,7 +81,7 @@ export function DevBackendSettings() {
         setError(t`This backend runs a Hathor Next network this app can't use.`);
         return;
       }
-      dispatch(multichainDevBackendSet({ url: trimmed, pins }));
+      switchTo({ url: trimmed, pins });
     } catch (e) {
       setError(t`Couldn't reach this backend.`);
     } finally {
@@ -86,7 +106,7 @@ export function DevBackendSettings() {
         <NewHathorButton
           secondary
           title={t`Stop using this backend`}
-          onPress={() => dispatch(multichainDevBackendSet(null))}
+          onPress={() => switchTo(null)}
         />
       </View>
     );

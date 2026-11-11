@@ -2237,10 +2237,12 @@ export const multichainMockUpdate = (payload) => ({
  * Points Hathor Next at a backend for local testing, or back at the simulated client.
  *
  * @param {{ url: string, pins: Object }|null} devBackend The backend and its GET /v1/config
- * @param {{ persist?: boolean }} [options] false when it comes from storage
+ * @param {Object} [options]
+ * @param {boolean} [options.persist] false when it comes from storage
+ * @param {string} [options.pinCode] What Settings asked for, to load Hathor Next again
  */
-export const multichainDevBackendSet = (devBackend, { persist = true } = {}) => ({
+export const multichainDevBackendSet = (devBackend, { persist = true, pinCode } = {}) => ({
   type: types.MULTICHAIN_DEV_BACKEND_SET,
   payload: devBackend,
-  meta: { persist },
+  meta: { persist, pinCode },
 });

@@ -28,6 +28,7 @@ import { reducer } from '../../src/reducers/reducer';
 import {
   lockScreen,
   multichainConnectSettingChanged,
+  multichainDevBackendSet,
   multichainLoadRequested,
   multichainMockScenarioSet,
   multichainNextHistoryRequested,
@@ -693,6 +694,31 @@ describe('the backend for local testing', () => {
     } finally {
       STORE.removeItem(multichainKeyMap.devBackend);
     }
+  });
+
+  // The keys belong to the client that ran, so a switch derives them again for the other one.
+  test('loads Hathor Next again at once with the PIN Settings asked for the switch', async () => {
+    const env = setup();
+    await connect(env);
+    env.dispatch(multichainDevBackendSet(null, { pinCode: PIN }));
+    await wait(2000);
+    expect(env.getState().multichain.next).toMatchObject({
+      status: NEXT_STATUS.READY, keysReady: true, address: ADDRESS,
+    });
+  });
+
+  test("loads it again with a passkey wallet's ceremony", async () => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    withPasskeyWords.mockImplementation(async (fn) => fn(WORDS));
+    const env = setup();
+    env.dispatch(multichainConnectSettingChanged(true));
+    await wait(2000);
+    env.dispatch(multichainDevBackendSet(null));
+    await wait(2000);
+    expect(withPasskeyWords).toHaveBeenCalledTimes(2);
+    expect(env.getState().multichain.next).toMatchObject({
+      status: NEXT_STATUS.READY, address: ADDRESS,
+    });
   });
 });
 
