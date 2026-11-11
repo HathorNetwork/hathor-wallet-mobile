@@ -42,7 +42,13 @@ export default function MultichainMockSettings({ navigation }) {
         onBackPress={() => navigation.goBack()}
         withBorder
       />
-      <ScrollView contentContainerStyle={styles.content}>
+      {/* The backend's field is last: the keyboard would cover it without the inset. Android pans
+          the window to the field instead (adjustPan). */}
+      <ScrollView
+        contentContainerStyle={styles.content}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps='handled'
+      >
         {!devBackend && (
           <>
             <SimulatedTag />
