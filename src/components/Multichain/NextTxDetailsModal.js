@@ -14,7 +14,6 @@ import BackdropModal from '../BackdropModal';
 import CopyClipboard from '../CopyClipboard';
 import NewHathorButton from '../NewHathorButton';
 import { ChainTag } from './ChainTag';
-import { SimulatedTagIfMock } from './SimulatedTag';
 import { nextRowTitle } from './NextTxRow';
 import { renderNextValue } from '../../multichain/amount';
 import {
@@ -67,7 +66,7 @@ export const NextTxDetailsModal = ({ row, token, onDismiss }) => {
   const incoming = row.direction === 'in';
   const amount = renderNextValue(BigInt(row.amount), hathorDecimalPlaces);
   const explanation = statusExplanation(row);
-  const canOpenExplorer = Boolean(row.txId && config && !config.simulated);
+  const canOpenExplorer = Boolean(row.txId && config?.explorerUrl);
 
   return (
     <BackdropModal
@@ -81,7 +80,6 @@ export const NextTxDetailsModal = ({ row, token, onDismiss }) => {
       <View style={styles.sheet}>
         <View style={styles.tags}>
           <ChainTag />
-          <SimulatedTagIfMock style={styles.simulated} />
         </View>
         <Text style={styles.title}>{nextRowTitle(row)}</Text>
         <Text style={[styles.amount, incoming && styles.positive]}>
@@ -137,9 +135,6 @@ const styles = StyleSheet.create({
   tags: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  simulated: {
-    marginLeft: 8,
   },
   title: {
     marginTop: 16,

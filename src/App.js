@@ -54,7 +54,6 @@ import PasskeyLockScreen from './screens/PasskeyLockScreen';
 import ResetWallet from './screens/ResetWallet';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
 import { MultichainLoadScreen } from './components/Multichain/MultichainLoadScreen';
-import MultichainMockSettings from './screens/Multichain/MultichainMockSettings';
 import NextTokenScreen from './screens/Multichain/NextTokenScreen';
 import ChainTransferScreen from './screens/Multichain/ChainTransferScreen';
 import ChainTransferConfirmScreen from './screens/Multichain/ChainTransferConfirmScreen';
@@ -532,7 +531,6 @@ const AppStack = () => {
         />
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
-        <Stack.Screen name='MultichainMockSettings' component={MultichainMockSettings} />
         <Stack.Screen name='NextTokenScreen' component={NextTokenScreen} />
         <Stack.Screen name='ChainTransfer' component={ChainTransferScreen} />
         <Stack.Screen name='ChainTransferConfirm' component={ChainTransferConfirmScreen} />

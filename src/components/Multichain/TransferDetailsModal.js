@@ -12,7 +12,6 @@ import { t } from 'ttag';
 import BackdropModal from '../BackdropModal';
 import CopyClipboard from '../CopyClipboard';
 import { ChainTag } from './ChainTag';
-import { SimulatedTagIfMock } from './SimulatedTag';
 import { arrivingText, renderChainValue, transferTitle } from './TransferRow';
 import { CHAIN_NAME, NEXT_COLORS } from '../../multichain/chains';
 import { HISTORY_ROW } from '../../multichain/history';
@@ -90,7 +89,6 @@ export const TransferDetailsModal = ({ transfer, symbol, hathorDecimalPlaces, on
           <ChainTag chain={transfer.from} />
           <Text style={styles.arrow}>→</Text>
           <ChainTag chain={transfer.to} />
-          <SimulatedTagIfMock style={styles.simulated} />
         </View>
         <Text style={styles.title}>{transferTitle(transfer, HISTORY_ROW.TRANSFER)}</Text>
         <Text style={styles.date}>{moment(transfer.sentAt).format('lll')}</Text>
@@ -144,9 +142,6 @@ const styles = StyleSheet.create({
   arrow: {
     marginHorizontal: 6,
     color: COLORS.textColorShadow,
-  },
-  simulated: {
-    marginLeft: 8,
   },
   title: {
     marginTop: 16,
