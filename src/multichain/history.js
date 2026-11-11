@@ -20,7 +20,7 @@ export const HISTORY_VIEW = {
 /**
  * The kinds of rows a token's history holds.
  * - HATHOR: a Hathor Network transaction (wallet-lib's TxHistory);
- * - NEXT: a Hathor Next row (Samba's Tx shape, src/multichain/mock/mockLedger.js);
+ * - NEXT: a Hathor Next row (Samba's Tx shape, the client's getHistory rows);
  * - TRANSFER: a transfer between chains, as one row (all chains);
  * - TRANSFER_SOURCE / TRANSFER_DESTINATION: its side on one chain.
  */

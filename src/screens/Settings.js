@@ -36,7 +36,6 @@ import { isShieldedAvailable } from '../shielded/gating';
 import {
   isSideChainAvailable,
   isSideChainConnected,
-  isSideChainSimulated,
 } from '../multichain/gating';
 import { CONNECT_STATUS } from '../multichain/state';
 import { multichainConnectSettingChanged } from '../actions';
@@ -76,7 +75,6 @@ const mapStateToProps = (state) => {
     sideChainConnected: isSideChainConnected(state),
     sideChainConnecting: state.multichain.connect.status !== CONNECT_STATUS.IDLE
       && state.multichain.connect.status !== CONNECT_STATUS.FAILED,
-    sideChainSimulated: isSideChainSimulated(state),
     nextKeysReady: state.multichain.next.keysReady,
   };
 };
@@ -261,13 +259,6 @@ export class Settings extends React.Component {
                     />
                   )}
                   isFirst={firstAdvancedRoute === SIDE_CHAIN_ROW}
-                />
-              )}
-            {this.props.sideChainConnected && this.props.sideChainSimulated
-              && (
-                <ListMenu
-                  title={t`Hathor Next (simulated)`}
-                  onPress={() => this.props.navigation.navigate('MultichainMockSettings')}
                 />
               )}
             {this.props.singleAddressEnabled

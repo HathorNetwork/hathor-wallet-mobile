@@ -6,20 +6,20 @@
  */
 
 import CryptoJS from 'crypto-js';
-import { getIntegerAmount } from '../../utils';
-import { NEXT_DECIMAL_PLACES } from '../chains';
-import { NEXT_CLIENT_EVENT, NextClientError, NEXT_CLIENT_ERROR } from '../nextClientErrors';
+import { getIntegerAmount } from '../../../src/utils';
+import { NEXT_DECIMAL_PLACES } from '../../../src/multichain/chains';
+import { NEXT_CLIENT_EVENT, NextClientError, NEXT_CLIENT_ERROR } from '../../../src/multichain/nextClientErrors';
 import {
   computeBalances,
   fakeTxId,
   lastActivity,
   ledgerTransfers,
   loadLedger,
-  MOCK_NATIVE_TOKEN,
+  FAKE_NATIVE_TOKEN,
   onTransferAdded,
   saveLedger,
-} from './mockLedger';
-import { MOCK_SCENARIO } from './scenarios';
+} from './fakeLedger';
+import { FAKE_SCENARIO } from './scenarios';
 import {
   CONNECT_DELAY_MS,
   NEXT_SEND_FEE,
@@ -27,7 +27,7 @@ import {
   OFFLINE_FOR_MS,
   SEND_DELAY_MS,
   SLOW_SYNC_MS,
-} from './mockValues';
+} from './fakeValues';
 
 const HISTORY_PAGE_SIZE = 20;
 
@@ -36,22 +36,22 @@ const REJECTION_REASON = 'Rejected by the network: the transaction failed valida
 const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 
 /**
- * The simulated address of a wallet: `samba:` and 128 hex characters, the live form, derived from
+ * The fake address of a wallet: `samba:` and 128 hex characters, the live form, derived from
  * the words so it is the same on every start and every device holding them.
  *
  * @param {string} words
  * @returns {string}
  */
-export function deriveMockNextAddress(words) {
+export function deriveFakeNextAddress(words) {
   return `samba:${CryptoJS.SHA512(`hathor-next-mock:${words}`).toString(CryptoJS.enc.Hex)}`;
 }
 
 /**
- * A simulated Hathor Next client, with the interface of the real one
+ * A fake Hathor Next client for tests, with the interface of the real one
  * (src/multichain/nextClient.js). Nothing it does leaves the device: its ledger is saved per
- * network (mockLedger.js) and it behaves as the ledger's scenario says.
+ * network (fakeLedger.js) and it behaves as the ledger's scenario says.
  */
-export function createMockNextClient() {
+export function createFakeNextClient() {
   const listeners = new Map(Object.values(NEXT_CLIENT_EVENT).map((event) => [event, new Set()]));
   const timers = new Set();
   let address = null;
@@ -107,7 +107,7 @@ export function createMockNextClient() {
   };
 
   return {
-    simulated: true,
+    fake: true,
 
     /**
      * Derives the wallet's Hathor Next keys from its words. No network.
@@ -116,7 +116,7 @@ export function createMockNextClient() {
      * @returns {{ address: string }}
      */
     prepareKeys({ words }) {
-      address = deriveMockNextAddress(words);
+      address = deriveFakeNextAddress(words);
       return { address };
     },
 
@@ -142,7 +142,7 @@ export function createMockNextClient() {
         throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
       }
       const { scenario } = ledger();
-      if (scenario === MOCK_SCENARIO.CONNECT_FAILS) {
+      if (scenario === FAKE_SCENARIO.CONNECT_FAILS) {
         throw new NextClientError(NEXT_CLIENT_ERROR.CONNECT_FAILED);
       }
       connected = true;
@@ -153,7 +153,7 @@ export function createMockNextClient() {
           scheduleArrivals();
         }
       });
-      if (scenario === MOCK_SCENARIO.SLOW_SYNC) {
+      if (scenario === FAKE_SCENARIO.SLOW_SYNC) {
         sweeping = true;
         schedule(() => {
           sweeping = false;
@@ -161,7 +161,7 @@ export function createMockNextClient() {
           emitLedgerChanged();
         }, SLOW_SYNC_MS);
       }
-      if (scenario === MOCK_SCENARIO.GOES_OFFLINE) {
+      if (scenario === FAKE_SCENARIO.GOES_OFFLINE) {
         schedule(() => {
           online = false;
           emit(NEXT_CLIENT_EVENT.CONNECTION, { online });
@@ -273,7 +273,7 @@ export function createMockNextClient() {
       const current = ledger();
       const fee = sendFee();
       const balances = computeBalances(current);
-      const native = MOCK_NATIVE_TOKEN.id;
+      const native = FAKE_NATIVE_TOKEN.id;
       // The amount comes out of the token sent, and the fee out of the native token.
       const needed = { [tokenId]: amount };
       needed[native] = (needed[native] ?? 0n) + fee;
@@ -316,10 +316,10 @@ export function createMockNextClient() {
         const { scenario } = ledger();
         let status = 'recorded';
         let reason = null;
-        if (scenario === MOCK_SCENARIO.SEND_REJECTED) {
+        if (scenario === FAKE_SCENARIO.SEND_REJECTED) {
           status = 'failed';
           reason = REJECTION_REASON;
-        } else if (scenario === MOCK_SCENARIO.SEND_UNCONFIRMED) {
+        } else if (scenario === FAKE_SCENARIO.SEND_UNCONFIRMED) {
           status = 'unconfirmed';
         }
         const txId = status === 'failed' ? null : fakeTxId(now % 2147483647);

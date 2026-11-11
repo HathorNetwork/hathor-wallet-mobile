@@ -6,7 +6,6 @@
  */
 
 import { types } from '../actions';
-import { DEFAULT_MOCK_SCENARIO } from './mock/scenarios';
 
 /**
  * Where turning "Connect to side chain" on stands: idle, unlocking (the passkey ceremony that
@@ -99,7 +98,6 @@ export const MULTICHAIN_INITIAL_STATE = {
   transfers: [],
   send: SEND_INITIAL_STATE,
   transfer: TRANSFER_INITIAL_STATE,
-  mock: { scenario: DEFAULT_MOCK_SCENARIO },
 };
 
 /**
@@ -166,8 +164,6 @@ export function multichainReducer(state = MULTICHAIN_INITIAL_STATE, action) {
       return { ...state, transfer: { ...state.transfer, ...action.payload } };
     case types.MULTICHAIN_TRANSFER_RESET:
       return { ...state, transfer: TRANSFER_INITIAL_STATE };
-    case types.MULTICHAIN_MOCK_UPDATE:
-      return { ...state, mock: { ...state.mock, ...action.payload } };
     default:
       return state;
   }

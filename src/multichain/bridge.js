@@ -5,12 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createMockBridge } from './mock/mockBridge';
 import { NextClientError, NEXT_CLIENT_ERROR } from './nextClientErrors';
 
 /**
- * The bridge between Hathor Network and Hathor Next. The real one is the lib team's; until then it
- * is simulated, with the same interface:
+ * The bridge between Hathor Network and Hathor Next. None ships yet, so creating one fails as
+ * unavailable, like the Hathor Next client (src/multichain/nextClient.js). Its interface:
  * - tokenMap: [{ hathor, next }], the tokens it carries, by their id on each chain;
  * - directions: [{ from, to }], the ways it transfers (CHAIN values);
  * - quote({ from, to, amount, available }) → { bridgeFee, networkFee, receiveAmount, etaSeconds,
@@ -31,9 +30,7 @@ import { NextClientError, NEXT_CLIENT_ERROR } from './nextClientErrors';
  * @param {{ network: string, decimalPlaces: number }} options
  * @returns {Object}
  */
+// eslint-disable-next-line no-unused-vars
 export function createBridge(config, options) {
-  if (config.simulated) {
-    return createMockBridge(config, options);
-  }
   throw new NextClientError(NEXT_CLIENT_ERROR.UNAVAILABLE);
 }

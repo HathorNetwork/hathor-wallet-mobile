@@ -27,7 +27,6 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
 import { isNanoContractsEnabled, getDisplayAmountFormat } from '../utils';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
-import { SimulatedTagIfMock } from '../components/Multichain/SimulatedTag';
 import { isSideChainConnected } from '../multichain/gating';
 import { useCombinedTokens } from '../multichain/hooks';
 
@@ -169,7 +168,7 @@ export const Dashboard = () => {
           <TokenSelect
             header={(
               <>
-                <TokensHeader isNanoEnabled={isNanoEnabled} showSimulated={sideChainConnected} />
+                <TokensHeader isNanoEnabled={isNanoEnabled} />
                 <TokenImportBanner />
               </>
             )}
@@ -214,16 +213,13 @@ const DashBoardHeader = ({ children }) => {
   );
 };
 
-const TokensHeader = ({ isNanoEnabled, showSimulated }) => {
+const TokensHeader = ({ isNanoEnabled }) => {
   const navigation = useNavigation();
 
   return (
     <HathorHeader>
       <HathorHeader.Left>
-        <View style={styles.headerTitleRow}>
-          <Text style={[styles.headerTitle]}>{t`Tokens`}</Text>
-          {showSimulated && <SimulatedTagIfMock style={styles.simulated} />}
-        </View>
+        <Text style={[styles.headerTitle]}>{t`Tokens`}</Text>
       </HathorHeader.Left>
       {!isNanoEnabled && (
         <HathorHeader.Right>
@@ -239,13 +235,6 @@ const TokensHeader = ({ isNanoEnabled, showSimulated }) => {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-  },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  simulated: {
-    marginLeft: 8,
   },
   headerWrapper: {
     flexDirection: 'row',
