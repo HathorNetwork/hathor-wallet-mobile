@@ -55,6 +55,8 @@ import ResetWallet from './screens/ResetWallet';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
 import { MultichainLoadScreen } from './components/Multichain/MultichainLoadScreen';
 import NextTokenScreen from './screens/Multichain/NextTokenScreen';
+import ChainTransferScreen from './screens/Multichain/ChainTransferScreen';
+import ChainTransferConfirmScreen from './screens/Multichain/ChainTransferConfirmScreen';
 import { isWaitingForNext } from './multichain/gating';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
@@ -526,6 +528,8 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
         <Stack.Screen name='NextTokenScreen' component={NextTokenScreen} />
+        <Stack.Screen name='ChainTransfer' component={ChainTransferScreen} />
+        <Stack.Screen name='ChainTransferConfirm' component={ChainTransferConfirmScreen} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
         <Stack.Screen name='ImportTokensScreen' component={ImportTokensScreen} />
         <Stack.Screen name='ConfirmImportScreen' component={ConfirmImportScreen} />
