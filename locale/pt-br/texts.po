@@ -571,6 +571,7 @@ msgstr "Símbolo do token"
 msgid "Deposit"
 msgstr "Depósito"
 
+#: src/components/Multichain/TransferDetailsModal.js:116
 #: src/components/Shielded/FeeBreakdown.js:70
 #: src/screens/CreateTokenConfirm.js:293 src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
@@ -705,13 +706,13 @@ msgid "FEE TOKEN"
 msgstr "TOKEN DE TAXA"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/screens/Dashboard.js:142 src/screens/Dashboard.js:207
+#: src/screens/Dashboard.js:157 src/screens/Dashboard.js:222
 msgid "Tokens"
 msgstr "Tokens"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 #: src/components/NanoContract/NanoContractsList.js:75
-#: src/screens/Dashboard.js:143
+#: src/screens/Dashboard.js:158
 msgid "Nano Contracts"
 msgstr "Nano Contracts"
 
@@ -940,6 +941,7 @@ msgstr "Digite suas palavras separadas por espaços"
 
 #: src/components/ImportTokensModal.js:72
 #: src/components/Multichain/MultichainLoadScreen.js:50
+#: src/components/Multichain/TokenHistoryList.js:54
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
@@ -977,29 +979,33 @@ msgstr "Resetar Wallet"
 msgid "Connect to mainnet"
 msgstr "Conectar à mainnet"
 
-#: src/screens/MainScreen.js:181
+#: src/components/Multichain/TokenHistoryList.js:63
+#: src/screens/MainScreen.js:229
 msgid "No transactions"
 msgstr "Nenhuma transação"
 
-#: src/screens/MainScreen.js:184
+#: src/screens/MainScreen.js:232
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 "|share:Compartilhe seu endereço| com seus amigos e comece a trocar seus "
 "tokens"
 
-#: src/screens/MainScreen.js:201
+#: src/components/Multichain/TokenHistoryList.js:41
+#: src/screens/MainScreen.js:249
 msgid "Loading transactions"
 msgstr "Carregando transações"
 
-#: src/screens/MainScreen.js:210
+#: src/components/Multichain/TokenHistoryList.js:52
+#: src/screens/MainScreen.js:258
 msgid "There was an error loading your transaction history"
 msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 
-#: src/screens/MainScreen.js:213
+#: src/screens/MainScreen.js:261
 msgid "Please |tryAgain:try again|"
 msgstr "Por favor |tryAgain:tente novamente|"
 
-#: src/screens/MainScreen.js:620
+#: src/components/Multichain/MultichainTokenBody.js:50
+#: src/screens/MainScreen.js:674
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
@@ -1437,6 +1443,7 @@ msgstr ""
 msgid "Transaction summary"
 msgstr "Resumo da transação"
 
+#: src/components/Multichain/TransferDetailsModal.js:111
 #: src/screens/SendConfirmScreen.js:647
 msgid "To"
 msgstr "Para"
@@ -2269,6 +2276,7 @@ msgid "Max"
 msgstr "Máx"
 
 #: src/components/AmountInputAccessory.js:105
+#: src/components/Multichain/TransferDetailsModal.js:99
 msgid "Done"
 msgstr "Ok"
 
@@ -2618,6 +2626,7 @@ msgstr "Processando"
 msgid "Voided"
 msgstr "Inválida"
 
+#: src/components/Multichain/NextTxDetailsModal.js:104
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
 #: src/components/TxDetailsModal.js:143
@@ -2761,6 +2770,7 @@ msgstr "Sim"
 msgid "No"
 msgstr "Não"
 
+#: src/components/Multichain/NextTxRow.js:37
 #: src/components/Reown/CreateTokenRequest.js:86
 msgid "Fee"
 msgstr "Taxa"
@@ -2966,6 +2976,7 @@ msgstr ""
 msgid "Address at index ${ data.index }"
 msgstr "Endereço no índice ${ data.index }"
 
+#: src/components/Multichain/NextTxDetailsModal.js:98
 #: src/components/NanoContract/EditAddressModal.js:63
 #: src/components/NanoContract/SelectAddressModal.js:131
 #: src/components/Reown/GetAddressRequest.js:42
@@ -3528,6 +3539,19 @@ msgstr "${ tokenSymbol } Conceder Authority"
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
 
+#: src/components/Multichain/ChainFilter.js:25
+msgid "All chains"
+msgstr "Todas as cadeias"
+
+#: src/components/Multichain/ChainFilter.js:53
+#, javascript-format
+msgid "Chain: ${ viewName }"
+msgstr "Cadeia: ${ viewName }"
+
+#: src/components/Multichain/ChainFilter.js:68
+msgid "Chain"
+msgstr "Cadeia"
+
 #: src/components/Multichain/ConnectFeedback.js:28
 msgid "Connecting to Hathor Next…"
 msgstr "Conectando à Hathor Next…"
@@ -3535,6 +3559,101 @@ msgstr "Conectando à Hathor Next…"
 #: src/components/Multichain/MultichainLoadScreen.js:59
 msgid "Loading Hathor Next…"
 msgstr "Carregando a Hathor Next…"
+
+#: src/components/Multichain/MultichainTokenBody.js:50
+msgid "Available Balance (so far)"
+msgstr "Saldo Disponível (até agora)"
+
+#: src/components/Multichain/MultichainTokenBody.js:221
+#, javascript-format
+msgid "${ arrivingText } ${ token.symbol } arriving"
+msgstr "${ arrivingText } ${ token.symbol } a caminho"
+
+#: src/components/Multichain/NextTxDetailsModal.js:88
+msgid "Status"
+msgstr "Status"
+
+#: src/components/Multichain/NextTxDetailsModal.js:94
+msgid "Date"
+msgstr "Data"
+
+#: src/components/Multichain/NextTxDetailsModal.js:112
+msgid "View on explorer"
+msgstr "Ver no explorer"
+
+#: src/components/Multichain/NextTxRow.js:40
+msgid "Received"
+msgstr "Recebido"
+
+#: src/components/Multichain/NextTxRow.js:43
+msgid "Sent"
+msgstr "Enviado"
+
+#: src/components/Multichain/NextTxRow.js:46
+#, javascript-format
+msgid "Sent to ${ peer }"
+msgstr "Enviado para ${ peer }"
+
+#: src/components/Multichain/TokenChains.js:36
+msgid "${ count } chain"
+msgid_plural "${ count } chains"
+msgstr[0] "${ count } cadeia"
+msgstr[1] "${ count } cadeias"
+
+#: src/components/Multichain/TokenChains.js:40
+msgid "${ arrivingText } arriving"
+msgstr "${ arrivingText } a caminho"
+
+#: src/components/Multichain/TransferDetailsModal.js:97
+#, javascript-format
+msgid "Sent on ${ source }"
+msgstr "Enviado na ${ source }"
+
+#: src/components/Multichain/TransferDetailsModal.js:104
+#, javascript-format
+msgid "Received on ${ destination }"
+msgstr "Recebido na ${ destination }"
+
+#: src/components/Multichain/TransferDetailsModal.js:107
+msgid "Usually about ${ usualMinutes } min"
+msgstr "Normalmente cerca de ${ usualMinutes } min"
+
+#: src/components/Multichain/TransferDetailsModal.js:108
+#, javascript-format
+msgid "Done · ${ arrivedAt }"
+msgstr "Concluído · ${ arrivedAt }"
+
+#: src/components/Multichain/TransferDetailsModal.js:112
+#, javascript-format
+msgid "Your ${ destination } address"
+msgstr "Seu endereço da ${ destination }"
+
+#: src/components/Multichain/TransferDetailsModal.js:114
+msgid "Bridge fee"
+msgstr "Taxa da ponte"
+
+#: src/components/Multichain/TransferRow.js:29
+#, javascript-format
+msgid "Arriving in about ${ minutes } min"
+msgstr "Chega em cerca de ${ minutes } min"
+
+#: src/components/Multichain/TransferRow.js:59
+msgid "Transfer from ${ source }"
+msgstr "Transferência da ${ source }"
+
+#: src/components/Multichain/TransferRow.js:62
+#, javascript-format
+msgid "Moved to ${ destination }"
+msgstr "Movido para a ${ destination }"
+
+#: src/components/Multichain/TransferRow.js:64
+msgid "Transferred to ${ destination }"
+msgstr "Transferido para a ${ destination }"
+
+#: src/components/Multichain/TransferRow.js:130
+#, javascript-format
+msgid "${ moved } ${ symbol } moved"
+msgstr "${ moved } ${ symbol } movidos"
 
 #, javascript-format
 #~ msgid "${ count } private output"
@@ -3734,12 +3853,6 @@ msgstr "Carregando a Hathor Next…"
 
 #~ msgid "PAYMENT REQUEST"
 #~ msgstr "REQUISIÇÃO DE PAGAMENTO"
-
-#~ msgid "Status"
-#~ msgstr "Status"
-
-#~ msgid "Received"
-#~ msgstr "Recebido"
 
 #~ msgid "Waiting confirmation"
 #~ msgstr "Aguardando confirmação"
