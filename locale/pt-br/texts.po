@@ -1498,7 +1498,7 @@ msgid "Total"
 msgstr "Total"
 
 #: src/screens/Multichain/NextSendConfirmScreen.js:268
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:302
 #: src/screens/SendConfirmScreen.js:733
 msgid "Send"
 msgstr "Enviar"
@@ -1904,27 +1904,27 @@ msgid "walletServiceWsUrl is required when walletServiceUrl is filled."
 msgstr ""
 "walletServiceWsUrl é obrigatório quando walletServiceUrl está preenchido."
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:236
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:253
 msgid "Node URL"
 msgstr "URL do Fullnode"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:246
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:261
 msgid "Explorer URL"
 msgstr "URL do Explorer"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:255
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:268
 msgid "Explorer Service URL"
 msgstr "URL do Explorer Service"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:264
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:275
 msgid "Transaction Mining Service URL"
 msgstr "URL do Transaction Mining Service"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:275
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:284
 msgid "Wallet Service URL (optional)"
 msgstr "Wallet Service URL (opcional)"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:284
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
 msgid "Wallet Service WS URL (optional)"
 msgstr "Wallet Service WS URL (opcional)"
 
