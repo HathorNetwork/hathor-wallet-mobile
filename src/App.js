@@ -53,6 +53,8 @@ import PinScreen from './screens/PinScreen';
 import PasskeyLockScreen from './screens/PasskeyLockScreen';
 import ResetWallet from './screens/ResetWallet';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
+import { MultichainLoadScreen } from './components/Multichain/MultichainLoadScreen';
+import { isWaitingForNext } from './multichain/gating';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
 
@@ -544,6 +546,8 @@ const mapStateToProps = (state) => ({
   isResetOnScreenLocked: state.resetOnLockScreen,
   walletStartState: state.walletStartState,
   wallet: state.wallet,
+  // With the side chain connected, the app opens once Hathor Next has loaded too.
+  waitingForNext: state.walletStartState === WALLET_STATUS.READY && isWaitingForNext(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -750,11 +754,17 @@ class _AppStackWrapper extends React.Component {
         } else {
           screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
         }
+      } else if (this.props.waitingForNext) {
+        screen = <MultichainLoadScreen />;
       } else {
         screen = <LoadHistoryScreen />;
       }
 
-      if (this.props.walletStartState === WALLET_STATUS.LOADING || this.props.isScreenLocked) {
+      if (
+        this.props.walletStartState === WALLET_STATUS.LOADING
+        || this.props.isScreenLocked
+        || this.props.waitingForNext
+      ) {
         return (
           <View style={this.style.auxView}>
             { screen }

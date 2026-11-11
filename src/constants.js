@@ -189,6 +189,18 @@ export const AMOUNT_FORMAT_DEFAULT = AMOUNT_FORMAT.EXPANDED;
 export const AMOUNT_FORMAT_KEY = 'wallet:amount_format';
 
 /**
+ * Storage keys of the side chain. The 'wallet:' prefix means STORE.clearItems(true) sweeps them
+ * on resetWallet: a new wallet starts disconnected from every side chain, with no side chain data.
+ * - connectedNetworks: the networks where the user turned "Connect to side chain" on;
+ * - next: what the wallet saved about Hathor Next, all of it public: its address (the same on
+ *   every network, as it comes from the seed) and the networks it was registered on.
+ */
+export const multichainKeyMap = {
+  connectedNetworks: 'wallet:multichain:connectedNetworks',
+  next: 'wallet:multichain:next',
+};
+
+/**
  * this is the message key for localization of new transaction when show amount is enabled
  */
 export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED = 'new_transaction_received_description_with_tokens';
@@ -256,6 +268,11 @@ export const SHIELDED_OUTPUTS_FEATURE_TOGGLE = 'shielded-outputs.rollout';
  * also show the way there. Off by default, like every flag Unleash doesn't return.
  */
 export const SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE = 'shielded-outputs-network.rollout';
+/**
+ * Shows the "Connect to side chain" setting on a network that has a side chain, and through it
+ * everything about Hathor Next. Off by default, like every flag Unleash doesn't return.
+ */
+export const MULTICHAIN_FEATURE_TOGGLE = 'multichain.rollout';
 
 /**
  * Default feature toggle values.
@@ -279,6 +296,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [AMOUNT_FORMAT_FEATURE_TOGGLE]: false,
   [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false,
   [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: false,
+  [MULTICHAIN_FEATURE_TOGGLE]: false,
 };
 
 /**
