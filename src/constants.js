@@ -193,11 +193,13 @@ export const AMOUNT_FORMAT_KEY = 'wallet:amount_format';
  * on resetWallet: a new wallet starts disconnected from every side chain, with no side chain data.
  * - connectedNetworks: the networks where the user turned "Connect to side chain" on;
  * - next: what the wallet saved about Hathor Next, all of it public: its address (the same on
- *   every network, as it comes from the seed) and the networks it was registered on.
+ *   every network, as it comes from the seed) and the networks it was registered on;
+ * - devBackend: the Hathor Next backend set for local testing.
  */
 export const multichainKeyMap = {
   connectedNetworks: 'wallet:multichain:connectedNetworks',
   next: 'wallet:multichain:next',
+  devBackend: 'wallet:multichain:devBackend',
 };
 
 /**
@@ -273,6 +275,19 @@ export const SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE = 'shielded-outputs-network.
  * everything about Hathor Next. Off by default, like every flag Unleash doesn't return.
  */
 export const MULTICHAIN_FEATURE_TOGGLE = 'multichain.rollout';
+/**
+ * Shows the Hathor Next Devnet preset in Network Settings, and nothing else. It is separate from
+ * MULTICHAIN_FEATURE_TOGGLE for the reason SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE is: a flag
+ * targeted at the devnet is off on the network the user switches from.
+ */
+export const MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE = 'multichain-network.rollout';
+/**
+ * Shows the Hathor Next backend for local testing (Settings → Hathor Next) and lets a backend set
+ * there replace the side chain's own values. For the people who run a local Hathor Next network;
+ * it does nothing without MULTICHAIN_FEATURE_TOGGLE. Off by default, like every flag Unleash
+ * doesn't return.
+ */
+export const MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE = 'multichain-dev-backend.rollout';
 
 /**
  * Default feature toggle values.
@@ -297,6 +312,8 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: false,
   [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: false,
   [MULTICHAIN_FEATURE_TOGGLE]: false,
+  [MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]: false,
+  [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: false,
 };
 
 /**
@@ -388,6 +405,28 @@ export const PRE_SETTINGS_SHIELDED_TESTNET = {
   explorerUrl: EXPLORER_SHIELDED_TESTNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_SHIELDED_TESTNET_URL,
   txMiningServiceUrl: TX_MINING_SERVICE_SHIELDED_TESTNET_URL,
+};
+
+/**
+ * Hathor Next Devnet: the hathor-core privatenet beside hathor-next's devnet-alpha. Its node
+ * reports the name every privatenet reports, so its node is what tells the app that the network
+ * has a side chain (see src/multichain/chains.js). It has no wallet-service, so a wallet runs on
+ * the fullnode facade, and no hathor-core explorer: the explorer URLs are the node's, which the
+ * form requires, so explorer links lead nowhere.
+ */
+export const FULL_NETWORK_NEXT_DEVNET = 'privatenet';
+export const NODE_SERVER_NEXT_DEVNET_URL = 'https://legacy-node.devnet-alpha.samba.hathor.network/v1a/';
+export const EXPLORER_NEXT_DEVNET_URL = 'https://legacy-node.devnet-alpha.samba.hathor.network/';
+export const TX_MINING_SERVICE_NEXT_DEVNET_URL = 'https://tx-mining.devnet-alpha.samba.hathor.network/';
+
+export const PRE_SETTINGS_NEXT_DEVNET = {
+  stage: STAGE_DEV_PRIVNET,
+  network: FULL_NETWORK_NEXT_DEVNET,
+  fullNetwork: FULL_NETWORK_NEXT_DEVNET,
+  nodeUrl: NODE_SERVER_NEXT_DEVNET_URL,
+  explorerUrl: EXPLORER_NEXT_DEVNET_URL,
+  explorerServiceUrl: EXPLORER_NEXT_DEVNET_URL,
+  txMiningServiceUrl: TX_MINING_SERVICE_NEXT_DEVNET_URL,
 };
 
 /**

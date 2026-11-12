@@ -26,6 +26,7 @@ import { reducer } from '../../../src/reducers/reducer';
 import { types } from '../../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
+  MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   NETWORK_SETTINGS_FEATURE_TOGGLE,
   PRE_SETTINGS_TESTNET,
@@ -64,6 +65,7 @@ beforeEach(() => {
  */
 function makeStore({
   flag = true,
+  devFlag = false,
   network = NETWORK,
   connected = false,
   next = {},
@@ -83,6 +85,7 @@ function makeStore({
     featureToggles: {
       ...FEATURE_TOGGLE_DEFAULTS,
       [MULTICHAIN_FEATURE_TOGGLE]: flag,
+      [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: devFlag,
       [NETWORK_SETTINGS_FEATURE_TOGGLE]: true,
     },
     serverInfo: { decimal_places: 2 },
@@ -123,6 +126,32 @@ describe('Settings', () => {
     const navigation = { navigate: jest.fn() };
     const renderer = await mount(makeStore().store, <Settings navigation={navigation} />);
     expect(titles(renderer)).toContain('Connect to side chain');
+  });
+
+  // A local network has no side chain until a backend for local testing gives it one, so the
+  // backend's entry can't wait for the side chain.
+  test('offers the backend for local testing with its flag, on any network but mainnet', async () => {
+    const navigation = { navigate: jest.fn() };
+    const local = await mount(
+      makeStore({ devFlag: true, network: 'privatenet' }).store,
+      <Settings navigation={navigation} />,
+    );
+    expect(titles(local)).toContain('Hathor Next (local backend)');
+    expect(titles(local)).not.toContain('Connect to side chain');
+    await act(async () => {
+      local.root.findAll((node) => node.props.title === 'Hathor Next (local backend)'
+        && typeof node.props.onPress === 'function')[0].props.onPress();
+    });
+    expect(navigation.navigate).toHaveBeenCalledWith('MultichainDevBackend');
+    await act(async () => { mounted.unmount(); });
+    const mainnet = await mount(
+      makeStore({ devFlag: true, network: 'mainnet' }).store,
+      <Settings navigation={navigation} />,
+    );
+    expect(titles(mainnet)).not.toContain('Hathor Next (local backend)');
+    await act(async () => { mounted.unmount(); });
+    const off = await mount(makeStore().store, <Settings navigation={navigation} />);
+    expect(titles(off)).not.toContain('Hathor Next (local backend)');
   });
 
   test('changes nothing with the flag off, or on mainnet', async () => {

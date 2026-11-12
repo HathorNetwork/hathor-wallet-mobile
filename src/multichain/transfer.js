@@ -6,8 +6,13 @@
  */
 
 import { t } from 'ttag';
-import { hathorToNextAmount, renderNextValue } from './amount';
-import { canTransfer, CHAIN, CHAIN_NAME, NEXT_DECIMAL_PLACES, otherChain } from './chains';
+import {
+  hathorToNextAmount,
+  mintScaleOf,
+  nextToHathorRoundedUp,
+  renderNextValue,
+} from './amount';
+import { canTransfer, CHAIN, CHAIN_NAME, otherChain } from './chains';
 import { renderValue } from '../utils';
 
 /**
@@ -19,19 +24,6 @@ import { renderValue } from '../utils';
 export function arrivalText(seconds) {
   const minutes = Math.max(1, Math.round(seconds / 60));
   return minutes === 1 ? t`about 1 minute` : t`about ${minutes} minutes`;
-}
-
-/**
- * A Hathor Next amount in Hathor Network's units, rounded up: what has to leave Hathor Network
- * for at least that much to arrive.
- *
- * @param {bigint} amount In Hathor Next's units
- * @param {number} hathorDecimalPlaces
- * @returns {bigint} In Hathor Network's units
- */
-export function nextToHathorRoundedUp(amount, hathorDecimalPlaces) {
-  const scale = 10n ** BigInt(Math.max(0, NEXT_DECIMAL_PLACES - hathorDecimalPlaces));
-  return (amount + scale - 1n) / scale;
 }
 
 /**
@@ -51,7 +43,7 @@ export function nextToHathorRoundedUp(amount, hathorDecimalPlaces) {
  * @param {bigint} params.available What this chain has, in its units
  * @param {bigint} params.otherAvailable What the other chain has, in its units
  * @param {Object} params.config The side chain config
- * @param {Object|null} params.quote The bridge's quote ({ bridgeFee, networkFee, etaSeconds })
+ * @param {Object|null} params.quote The bridge's quote ({ bridgeFee, networkFee, etaSeconds, min })
  * @param {string} params.symbol
  * @param {number} params.hathorDecimalPlaces
  * @param {string} params.toAddress The address being paid
@@ -78,10 +70,17 @@ export function shortBalanceAdvice({
     ? renderValue(value, false, hathorDecimalPlaces)
     : renderNextValue(value, hathorDecimalPlaces));
   // An amount of this chain in the other chain's units.
+  const scale = mintScaleOf(config);
   const inOther = (value) => (chain === CHAIN.HATHOR_NEXT
-    ? nextToHathorRoundedUp(value, hathorDecimalPlaces)
-    : hathorToNextAmount(value, hathorDecimalPlaces));
-  const transferCost = (value) => (quote ? quote.bridgeFee + quote.networkFee : 0n) + value;
+    ? nextToHathorRoundedUp(value, scale)
+    : hathorToNextAmount(value, scale));
+  // What the transfer screen is opened with: never below the bridge's smallest transfer.
+  const toSend = (value) => {
+    const wanted = value + quote.bridgeFee;
+    return quote.min > wanted ? quote.min : wanted;
+  };
+  // What that transfer costs the other chain, so no advice offers more than it has.
+  const transferCost = (value) => (quote ? toSend(value) + quote.networkFee : value);
 
   const have = show(available, chain);
   const otherHave = show(otherAvailable, other);
@@ -89,8 +88,11 @@ export function shortBalanceAdvice({
   const otherName = CHAIN_NAME[other];
   const transfers = canTransfer(config, other, chain) && quote;
 
-  // Everything from the other chain, straight to the address being paid.
-  if (transferCost(inOther(amount)) <= otherAvailable) {
+  // Everything from the other chain, straight to the address being paid: unless the bridge's
+  // smallest transfer is more than the payment, which would pay that address more than asked.
+  const needed = inOther(amount);
+  const overpays = Boolean(transfers) && quote.min > needed + quote.bridgeFee;
+  if (!overpays && transferCost(needed) <= otherAvailable) {
     if (!transfers) {
       return {
         message: t`You have ${have} ${symbol} on ${chainName}. Transfers from ${otherName} to ${chainName} aren't available yet.`,
@@ -100,7 +102,7 @@ export function shortBalanceAdvice({
     const eta = arrivalText(quote.etaSeconds);
     return {
       message: t`You have ${have} ${symbol} on ${chainName}. Send from ${otherName} instead? It arrives in ${eta}.`,
-      transfer: { amount: inOther(amount) + quote.bridgeFee, toAddress },
+      transfer: { amount: toSend(needed), toAddress },
     };
   }
 
@@ -115,6 +117,6 @@ export function shortBalanceAdvice({
   }
   return {
     message: t`${both} Transfer the rest to ${chainName} first.`,
-    transfer: { amount: shortfall + quote.bridgeFee, toAddress: ownAddress },
+    transfer: { amount: toSend(shortfall), toAddress: ownAddress },
   };
 }

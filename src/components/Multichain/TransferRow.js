@@ -30,6 +30,30 @@ export function arrivingText(arriveAt, now = Date.now()) {
 }
 
 /**
+ * Where a transfer on its way is, when its bridge follows it: the burn's confirmations on Hathor
+ * Network, then the mint on Hathor Next.
+ *
+ * @param {{ stage: string, confirmations: number, needed: number }|undefined} progress
+ * @returns {string|null} Null when the bridge doesn't say
+ */
+export function progressText(progress) {
+  switch (progress?.stage) {
+    case 'pushed':
+    case 'confirming': {
+      const { confirmations, needed } = progress;
+      return t`Confirming ${confirmations} of ${needed} on Hathor Network`;
+    }
+    case 'eligible':
+    case 'minting':
+      return t`Minting on Hathor Next`;
+    case 'failed':
+      return t`Didn't go through: nothing moved`;
+    default:
+      return null;
+  }
+}
+
+/**
  * An amount of one chain as text, each chain's way.
  *
  * @param {bigint} amount In the chain's units
@@ -108,12 +132,31 @@ export const TransferRow = ({
   const shown = renderChainValue(amount, shownChain, hathorDecimalPlaces, amountFormat);
   const signed = `${incoming ? '' : '-'}${shown}`;
   const pending = transfer.status === TRANSFER_STATUS.PENDING;
+  const failed = transfer.status === TRANSFER_STATUS.FAILED;
   const moved = renderChainValue(
     BigInt(transfer.amount),
     transfer.from,
     hathorDecimalPlaces,
     amountFormat,
   );
+  // Between the wallet's own addresses on all chains, the row's amount is what the transfer cost,
+  // not what it moved: the line under the title says both.
+  const movedLine = amount > 0n
+    ? t`${moved} ${symbol} moved · ${shown} fee`
+    : t`${moved} ${symbol} moved`;
+  let status = <Text style={styles.secondary}>{moment(transfer.sentAt).calendar()}</Text>;
+  if (failed) {
+    status = (
+      <Text style={[styles.secondary, styles.failed]}>{progressText({ stage: 'failed' })}</Text>
+    );
+  } else if (pending && kind !== HISTORY_ROW.TRANSFER_SOURCE) {
+    // Where the bridge follows it, the transfer's stage; otherwise when it arrives.
+    status = (
+      <Text style={[styles.secondary, styles.pending]}>
+        {progressText(transfer.progress) ?? arrivingText(transfer.arriveAt)}
+      </Text>
+    );
+  }
 
   return (
     <TouchableHighlight onPress={() => onPress(transfer)} underlayColor={COLORS.primaryOpacity30}>
@@ -127,15 +170,9 @@ export const TransferRow = ({
         <View style={styles.middle}>
           <Text style={styles.title} numberOfLines={1}>{transferTitle(transfer, kind)}</Text>
           {kind === HISTORY_ROW.TRANSFER && transfer.toOwn && (
-            <Text style={styles.secondary}>{t`${moved} ${symbol} moved`}</Text>
+            <Text style={styles.secondary}>{movedLine}</Text>
           )}
-          {pending && kind !== HISTORY_ROW.TRANSFER_SOURCE ? (
-            <Text style={[styles.secondary, styles.pending]}>
-              {arrivingText(transfer.arriveAt)}
-            </Text>
-          ) : (
-            <Text style={styles.secondary}>{moment(transfer.sentAt).calendar()}</Text>
-          )}
+          {status}
         </View>
         <Text style={[styles.amount, incoming && styles.positive]} numberOfLines={1}>
           {signed}
@@ -174,6 +211,9 @@ const styles = StyleSheet.create({
   pending: {
     color: NEXT_COLORS.accentText,
     fontWeight: 'bold',
+  },
+  failed: {
+    color: COLORS.errorTextColor,
   },
   amount: {
     fontSize: 16,

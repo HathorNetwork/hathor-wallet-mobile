@@ -44,6 +44,7 @@ import { createPrivateBalanceRequests } from '../shielded/balance';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
+import { TransfersOnTheirWay } from '../components/Multichain/TransfersOnTheirWay';
 import { MultichainTokenBody } from '../components/Multichain/MultichainTokenBody';
 import { selectMappedNextId } from '../multichain/gating';
 
@@ -339,6 +340,7 @@ class MainScreen extends React.Component {
         ) : (
           <>
             {this.renderBalance()}
+            <TransfersOnTheirWay token={this.props.selectedToken} />
             {renderTxHistory()}
           </>
         )}

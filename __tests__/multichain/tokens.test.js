@@ -37,6 +37,8 @@ const list = ({ transfers = [], nextHtr = 2500000000n } = {}) => combinedTokenLi
     b3: ready(1234567n),
   },
   tokenMap: [{ hathor: '00', next: '00' }],
+  // The pinned scale of a side chain: 1.00 HTR is 1.00000000 on Hathor Next.
+  mintScale: 1000000n,
   nativeTokenId: '00',
   transfers,
 });

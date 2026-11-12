@@ -9,6 +9,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
+import { selectSideChainConfig } from '../../multichain/gating';
 import FitText from '../FitText';
 import { ChainFilter } from './ChainFilter';
 import { ChainMark } from './ChainTag';
@@ -19,7 +20,11 @@ import { TokenHistoryList } from './TokenHistoryList';
 import { TransferDetailsModal } from './TransferDetailsModal';
 import { TransferRow } from './TransferRow';
 import { multichainNextHistoryRequested } from '../../actions';
-import { hathorToNextAmount, nextAmountForDisplay } from '../../multichain/amount';
+import {
+  hathorToNextAmount,
+  mintScaleOf,
+  nextAmountForDisplay,
+} from '../../multichain/amount';
 import { CHAIN, NEXT_COLORS } from '../../multichain/chains';
 import { HISTORY_ROW, HISTORY_VIEW, tokenHistory } from '../../multichain/history';
 import { arrivingAmounts } from '../../multichain/tokens';
@@ -53,6 +58,9 @@ export const NextBalanceView = ({ balance, symbol, sweeping, children = null }) 
     {sweeping && <SyncingNotice style={styles.syncing} />}
   </View>
 );
+
+// Fewer rows than this don't fill the screen, so the list's end is never reached by scrolling.
+const SHORT_LIST_ROWS = 15;
 
 /**
  * The token screen of a token on both chains: its balance and history on all chains, or on one,
@@ -96,11 +104,17 @@ export function MultichainTokenBody({
   const nextHistory = useSelector((state) => state.multichain.next.history[nextTokenId]);
   const sweeping = useSelector((state) => state.multichain.next.sweeping);
   const transfers = useSelector((state) => state.multichain.transfers);
+  const scale = useSelector((state) => mintScaleOf(selectSideChainConfig(state)));
   const amountFormat = useSelector(getDisplayAmountFormat);
 
   useEffect(() => {
     dispatch(multichainNextHistoryRequested({ tokenId: nextTokenId }));
   }, [nextTokenId]);
+
+  // Another token starts with its own Hathor Network history, which may have more pages.
+  useEffect(() => {
+    setHathorHasMore(true);
+  }, [token.uid]);
 
   const ids = { hathor: token.uid, next: nextTokenId };
   const hathorTxs = hathorHistory?.data ?? [];
@@ -116,13 +130,13 @@ export function MultichainTokenBody({
     transfers,
   }), [view, token.uid, nextTokenId, hathorTxs, hathorHasMore, nextRows, nextHasMore, transfers]);
 
-  const { arriving, inFlight } = arrivingAmounts(transfers, ids, hathorDecimalPlaces);
+  const { arriving, inFlight } = arrivingAmounts(transfers, ids, scale);
   const shownNext = (amount) => {
     const shown = nextAmountForDisplay(amount, hathorDecimalPlaces);
     return renderHomeValue(shown.amount, false, shown.decimalPlaces, amountFormat);
   };
   const totalBalance = shownNext(
-    hathorToNextAmount(hathorAvailable, hathorDecimalPlaces) + nextAvailable + inFlight,
+    hathorToNextAmount(hathorAvailable, scale) + nextAvailable + inFlight,
   );
   const nextBalance = shownNext(nextAvailable);
   const hathorBalance = renderHomeValue(hathorAvailable, false, hathorDecimalPlaces, amountFormat);
@@ -148,6 +162,18 @@ export function MultichainTokenBody({
       dispatch(multichainNextHistoryRequested({ tokenId: nextTokenId }));
     }
   };
+
+  // A short list never reaches its end, so the next page of Hathor Network wouldn't load while it
+  // holds back older Hathor Next rows (tokenHistory's cutoff): it loads here instead, until those
+  // rows show or Hathor Network has no more.
+  const oldestHathorMs = hathorTxs.length ? hathorTxs[hathorTxs.length - 1].timestamp * 1000 : null;
+  const holdsBackNext = showsHathor && showsNext && hathorHasMore && oldestHathorMs !== null
+    && nextRows.some((row) => row.at < oldestHathorMs);
+  useEffect(() => {
+    if (holdsBackNext && rows.length < SHORT_LIST_ROWS) {
+      loadMore();
+    }
+  }, [holdsBackNext, rows.length]);
 
   const loadMore = async () => {
     if (showsNext && nextHasMore) {

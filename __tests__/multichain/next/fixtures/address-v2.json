@@ -1,0 +1,183 @@
+{
+  "hrp": "samba",
+  "version": 2,
+  "v2_length": 116,
+  "legacy_length": 134,
+  "valid": [
+    {
+      "name": "v2",
+      "address": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9",
+      "form": "v2",
+      "view": "6a493210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b919",
+      "spend": "94741f5d5d52755ece4f23f044ee27d5d1ea1e2bd196b462166b16152a9d0259",
+      "canonical": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9"
+    },
+    {
+      "name": "v2, second pair",
+      "address": "samba1zdrgh0nk4spp0jgkjznme36p6ml4tfnl4mjw4lswaplqftmy54qd3qttth6lfwz4ycp4733maz0u2xeg4c9t3d8d3ksf687gvxg8pgssjjhhcx",
+      "form": "v2",
+      "view": "68d177ced58042f922d214f798e83adfeab4cff5dc9d5fc1dd0fc095ec94a81b",
+      "spend": "102d6bbebe970aa4c06be8c77d13f8a36515c157169db1b413a3f90c320e1442",
+      "canonical": "samba1zdrgh0nk4spp0jgkjznme36p6ml4tfnl4mjw4lswaplqftmy54qd3qttth6lfwz4ycp4733maz0u2xeg4c9t3d8d3ksf687gvxg8pgssjjhhcx"
+    },
+    {
+      "name": "v2, all uppercase (QR alphanumeric)",
+      "address": "SAMBA1ZDFYNYY8HFXWDZLLVK5G2UR82YWS3P6X4HYQL3T9D6VY4CUARHYVEGAQLT4W4YA27EE8J8UZYACNAT502RC4AR945VGTXK9S492WSYKGR9YWJ9",
+      "form": "v2",
+      "view": "6a493210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b919",
+      "spend": "94741f5d5d52755ece4f23f044ee27d5d1ea1e2bd196b462166b16152a9d0259",
+      "canonical": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9"
+    },
+    {
+      "name": "v2, identity keys (all-zero bytes)",
+      "address": "samba1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd562qv",
+      "form": "v2",
+      "view": "0000000000000000000000000000000000000000000000000000000000000000",
+      "spend": "0000000000000000000000000000000000000000000000000000000000000000",
+      "canonical": "samba1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd562qv"
+    },
+    {
+      "name": "legacy, lowercase hex",
+      "address": "samba:6a493210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b91994741f5d5d52755ece4f23f044ee27d5d1ea1e2bd196b462166b16152a9d0259",
+      "form": "legacy",
+      "view": "6a493210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b919",
+      "spend": "94741f5d5d52755ece4f23f044ee27d5d1ea1e2bd196b462166b16152a9d0259",
+      "canonical": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9"
+    },
+    {
+      "name": "legacy, uppercase hex",
+      "address": "samba:6A493210F7499CD17FECB510AE0CEA23A110E8D5B901F8ACADD3095C73A3B91994741F5D5D52755ECE4F23F044EE27D5D1EA1E2BD196B462166B16152A9D0259",
+      "form": "legacy",
+      "view": "6a493210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b919",
+      "spend": "94741f5d5d52755ece4f23f044ee27d5d1ea1e2bd196b462166b16152a9d0259",
+      "canonical": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9"
+    }
+  ],
+  "invalid": [
+    {
+      "name": "last character changed",
+      "address": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywjx",
+      "error": "bad-checksum"
+    },
+    {
+      "name": "a key character changed",
+      "address": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vykcuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9",
+      "error": "bad-checksum"
+    },
+    {
+      "name": "the version character changed",
+      "address": "samba1rdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9",
+      "error": "bad-checksum"
+    },
+    {
+      "name": "two adjacent characters swapped",
+      "address": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hqyl3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9",
+      "error": "bad-checksum"
+    },
+    {
+      "name": "version 3, checksum valid",
+      "address": "samba1rdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgnjlxwe",
+      "error": "unknown-version"
+    },
+    {
+      "name": "version 0, checksum valid",
+      "address": "samba1qdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykg2zm7r5",
+      "error": "unknown-version"
+    },
+    {
+      "name": "version 31, checksum valid",
+      "address": "samba1ldfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgk3pskp",
+      "error": "unknown-version"
+    },
+    {
+      "name": "one character dropped",
+      "address": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj",
+      "error": "wrong-length"
+    },
+    {
+      "name": "one character added",
+      "address": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9q",
+      "error": "wrong-length"
+    },
+    {
+      "name": "63 key bytes, checksum valid",
+      "address": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsymz2sld",
+      "error": "wrong-length"
+    },
+    {
+      "name": "legacy, 127 hex",
+      "address": "samba:6a493210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b91994741f5d5d52755ece4f23f044ee27d5d1ea1e2bd196b462166b16152a9d025",
+      "error": "wrong-length"
+    },
+    {
+      "name": "another HRP, checksum valid",
+      "address": "sambb1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykg9zyzfe",
+      "error": "wrong-prefix"
+    },
+    {
+      "name": "a bitcoin address",
+      "address": "bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0",
+      "error": "wrong-prefix"
+    },
+    {
+      "name": "empty",
+      "address": "",
+      "error": "wrong-prefix"
+    },
+    {
+      "name": "v2 behind the samba: scheme",
+      "address": "samba:samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9",
+      "error": "wrong-prefix"
+    },
+    {
+      "name": "one character uppercased",
+      "address": "samba1zdfynyy8hfxwdzllvk5g2ur82Yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9",
+      "error": "mixed-case"
+    },
+    {
+      "name": "`b` is not in the alphabet",
+      "address": "samba1zdfynyy8hfxwdzblvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9",
+      "error": "bad-character",
+      "position": 20
+    },
+    {
+      "name": "`1` past the separator",
+      "address": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyveg1qlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9",
+      "error": "bad-character",
+      "position": 60
+    },
+    {
+      "name": "KELVIN SIGN, not `k`",
+      "address": "samba1zdfynyy8hfxwdzlKvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykgr9ywj9",
+      "error": "bad-character",
+      "position": 21
+    },
+    {
+      "name": "legacy, `g` is not hex",
+      "address": "samba:6a49g210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b91994741f5d5d52755ece4f23f044ee27d5d1ea1e2bd196b462166b16152a9d0259",
+      "error": "bad-character",
+      "position": 10
+    },
+    {
+      "name": "padding bits set, checksum valid",
+      "address": "samba1zdfynyy8hfxwdzllvk5g2ur82yws3p6x4hyql3t9d6vy4cuarhyvegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykf7nsm0h",
+      "error": "non-zero-padding"
+    }
+  ],
+  "not_points": [
+    {
+      "name": "v2, view key 0xff…",
+      "address": "samba1zlllllllllllllllllllllllllllllllllllllllllllllllllllegaqlt4w4ya27ee8j8uzyacnat502rc4ar945vgtxk9s492wsykg9dy84k",
+      "view": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "spend": "94741f5d5d52755ece4f23f044ee27d5d1ea1e2bd196b462166b16152a9d0259",
+      "half": "view"
+    },
+    {
+      "name": "legacy, spend key 0xff…",
+      "address": "samba:6a493210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b919ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "view": "6a493210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b919",
+      "spend": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "half": "spend"
+    }
+  ]
+}

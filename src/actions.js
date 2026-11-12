@@ -300,6 +300,7 @@ export const types = {
   MULTICHAIN_LOAD_REQUESTED: 'MULTICHAIN_LOAD_REQUESTED',
   // Multichain: Hathor Next's keys, data, sends and the transfer to it
   MULTICHAIN_NEXT_KEYS_UNLOCK_REQUESTED: 'MULTICHAIN_NEXT_KEYS_UNLOCK_REQUESTED',
+  MULTICHAIN_NEXT_KEYS_DERIVED: 'MULTICHAIN_NEXT_KEYS_DERIVED',
   MULTICHAIN_NEXT_UPDATE: 'MULTICHAIN_NEXT_UPDATE',
   MULTICHAIN_NEXT_RESET: 'MULTICHAIN_NEXT_RESET',
   MULTICHAIN_NEXT_HISTORY_REQUESTED: 'MULTICHAIN_NEXT_HISTORY_REQUESTED',
@@ -311,6 +312,8 @@ export const types = {
   MULTICHAIN_TRANSFER_REQUESTED: 'MULTICHAIN_TRANSFER_REQUESTED',
   MULTICHAIN_TRANSFER_UPDATE: 'MULTICHAIN_TRANSFER_UPDATE',
   MULTICHAIN_TRANSFER_RESET: 'MULTICHAIN_TRANSFER_RESET',
+  // Multichain: a Hathor Next backend for local testing
+  MULTICHAIN_DEV_BACKEND_SET: 'MULTICHAIN_DEV_BACKEND_SET',
 };
 
 /**
@@ -2093,6 +2096,14 @@ export const multichainNextKeysUnlockRequested = ({ pinCode }) => ({
 });
 
 /**
+ * The passkey unlock derived the Hathor Next keys, after the unlock itself finished: a load that
+ * failed without them runs again.
+ */
+export const multichainNextKeysDerived = () => ({
+  type: types.MULTICHAIN_NEXT_KEYS_DERIVED,
+});
+
+/**
  * @param {Object} payload Part of state.multichain.next
  */
 export const multichainNextUpdate = (payload) => ({
@@ -2195,4 +2206,19 @@ export const multichainTransferUpdate = (payload) => ({
 
 export const multichainTransferReset = () => ({
   type: types.MULTICHAIN_TRANSFER_RESET,
+});
+
+/**
+ * Points Hathor Next at a backend for local testing, or back at the side chain's own (none, where
+ * the network has no side chain).
+ *
+ * @param {{ url: string, pins: Object }|null} devBackend The backend and its GET /v1/config
+ * @param {Object} [options]
+ * @param {boolean} [options.persist] false when it comes from storage
+ * @param {string} [options.pinCode] What Settings asked for, to load Hathor Next again
+ */
+export const multichainDevBackendSet = (devBackend, { persist = true, pinCode } = {}) => ({
+  type: types.MULTICHAIN_DEV_BACKEND_SET,
+  payload: devBackend,
+  meta: { persist, pinCode },
 });

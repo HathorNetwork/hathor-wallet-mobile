@@ -46,11 +46,12 @@ import { TransferRow } from '../../../src/components/Multichain/TransferRow';
 import { CHAIN } from '../../../src/multichain/chains';
 import { HISTORY_ROW, HISTORY_VIEW } from '../../../src/multichain/history';
 import { NEXT_STATUS, TRANSFER_STATUS } from '../../../src/multichain/state';
+import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
 import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 /* eslint-enable import/first */
 
 const NETWORK = FAKE_NETWORK;
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
+const OWN_ADDRESS = fakePeerAddress('cd34');
 const HTR = { uid: '00', name: 'Hathor', symbol: 'HTR' };
 const MY_TOKEN = { uid: 'a1', name: 'My Token', symbol: 'MTK' };
 const ready = (available) => ({ status: 'ready', data: { available } });
@@ -207,9 +208,27 @@ describe('the token screen of a token on both chains', () => {
     const { renderer } = await renderBody();
     const texts = textOf(renderer);
     expect(texts).toEqual(expect.arrayContaining([
-      '120.00 HTR', '25.00 HTR arriving', 'All chains', 'Moved to Hathor Next', '25.10 HTR moved',
+      '120.00 HTR', '25.00 HTR arriving', 'All chains', 'Moved to Hathor Next',
+      '25.10 HTR moved · 0.10 fee',
     ]));
     expect(renderer.root.findByType(TransferRow).props.kind).toBe(HISTORY_ROW.TRANSFER);
+  });
+
+  // On all chains the row's amount is the cost alone, so the line under it says what moved too.
+  test("says what a transfer moved and what it cost: the burn's data output", async () => {
+    const burn = {
+      ...pendingTransfer, amount: '1000', receiveAmount: '1000000000', bridgeFee: '0', networkFee: '1',
+    };
+    const { renderer } = await renderBody([burn]);
+    expect(textOf(renderer)).toEqual(expect.arrayContaining([
+      '10.00 HTR moved · 0.01 fee', '-0.01',
+    ]));
+  });
+
+  test('says only what a transfer that cost nothing moved', async () => {
+    const free = { ...pendingTransfer, amount: '2500', bridgeFee: '0', networkFee: '0' };
+    const { renderer } = await renderBody([free]);
+    expect(textOf(renderer)).toContain('25.00 HTR moved');
   });
 
   test("lists each chain's balance in the chain chip", async () => {

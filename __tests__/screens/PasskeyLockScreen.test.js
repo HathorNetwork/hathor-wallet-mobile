@@ -27,12 +27,15 @@ import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { reducer } from '../../src/reducers/reducer';
 import {
+  featureToggleInitialized,
+  setFeatureToggles,
   setWallet,
   shieldedViewUnlockRequested,
   types,
   unlockScreen,
 } from '../../src/actions';
-import { SHIELDED_UNLOCK_SOURCE } from '../../src/constants';
+import { MULTICHAIN_FEATURE_TOGGLE, SHIELDED_UNLOCK_SOURCE } from '../../src/constants';
+import * as multichainKeys from '../../src/multichain/keys';
 import { STORE } from '../../src/store';
 import PasskeyLockScreen from '../../src/screens/PasskeyLockScreen';
 import { verifyPasskeyForUnlock } from '../../src/passkey/passkeySigner';
@@ -47,8 +50,11 @@ const WORDS = 'passkey words';
 
 let mounted = null;
 
-/** Renders the lock screen, which runs the unlock ceremony as it mounts. */
-async function render({ wallet = null } = {}) {
+/**
+ * Renders the lock screen, which runs the unlock ceremony as it mounts. `toggles`: what Unleash
+ * answered before the unlock.
+ */
+async function render({ wallet = null, toggles = null } = {}) {
   const actions = [];
   const recordActions = () => (next) => (action) => {
     actions.push(action);
@@ -57,6 +63,10 @@ async function render({ wallet = null } = {}) {
   const store = createStore(reducer, applyMiddleware(recordActions));
   if (wallet) {
     store.dispatch(setWallet(wallet));
+  }
+  if (toggles) {
+    store.dispatch(setFeatureToggles(toggles));
+    store.dispatch(featureToggleInitialized());
   }
   actions.length = 0;
   await act(async () => {
@@ -99,6 +109,17 @@ describe('PasskeyLockScreen', () => {
 
     expect(rememberPasskeyShieldedKeys).toHaveBeenCalledWith(WORDS);
     expect(finishWalletServiceRegistration).toHaveBeenCalledWith(undefined);
+  });
+
+  // The same ceremony gives Hathor Next's keys, only while the multichain flag is on.
+  test.each([
+    ['on', { [MULTICHAIN_FEATURE_TOGGLE]: true }, true],
+    ['off', {}, false],
+  ])('derives the Hathor Next keys only with the multichain flag on (%s)', async (name, toggles, on) => {
+    const derive = jest.spyOn(multichainKeys, 'prepareNextKeysAtUnlock')
+      .mockResolvedValue(null);
+    await render({ toggles });
+    expect(derive).toHaveBeenCalledWith(WORDS, on);
   });
 
   test('starts the wallet when none runs', async () => {

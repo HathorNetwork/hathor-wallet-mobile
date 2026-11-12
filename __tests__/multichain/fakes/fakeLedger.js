@@ -10,6 +10,7 @@ import { getIntegerAmount } from '../../../src/utils';
 import { CHAIN, NEXT_DECIMAL_PLACES } from '../../../src/multichain/chains';
 import { TRANSFER_STATUS } from '../../../src/multichain/state';
 import { DEFAULT_FAKE_SCENARIO, isFundedScenario } from './scenarios';
+import { fakePeerAddress } from './fakeAddress';
 
 /**
  * The test fake's Hathor Next ledger of a network: its tokens, the wallet's transaction rows and
@@ -78,7 +79,7 @@ const MOCK_TOKEN_B = {
   symbol: 'TST',
 };
 
-const MOCK_PEER = `samba:${'4b7f'.repeat(32)}`;
+const MOCK_PEER = fakePeerAddress('peer');
 
 const units = (amount) => getIntegerAmount(amount, NEXT_DECIMAL_PLACES).toString();
 

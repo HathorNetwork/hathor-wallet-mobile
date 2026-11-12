@@ -32,7 +32,7 @@ import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { reducer } from '../../../src/reducers/reducer';
-import { multichainTransferUpdate, types } from '../../../src/actions';
+import { multichainTransfersSet, multichainTransferUpdate, types } from '../../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_FEATURE_TOGGLE,
@@ -46,13 +46,15 @@ import AmountTextInput from '../../../src/components/AmountTextInput';
 import FeedbackModal from '../../../src/components/FeedbackModal';
 import NewHathorButton from '../../../src/components/NewHathorButton';
 import { PortalProvider } from '../../../src/components/Portal';
-import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { NEXT_STATUS, OPERATION_STATUS, TRANSFER_STATUS } from '../../../src/multichain/state';
+import { TransfersOnTheirWay } from '../../../src/components/Multichain/TransfersOnTheirWay';
+import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
 import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 /* eslint-enable import/first */
 
 const NETWORK = FAKE_NETWORK;
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
-const NEXT_ADDRESS = `samba:${'ab12'.repeat(32)}`;
+const OWN_ADDRESS = fakePeerAddress('cd34');
+const NEXT_ADDRESS = fakePeerAddress('ab12');
 const HATHOR_ADDRESS = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';
 
 let mounted = null;
@@ -69,7 +71,8 @@ afterEach(async () => {
   jest.restoreAllMocks();
 });
 
-function makeStore({ connected = true } = {}) {
+// `nativeToken` is what the fullnode reports; none until its version data is read.
+function makeStore({ connected = true, nativeToken } = {}) {
   const initial = reducer(undefined, { type: '@@INIT' });
   const actions = [];
   const record = () => (nextFn) => (action) => {
@@ -80,7 +83,7 @@ function makeStore({ connected = true } = {}) {
     ...initial,
     networkSettings: PRE_SETTINGS_TESTNET,
     featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [MULTICHAIN_FEATURE_TOGGLE]: true },
-    serverInfo: { decimal_places: 2 },
+    serverInfo: { decimal_places: 2, native_token: nativeToken },
     fullNodeNetworkName: NETWORK,
     tokensBalance: { '00': { status: 'ready', data: { available: 125000n } } },
     multichain: {
@@ -177,8 +180,28 @@ describe('the transfer between chains', () => {
     );
   });
 
+  // A navigation that records the screen's beforeRemove listener, to try leaving the screen.
+  const holdableNavigation = () => {
+    const listeners = {};
+    return {
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      setOptions: jest.fn(),
+      addListener: jest.fn((event, listener) => {
+        listeners[event] = listener;
+        return jest.fn();
+      }),
+      // Whether leaving now would be stopped.
+      held: () => {
+        const preventDefault = jest.fn();
+        listeners.beforeRemove?.({ preventDefault });
+        return preventDefault.mock.calls.length > 0;
+      },
+    };
+  };
+
   test('confirms with the PIN, and ends with Done', async () => {
-    const navigation = { navigate: jest.fn(), goBack: jest.fn() };
+    const navigation = holdableNavigation();
     const { store, actions } = makeStore();
     const renderer = await mount(
       store, (
@@ -214,6 +237,122 @@ describe('the transfer between chains', () => {
     const feedback = renderer.root.findByType(FeedbackModal);
     expect(feedback.props.text).toBe('Your HTR will arrive on Hathor Next in about 2 minutes.');
     expect(feedback.props.action.props.title).toBe('Done');
+  });
+
+  test('stays while the transfer is sent, and keeps it when it ends without an answer', async () => {
+    const navigation = holdableNavigation();
+    const { store } = makeStore();
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={navigation}
+          route={{ params: { amount: '10000', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    expect(navigation.held()).toBe(false);
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.SENDING }));
+    });
+    expect(navigation.held()).toBe(true);
+    expect(navigation.setOptions).toHaveBeenLastCalledWith({ gestureEnabled: false });
+
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.UNCONFIRMED,
+        error: 'not yet',
+        uncertainId: 'transfer-1',
+      }));
+    });
+    expect(navigation.held()).toBe(false);
+    expect(renderer.root.findByType(FeedbackModal).props.text).toBe('not yet');
+    expect(button(renderer, 'Confirm and send').props.disabled).toBe(true);
+    // Leaving doesn't drop it: the next transfer settles it first.
+    await act(async () => { renderer.unmount(); });
+    expect(store.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.UNCONFIRMED,
+      uncertainId: 'transfer-1',
+    });
+  });
+
+  test("names Hathor Network's native token by the symbol the fullnode reports", async () => {
+    const { store } = makeStore({ nativeToken: { name: 'Test Native', symbol: 'TNT' } });
+    const params = { amount: '10000', toAddress: OWN_ADDRESS };
+    const form = await mount(
+      store, (
+        <ChainTransferScreen
+          navigation={{ navigate: jest.fn(), goBack: jest.fn() }}
+          route={{ params }}
+        />
+      )
+    );
+    const formText = textOf(form);
+    expect(formText).toEqual(expect.arrayContaining([
+      'TNT · 1,250.00 TNT available',
+      'TNT',
+      '99.90 TNT',
+      '0.10 TNT',
+    ]));
+    expect(formText.join(' ')).not.toContain('HTR');
+    await act(async () => { form.unmount(); });
+
+    const confirm = await mount(
+      store,
+      <ChainTransferConfirmScreen navigation={holdableNavigation()} route={{ params }} />,
+    );
+    expect(textOf(confirm)).toContain('100.00 TNT');
+    expect(textOf(confirm).join(' ')).not.toContain('HTR');
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE }));
+    });
+    expect(confirm.root.findByType(FeedbackModal).props.text)
+      .toBe('Your TNT will arrive on Hathor Next in about 2 minutes.');
+  });
+});
+
+describe('transfers on their way, where HTR shows on Hathor Network alone', () => {
+  const record = (fields) => ({
+    id: 'transfer-1',
+    from: 'hathor',
+    to: 'hathor-next',
+    hathorTokenId: '00',
+    nextTokenId: 'aa'.repeat(32),
+    amount: '700',
+    receiveAmount: '700',
+    bridgeFee: '0',
+    networkFee: '1',
+    toAddress: OWN_ADDRESS,
+    toOwn: true,
+    sentAt: 1000,
+    arriveAt: 2000,
+    sourceTxId: 'ee'.repeat(32),
+    debitedOnSource: true,
+    ...fields,
+  });
+
+  test('say where each transfer stands, and which failed', async () => {
+    const { store } = makeStore();
+    store.dispatch(multichainTransfersSet([
+      record({
+        status: TRANSFER_STATUS.PENDING,
+        progress: { stage: 'confirming', confirmations: 5, needed: 21 },
+      }),
+      record({ id: 'transfer-2', status: TRANSFER_STATUS.FAILED, debitedOnSource: false }),
+      record({ id: 'transfer-3', status: TRANSFER_STATUS.ARRIVED }),
+    ]));
+    const renderer = await mount(store, <TransfersOnTheirWay token={{ uid: '00', symbol: 'HTR' }} />);
+    const text = textOf(renderer);
+    expect(text).toContain('Confirming 5 of 21 on Hathor Network');
+    expect(text).toContain("Didn't go through: nothing moved");
+    // An arrived transfer is in the history already.
+    expect(text.filter((line) => line === 'Moved to Hathor Next')).toHaveLength(2);
+  });
+
+  test('show nothing without the side chain', async () => {
+    const { store } = makeStore({ connected: false });
+    store.dispatch(multichainTransfersSet([record({ status: TRANSFER_STATUS.PENDING })]));
+    const renderer = await mount(store, <TransfersOnTheirWay token={{ uid: '00', symbol: 'HTR' }} />);
+    expect(renderer.toJSON()).toBeNull();
   });
 });
 

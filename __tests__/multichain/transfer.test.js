@@ -6,13 +6,16 @@
  */
 
 import { describe, test, expect } from '@jest/globals';
-import { CHAIN } from '../../src/multichain/chains';
-import { nextToHathorRoundedUp, shortBalanceAdvice } from '../../src/multichain/transfer';
+import { CHAIN, transferReceiveSymbol } from '../../src/multichain/chains';
+import { shortBalanceAdvice } from '../../src/multichain/transfer';
+import { nextToHathorRoundedUp } from '../../src/multichain/amount';
+import { progressText } from '../../src/components/Multichain/TransferRow';
+import { fakePeerAddress } from './fakes/fakeAddress';
 import { FAKE_SIDE_CHAIN } from './fakes/sideChain';
 
 const config = FAKE_SIDE_CHAIN;
-const NEXT_ADDRESS = `samba:${'ab12'.repeat(32)}`;
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
+const NEXT_ADDRESS = fakePeerAddress('ab12');
+const OWN_ADDRESS = fakePeerAddress('cd34');
 // The fake bridge's quote: 0.10 HTR bridge fee, no network fee, in Hathor Network's units.
 const quote = { bridgeFee: 10n, networkFee: 0n, etaSeconds: 120 };
 
@@ -48,6 +51,30 @@ describe('a send short on Hathor Next', () => {
   test('says nothing more when neither chain has it', () => {
     expect(onNext({ available: 100000000n, otherAvailable: 500n })).toBeNull();
   });
+
+  test("sends the bridge's minimum only to its own address, and only when it can pay it", () => {
+    // 0.40 HTR to send, with nothing on Hathor Next; the bridge moves 1.00 HTR at the least.
+    const advise = (otherAvailable) => shortBalanceAdvice({
+      chain: CHAIN.HATHOR_NEXT,
+      amount: 40000000n,
+      fee: 5000000n,
+      available: 0n,
+      otherAvailable,
+      config,
+      quote: { bridgeFee: 0n, networkFee: 0n, etaSeconds: 120, min: 100n },
+      symbol: 'HTR',
+      hathorDecimalPlaces: 2,
+      toAddress: NEXT_ADDRESS,
+      ownAddress: OWN_ADDRESS,
+    });
+    expect(advise(60n)).toBeNull();
+    // Paying the address the minimum would pay it more than asked: the minimum goes to the
+    // wallet's own address, and the payment follows from there.
+    expect(advise(100n)).toEqual({
+      message: 'You have 0.00 HTR on Hathor Next and 1.00 HTR on Hathor Network. Transfer the rest to Hathor Next first.',
+      transfer: { amount: 100n, toAddress: OWN_ADDRESS },
+    });
+  });
 });
 
 describe('a send short on Hathor Network', () => {
@@ -74,7 +101,26 @@ describe('a send short on Hathor Network', () => {
 
 describe('amounts across chains', () => {
   test('round up what has to leave Hathor Network for an amount to arrive', () => {
-    expect(nextToHathorRoundedUp(3000000000n, 2)).toBe(3000n);
-    expect(nextToHathorRoundedUp(3000000001n, 2)).toBe(3001n);
+    expect(nextToHathorRoundedUp(3000000000n, 1000000n)).toBe(3000n);
+    expect(nextToHathorRoundedUp(3000000001n, 1000000n)).toBe(3001n);
+    expect(nextToHathorRoundedUp(700n, 1n)).toBe(700n);
+  });
+});
+
+describe('a transfer\'s progress, as its bridge follows it', () => {
+  test('counts the burn\'s confirmations, then says it is minting', () => {
+    expect(progressText({ stage: 'confirming', confirmations: 5, needed: 21 }))
+      .toBe('Confirming 5 of 21 on Hathor Network');
+    expect(progressText({ stage: 'eligible', confirmations: 21, needed: 21 }))
+      .toBe('Minting on Hathor Next');
+    expect(progressText(undefined)).toBeNull();
+    expect(progressText({ stage: 'arrived' })).toBeNull();
+  });
+});
+
+describe("what a transfer of Hathor Network's native token becomes on Hathor Next", () => {
+  test('the same token where the bridge carries it, the native token where it mints that', () => {
+    expect(transferReceiveSymbol(config, 'TNT')).toBe('TNT');
+    expect(transferReceiveSymbol({ tokenMap: [], nativeTokenSymbol: 'USDT' }, 'TNT')).toBe('USDT');
   });
 });

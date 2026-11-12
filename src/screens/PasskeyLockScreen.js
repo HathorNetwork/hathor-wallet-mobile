@@ -12,7 +12,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 import { t } from 'ttag';
 
 import SimpleButton from '../components/SimpleButton';
@@ -20,6 +20,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import Logo from '../components/Logo';
 import Spinner from '../components/Spinner';
 import {
+  multichainNextKeysDerived,
   onExceptionCaptured,
   resetOnLockScreen,
   shieldedViewUnlockRequested,
@@ -38,6 +39,7 @@ import {
 import { sanitizePasskeyLabel } from '../passkey/passkeyService';
 import { rememberPasskeyShieldedKeys } from '../passkey/shieldedKeys';
 import { prepareNextKeysAtUnlock } from '../multichain/keys';
+import { getMultichainFeatureToggleAtUnlock } from '../multichain/gating';
 import {
   finishWalletServiceRegistration,
   walletServiceRegistrationForUnlock,
@@ -55,6 +57,7 @@ const log = logger('passkey');
  */
 const PasskeyLockScreen = () => {
   const dispatch = useDispatch();
+  const store = useStore();
   const wallet = useSelector((state) => state.wallet);
   const featureToggles = useSelector((state) => state.featureToggles);
   const networkSettings = useSelector(getNetworkSettings);
@@ -91,8 +94,12 @@ const PasskeyLockScreen = () => {
         onWords: (words) => {
           rememberPasskeyShieldedKeys(words);
           // A wallet that used Hathor Next derives its keys in the same ceremony, so switching to
-          // it needs no second passkey prompt. It never throws.
-          prepareNextKeysAtUnlock(words);
+          // it needs no second passkey prompt; only while the multichain flag is on, as far as
+          // the app knows when the words arrive. It never throws, and the unlock doesn't wait: a
+          // load that comes first waits for it, and one that failed runs again once it's done.
+          const multichainOn = getMultichainFeatureToggleAtUnlock(store.getState());
+          prepareNextKeysAtUnlock(words, multichainOn)
+            .then(() => dispatch(multichainNextKeysDerived()));
           return register ? register(words) : undefined;
         },
       });

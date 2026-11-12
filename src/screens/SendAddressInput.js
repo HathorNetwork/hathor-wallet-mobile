@@ -29,9 +29,13 @@ import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
 import { COLORS } from '../styles/themes';
 import { isShieldedEnvironment } from '../shielded/gating';
-import { isSideChainConnected } from '../multichain/gating';
-import { addressChain } from '../multichain/address';
-import { CHAIN } from '../multichain/chains';
+import {
+  getMultichainFeatureToggle,
+  isSideChainConnected,
+  selectSideChainConfig,
+} from '../multichain/gating';
+import { addressChain, normalizeNextAddress } from '../multichain/address';
+import { CHAIN, isTransferAddress } from '../multichain/chains';
 import { ChainTag } from '../components/Multichain/ChainTag';
 
 /**
@@ -60,6 +64,14 @@ export const SendAddressInput = () => {
   // there.
   const allowShielded = useSelector(isShieldedEnvironment);
   const sideChainConnected = useSelector(isSideChainConnected);
+  const sideChainConfig = useSelector(selectSideChainConfig);
+  const multichainOn = useSelector(getMultichainFeatureToggle);
+  // The chain transfer's own address is refused at once, typed or scanned: what pays it directly
+  // burns, and only the transfer may pay it. Like everything multichain, only behind the flag.
+  const transferAddressError = (address) => (multichainOn
+    && isTransferAddress(address, sideChainConfig)
+    ? t`This address is only for transfers to Hathor Next, and anything sent to it directly is lost. Use Transfer between chains instead.`
+    : null);
   // A tap anywhere on the card around the input focuses it: an empty multiline input is one
   // line tall, so the card's padding wouldn't take the tap otherwise.
   const inputRef = useRef(null);
@@ -67,12 +79,16 @@ export const SendAddressInput = () => {
   // The QR code scanner comes back to this screen with the address it read.
   useEffect(() => {
     if (route.params?.address) {
-      setFormModel((prev) => ({ ...prev, address: route.params.address, error: null }));
+      setFormModel((prev) => ({
+        ...prev,
+        address: route.params.address,
+        error: transferAddressError(route.params.address),
+      }));
     }
   }, [route.params?.address]);
 
   const onAddressChange = (text) => {
-    setFormModel({ address: text, error: null });
+    setFormModel({ address: text, error: transferAddressError(text) });
   };
 
   // The chain of a valid address, once the side chain is connected: before, a Hathor Next address
@@ -81,9 +97,15 @@ export const SendAddressInput = () => {
     ? addressChain(formModel.address, network, { allowShielded })
     : null;
 
-  const validate = () => (chain === CHAIN.HATHOR_NEXT
-    ? { isValid: true }
-    : validateAddress(formModel.address, network, { allowShielded }));
+  const validate = () => {
+    const transferError = transferAddressError(formModel.address);
+    if (transferError) {
+      return { isValid: false, message: transferError };
+    }
+    return chain === CHAIN.HATHOR_NEXT
+      ? { isValid: true }
+      : validateAddress(formModel.address, network, { allowShielded });
+  };
 
   const isAddressValid = () => {
     if (!formModel.address) return false;
@@ -98,7 +120,11 @@ export const SendAddressInput = () => {
     }
     navigation.navigate(
       chain === CHAIN.HATHOR_NEXT ? 'NextSendAmountInput' : 'SendAmountInput',
-      { address: formModel.address.trim() },
+      {
+        address: chain === CHAIN.HATHOR_NEXT
+          ? normalizeNextAddress(formModel.address)
+          : formModel.address.trim(),
+      },
     );
   };
 

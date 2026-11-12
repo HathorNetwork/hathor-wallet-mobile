@@ -28,10 +28,11 @@ import { ChainTag } from '../../components/Multichain/ChainTag';
 import { validateTransferAddress } from '../../multichain/address';
 import { arrivalText } from '../../multichain/transfer';
 import { createBridge } from '../../multichain/bridge';
-import { canTransfer, CHAIN, CHAIN_NAME } from '../../multichain/chains';
+import { CHAIN, CHAIN_NAME, canTransfer, transferReceiveSymbol } from '../../multichain/chains';
 import { renderNextValue } from '../../multichain/amount';
 import { selectMultichainNetwork, selectSideChainConfig } from '../../multichain/gating';
 import { getKeyboardAvoidingViewTopDistance, renderValue } from '../../utils';
+import { DEFAULT_TOKEN } from '../../constants';
 import { COLORS } from '../../styles/themes';
 
 const HTR_UID = '00';
@@ -52,14 +53,24 @@ export function plainAmount(amount, decimalPlaces) {
 }
 
 /**
- * The bridge, and what a transfer from Hathor Network has to spend: its HTR.
+ * The bridge, and what a transfer from Hathor Network has to spend: its native token, by the
+ * symbol the fullnode reports.
  *
- * @returns {{ bridge: Object, config: Object, decimalPlaces: number, available: bigint }}
+ * @returns {{
+ *   bridge: Object,
+ *   config: Object,
+ *   decimalPlaces: number,
+ *   available: bigint,
+ *   symbol: string,
+ * }}
  */
 export function useTransferContext() {
   const config = useSelector(selectSideChainConfig);
   const network = useSelector(selectMultichainNetwork);
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places ?? 2);
+  const symbol = useSelector(
+    (state) => state.serverInfo?.native_token?.symbol ?? DEFAULT_TOKEN.symbol,
+  );
   const available = useSelector(
     (state) => state.tokensBalance?.[HTR_UID]?.data?.available ?? 0n,
   );
@@ -67,7 +78,7 @@ export function useTransferContext() {
     () => (config ? createBridge(config, { network, decimalPlaces }) : null),
     [config, network, decimalPlaces],
   );
-  return { bridge, config, decimalPlaces, available };
+  return { bridge, config, decimalPlaces, available, symbol };
 }
 
 /**
@@ -77,7 +88,7 @@ export function useTransferContext() {
  * in their own) and the amount; Send's short-balance message opens it with both filled in.
  */
 export default function ChainTransferScreen({ navigation, route }) {
-  const { bridge, config, decimalPlaces, available } = useTransferContext();
+  const { bridge, config, decimalPlaces, available, symbol } = useTransferContext();
   const networkName = useSelector((state) => state.networkSettings.network);
   const ownAddress = useSelector((state) => state.multichain.next.address);
   const prefill = route?.params ?? {};
@@ -100,7 +111,7 @@ export default function ChainTransferScreen({ navigation, route }) {
 
   const quote = bridge.quote({ from, to, amount: amount ?? 0n, available });
   const network = new Network(networkName);
-  const htr = (value) => `${renderValue(value, false, decimalPlaces)} HTR`;
+  const render = (value) => `${renderValue(value, false, decimalPlaces)} ${symbol}`;
 
   const fillOwnAddress = () => {
     setAddress(ownAddress);
@@ -129,7 +140,7 @@ export default function ChainTransferScreen({ navigation, route }) {
       return;
     }
     if (!amount || amount < quote.min) {
-      const minimum = htr(quote.min);
+      const minimum = render(quote.min);
       setAmountError(t`The smallest transfer is ${minimum}.`);
       return;
     }
@@ -147,7 +158,7 @@ export default function ChainTransferScreen({ navigation, route }) {
   };
 
   const receive = renderNextValue(quote.receiveAmount, decimalPlaces);
-  const availableText = htr(available);
+  const availableText = render(available);
 
   return (
     <View style={styles.wrapper}>
@@ -182,7 +193,7 @@ export default function ChainTransferScreen({ navigation, route }) {
             </View>
             <View style={styles.fixedRow}>
               <Text style={styles.fixedLabel}>{t`Token`}</Text>
-              <Text style={styles.fixedValue}>{t`HTR · ${availableText} available`}</Text>
+              <Text style={styles.fixedValue}>{t`${symbol} · ${availableText} available`}</Text>
             </View>
 
             <Text style={styles.label}>{t`Hathor Next address`}</Text>
@@ -225,14 +236,18 @@ export default function ChainTransferScreen({ navigation, route }) {
                 decimalPlaces={decimalPlaces}
                 style={{ flex: 1 }}
               />
-              <Text style={styles.amountSymbol}>HTR</Text>
+              <Text style={styles.amountSymbol}>{symbol}</Text>
             </View>
             {amountError && <Text style={styles.error}>{amountError}</Text>}
 
             <View style={styles.summary}>
-              <SummaryRow label={t`You'll receive`} value={`${receive} HTR`} strong />
-              <SummaryRow label={t`Bridge fee`} value={htr(quote.bridgeFee)} />
-              <SummaryRow label={t`Network fee`} value={htr(quote.networkFee)} />
+              <SummaryRow
+                label={t`You'll receive`}
+                value={`${receive} ${transferReceiveSymbol(config, symbol)}`}
+                strong
+              />
+              <SummaryRow label={t`Bridge fee`} value={render(quote.bridgeFee)} />
+              <SummaryRow label={t`Network fee`} value={render(quote.networkFee)} />
               <SummaryRow label={t`Arrives in`} value={arrivalText(quote.etaSeconds)} />
             </View>
             <Text style={styles.oneWay}>

@@ -15,10 +15,12 @@ import { NextBalanceView } from '../../components/Multichain/MultichainTokenBody
 import { NextTxDetailsModal } from '../../components/Multichain/NextTxDetailsModal';
 import { NextTxRow } from '../../components/Multichain/NextTxRow';
 import { TokenHistoryList } from '../../components/Multichain/TokenHistoryList';
+import { TransferDetailsModal } from '../../components/Multichain/TransferDetailsModal';
+import { TransferRow } from '../../components/Multichain/TransferRow';
 import { multichainNextHistoryRequested } from '../../actions';
 import { nextAmountForDisplay } from '../../multichain/amount';
 import { isSideChainConnected } from '../../multichain/gating';
-import { HISTORY_VIEW, tokenHistory } from '../../multichain/history';
+import { HISTORY_ROW, HISTORY_VIEW, tokenHistory } from '../../multichain/history';
 import { TOKEN_DOWNLOAD_STATUS } from '../../sagas/tokens';
 import { getDisplayAmountFormat, renderHomeValue } from '../../utils';
 import { COLORS } from '../../styles/themes';
@@ -38,9 +40,12 @@ export default function NextTokenScreen({ navigation, route }) {
   );
   const sweeping = useSelector((state) => state.multichain.next.sweeping);
   const history = useSelector((state) => state.multichain.next.history[tokenId]);
+  // Transfers to this wallet arrive here as the native token: each shows as its arrival.
+  const transfers = useSelector((state) => state.multichain.transfers);
   const hathorDecimalPlaces = useSelector((state) => state.serverInfo?.decimal_places ?? 2);
   const amountFormat = useSelector(getDisplayAmountFormat);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedTransfer, setSelectedTransfer] = useState(null);
 
   useEffect(() => {
     dispatch(multichainNextHistoryRequested({ tokenId }));
@@ -59,8 +64,8 @@ export default function NextTokenScreen({ navigation, route }) {
     hathorHasMore: false,
     nextRows: history?.data ?? [],
     nextHasMore: Boolean(history) && history.cursor !== null,
-    transfers: [],
-  }), [tokenId, history]);
+    transfers,
+  }), [tokenId, history, transfers]);
 
   if (!token) {
     return null;
@@ -84,15 +89,30 @@ export default function NextTokenScreen({ navigation, route }) {
         loading={status === TOKEN_DOWNLOAD_STATUS.LOADING}
         failed={status === TOKEN_DOWNLOAD_STATUS.FAILED}
         onRetry={() => dispatch(multichainNextHistoryRequested({ tokenId }))}
-        renderRow={(row) => (
+        renderRow={(row) => (row.kind === HISTORY_ROW.NEXT ? (
           <NextTxRow row={row.data} amountFormat={amountFormat} onPress={setSelectedRow} />
-        )}
+        ) : (
+          <TransferRow
+            transfer={row.data}
+            kind={row.kind}
+            symbol={token.symbol}
+            hathorDecimalPlaces={hathorDecimalPlaces}
+            amountFormat={amountFormat}
+            onPress={setSelectedTransfer}
+          />
+        ))}
         onEndReached={() => dispatch(multichainNextHistoryRequested({ tokenId, more: true }))}
       />
       <NextTxDetailsModal
         row={selectedRow}
         token={token}
         onDismiss={() => setSelectedRow(null)}
+      />
+      <TransferDetailsModal
+        transfer={selectedTransfer}
+        symbol={token.symbol}
+        hathorDecimalPlaces={hathorDecimalPlaces}
+        onDismiss={() => setSelectedTransfer(null)}
       />
       <OfflineBar />
     </View>

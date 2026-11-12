@@ -5,11 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { createBackendBridge } from './next/backendBridge';
 import { NextClientError, NEXT_CLIENT_ERROR } from './nextClientErrors';
 
 /**
- * The bridge between Hathor Network and Hathor Next. None ships yet, so creating one fails as
- * unavailable, like the Hathor Next client (src/multichain/nextClient.js). Its interface:
+ * The bridge between Hathor Network and Hathor Next, through the Hathor Next backend
+ * (next/backendBridge.js). Its interface:
  * - tokenMap: [{ hathor, next }], the tokens it carries, by their id on each chain;
  * - directions: [{ from, to }], the ways it transfers (CHAIN values);
  * - quote({ from, to, amount, available }) → { bridgeFee, networkFee, receiveAmount, etaSeconds,
@@ -27,10 +28,17 @@ import { NextClientError, NEXT_CLIENT_ERROR } from './nextClientErrors';
  * total counts the transfer while it is on its way.
  *
  * @param {Object} config The side chain config (src/multichain/chains.js)
- * @param {{ network: string, decimalPlaces: number }} options
+ * @param {Object} options The running Hathor Network wallet, its wallet-lib Network
+ *   (hathorNetwork) and the Hathor Next client
  * @returns {Object}
  */
-// eslint-disable-next-line no-unused-vars
 export function createBridge(config, options) {
+  if (config.client === 'backend') {
+    return createBackendBridge(config, {
+      wallet: options.wallet,
+      network: options.hathorNetwork,
+      client: options.client,
+    });
+  }
   throw new NextClientError(NEXT_CLIENT_ERROR.UNAVAILABLE);
 }

@@ -26,6 +26,7 @@ import {
   SINGLE_ADDRESS_FEATURE_TOGGLE,
   AMOUNT_FORMAT_FEATURE_TOGGLE,
   SHRINK_TEXT_TO_FIT,
+  FULL_NETWORK_MAINNET,
 } from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
@@ -34,6 +35,7 @@ import { isNanoContractsEnabled, isPushNotificationAvailableForUser } from '../u
 import { getNetworkSettings } from '../sagas/helpers';
 import { isShieldedAvailable } from '../shielded/gating';
 import {
+  getMultichainDevBackendFeatureToggle,
   isSideChainAvailable,
   isSideChainConnected,
 } from '../multichain/gating';
@@ -75,6 +77,11 @@ const mapStateToProps = (state) => {
     sideChainConnected: isSideChainConnected(state),
     sideChainConnecting: state.multichain.connect.status !== CONNECT_STATUS.IDLE
       && state.multichain.connect.status !== CONNECT_STATUS.FAILED,
+    // The backend for local testing gives a network a side chain: its setting shows on any network
+    // but mainnet, whether or not the network has one of its own.
+    devBackendAvailable: getMultichainDevBackendFeatureToggle(state)
+      && Boolean(state.fullNodeNetworkName)
+      && state.fullNodeNetworkName !== FULL_NETWORK_MAINNET,
     nextKeysReady: state.multichain.next.keysReady,
   };
 };
@@ -259,6 +266,13 @@ export class Settings extends React.Component {
                     />
                   )}
                   isFirst={firstAdvancedRoute === SIDE_CHAIN_ROW}
+                />
+              )}
+            {this.props.devBackendAvailable
+              && (
+                <ListMenu
+                  title={t`Hathor Next (local backend)`}
+                  onPress={() => this.props.navigation.navigate('MultichainDevBackend')}
                 />
               )}
             {this.props.singleAddressEnabled
