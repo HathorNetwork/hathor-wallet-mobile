@@ -121,3 +121,126 @@ export function checkOpening(tx, recipients, senderOpening) {
     }
   });
 }
+
+/** The token id a creation's supply names: its transaction's own id, unknown inside it. */
+export const CREATED_TOKEN_ID = new Uint8Array(32).fill(0xff);
+
+const TOKEN_INDEX_NATIVE = 255;
+const TOKEN_INDEX_CREATED = 254;
+
+/**
+ * The token an amount-shielded or transparent output names, from its index.
+ *
+ * @param {Object} tx readTxV3's result
+ * @param {number} index
+ * @param {Uint8Array} nativeTokenId
+ * @param {'amount-shielded'|'transparent'} [form] The output's kind
+ * @returns {Uint8Array}
+ */
+export function tokenOfIndex(tx, index, nativeTokenId, form = 'transparent') {
+  if (index === TOKEN_INDEX_NATIVE) {
+    return nativeTokenId;
+  }
+  if (index === TOKEN_INDEX_CREATED) {
+    // As the node reads it: only a creation's transparent outputs hold the token it creates.
+    if (tx.kind !== 'token-create' || form !== 'transparent') {
+      throw new Error('Only a token creation\'s transparent outputs name the token it creates.');
+    }
+    return CREATED_TOKEN_ID;
+  }
+  const entry = tx.table[index];
+  if (!entry) {
+    throw new Error('An output names a token the transaction doesn\'t list.');
+  }
+  return entry;
+}
+
+/** The kind of output each confidentiality level writes, from level 1 to 4. */
+const LEVEL_FORMS = [null, 'transparent', 'amount-shielded', 'shielded', 'shielded'];
+
+/**
+ * Checks every output of a v3 transaction against the recipient said to receive it, at the level
+ * the signer approved for it, never the one the bytes or the backend name, ported from
+ * `samba_crypto::txn::validate_sender_opening_levels`: level 4 is shielded and stealth, 3 shielded
+ * and declared (paying `P = B`, the recipient's spend key), 2 amount-shielded and 1 transparent,
+ * both declared. A creation's supply and change are level 1. An output of another kind than its
+ * level's is refused.
+ *
+ * For output `j` paying `(A, B)`: `S = enc(r·A)`; the one-time key is `B` when declared and
+ * `H("samba/otk", S, j)·G + B` otherwise; the view tag comes from `S` either way. A shielded
+ * output's asset tag, commitment and masked amount recompute from `S`; an amount-shielded one's
+ * token is in the clear and its commitment is over `H_token`; a transparent one's token and amount
+ * are in the clear.
+ *
+ * @param {Object} tx readTxV3's result
+ * @param {{ address: string, amount: bigint, tokenId: Uint8Array, level: 1|2|3|4 }[]}
+ *   recipients In output order
+ * @param {Uint8Array} senderOpening The transaction key `r`, 32 bytes
+ * @param {Uint8Array} nativeTokenId
+ * @throws {Error} When the opening doesn't open the transaction, or an output pays anything else
+ */
+export function checkOpeningLevels(tx, recipients, senderOpening, nativeTokenId) {
+  if (recipients.length !== tx.outputs.length) {
+    throw new Error('Every output needs a recipient.');
+  }
+  const r = scalarFromCanonical(senderOpening);
+  if (r === 0n || bytesToHex(gMul(r).toRawBytes()) !== bytesToHex(tx.rPub)) {
+    throw new Error('The opening is not this transaction\'s key.');
+  }
+  const maxAmount = tx.width === 'u64' ? 2n ** 64n - 1n : 2n ** 128n - 1n;
+  const memoLen = tx.width === 'u64' ? 8 : 16;
+  tx.outputs.forEach((output, index) => {
+    const recipient = recipients[index];
+    const form = LEVEL_FORMS[recipient.level];
+    if (!form) {
+      throw new Error(`Output ${index} has no level.`);
+    }
+    if (output.form !== form) {
+      throw new Error(`Output ${index} is ${output.form}, not level ${recipient.level}.`);
+    }
+    if (recipient.amount < 0n || recipient.amount > maxAmount) {
+      throw new Error(`Output ${index} pays an amount out of range.`);
+    }
+    const want = expectedOutput(
+      r,
+      recipient.address,
+      recipient.tokenId,
+      recipient.amount,
+      index,
+      memoLen,
+    );
+    const keys = decodeAddressKeys(recipient.address);
+    const oneTimeKey = recipient.level < 4 ? keys.spend : want.oneTimeKey;
+    let same = bytesToHex(oneTimeKey) === bytesToHex(output.oneTimeKey)
+      && want.viewTag === output.viewTag;
+    if (output.form === 'shielded') {
+      // A shielded output can't hold the token a creation creates: its generator would be the
+      // transaction's own id.
+      if (bytesToHex(recipient.tokenId) === bytesToHex(CREATED_TOKEN_ID)) {
+        throw new Error(`Output ${index} claims the created token on a shielded output.`);
+      }
+      same = same
+        && bytesToHex(want.assetTag) === bytesToHex(output.assetTag)
+        && bytesToHex(want.commitment) === bytesToHex(output.commitment)
+        && bytesToHex(want.memo) === bytesToHex(output.memo);
+    } else {
+      const token = tokenOfIndex(tx, output.tokenIndex, nativeTokenId, output.form);
+      same = same && bytesToHex(token) === bytesToHex(recipient.tokenId);
+      if (output.form === 'amount-shielded') {
+        // No asset blinder: the tag is H_token itself.
+        const shared = mul(RistrettoPoint.fromHex(keys.view), r).toRawBytes();
+        const blinder = hashToScalar('samba/blind', [shared, u32LE(index)]);
+        const commitment = mul(assetGenerator(recipient.tokenId), recipient.amount)
+          .add(gMul(blinder));
+        same = same
+          && bytesToHex(commitment.toRawBytes()) === bytesToHex(output.commitment)
+          && bytesToHex(want.memo) === bytesToHex(output.memo);
+      } else {
+        same = same && output.amount === recipient.amount;
+      }
+    }
+    if (!same) {
+      throw new Error(`Output ${index} doesn't pay what it says.`);
+    }
+  });
+}

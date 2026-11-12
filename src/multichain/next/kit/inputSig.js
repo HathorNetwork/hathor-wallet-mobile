@@ -19,6 +19,8 @@ import { ORDER, bigintToBytesLE, bytesToBigintLE, concatBytes, modOrder } from '
 
 export const INPUT_DOMAIN = 'samba/transparent-input/challenge';
 export const EXCESS_DOMAIN = 'samba/excess/challenge';
+/** A mint's or melt's authority signature (`samba_crypto::schnorr`), over the signing hash. */
+export const AUTHORITY_DOMAIN = 'samba/schnorr/challenge';
 
 /**
  * Signs `msg` with the one-time secret `p` of the output whose key is `key`. The nonce mixes the
@@ -31,19 +33,36 @@ export const EXCESS_DOMAIN = 'samba/excess/challenge';
  * @returns {Uint8Array} 64 bytes
  */
 export function signInput(p, key, msg, entropy = randomBytes(32)) {
+  return signIn(INPUT_DOMAIN, p, key, msg, entropy);
+}
+
+/**
+ * Signs a mint's or melt's signing hash with its authority's secret `x`: `R ‖ s`,
+ * `e = H("samba/schnorr/challenge" ‖ 0 ‖ X ‖ R ‖ msg)`, `s = k + e·x`.
+ *
+ * @param {bigint} x
+ * @param {Uint8Array} msg The 32-byte signing hash
+ * @param {Uint8Array} [entropy] 32 random bytes; tests pass their own
+ * @returns {Uint8Array} 64 bytes
+ */
+export function signAuthority(x, msg, entropy = randomBytes(32)) {
+  return signIn(AUTHORITY_DOMAIN, x, RistrettoPoint.BASE.multiply(x).toRawBytes(), msg, entropy);
+}
+
+function signIn(domain, p, key, msg, entropy) {
   const k = hashToScalar('hathor-wallet/input-nonce/v1', [bigintToBytesLE(p), key, msg, entropy]);
   if (k === 0n || p <= 0n) {
     throw new Error('Could not sign.');
   }
   const r = RistrettoPoint.BASE.multiply(k).toRawBytes();
-  const e = hashToScalar(INPUT_DOMAIN, [key, r, msg]);
+  const e = hashToScalar(domain, [key, r, msg]);
   return concatBytes(r, bigintToBytesLE(modOrder(k + e * p)));
 }
 
 /**
  * Whether `sig` is `key`'s signature of `msg` under `domain`: `s·G == R + e·P`.
  *
- * @param {string} domain INPUT_DOMAIN or EXCESS_DOMAIN
+ * @param {string} domain INPUT_DOMAIN, EXCESS_DOMAIN or AUTHORITY_DOMAIN
  * @param {Uint8Array} key
  * @param {Uint8Array} msg
  * @param {Uint8Array} sig

@@ -288,6 +288,12 @@ export const MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE = 'multichain-network.roll
  * doesn't return.
  */
 export const MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE = 'multichain-dev-backend.rollout';
+/**
+ * Shows "Create a token on Hathor Next" in Settings, on a Hathor Next whose backend creates tokens.
+ * It does nothing without MULTICHAIN_FEATURE_TOGGLE. Off by default, like every flag Unleash
+ * doesn't return.
+ */
+export const MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE = 'multichain-token-create.rollout';
 
 /**
  * Default feature toggle values.
@@ -314,6 +320,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [MULTICHAIN_FEATURE_TOGGLE]: false,
   [MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]: false,
   [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: false,
+  [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: false,
 };
 
 /**

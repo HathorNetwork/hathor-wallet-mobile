@@ -127,7 +127,34 @@ export function createBackendApi(baseUrl, { fetchImpl = (...args) => fetch(...ar
       return request('GET', `${wallet(walletId)}/history${qs ? `?${qs}` : ''}`, { token });
     },
 
-    getTokens: () => request('GET', '/v1/tokens'),
+    /**
+     * The tokens created on the network, a page at a time.
+     *
+     * @param {{ from?: string, limit?: number, authorities?: boolean }} [page] `authorities`
+     *   asks for each token's mint and melt public keys too
+     */
+    getTokens: ({ from, limit, authorities } = {}) => {
+      const query = new URLSearchParams();
+      if (from) query.set('from', from);
+      if (limit) query.set('limit', String(limit));
+      if (authorities) query.set('authorities', 'true');
+      const qs = query.toString();
+      return request('GET', `/v1/tokens${qs ? `?${qs}` : ''}`);
+    },
+
+    /**
+     * Asks the backend to build a token creation. It answers with a sign request, as a payment's,
+     * which the app checks before signing anything.
+     *
+     * @param {string} walletId
+     * @param {string} token
+     * @param {Object} creation intent_id, symbol, name, amount, mint_authority, melt_authority
+     *   (this wallet's public keys), max_fee
+     */
+    createToken: (walletId, token, creation) => request('POST', `${wallet(walletId)}/tokens`, {
+      body: creation,
+      token,
+    }),
 
     /**
      * Asks the backend to build a payment. It answers with a sign request the app checks before

@@ -41,6 +41,7 @@ import {
   multichainNextHistoryRequested,
   multichainNextKeysDerived,
   multichainNextKeysUnlockRequested,
+  multichainNextCreateTokenRequested,
   multichainNextSendRequested,
   multichainNextUpdate,
   multichainTransferRequested,
@@ -587,6 +588,99 @@ describe('a Hathor Next payment', () => {
     env.dispatch(draft('draft-1'));
     await wait(1000);
     expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.FAILED,
+      reason: expect.any(String),
+    });
+  });
+});
+
+describe('a Hathor Next token creation', () => {
+  const SUPPLY = 100000000n;
+  const draft = (draftId) => multichainNextCreateTokenRequested({
+    symbol: 'ATT',
+    name: 'App Test Token',
+    amount: SUPPLY,
+    draftId,
+    pinCode: PIN,
+  });
+
+  test('takes the words from the PIN, and the wallet then holds the token\'s supply', async () => {
+    const env = setup();
+    await connect(env);
+    expect(env.getState().multichain.next.canCreateTokens).toBe(true);
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-1'));
+    await wait(1000);
+    expect(STORE.getWalletWords).toHaveBeenCalledWith(PIN);
+    expect(createSpy).toHaveBeenCalledWith({
+      words: WORDS, symbol: 'ATT', name: 'App Test Token', amount: SUPPLY,
+    });
+    const { createToken, next } = env.getState().multichain;
+    expect(createToken).toMatchObject({
+      status: OPERATION_STATUS.RECORDED, draftId: 'token-1', error: null,
+    });
+    expect(next.tokens[createToken.tokenId]).toMatchObject({ symbol: 'ATT', name: 'App Test Token' });
+    expect(next.balances[createToken.tokenId].data.available).toBe(SUPPLY);
+    // The PIN is in no state.
+    expect(JSON.stringify(env.getState().multichain, (k, v) => (
+      typeof v === 'bigint' ? v.toString() : v
+    ))).not.toContain(PIN);
+  });
+
+  test('is created at most once per draft, and one at a time', async () => {
+    const env = setup();
+    await connect(env);
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-1'));
+    env.dispatch(draft('token-1'));
+    env.dispatch(draft('token-2'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    env.dispatch(draft('token-1'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('a passkey wallet\'s ceremony gives the words, and dismissing it changes nothing', async () => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    withPasskeyWords.mockImplementation(async (use) => use(WORDS));
+    const env = setup();
+    await connect(env);
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-1'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ words: WORDS }));
+    expect(STORE.getWalletWords).not.toHaveBeenCalledWith(PIN);
+    expect(env.getState().multichain.createToken.status).toBe(OPERATION_STATUS.RECORDED);
+
+    withPasskeyWords.mockRejectedValue(new PasskeyCancelledError());
+    env.dispatch(draft('token-2'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.IDLE, draftId: null,
+    });
+  });
+
+  test('a creation refused before signing says why', async () => {
+    const env = setup();
+    await connect(env);
+    jest.spyOn(getNextClient(), 'createToken')
+      .mockRejectedValue(new NextClientError(NEXT_CLIENT_ERROR.TOKEN_REFUSED));
+    env.dispatch(draft('token-1'));
+    await wait(1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      error: new NextClientError(NEXT_CLIENT_ERROR.TOKEN_REFUSED).message,
+    });
+  });
+
+  test('the network turning it down is a failure with its words', async () => {
+    const env = setup({ scenario: FAKE_SCENARIO.SEND_REJECTED });
+    await connect(env);
+    env.dispatch(draft('token-1'));
+    await wait(1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
       status: OPERATION_STATUS.FAILED,
       reason: expect.any(String),
     });

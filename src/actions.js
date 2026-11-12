@@ -308,6 +308,9 @@ export const types = {
   MULTICHAIN_NEXT_SEND_REQUESTED: 'MULTICHAIN_NEXT_SEND_REQUESTED',
   MULTICHAIN_NEXT_SEND_UPDATE: 'MULTICHAIN_NEXT_SEND_UPDATE',
   MULTICHAIN_NEXT_SEND_RESET: 'MULTICHAIN_NEXT_SEND_RESET',
+  MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED: 'MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED',
+  MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE: 'MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE',
+  MULTICHAIN_NEXT_CREATE_TOKEN_RESET: 'MULTICHAIN_NEXT_CREATE_TOKEN_RESET',
   MULTICHAIN_TRANSFERS_SET: 'MULTICHAIN_TRANSFERS_SET',
   MULTICHAIN_TRANSFER_REQUESTED: 'MULTICHAIN_TRANSFER_REQUESTED',
   MULTICHAIN_TRANSFER_UPDATE: 'MULTICHAIN_TRANSFER_UPDATE',
@@ -2167,6 +2170,35 @@ export const multichainNextSendUpdate = (payload) => ({
 
 export const multichainNextSendReset = () => ({
   type: types.MULTICHAIN_NEXT_SEND_RESET,
+});
+
+/**
+ * Creates a token on Hathor Next, its whole supply paid to this wallet. Sent at most once per
+ * draft. The PIN is a seed wallet's, which the words for the token's keys are decrypted with; a
+ * passkey wallet's ceremony runs in the saga. No reducer stores it.
+ *
+ * @param {Object} payload
+ * @param {string} payload.symbol
+ * @param {string} payload.name
+ * @param {bigint} payload.amount The supply, in Hathor Next's units
+ * @param {string} payload.draftId
+ * @param {string} [payload.pinCode]
+ */
+export const multichainNextCreateTokenRequested = ({ symbol, name, amount, draftId, pinCode }) => ({
+  type: types.MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED,
+  payload: { symbol, name, amount, draftId, pinCode },
+});
+
+/**
+ * @param {Object} payload Part of state.multichain.createToken
+ */
+export const multichainNextCreateTokenUpdate = (payload) => ({
+  type: types.MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE,
+  payload,
+});
+
+export const multichainNextCreateTokenReset = () => ({
+  type: types.MULTICHAIN_NEXT_CREATE_TOKEN_RESET,
 });
 
 /**
