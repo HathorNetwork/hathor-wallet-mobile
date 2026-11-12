@@ -21,9 +21,10 @@ import {
   signInput,
   verifyIn,
 } from '../../../src/multichain/next/kit/inputSig';
-import { checkOpening } from '../../../src/multichain/next/kit/opening';
+import { checkOpening, expectedOutput } from '../../../src/multichain/next/kit/opening';
 import { publicKeyOf } from '../../../src/multichain/next/kit/keys';
 import {
+  bigintToBytesLE,
   bytesToBigintLE,
   bytesToHex,
   hexToBytes,
@@ -85,6 +86,65 @@ describe.each(vectors.cases)('the remote-signing case "$name"', (vector) => {
     const wrongKey = Uint8Array.from(opening);
     wrongKey[0] = wrongKey[0] === 0 ? 1 : 0;
     expect(() => checkOpening(tx, recipientsOf(vector), wrongKey)).toThrow();
+  });
+
+  // Each check on its own: the refusal must name the check, so no other one can stand in for it.
+  describe('each check of the opening, on its own', () => {
+    const opening = hexToBytes(vector.sender_opening);
+    const open = (recipients, key = opening, parsed = tx) => (
+      () => checkOpening(parsed, recipients ?? recipientsOf(vector), key)
+    );
+    const changed = (field) => {
+      const out = Uint8Array.from(field);
+      out[0] = (out[0] + 1) % 256;
+      return out;
+    };
+
+    it('needs exactly one recipient per output', () => {
+      const all = recipientsOf(vector);
+      expect(open([...all, all[0]])).toThrow('Every output needs a recipient.');
+      expect(open(all.slice(1))).toThrow('Every output needs a recipient.');
+    });
+
+    it('needs the transaction\'s own key, never zero', () => {
+      const next = bigintToBytesLE(modOrder(bytesToBigintLE(opening) + 1n));
+      for (const key of [new Uint8Array(32), next]) {
+        expect(open(undefined, key)).toThrow('The opening is not this transaction\'s key.');
+      }
+    });
+
+    it('never opens with a zero key, even a transaction whose key is the identity', () => {
+      // With r = 0 every shared secret is the identity: anyone could open the outputs.
+      const recipients = recipientsOf(vector);
+      const memoLen = tx.width === 'u64' ? 8 : 16;
+      const outputs = recipients.map((rc, index) => (
+        expectedOutput(0n, rc.address, rc.tokenId, rc.amount, index, memoLen)
+      ));
+      const identityKeyed = { ...tx, rPub: new Uint8Array(32), outputs };
+      expect(open(recipients, new Uint8Array(32), identityKeyed))
+        .toThrow('The opening is not this transaction\'s key.');
+    });
+
+    it('refuses an amount out of range for the width, whose commitment could alias', () => {
+      const max = tx.width === 'u64' ? 2n ** 64n - 1n : 2n ** 128n - 1n;
+      for (const amount of [-1n, max + 1n]) {
+        const recipients = recipientsOf(vector);
+        recipients[0].amount = amount;
+        expect(open(recipients)).toThrow('Output 0 pays an amount out of range.');
+      }
+    });
+
+    it.each(['oneTimeKey', 'viewTag', 'assetTag', 'commitment', 'memo'])(
+      'refuses an output whose %s is not the one its recipient gets',
+      (field) => {
+        const outputs = tx.outputs.map((o) => ({ ...o }));
+        outputs[0][field] = field === 'viewTag'
+          ? (outputs[0].viewTag + 1) % 256
+          : changed(outputs[0][field]);
+        expect(open(undefined, opening, { ...tx, outputs }))
+          .toThrow('Output 0 doesn\'t pay what it says.');
+      },
+    );
   });
 
   it('verifies the signer\'s signatures and assembles the signed transaction and its id', () => {
