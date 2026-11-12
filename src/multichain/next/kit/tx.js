@@ -41,6 +41,29 @@ export function signingHashOf(bytes, tx) {
 }
 
 /**
+ * The outputs a transaction spends, by global index (decimal strings), from its parsed fields.
+ * The sign-once ledger names an input by this, never by its one-time key: a declared output pays
+ * the recipient's spend key itself, so all of one wallet's declared coins share one key.
+ *
+ * @param {Object} tx What parseTx returns
+ * @returns {string[]}
+ */
+export function spentOutputs(tx) {
+  return tx.inputs.map((input) => input.outputIndex.toString());
+}
+
+/**
+ * The outputs a saved transaction spends, read from its bytes, signed or not.
+ *
+ * @param {Uint8Array} bytes
+ * @returns {string[]}
+ * @throws {Error} When the bytes don't read
+ */
+export function spentOutputsOfBytes(bytes) {
+  return spentOutputs(parseTx(bytes));
+}
+
+/**
  * The id of a signed transaction.
  *
  * @param {Uint8Array} bytes

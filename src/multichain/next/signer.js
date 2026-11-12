@@ -19,6 +19,8 @@ import { TOKEN_INDEX_NATIVE } from './kit/txV2';
 import {
   parseTx,
   signingHashOf,
+  spentOutputs,
+  spentOutputsOfBytes,
   txIdOf,
   withInputSignatures,
 } from './kit/tx';
@@ -198,6 +200,12 @@ export function checkSignRequest(request, {
  * different transaction: the two would conflict and the network would burn it. Signing the same
  * transaction again returns the signatures already made, so its bytes and id don't change.
  *
+ * An input is the output it spends, named by its global index, never by its one-time key: a
+ * declared output pays the wallet's spend key itself, so all of a wallet's declared coins share
+ * one key, and keyed by it the first one spent would hold every other. An entry saved before the
+ * ledger named outputs has them read from its signed bytes; one whose bytes don't read holds by
+ * its keys, which can only hold more.
+ *
  * An entry ends one of two ways. Recorded: the chain has the transaction, its inputs are spent.
  * Rejected: the network refused the transaction by name, as the backend reports from the wallet
  * service's verdict, and its inputs are free again. A rejected entry is kept, as the evidence of
@@ -210,6 +218,16 @@ export function checkSignRequest(request, {
 export function createSignLedger(storage, key) {
   const load = () => storage.getItem(key) ?? { entries: [] };
   const save = (entries) => storage.setItemAsync(key, { entries });
+  const outputsOf = (entry) => {
+    if (Array.isArray(entry.outputs)) {
+      return entry.outputs;
+    }
+    try {
+      return spentOutputsOfBytes(hexToBytes(entry.signedTx));
+    } catch (e) {
+      return null;
+    }
+  };
   const settle = async (txId, patch) => {
     const { entries } = load();
     if (entries.some((e) => e.txId === txId && !e.recorded && !e.rejected)) {
@@ -219,15 +237,21 @@ export function createSignLedger(storage, key) {
   return {
     /**
      * @param {Uint8Array} signingHash
-     * @param {Uint8Array[]} keys The inputs' one-time keys
+     * @param {string[]} outputs The outputs the inputs spend, by global index (spentOutputs)
+     * @param {Uint8Array[]} keys The inputs' one-time keys, for an entry whose outputs don't read
      * @returns {Object|null} The entry of this same transaction, if it was signed before
      * @throws {LedgerConflictError} When an input was signed into another transaction
      */
-    check(signingHash, keys) {
+    check(signingHash, outputs, keys) {
       const hash = bytesToHex(signingHash);
-      const wanted = new Set(keys.map(bytesToHex));
+      const spends = new Set(outputs);
+      const named = new Set(keys.map(bytesToHex));
       for (const entry of load().entries) {
-        if (!entry.rejected && entry.inputs.some((k) => wanted.has(k))) {
+        const held = entry.rejected ? [] : outputsOf(entry);
+        const holds = held === null
+          ? entry.inputs.some((k) => named.has(k))
+          : held.some((g) => spends.has(g));
+        if (holds) {
           if (entry.signingHash === hash) {
             return entry;
           }
@@ -288,7 +312,8 @@ export function createSignLedger(storage, key) {
  */
 export async function verifyAndSign(request, context) {
   const { bytes, tx, signingHash, secrets, keys } = checkSignRequest(request, context);
-  const previous = context.ledger.check(signingHash, keys);
+  const outputs = spentOutputs(tx);
+  const previous = context.ledger.check(signingHash, outputs, keys);
   if (previous) {
     return {
       signatures: previous.signatures,
@@ -306,6 +331,7 @@ export async function verifyAndSign(request, context) {
   await context.ledger.record({
     sendId: request.id,
     signingHash: bytesToHex(signingHash),
+    outputs,
     inputs: keys.map(bytesToHex),
     ...result,
     signedAt: Date.now(),
