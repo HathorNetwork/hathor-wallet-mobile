@@ -22,10 +22,12 @@ import AmountTextInput from '../../components/AmountTextInput';
 import InputLabel from '../../components/InputLabel';
 import OfflineBar from '../../components/OfflineBar';
 import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
+import { NextTokenPicker } from '../../components/Multichain/NextTokenPicker';
 import { canTransfer, CHAIN, NEXT_DECIMAL_PLACES } from '../../multichain/chains';
 import { syncingSendBody } from '../../multichain/content';
 import { selectSideChainConfig } from '../../multichain/gating';
 import { shortBalanceAdvice } from '../../multichain/transfer';
+import { nextTokenList } from '../../multichain/tokens';
 import { useTransferContext } from './ChainTransferScreen';
 import { getKeyboardAvoidingViewTopDistance } from '../../utils';
 import { renderNextValue } from '../../multichain/amount';
@@ -41,19 +43,39 @@ import { COLORS } from '../../styles/themes';
 export const selectNextSendFee = (state) => state.multichain.next.sendFee;
 
 /**
- * The amount of a Hathor Next payment. Only the native token, HTR, can be sent on Hathor Next
- * today, so there is no token to pick. The flat fee comes on top of the amount. While the first
- * sync runs, sending waits for it. An amount Hathor Next doesn't have, but Hathor Network does,
- * offers the transfer between chains instead.
+ * The fee a Hathor Next payment pays in the native token, when the native token isn't what it
+ * sends and the wallet holds too little of it.
+ *
+ * @param {string} feeText The fee, as shown
+ * @param {string} nativeSymbol
+ * @returns {string}
+ */
+export const feeShortText = (feeText, nativeSymbol) => (
+  t`The network fee is paid in ${nativeSymbol}. You need ${feeText} ${nativeSymbol} on Hathor Next.`
+);
+
+/**
+ * The amount of a Hathor Next payment, in one of the tokens the wallet holds there: the native
+ * token unless the user picks another (the picker shows when it holds another). The flat fee is
+ * always paid in the native token: on top of the amount when the payment sends it, from the native
+ * balance otherwise. While the first sync runs, sending waits for it. An amount Hathor Next
+ * doesn't have, of a token the bridge carries, offers the transfer between chains instead, when
+ * Hathor Network has it.
  */
 export default function NextSendAmountInput() {
   const navigation = useNavigation();
-  const { address } = useParams();
+  const params = useParams();
+  const { address } = params;
   const config = useSelector(selectSideChainConfig);
   const nativeTokenId = config?.nativeTokenId;
-  const available = useSelector(
-    (state) => state.multichain.next.balances[nativeTokenId]?.data?.available ?? 0n,
-  );
+  const tokens = useSelector((state) => state.multichain.next.tokens);
+  const balances = useSelector((state) => state.multichain.next.balances);
+  const [pickedTokenId, setPickedTokenId] = useState(null);
+  const tokenId = pickedTokenId ?? params.tokenId ?? nativeTokenId;
+  const native = tokenId === nativeTokenId;
+  const balanceOf = (id) => balances[id]?.data?.available ?? 0n;
+  const available = balanceOf(tokenId);
+  const nativeAvailable = balanceOf(nativeTokenId);
   const sweeping = useSelector((state) => state.multichain.next.sweeping);
   const online = useSelector((state) => state.multichain.next.online);
   const [amountText, setAmountText] = useState('');
@@ -67,10 +89,26 @@ export default function NextSendAmountInput() {
   const ownAddress = useSelector((state) => state.multichain.next.address);
 
   const fee = useSelector(selectNextSendFee);
-  const symbol = config?.nativeTokenSymbol ?? 'HTR';
+  const nativeSymbol = config?.nativeTokenSymbol ?? 'HTR';
+  const symbol = native ? nativeSymbol : (tokens[tokenId]?.symbol ?? '');
   const render = (value) => renderNextValue(value, hathorDecimalPlaces);
   const availableText = render(available);
   const feeText = render(fee);
+  // The tokens a payment can send: the native one, and every other the wallet holds some of.
+  const options = nextTokenList(tokens, nativeTokenId)
+    .filter((token) => token.uid === nativeTokenId || balanceOf(token.uid) > 0n)
+    .map((token) => ({
+      id: token.uid,
+      symbol: token.uid === nativeTokenId ? nativeSymbol : token.symbol,
+      name: token.name,
+      balance: render(balanceOf(token.uid)),
+    }));
+
+  const onTokenChange = (id) => {
+    setPickedTokenId(id);
+    setError(null);
+    setAdvice(null);
+  };
 
   const onAmountChange = (text, value) => {
     setAmountText(text);
@@ -79,9 +117,10 @@ export default function NextSendAmountInput() {
     setAdvice(null);
   };
 
-  // What the user is told when Hathor Next doesn't have the amount: Hathor Network may.
+  // What the user is told when Hathor Next doesn't have the amount: Hathor Network may, for the
+  // token the bridge carries.
   const adviseShortBalance = () => {
-    const mapped = config?.tokenMap?.some((pair) => pair.next === nativeTokenId);
+    const mapped = native && config?.tokenMap?.some((pair) => pair.next === nativeTokenId);
     if (!mapped) {
       return null;
     }
@@ -110,15 +149,20 @@ export default function NextSendAmountInput() {
       setError(t`Invalid amount`);
       return;
     }
-    if (amount + fee > available) {
+    if ((native ? amount + fee : amount) > available) {
       const shortBalance = adviseShortBalance();
       setAdvice(shortBalance);
       setError(shortBalance ? null : t`Insufficient funds`);
       return;
     }
+    if (!native && fee > nativeAvailable) {
+      setError(feeShortText(feeText, nativeSymbol));
+      return;
+    }
     navigation.navigate('NextSendConfirmScreen', {
       address,
       amount: amount.toString(),
+      tokenId,
     });
   };
 
@@ -146,12 +190,23 @@ export default function NextSendAmountInput() {
                   decimalPlaces={NEXT_DECIMAL_PLACES}
                   style={{ flex: 1 }}
                 />
-                <Text style={styles.symbol}>{symbol}</Text>
+                {options.length > 1 ? (
+                  <View style={styles.picker}>
+                    <NextTokenPicker
+                      tokenId={tokenId}
+                      symbol={symbol}
+                      options={options}
+                      onChange={onTokenChange}
+                    />
+                  </View>
+                ) : (
+                  <Text style={styles.symbol}>{symbol}</Text>
+                )}
               </View>
               <InputLabel style={styles.available}>
                 {t`${availableText} ${symbol} available`}
               </InputLabel>
-              <Text style={styles.fee}>{t`Network fee: ${feeText} ${symbol}`}</Text>
+              <Text style={styles.fee}>{t`Network fee: ${feeText} ${nativeSymbol}`}</Text>
               {sweeping && <SyncingNotice text={syncingSendBody()} style={styles.syncing} />}
               <Text style={styles.error}>{error}</Text>
               {advice && <Text style={styles.advice}>{advice.message}</Text>}
@@ -190,6 +245,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 40,
+  },
+  picker: {
+    marginLeft: 8,
   },
   symbol: {
     marginLeft: 8,

@@ -487,6 +487,26 @@ describe('a Hathor Next payment', () => {
     expect(env.getState().multichain.next.balances[HTR].data.available).toBe(2395000000n);
   });
 
+  // The fake ledger's funded scenario holds two tokens besides HTR.
+  test('in another token takes its amount from that token, and the fee from HTR', async () => {
+    const env = setup();
+    await connect(env);
+    const { balances } = env.getState().multichain.next;
+    const token = Object.keys(balances)
+      .find((id) => id !== HTR && balances[id].data.available > 0n);
+    const before = { token: balances[token].data.available, htr: balances[HTR].data.available };
+    env.dispatch(multichainNextSendRequested({
+      tokenId: token, to: fakePeerAddress('someone'), amount: 100000000n, draftId: 'draft-t', pinCode: PIN,
+    }));
+    await wait(1000);
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.RECORDED, draftId: 'draft-t',
+    });
+    const after = env.getState().multichain.next.balances;
+    expect(after[token].data.available).toBe(before.token - 100000000n);
+    expect(after[HTR].data.available).toBe(before.htr - 5000000n);
+  });
+
   test("keeps the client's events that come while the saga is busy with another", () => {
     const listeners = {};
     const client = {

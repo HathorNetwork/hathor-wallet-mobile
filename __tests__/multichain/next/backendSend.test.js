@@ -57,7 +57,16 @@ const SIGN_INPUTS = (() => {
   }));
 })();
 
-function fakeBackend({ request = null, resubmitStatus = 'submitted', sendStatus = null, earlierStatus = null, } = {}) {
+// A token besides the native one, which the vectors' builder never pays.
+const OTHER_TOKEN = 'c230a6631f721ad5cab42b3eeb726513274f411134bbcd474471a76088979873';
+
+function fakeBackend({
+  request = null,
+  resubmitStatus = 'submitted',
+  sendStatus = null,
+  earlierStatus = null,
+  balances = [{ token: NATIVE, referenceable: '100000' }],
+} = {}) {
   const calls = [];
   const resubmitted = [];
   let signatures = null;
@@ -98,7 +107,6 @@ function fakeBackend({ request = null, resubmitStatus = 'submitted', sendStatus 
       return json(200, { token: 't', scope: 'full', expires_at: 4000000000 });
     }
     if (path.endsWith('/balance')) {
-      const balances = [{ token: NATIVE, referenceable: '100000' }];
       return json(200, { balance_state: 'live', balances });
     }
     if (path.includes('/history')) return json(200, { history: [] });
@@ -331,6 +339,26 @@ describe('what the user is told when the backend can\'t prepare a payment', () =
   ])('%s → %s', (error, code) => {
     expect(prepareError(error).code).toBe(code);
   });
+
+  // The words the wallet service used on devnet-alpha for a token payment whose fee only public
+  // native funds could pay.
+  const feeLeak = new BackendError(422, `prepare failed (amount-leak): wallet service 422: amount-leak: token=${NATIVE} hidden_outputs=1 only public inputs fund this token's one hidden output, so its amount is readable on chain. Pay a second hidden output in this token (change does), spend a hidden input, or set allow_amount_leak to send anyway`);
+
+  it('tells a payment in another token that its fee is the trouble, not its amount', () => {
+    expect(prepareError(feeLeak, { tokenId: OTHER_TOKEN, nativeTokenId: NATIVE }).code)
+      .toBe('fee-amount-visible');
+  });
+
+  it('tells a payment of the native token to send a little less', () => {
+    expect(prepareError(feeLeak, { tokenId: NATIVE, nativeTokenId: NATIVE }).code)
+      .toBe('amount-visible');
+  });
+
+  it("tells a payment in another token to send less when that token's amount would show", () => {
+    const tokenLeak = new BackendError(422, `amount-leak: token=${OTHER_TOKEN} hidden_outputs=1 only public inputs fund this token's one hidden output`);
+    expect(prepareError(tokenLeak, { tokenId: OTHER_TOKEN, nativeTokenId: NATIVE }).code)
+      .toBe('amount-visible');
+  });
 });
 
 describe('outputs an earlier payment signed', () => {
@@ -496,5 +524,49 @@ describe('the wallet\'s transfers', () => {
       { id: 't-1', status: 'confirming', confirmations: 3 },
     ]);
     client.disconnect();
+  });
+});
+
+describe('a Hathor Next payment in another token', () => {
+  let client = null;
+  afterEach(() => {
+    client?.disconnect();
+    client = null;
+  });
+
+  const holding = (native) => [
+    { token: NATIVE, referenceable: native },
+    { token: OTHER_TOKEN, referenceable: '50000' },
+  ];
+
+  // The backend builds what the request names; the signer checks the token it pays all the same.
+  it('names the token to the backend, and signs nothing that pays another', async () => {
+    const backend = fakeBackend({ balances: holding('100000') });
+    client = await connected(backend);
+    await expect(client.send({
+      tokenId: OTHER_TOKEN,
+      to: PAYMENT.address,
+      amount: 30000n,
+    })).rejects.toMatchObject({ code: 'refused' });
+    const create = backend.calls.find((c) => c.method === 'POST' && c.path.endsWith('/sends'));
+    expect(create.data).toMatchObject({ to: PAYMENT.address, amount: '30000', token: OTHER_TOKEN });
+    expect(backend.signatures()).toBeNull();
+    expect(backend.calls.some((c) => c.method === 'DELETE')).toBe(true);
+  });
+
+  it('names no token for a payment in the native one', async () => {
+    const backend = fakeBackend({ balances: holding('100000') });
+    client = await connected(backend);
+    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+    const create = backend.calls.find((c) => c.method === 'POST' && c.path.endsWith('/sends'));
+    expect(create.data).not.toHaveProperty('token');
+  });
+
+  it("asks nothing of the backend when the native token can't pay the fee", async () => {
+    const backend = fakeBackend({ balances: holding('4999') });
+    client = await connected(backend);
+    await expect(client.send({ tokenId: OTHER_TOKEN, to: PAYMENT.address, amount: 30000n }))
+      .rejects.toMatchObject({ code: 'insufficient-funds' });
+    expect(backend.calls.some((c) => c.method === 'POST' && c.path.endsWith('/sends'))).toBe(false);
   });
 });

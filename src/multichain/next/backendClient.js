@@ -77,15 +77,20 @@ export function pinMismatch(config, remote) {
  * The rows one statement line makes in a token's history. A line carries both sides of what
  * moved; a payment the wallet made shows as what it paid and, apart, the fee.
  *
+ * A line carries its transaction's fee whatever its token, and the fee is always paid in the
+ * native token: only the native token's line has it. A payment in another token shows its whole
+ * amount there, and the fee shows on the native token's line, alone.
+ *
  * @param {Object} line A statement line
  * @param {{ genesisMs: number, epochMs: number }} timing
- * @param {Object} [sent] What this app sent in the line's transaction: { peer }
+ * @param {Object|null} sent What this app sent in the line's transaction: { peer }
+ * @param {string} nativeTokenId The network's native token
  * @returns {Object[]}
  */
-export function rowsOfLine(line, timing, sent = null) {
+export function rowsOfLine(line, timing, sent, nativeTokenId) {
   const credited = BigInt(line.credited ?? '0');
   const debited = BigInt(line.debited ?? '0');
-  const fee = BigInt(line.fee ?? '0');
+  const fee = line.token === nativeTokenId ? BigInt(line.fee ?? '0') : 0n;
   const net = credited - debited;
   const base = {
     txId: line.tx_id ?? null,
@@ -137,9 +142,11 @@ export function rowsOfLine(line, timing, sent = null) {
  * What the user is told when the backend couldn't prepare a payment.
  *
  * @param {Error} e
+ * @param {{ tokenId: string, nativeTokenId: string }} [payment] What the payment sends, and the
+ *   network's native token
  * @returns {Error}
  */
-export function prepareError(e) {
+export function prepareError(e, payment = null) {
   if (e instanceof NextClientError || !(e instanceof BackendError)) {
     return e;
   }
@@ -149,10 +156,17 @@ export function prepareError(e) {
   if (e.status === 409 && /sweep/i.test(e.message)) {
     return new NextClientError(NEXT_CLIENT_ERROR.SWEEPING);
   }
-  // The wallet service's `amount-leak: ` refusal: funds that arrived in public (a transfer's
-  // mint) paying exactly one hidden output. Its text speaks of funding, so it goes first.
+  // The wallet service's `amount-leak: token=<id>` refusal: funds that arrived in public (a
+  // transfer's mint) paying exactly one hidden output of that token. Its text speaks of funding,
+  // so it goes first. In a payment of another token, the native token's one hidden output is the
+  // fee's change: no amount of the token sent changes that.
   if (e.status === 422 && /amount-leak:/.test(e.message)) {
-    return new NextClientError(NEXT_CLIENT_ERROR.AMOUNT_VISIBLE);
+    const leaked = /amount-leak: token=([0-9a-f]+)/i.exec(e.message)?.[1]?.toLowerCase();
+    const feeChange = payment && payment.tokenId !== payment.nativeTokenId
+      && leaked === payment.nativeTokenId;
+    return new NextClientError(
+      feeChange ? NEXT_CLIENT_ERROR.FEE_AMOUNT_VISIBLE : NEXT_CLIENT_ERROR.AMOUNT_VISIBLE,
+    );
   }
   if (e.status === 422 && /insufficient|not enough|funds/i.test(e.message)) {
     return new NextClientError(NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS);
@@ -714,7 +728,7 @@ export function createBackendNextClient({
         .flatMap((line) => {
           recorded.add(line.tx_id);
           const sent = sentByTx.get(line.tx_id);
-          return rowsOfLine(line, timing, sent ? { peer: sent.to } : null)
+          return rowsOfLine(line, timing, sent ? { peer: sent.to } : null, config.nativeTokenId)
             .map((row) => (sent ? { ...row, sendId: sent.sendId } : row));
         });
       for (const send of sends.values()) {
@@ -787,7 +801,7 @@ export function createBackendNextClient({
           max_fee: maxFee().toString(),
         }));
       } catch (e) {
-        throw prepareError(e);
+        throw prepareError(e, { tokenId, nativeTokenId: native });
       }
       const cancel = () => withSession((token) => api.cancelSend(request.id, token))
         .catch((e) => log.error('Could not cancel an unsigned Hathor Next payment.', e));

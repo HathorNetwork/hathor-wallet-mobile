@@ -36,6 +36,9 @@ export const NEXT_CLIENT_ERROR = {
   // Public funds alone would pay the one hidden output of a token, whose amount would then be
   // readable on chain: the wallet service refuses to prepare it.
   AMOUNT_VISIBLE: 'amount-visible',
+  // A payment in another token whose fee only public native funds can pay: the fee's change, the
+  // one hidden native output, would show its amount. Sending less of the token doesn't help.
+  FEE_AMOUNT_VISIBLE: 'fee-amount-visible',
   // An earlier payment signed the same outputs and hasn't settled: it was submitted again.
   EARLIER_PENDING: 'earlier-pending',
   // The transfer's destination is not a Hathor Next address.
@@ -73,6 +76,8 @@ export function nextClientErrorMessage(code) {
       return t`Hathor Next couldn't prepare this payment. Nothing was sent.`;
     case NEXT_CLIENT_ERROR.AMOUNT_VISIBLE:
       return t`Sending all of these funds would make the amount public on Hathor Next. Send a little less, so some comes back to you as change.`;
+    case NEXT_CLIENT_ERROR.FEE_AMOUNT_VISIBLE:
+      return t`The network fee would come from HTR that arrived in public, from a transfer between chains, and would make its amount public on Hathor Next. Send some HTR to your own Hathor Next address first, then try again.`;
     case NEXT_CLIENT_ERROR.EARLIER_PENDING:
       return t`An earlier payment from these funds hasn't settled yet, so it was sent again. Try this payment once it settles.`;
     case NEXT_CLIENT_ERROR.TRANSFER_BAD_ADDRESS:

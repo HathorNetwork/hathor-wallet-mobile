@@ -80,6 +80,10 @@ export default function NextSendConfirmScreen() {
   const amount = BigInt(params.amount);
   const { address } = params;
   const config = useSelector(selectSideChainConfig);
+  // What the payment sends: the native token unless the amount step picked another.
+  const tokenId = params.tokenId ?? config?.nativeTokenId;
+  const native = tokenId === config?.nativeTokenId;
+  const tokenSymbol = useSelector((state) => state.multichain.next.tokens[tokenId]?.symbol);
   const send = useSelector((state) => state.multichain.send);
   const online = useSelector((state) => state.multichain.next.online);
   const sweeping = useSelector((state) => state.multichain.next.sweeping);
@@ -98,10 +102,13 @@ export default function NextSendConfirmScreen() {
     dispatch(multichainNextSendReset());
   }, []);
 
-  const symbol = config?.nativeTokenSymbol ?? 'HTR';
+  const nativeSymbol = config?.nativeTokenSymbol ?? 'HTR';
+  const symbol = native ? nativeSymbol : (tokenSymbol ?? '');
   const fee = useSelector(selectNextSendFee);
   const hathorDecimalPlaces = useSelector((state) => state.serverInfo?.decimal_places ?? 2);
-  const render = (value) => `${renderNextValue(value, hathorDecimalPlaces)} ${symbol}`;
+  const render = (value, unit = symbol) => (
+    `${renderNextValue(value, hathorDecimalPlaces)} ${unit}`
+  );
   const outcome = send.draftId === draftId ? send.status : OPERATION_STATUS.IDLE;
   // No way back while the payment is on its way: the outcome shows here.
   useHoldScreen(navigation, SEND_IN_FLIGHT.includes(outcome));
@@ -109,7 +116,7 @@ export default function NextSendConfirmScreen() {
   const submit = (pinCode) => {
     setAuthorized(true);
     dispatch(multichainNextSendRequested({
-      tokenId: config.nativeTokenId,
+      tokenId,
       to: address,
       amount,
       draftId,
@@ -248,8 +255,10 @@ export default function NextSendConfirmScreen() {
         <Text style={styles.label}>{t`Address`}</Text>
         <Text style={styles.address} selectable>{address}</Text>
         <View style={styles.summary}>
-          <Row label={t`Network fee`} value={render(fee)} />
-          <Row label={t`Total`} value={render(amount + fee)} strong />
+          {/* The fee is always in the native token: a total adds up only when the payment is
+              too. */}
+          <Row label={t`Network fee`} value={render(fee, nativeSymbol)} />
+          {native && <Row label={t`Total`} value={render(amount + fee)} strong />}
         </View>
         {sweeping && <SyncingNotice text={syncingSendBody()} style={styles.syncing} />}
         {earlierOnItsWay && (

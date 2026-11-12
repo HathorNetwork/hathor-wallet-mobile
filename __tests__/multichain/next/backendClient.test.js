@@ -295,21 +295,55 @@ describe('statement lines as history rows', () => {
   const timing = { genesisMs: 0, epochMs: 1000 };
 
   it('shows a receipt as one incoming row', () => {
-    expect(rowsOfLine(HISTORY[0], timing)).toMatchObject([
+    expect(rowsOfLine(HISTORY[0], timing, null, NATIVE)).toMatchObject([
       { direction: 'in', kind: 'payment', amount: '1000000000', at: 0 },
     ]);
   });
 
   it('shows a payment as what was paid and, apart, the fee', () => {
-    expect(rowsOfLine(HISTORY[1], timing, { peer: 'samba1zxyz' })).toMatchObject([
+    expect(rowsOfLine(HISTORY[1], timing, { peer: 'samba1zxyz' }, NATIVE)).toMatchObject([
       { direction: 'out', kind: 'payment', amount: '100000000', peer: 'samba1zxyz' },
       { direction: 'out', kind: 'fee', amount: '1000000' },
     ]);
   });
 
   it('shows a mint as an incoming mint', () => {
-    expect(rowsOfLine({ ...HISTORY[0], kind: 'mint' }, timing)).toMatchObject([
+    expect(rowsOfLine({ ...HISTORY[0], kind: 'mint' }, timing, null, NATIVE)).toMatchObject([
       { direction: 'in', kind: 'mint' },
+    ]);
+  });
+
+  // Both lines of one payment of 10.00 of another token: each carries the transaction's fee.
+  const tokenPayment = {
+    cursor: '70:7a:cc',
+    epoch: 70,
+    tx_id: '7a'.repeat(32),
+    direction: 'internal',
+    kind: 'transfer',
+    credited: '15000000000',
+    debited: '25000000000',
+    token: OTHER_TOKEN,
+    fee: '5000000',
+  };
+
+  it('shows a payment in another token as its whole amount, with no fee', () => {
+    expect(rowsOfLine(tokenPayment, timing, { peer: 'samba1zxyz' }, NATIVE)).toEqual([
+      expect.objectContaining({
+        direction: 'out', kind: 'payment', amount: '10000000000', tokenId: OTHER_TOKEN,
+      }),
+    ]);
+  });
+
+  it("shows that payment's fee on the native token's line, alone", () => {
+    const nativeLine = {
+      ...tokenPayment,
+      cursor: '70:7a:aa',
+      token: NATIVE,
+      credited: '435000000',
+      debited: '440000000',
+    };
+    expect(rowsOfLine(nativeLine, timing, null, NATIVE)).toEqual([
+      expect.objectContaining({ direction: 'out', kind: 'fee', amount: '5000000', tokenId: NATIVE }),
     ]);
   });
 });

@@ -32,7 +32,7 @@ jest.mock('../../../src/multichain/bridge', () => require('../../multichain/fake
 
 /* eslint-disable import/first */
 import React from 'react';
-import { Text, TextInput } from 'react-native';
+import { Keyboard, Text, TextInput } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
@@ -50,6 +50,9 @@ import { SendAddressInput } from '../../../src/screens/SendAddressInput';
 import SendAmountInput from '../../../src/screens/SendAmountInput';
 import NextSendAmountInput from '../../../src/screens/Multichain/NextSendAmountInput';
 import NextSendConfirmScreen from '../../../src/screens/Multichain/NextSendConfirmScreen';
+import { NextTokenPicker } from '../../../src/components/Multichain/NextTokenPicker';
+import TokenBox from '../../../src/components/TokenBox';
+import BackdropModal from '../../../src/components/BackdropModal';
 import UnifiedQRScanner from '../../../src/screens/UnifiedQRScanner';
 import AmountTextInput from '../../../src/components/AmountTextInput';
 import FeedbackModal from '../../../src/components/FeedbackModal';
@@ -207,6 +210,126 @@ describe('a send short on Hathor Next', () => {
     const { renderer } = await amountStep(3000000000n, { hathorHtr: 100n });
     expect(textOf(renderer)).toContain('Insufficient funds');
     expect(button(renderer, 'Transfer between chains')).toBeUndefined();
+  });
+});
+
+describe('a Hathor Next payment in another token', () => {
+  const ATT = 'c230a6631f721ad5cab42b3eeb726513274f411134bbcd474471a76088979873';
+  const EMPTY = 'e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3';
+  // 250.00 ATT, none of another token, and HTR as asked.
+  const holding = (htr = 300000000n) => ({
+    next: {
+      tokens: {
+        '00': { id: '00', name: 'Hathor', symbol: 'HTR' },
+        [ATT]: { id: ATT, name: 'App Test Token', symbol: 'ATT', lastActivityAt: 2 },
+        [EMPTY]: { id: EMPTY, name: 'Spent Token', symbol: 'SPT', lastActivityAt: 1 },
+      },
+      balances: {
+        '00': { status: 'ready', data: { available: htr } },
+        [ATT]: { status: 'ready', data: { available: 25000000000n } },
+        [EMPTY]: { status: 'ready', data: { available: 0n } },
+      },
+    },
+  });
+
+  async function amountStep(storeOptions = holding()) {
+    const navigation = { navigate: jest.fn(), goBack: jest.fn() };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS } });
+    const renderer = await mount(makeStore(storeOptions).store, <NextSendAmountInput />);
+    const pickAtt = async () => {
+      await act(async () => { renderer.root.findByType(NextTokenPicker).props.onChange(ATT); });
+    };
+    const next = async (amount) => {
+      await act(async () => {
+        renderer.root.findByType(AmountTextInput).props.onAmountUpdate('x', amount);
+      });
+      await act(async () => { button(renderer, 'Next').props.onPress(); });
+    };
+    return { renderer, navigation, pickAtt, next };
+  }
+
+  test('offers the tokens the wallet holds there, and sends the one picked', async () => {
+    const { renderer, navigation, pickAtt, next } = await amountStep();
+    expect(renderer.root.findByType(NextTokenPicker).props.options).toEqual([
+      { id: '00', symbol: 'HTR', name: 'Hathor', balance: '3.00' },
+      { id: ATT, symbol: 'ATT', name: 'App Test Token', balance: '250.00' },
+    ]);
+    await pickAtt();
+    expect(textOf(renderer)).toEqual(expect.arrayContaining([
+      'SEND ATT', '250.00 ATT available', 'Network fee: 0.05 HTR',
+    ]));
+    await next(1000000000n);
+    expect(navigation.navigate).toHaveBeenCalledWith('NextSendConfirmScreen', {
+      address: NEXT_ADDRESS, amount: '1000000000', tokenId: ATT,
+    });
+  });
+
+  // The whole balance can go: the fee comes out of the native token.
+  test('sends all of it, and takes the fee from the native token', async () => {
+    const { navigation, pickAtt, next } = await amountStep();
+    await pickAtt();
+    await next(25000000000n);
+    expect(navigation.navigate).toHaveBeenCalledWith('NextSendConfirmScreen', expect.objectContaining({
+      amount: '25000000000', tokenId: ATT,
+    }));
+  });
+
+  test('says when the native token is short of the fee', async () => {
+    const { renderer, navigation, pickAtt, next } = await amountStep(holding(1000000n));
+    await pickAtt();
+    await next(1000000000n);
+    expect(textOf(renderer)).toContain(
+      'The network fee is paid in HTR. You need 0.05 HTR on Hathor Next.',
+    );
+    expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+
+  // The bridge carries only HTR: Hathor Network can't help with any other token.
+  test('offers no transfer between chains for a token the bridge doesn\'t carry', async () => {
+    const { renderer, pickAtt, next } = await amountStep();
+    await pickAtt();
+    await next(25000000001n);
+    expect(textOf(renderer)).toContain('Insufficient funds');
+    expect(button(renderer, 'Transfer between chains')).toBeUndefined();
+  });
+
+  test('closes the keyboard when the token box opens its sheet', async () => {
+    const dismiss = jest.spyOn(Keyboard, 'dismiss');
+    const { renderer } = await amountStep();
+    const picker = renderer.root.findByType(NextTokenPicker);
+    await act(async () => { picker.findByType(TokenBox).props.onPress(); });
+    expect(dismiss).toHaveBeenCalled();
+    expect(picker.findByType(BackdropModal).props.visible).toBe(true);
+  });
+
+  test('shows no token picker while the wallet holds only the native token', async () => {
+    const { renderer } = await amountStep({});
+    expect(renderer.root.findAllByType(NextTokenPicker)).toHaveLength(0);
+    expect(textOf(renderer)).toContain('HTR');
+  });
+
+  test('confirms the token picked, with the fee in the native token, and sends it', async () => {
+    const navigation = {
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      setOptions: jest.fn(),
+      addListener: jest.fn(() => jest.fn()),
+    };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS, amount: '1000000000', tokenId: ATT } });
+    const env = makeStore(holding());
+    const renderer = await mount(env.store, <NextSendConfirmScreen />);
+    const texts = textOf(renderer);
+    expect(texts).toEqual(expect.arrayContaining(['SEND ATT', '10.00 ATT', 'Network fee', '0.05 HTR']));
+    // The two amounts are in different tokens: there is no total.
+    expect(texts).not.toContain('Total');
+    await act(async () => { button(renderer, 'Send').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([route]) => route === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    const sends = env.actions.filter((a) => a.type === types.MULTICHAIN_NEXT_SEND_REQUESTED);
+    expect(sends).toHaveLength(1);
+    expect(sends[0].payload).toMatchObject({ tokenId: ATT, to: NEXT_ADDRESS, amount: 1000000000n });
   });
 });
 
