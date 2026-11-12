@@ -20,7 +20,9 @@ import {
   createSignLedger,
   verifyAndSign,
 } from '../../../src/multichain/next/signer';
-import { INPUT_DOMAIN, verifyIn } from '../../../src/multichain/next/kit/inputSig';
+import { EXCESS_DOMAIN, INPUT_DOMAIN, verifyIn } from '../../../src/multichain/next/kit/inputSig';
+import { hashToScalar } from '../../../src/multichain/next/kit/hash';
+import { expectedOutput } from '../../../src/multichain/next/kit/opening';
 import {
   parseTx,
   signingHashOf,
@@ -29,7 +31,15 @@ import {
 } from '../../../src/multichain/next/kit/tx';
 import { encodeAddress } from '../../../src/multichain/next/kit/address';
 import { publicKeyOf } from '../../../src/multichain/next/kit/keys';
-import { bytesToBigintLE, bytesToHex, hexToBytes } from '../../../src/multichain/next/kit/scalar';
+import {
+  bigintToBytesLE,
+  bytesToBigintLE,
+  bytesToHex,
+  concatBytes,
+  hexToBytes,
+  modOrder,
+  scalarFromCanonical,
+} from '../../../src/multichain/next/kit/scalar';
 
 const [CASE] = vectors.cases;
 const NATIVE = vectors.native_token;
@@ -370,5 +380,134 @@ describe('what the sign-once ledger and the inputs guard', () => {
     const { txId } = await verifyAndSign(requestOf(CASE), context);
     await context.ledger.markRecorded(txId);
     expect(context.ledger.entries()[0].recorded).toBe(true);
+  });
+});
+
+// A transaction as a dishonest backend could build it: the vector's bytes changed by `change`, the
+// excess re-signed with a key the test holds. The app checks the excess signature, not that the
+// amounts balance (the network does), so such a transaction fails only the check under test.
+const FORGER = 777n;
+function forge(vector, change) {
+  const bytes = change(hexToBytes(vector.unsigned_tx));
+  const point = publicKeyOf(FORGER);
+  bytes.set(point, parseTx(bytes).excess.signatureOffset - 32);
+  const tx = parseTx(bytes);
+  const msg = signingHashOf(bytes, tx);
+  const k = 4242n;
+  const r = publicKeyOf(k);
+  const e = hashToScalar(EXCESS_DOMAIN, [point, r, msg]);
+  bytes.set(concatBytes(r, bigintToBytesLE(modOrder(k + e * FORGER))), tx.excess.signatureOffset);
+  return bytesToHex(bytes);
+}
+
+// Output `j` of a v2 transaction rewritten to pay `amount` of `token` to `address`, as the
+// vector's sender would have written it. The layout is kit/txV2.js's.
+function payingTo(vector, j, { address, token, amount }) {
+  return (bytes) => {
+    const tx = parseTx(bytes);
+    const u128 = tx.width === 'u128';
+    const points = u128 ? 5 : 4;
+    const linkLen = u128 ? 256 : 160;
+    const memoLen = u128 ? 16 : 8;
+    const surjectionLen = 36 + 32 * tx.nIn;
+    const outputLen = 32 * points + linkLen + surjectionLen + 1 + memoLen;
+    const inputsOff = 36 + (u128 ? 16 : 8) + 1 + 32 * tx.table.length;
+    const o = inputsOff + tx.nIn * (8 + 64) + j * outputLen;
+    const tagOff = o + 32 * points + linkLen + surjectionLen;
+    const r = scalarFromCanonical(hexToBytes(vector.sender_opening));
+    const want = expectedOutput(r, address, hexToBytes(token), BigInt(amount), j, memoLen);
+    bytes.set(want.oneTimeKey, o);
+    bytes.set(want.assetTag, o + 32);
+    bytes.set(want.commitment, o + 64);
+    bytes.set(Uint8Array.of(want.viewTag), tagOff);
+    bytes.set(want.memo, tagOff + 1);
+    return bytes;
+  };
+}
+
+// Each check on its own: every request below breaks only what one check guards, and the refusal
+// must name that check, so no other check can stand in for it.
+describe('each check of a payment, on its own', () => {
+  const CHANGE_AT = CASE.outputs.findIndex((o) => o.is_change);
+  const CHANGE = CASE.outputs[CHANGE_AT];
+  const OTHER_TOKEN = 'cd'.repeat(32);
+  const refusedFor = (request, context = contextOf(CASE)) => {
+    const e = refusal(() => checkSignRequest(request, context));
+    expect(e).toBeInstanceOf(SignRefusedError);
+    return e.message;
+  };
+  const claimsWith = (j, patch) => CASE.outputs.map((o, i) => (i === j ? { ...o, ...patch } : o));
+
+  it('passes a forged transaction that changes nothing, so each case below fails one check', () => {
+    expect(CASE.format).toBe('v2');
+    const untouched = forge(CASE, (b) => b);
+    const request = requestOf(CASE, { unsigned_tx: untouched });
+    expect(refusal(() => checkSignRequest(request, contextOf(CASE)))).toBeNull();
+    // Writing the change as it already is changes no byte: the rewrite hits the right fields.
+    expect(forge(CASE, payingTo(CASE, CHANGE_AT, CHANGE))).toBe(untouched);
+  });
+
+  it('refuses a transaction carrying a token table', () => {
+    const withTable = forge(CASE, (b) => {
+      const at = 36 + 8 + 1;
+      const out = concatBytes(b.slice(0, at), new Uint8Array(32).fill(0xcd), b.slice(at));
+      out.set(Uint8Array.of(1), at - 1);
+      return out;
+    });
+    expect(refusedFor(requestOf(CASE, { unsigned_tx: withTable })))
+      .toBe('The transaction carries a token table.');
+  });
+
+  it('refuses a fee in another token than the native one', () => {
+    const otherFee = forge(CASE, (b) => {
+      b.set(Uint8Array.of(0), 35);
+      return b;
+    });
+    expect(refusedFor(requestOf(CASE, { unsigned_tx: otherFee })))
+      .toBe('The fee is not paid in the native token.');
+  });
+
+  it('refuses a list of inputs longer or shorter than the transaction\'s', () => {
+    const inputs = inputsOf(CASE);
+    for (const list of [[...inputs, inputs[0]], inputs.slice(1)]) {
+      expect(refusedFor(requestOf(CASE, { inputs: list })))
+        .toBe('The inputs don\'t match the transaction.');
+    }
+  });
+
+  it('refuses claims the bytes don\'t pay, even when they are what the user approved', () => {
+    const payAt = CASE.outputs.findIndex((o) => !o.is_change);
+    const more = BigInt(CASE.outputs[payAt].amount) + 1n;
+    const context = contextOf(CASE);
+    const intent = { ...context.intent, amount: more };
+    expect(refusedFor(
+      requestOf(CASE, { outputs: claimsWith(payAt, { amount: String(more) }) }),
+      { ...context, intent },
+    )).toMatch(/^The outputs don't open/);
+  });
+
+  it('refuses change in a token that is neither the payment\'s nor the native one', () => {
+    const changed = { ...CHANGE, token: OTHER_TOKEN };
+    const request = requestOf(CASE, {
+      unsigned_tx: forge(CASE, payingTo(CASE, CHANGE_AT, changed)),
+      outputs: claimsWith(CHANGE_AT, changed),
+    });
+    expect(refusedFor(request)).toBe('A change output is in an unexpected token.');
+  });
+
+  it('refuses change to this wallet\'s spend key under another view key', () => {
+    const changed = { ...CHANGE, address: encodeAddress(bytesToHex(publicKeyOf(9n)), CASE.pub_b) };
+    const request = requestOf(CASE, {
+      unsigned_tx: forge(CASE, payingTo(CASE, CHANGE_AT, changed)),
+      outputs: claimsWith(CHANGE_AT, changed),
+    });
+    expect(refusedFor(request)).toBe('A change output pays another wallet.');
+  });
+
+  it('refuses, as a refusal, an address it can\'t read', () => {
+    const context = contextOf(CASE);
+    const intent = { ...context.intent, to: 'not an address' };
+    expect(refusedFor(requestOf(CASE), { ...context, intent }))
+      .toMatch(/^An address can't be read/);
   });
 });
