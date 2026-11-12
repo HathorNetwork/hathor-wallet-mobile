@@ -27,6 +27,7 @@ import {
   multichainConnectedNetworksSet,
   multichainConnectUpdate,
   multichainDevBackendSet,
+  multichainNextCreateTokenUpdate,
   multichainNextHistoryUpdate,
   multichainNextReset,
   multichainNextSendUpdate,
@@ -361,6 +362,16 @@ export function* followNextClient(client) {
                 txId: payload.txId ?? null,
               }));
             }
+            const creation = yield select((state) => state.multichain.createToken);
+            if (creation.sendId === payload.sendId) {
+              // The token's id is the recorded transaction's, which the client reads back from
+              // the registry once it is recorded.
+              yield put(multichainNextCreateTokenUpdate({
+                status: payload.status,
+                reason: payload.reason ?? null,
+                ...(payload.txId ? { tokenId: payload.txId } : {}),
+              }));
+            }
             break;
           }
           default:
@@ -411,6 +422,7 @@ export function* connectNext() {
     status: NEXT_STATUS.READY,
     online: client.isOnline(),
     sendFee: client.getSendFee(),
+    canCreateTokens: client.canCreateTokens?.() ?? false,
     ...(address ? { address } : {}),
   }));
 }
@@ -725,6 +737,57 @@ export function* onNextSendRequested({ payload }) {
   }
 }
 
+/**
+ * Creates a token on Hathor Next. The token's keys come from the words, so they are needed once
+ * more: decrypted with the PIN, or from a passkey ceremony run here. Sign-once, as a payment: a
+ * draft is created at most once, and one creation is on its way at a time.
+ */
+export function* onNextCreateTokenRequested({ payload }) {
+  const { symbol, name, amount, draftId, pinCode } = payload;
+  const current = yield select((state) => state.multichain.createToken);
+  if (current.draftId === draftId || SEND_IN_FLIGHT.includes(current.status)) {
+    log.error('A Hathor Next token creation was asked for twice, or during another: ignored.');
+    return;
+  }
+  yield put(multichainNextCreateTokenUpdate({
+    status: OPERATION_STATUS.SENDING,
+    draftId,
+    sendId: null,
+    tokenId: null,
+    reason: null,
+    error: null,
+  }));
+  try {
+    const client = getNextClient();
+    const create = (words) => client.createToken({ words, symbol, name, amount });
+    const { sendId, tokenId } = STORE.isPasskeyWallet()
+      ? yield call(withPasskeyWords, create)
+      : yield call(create, yield call([STORE, STORE.getWalletWords], pinCode));
+    yield put(multichainNextCreateTokenUpdate({ sendId, tokenId }));
+    // It may have settled while createToken ran: its event came before the saga knew the id.
+    const now = client.getCreation(sendId);
+    if (now && now.status !== 'pending') {
+      yield put(multichainNextCreateTokenUpdate({
+        status: now.status,
+        reason: now.reason ?? null,
+      }));
+    }
+  } catch (e) {
+    if (e instanceof PasskeyCancelledError) {
+      // Nothing happened: the form is as it was.
+      yield put(multichainNextCreateTokenUpdate({ status: OPERATION_STATUS.IDLE, draftId: null }));
+      return;
+    }
+    if (!isExpectedPasskeyError(e)) {
+      log.error('The Hathor Next token creation was refused before it was signed.', e);
+    }
+    yield put(multichainNextCreateTokenUpdate({
+      status: OPERATION_STATUS.ERROR,
+      error: e.message,
+    }));
+  }
+}
+
 // How often, and how many times, a transfer signed without an answer is asked about at first.
 // After that, the transfers poll asks again (pollPendingTransfers).
 const RESOLVE_INTERVAL_MS = 3000;
@@ -897,6 +960,7 @@ export function* saga() {
     takeLatest(types.MULTICHAIN_NEXT_KEYS_DERIVED, onNextKeysDerived),
     takeEvery(types.MULTICHAIN_NEXT_HISTORY_REQUESTED, onNextHistoryRequested),
     takeEvery(types.MULTICHAIN_NEXT_SEND_REQUESTED, onNextSendRequested),
+    takeEvery(types.MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED, onNextCreateTokenRequested),
     takeLeading(types.MULTICHAIN_TRANSFER_REQUESTED, onTransferRequested),
     takeLatest(types.FEATURE_TOGGLE_UPDATED, onFeatureToggleUpdated),
     takeLatest(types.NETWORK_CHANGED, onNetworkChanged),

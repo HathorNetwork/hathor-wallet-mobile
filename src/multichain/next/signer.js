@@ -5,10 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { utf8ToBytes } from '@noble/hashes/utils';
 import { decodeAddressKeys } from './kit/address';
 import { EXCESS_DOMAIN, signInput, verifyIn } from './kit/inputSig';
 import { publicKeyOf } from './kit/keys';
-import { checkOpening } from './kit/opening';
+import { CREATED_TOKEN_ID, checkOpening, checkOpeningLevels } from './kit/opening';
 import {
   bytesToBigintLE,
   bytesToHex,
@@ -17,6 +18,7 @@ import {
 } from './kit/scalar';
 import { TOKEN_INDEX_NATIVE } from './kit/txV2';
 import {
+  parseIssuanceTx,
   parseTx,
   signingHashOf,
   txIdOf,
@@ -58,6 +60,35 @@ const refuse = (message) => {
 
 const sameKeys = (a, b) => bytesToHex(a.view) === bytesToHex(b.view)
   && bytesToHex(a.spend) === bytesToHex(b.spend);
+
+/**
+ * The inputs: each one this wallet's, whose one-time secret is otk_offset + b, and the one the
+ * transaction spends at that position, so the ledger records the outputs really spent.
+ *
+ * @returns {{ secrets: bigint[], keys: Uint8Array[] }}
+ */
+function ownInputs(request, tx, b) {
+  const inputs = request.inputs ?? [];
+  if (inputs.length !== tx.nIn) {
+    refuse('The inputs don\'t match the transaction.');
+  }
+  const secrets = [];
+  const keys = [];
+  for (const [i, input] of inputs.entries()) {
+    const spends = input.global_index === undefined ? null : BigInt(input.global_index);
+    if (spends !== tx.inputs[i].outputIndex) {
+      refuse('An input is not the output the transaction spends.');
+    }
+    const p = modOrder(bytesToBigintLE(hexToBytes(input.otk_offset)) + b);
+    const key = hexToBytes(input.one_time_key);
+    if (bytesToHex(publicKeyOf(p)) !== bytesToHex(key)) {
+      refuse('An input is not this wallet\'s.');
+    }
+    secrets.push(p);
+    keys.push(key);
+  }
+  return { secrets, keys };
+}
 
 /**
  * What a sign request must show before it is signed. Throws SignRefusedError naming the first
@@ -123,27 +154,7 @@ export function checkSignRequest(request, {
     refuse('The fee is not the one the user agreed to.');
   }
 
-  // The inputs: each one this wallet's, whose one-time secret is otk_offset + b, and the one the
-  // transaction spends at that position, so the ledger records the outputs really spent.
-  const inputs = request.inputs ?? [];
-  if (inputs.length !== tx.nIn) {
-    refuse('The inputs don\'t match the transaction.');
-  }
-  const secrets = [];
-  const keys = [];
-  for (const [i, input] of inputs.entries()) {
-    const spends = input.global_index === undefined ? null : BigInt(input.global_index);
-    if (spends !== tx.inputs[i].outputIndex) {
-      refuse('An input is not the output the transaction spends.');
-    }
-    const p = modOrder(bytesToBigintLE(hexToBytes(input.otk_offset)) + b);
-    const key = hexToBytes(input.one_time_key);
-    if (bytesToHex(publicKeyOf(p)) !== bytesToHex(key)) {
-      refuse('An input is not this wallet\'s.');
-    }
-    secrets.push(p);
-    keys.push(key);
-  }
+  const { secrets, keys } = ownInputs(request, tx, b);
 
   // The outputs: every one opened from the bytes, so what follows is what the transaction pays.
   const outputs = request.outputs ?? [];
@@ -188,6 +199,130 @@ export function checkSignRequest(request, {
     if (change.token !== intent.tokenId && change.token !== nativeTokenId) {
       refuse('A change output is in an unexpected token.');
     }
+  }
+  return { bytes, tx, signingHash, secrets, keys };
+}
+
+/**
+ * What a token creation's sign request must show before it is signed: exactly the token the user
+ * approved, its supply paid to this wallet, and the rest of the money back to this wallet. Throws
+ * SignRefusedError naming the first thing that is wrong.
+ *
+ * The keys in the token's body are this wallet's own, derived from its words, so a restored wallet
+ * still holds them; a body naming any other key would give the token's mint and melt powers to
+ * whoever holds that one. The supply and the change are public by the protocol (a creation's
+ * outputs are transparent): the user is told so before approving.
+ *
+ * @param {Object} request The backend's sign request
+ * @param {Object} context
+ * @param {bigint} context.b The spend secret
+ * @param {Uint8Array} context.pubB
+ * @param {{ symbol: string, name: string, amount: bigint, mintAuthority: Uint8Array,
+ *   meltAuthority: Uint8Array }} context.intent What the user approved, with the authority keys
+ *   this wallet derived for it
+ * @param {string} context.nativeTokenId The network's native token (pinned)
+ * @param {string} context.serviceViewPub The wallet service's view key (pinned)
+ * @param {bigint} context.maxFee The most the user agreed to pay
+ * @param {number} [context.nowS] The time, in unix seconds
+ * @returns {{ bytes: Uint8Array, tx: Object, signingHash: Uint8Array, secrets: bigint[],
+ *   keys: Uint8Array[] }}
+ */
+export function checkCreateRequest(request, {
+  b,
+  pubB,
+  intent,
+  nativeTokenId,
+  serviceViewPub,
+  maxFee,
+  nowS = Math.floor(Date.now() / 1000),
+}) {
+  if (!Number.isSafeInteger(request.expires_at) || request.expires_at <= nowS) {
+    refuse('The token creation expired before it was signed.');
+  }
+  let bytes;
+  let tx;
+  try {
+    bytes = hexToBytes(request.unsigned_tx);
+    tx = parseIssuanceTx(bytes);
+  } catch (e) {
+    refuse(`The transaction can't be read: ${e.message}`);
+  }
+  if (tx.kind !== 'token-create' || request.issuance?.kind !== 'token-create') {
+    refuse('The transaction is not a token creation.');
+  }
+  const signingHash = signingHashOf(bytes, tx);
+  // Nothing hidden (every input public, every output transparent) closes with no excess; anything
+  // else must, and its signature over these bytes must hold.
+  if (tx.excess && !verifyIn(EXCESS_DOMAIN, tx.excess.point, signingHash, tx.excess.signature)) {
+    refuse('The transaction\'s excess signature is wrong.');
+  }
+  if (tx.feeTokenIndex !== TOKEN_INDEX_NATIVE) {
+    refuse('The fee is not paid in the native token.');
+  }
+  if (tx.feeAmount !== BigInt(request.fee) || tx.feeAmount > maxFee) {
+    refuse('The fee is not the one the user agreed to.');
+  }
+
+  // The token itself: the body holds exactly what the user read on the screen, and this wallet's
+  // own two keys.
+  const same = (x, y) => x !== null && y !== null && bytesToHex(x) === bytesToHex(y);
+  const { definition } = tx;
+  if (!same(definition.symbol, utf8ToBytes(intent.symbol))
+    || !same(definition.name, utf8ToBytes(intent.name))) {
+    refuse('The token is not the one the user approved.');
+  }
+  if (!same(definition.mintAuthority, intent.mintAuthority)
+    || !same(definition.meltAuthority, intent.meltAuthority)) {
+    refuse('The token\'s mint or melt key is not this wallet\'s.');
+  }
+
+  const { secrets, keys } = ownInputs(request, tx, b);
+
+  // A creation's outputs have one level, the protocol's: transparent, paid to the recipient's
+  // spend key (declared). Held to that from the bytes, never to what the backend says each is.
+  if (tx.outputs.some((o) => o.form !== 'transparent')) {
+    refuse('A token creation\'s outputs are transparent.');
+  }
+  // Every output opened from the bytes at that level: what follows is what the transaction pays.
+  const outputs = request.outputs ?? [];
+  const native = hexToBytes(nativeTokenId);
+  try {
+    const recipients = outputs.map((o) => ({
+      address: o.address,
+      amount: BigInt(o.amount),
+      tokenId: hexToBytes(o.token),
+      level: 1,
+    }));
+    checkOpeningLevels(tx, recipients, hexToBytes(request.sender_opening), native);
+  } catch (e) {
+    refuse(`The outputs don't open: ${e.message}`);
+  }
+
+  // All of it to this wallet: the supply, exactly the approved amount, and change in the native
+  // token. A backend paying any of it elsewhere is caught here.
+  const own = { view: hexToBytes(serviceViewPub), spend: pubB };
+  const created = bytesToHex(CREATED_TOKEN_ID);
+  let supply = 0n;
+  for (const o of outputs) {
+    let keysOf;
+    try {
+      keysOf = decodeAddressKeys(o.address);
+    } catch (e) {
+      refuse(`An address can't be read: ${e.message}`);
+    }
+    if (!sameKeys(keysOf, own)) {
+      refuse('An output of the token creation pays another wallet.');
+    }
+    if (o.token === created) {
+      // The created token is held by transparent outputs only: the opening has already matched
+      // each claim to its output.
+      supply += BigInt(o.amount);
+    } else if (o.token !== nativeTokenId) {
+      refuse('An output of the token creation is in an unexpected token.');
+    }
+  }
+  if (supply !== intent.amount) {
+    refuse('The token\'s supply is not the amount the user approved.');
   }
   return { bytes, tx, signingHash, secrets, keys };
 }
@@ -284,10 +419,23 @@ export function createSignLedger(storage, key) {
  *
  * @param {Object} request The backend's sign request
  * @param {Object} context See checkSignRequest, plus `ledger` (createSignLedger)
+ * @param {Function} [check] checkSignRequest for a payment, checkCreateRequest for a token
+ *   creation: what the request must show before anything is signed
  * @returns {Promise<{ signatures: string[], signedTx: string, txId: string }>} Hex
  */
-export async function verifyAndSign(request, context) {
-  const { bytes, tx, signingHash, secrets, keys } = checkSignRequest(request, context);
+export async function verifyAndSign(request, context, check = checkSignRequest) {
+  let checked;
+  try {
+    checked = check(request, context);
+  } catch (e) {
+    // A request that can't even be read (a field missing, not a number, not hex) is refused like
+    // a wrong one: nothing was signed, and the caller lets its outputs go.
+    if (e instanceof SignRefusedError) {
+      throw e;
+    }
+    throw new SignRefusedError(`The request can't be read: ${e.message}`);
+  }
+  const { bytes, tx, signingHash, secrets, keys } = checked;
   const previous = context.ledger.check(signingHash, keys);
   if (previous) {
     return {

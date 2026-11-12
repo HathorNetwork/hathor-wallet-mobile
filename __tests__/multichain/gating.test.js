@@ -15,10 +15,12 @@ import {
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
+  MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE,
   PRE_SETTINGS_NEXT_DEVNET,
 } from '../../src/constants';
 import { canTransfer, CHAIN, getSideChainConfig, otherChain } from '../../src/multichain/chains';
 import {
+  canCreateNextTokens,
   getMultichainDevBackendFeatureToggle,
   getMultichainFeatureToggle,
   getMultichainFeatureToggleAtUnlock,
@@ -245,6 +247,36 @@ describe('the side chain setting', () => {
     expect(isSideChainConnected(state())).toBe(true);
     expect(isSideChainConnected(state({ connected: false }))).toBe(false);
     expect(isSideChainConnected(state({ flag: false }))).toBe(false);
+  });
+});
+
+describe('creating a token on Hathor Next', () => {
+  const ready = (options = {}, { tokenFlag = true, canCreate = true } = {}) => {
+    const s = state(options);
+    return {
+      ...s,
+      featureToggles: { ...s.featureToggles, [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: tokenFlag },
+      multichain: { ...s.multichain, next: { ...s.multichain.next, canCreateTokens: canCreate } },
+    };
+  };
+
+  test('shows with its flag, Hathor Next ready, and a backend that creates tokens', () => {
+    expect(canCreateNextTokens(ready())).toBe(true);
+  });
+
+  test('hides with either flag off: its own is off unless Unleash returns it', () => {
+    expect(canCreateNextTokens(ready({}, { tokenFlag: false }))).toBe(false);
+    expect(canCreateNextTokens(ready({ flag: false }))).toBe(false);
+    expect(canCreateNextTokens({
+      ...ready(),
+      featureToggles: { [MULTICHAIN_FEATURE_TOGGLE]: true },
+    })).toBe(false);
+  });
+
+  test('hides until Hathor Next is ready, connected, and its backend creates tokens', () => {
+    expect(canCreateNextTokens(ready({ nextStatus: NEXT_STATUS.CONNECTING }))).toBe(false);
+    expect(canCreateNextTokens(ready({ connected: false }))).toBe(false);
+    expect(canCreateNextTokens(ready({}, { canCreate: false }))).toBe(false);
   });
 });
 

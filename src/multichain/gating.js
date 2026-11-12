@@ -10,6 +10,7 @@ import {
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
+  MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE,
 } from '../constants';
 import { FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, STORE } from '../store';
 import { getSideChainConfig } from './chains';
@@ -81,6 +82,33 @@ export function getMultichainDevBackendFeatureToggle(state) {
  * @param {Object} state Redux state
  * @returns {{ url: string, pins: Object }|null}
  */
+/**
+ * Whether token creation on Hathor Next may show: its own flag, under the multichain one.
+ *
+ * @param {Object} state
+ * @returns {boolean}
+ */
+export function getMultichainTokenCreateFeatureToggle(state) {
+  return getMultichainFeatureToggle(state) && Boolean(
+    state.featureToggles?.[MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]
+      ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]
+  );
+}
+
+/**
+ * Whether the wallet can create a token on Hathor Next now: the flag is on, Hathor Next is
+ * connected and ready, and its backend creates tokens.
+ *
+ * @param {Object} state
+ * @returns {boolean}
+ */
+export function canCreateNextTokens(state) {
+  return getMultichainTokenCreateFeatureToggle(state)
+    && isSideChainConnected(state)
+    && state.multichain.next.status === NEXT_STATUS.READY
+    && state.multichain.next.canCreateTokens === true;
+}
+
 export function selectDevBackend(state) {
   if (!getMultichainDevBackendFeatureToggle(state)) {
     return null;

@@ -28,6 +28,7 @@ import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
+  MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE,
   NETWORK_SETTINGS_FEATURE_TOGGLE,
   PRE_SETTINGS_TESTNET,
 } from '../../../src/constants';
@@ -66,6 +67,7 @@ beforeEach(() => {
 function makeStore({
   flag = true,
   devFlag = false,
+  tokenFlag = false,
   network = NETWORK,
   connected = false,
   next = {},
@@ -86,6 +88,7 @@ function makeStore({
       ...FEATURE_TOGGLE_DEFAULTS,
       [MULTICHAIN_FEATURE_TOGGLE]: flag,
       [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: devFlag,
+      [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: tokenFlag,
       [NETWORK_SETTINGS_FEATURE_TOGGLE]: true,
     },
     serverInfo: { decimal_places: 2 },
@@ -152,6 +155,33 @@ describe('Settings', () => {
     await act(async () => { mounted.unmount(); });
     const off = await mount(makeStore().store, <Settings navigation={navigation} />);
     expect(titles(off)).not.toContain('Hathor Next (local backend)');
+  });
+
+  const CREATE_ROW = 'Create a token on Hathor Next';
+  const ready = { tokenFlag: true, connected: true, next: { canCreateTokens: true } };
+
+  test('offers creating a token on Hathor Next once a backend that creates tokens is ready', async () => {
+    const navigation = { navigate: jest.fn() };
+    const renderer = await mount(makeStore(ready).store, <Settings navigation={navigation} />);
+    expect(titles(renderer)).toContain(CREATE_ROW);
+    await act(async () => {
+      renderer.root.findAll((node) => node.props.title === CREATE_ROW
+        && typeof node.props.onPress === 'function')[0].props.onPress();
+    });
+    expect(navigation.navigate).toHaveBeenCalledWith('NextCreateToken');
+  });
+
+  test.each([
+    ['its flag off', { ...ready, tokenFlag: false }],
+    ['the side chain off', { ...ready, connected: false }],
+    ['a backend that creates no tokens', { ...ready, next: { canCreateTokens: false } }],
+    ['Hathor Next still loading', {
+      ...ready, next: { canCreateTokens: true, status: NEXT_STATUS.CONNECTING },
+    }],
+  ])('offers no token creation with %s', async (_, options) => {
+    const navigation = { navigate: jest.fn() };
+    const renderer = await mount(makeStore(options).store, <Settings navigation={navigation} />);
+    expect(titles(renderer)).not.toContain(CREATE_ROW);
   });
 
   test('changes nothing with the flag off, or on mainnet', async () => {

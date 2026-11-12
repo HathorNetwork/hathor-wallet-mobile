@@ -5,20 +5,36 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { randomBytes } from '@noble/hashes/utils';
+import { randomBytes, utf8ToBytes } from '@noble/hashes/utils';
 import { logger } from '../../logger';
 import { STORE } from '../../store';
 import { NEXT_CLIENT_ERROR, NEXT_CLIENT_EVENT, NextClientError } from '../nextClientErrors';
 import { BackendError, createBackendApi } from './backendApi';
 import { encodeAddress } from './kit/address';
-import { deriveAccount, mnemonicToSeed, publicKeyOf, walletIdOf } from './kit/keys';
+import {
+  AUTHORITY_GAP,
+  AuthoritiesWithheldError,
+  NonceBeyondReachError,
+  RegistryUnreadableError,
+  deriveAuthority,
+  scanAuthorities,
+} from './kit/authority';
+import {
+  HATHOR_NEXT_ACCOUNT_INDEX,
+  deriveAccount,
+  mnemonicToSeed,
+  publicKeyOf,
+  walletIdOf,
+} from './kit/keys';
 import { bytesToHex, hexToBytes } from './kit/scalar';
 import {
   LedgerConflictError,
   SignRefusedError,
+  checkCreateRequest,
   createSignLedger,
   verifyAndSign,
 } from './signer';
+import { createNonceStore } from './tokenNonces';
 import {
   SCOPE,
   authSecret,
@@ -42,6 +58,12 @@ const SESSION_RENEW_MARGIN_S = 120;
 const SEND_POLL_MS = 2000;
 // How many earlier payments a payment may find rejected, and free, before it gives up.
 const MAX_LEDGER_ROUNDS = 4;
+// The token registry is read a page at a time, up to this many pages, for a creation's nonce.
+const REGISTRY_PAGE = 1000;
+const REGISTRY_MAX_PAGES = 100;
+// The longest symbol and name a creation may ask for, in bytes: the protocol's own caps.
+const MAX_SYMBOL_BYTES = 16;
+const MAX_NAME_BYTES = 64;
 const SEND_STATUS = {
   submitted: 'pending',
   awaiting_signatures: 'pending',
@@ -144,9 +166,11 @@ export function rowsOfLine(line, timing, sent, nativeTokenId) {
  * @param {Error} e
  * @param {{ tokenId: string, nativeTokenId: string }} [payment] What the payment sends, and the
  *   network's native token
+ * @param {string} [fallback] The error of a refusal no other one names: a payment's, or a token
+ *   creation's
  * @returns {Error}
  */
-export function prepareError(e, payment = null) {
+export function prepareError(e, payment = null, fallback = NEXT_CLIENT_ERROR.PREPARE_FAILED) {
   if (e instanceof NextClientError || !(e instanceof BackendError)) {
     return e;
   }
@@ -171,8 +195,11 @@ export function prepareError(e, payment = null) {
   if (e.status === 422 && /insufficient|not enough|funds/i.test(e.message)) {
     return new NextClientError(NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS);
   }
+  if (fallback === NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED && [404, 501].includes(e.status)) {
+    return new NextClientError(NEXT_CLIENT_ERROR.TOKENS_UNAVAILABLE);
+  }
   log.error('The Hathor Next backend refused to prepare a payment.', e);
-  return new NextClientError(NEXT_CLIENT_ERROR.PREPARE_FAILED);
+  return new NextClientError(fallback);
 }
 
 function compareCursorsDesc(a, b) {
@@ -219,6 +246,12 @@ export function createBackendNextClient({
   let transferConfig = null;
   let feedSession = null;
   let ledger = null;
+  // Whether the backend creates tokens, from GET /v1/config; and the creation nonces this device
+  // handed out.
+  let issuance = false;
+  let nonces = null;
+  // sendId → the token creations this app made, as `sends` holds payments.
+  const creations = new Map();
   // sendId → { sendId, txId, to, amount, tokenId, status, reason, at }: the payments this app
   // made, shown until the statement records them.
   const sends = new Map();
@@ -361,6 +394,63 @@ export function createBackendNextClient({
     }
     tokenMeta = meta;
   }
+
+  // The whole token registry with each token's authority keys: what a creation's nonce scan reads.
+  async function readRegistry() {
+    const rows = [];
+    let from;
+    for (let page = 0; page < REGISTRY_MAX_PAGES; page += 1) {
+      // Each page names the next one.
+      // eslint-disable-next-line no-await-in-loop
+      const body = await api.getTokens({ from, limit: REGISTRY_PAGE, authorities: true });
+      // A page without its list is not an empty registry.
+      if (!Array.isArray(body?.tokens)) {
+        throw new RegistryUnreadableError();
+      }
+      rows.push(...body.tokens);
+      if (!body.next || body.next === from) {
+        return rows;
+      }
+      from = body.next;
+    }
+    throw new Error('The token registry is longer than this wallet reads.');
+  }
+
+  // Follows something the backend submitted for this app until it settles, saying so with SEND
+  // events. Bytes the backend lost go to it again, identical. `entry` is the payment's or the
+  // creation's own record, which this keeps up to date.
+  /* eslint-disable no-param-reassign */
+  function followSent(mine, entry, signed, onRecorded) {
+    const tick = () => schedule(async () => {
+      if (mine !== generation || entry.status === 'recorded' || entry.status === 'failed') return;
+      try {
+        const status = await withSession((token) => api.getSend(entry.sendId, token));
+        const next = SEND_STATUS[status.status] ?? 'pending';
+        if (status.status === 'rejected') {
+          await ledger.markRejected(entry.txId, status.reason);
+        }
+        if (status.status === 'awaiting_signatures') {
+          await withSession((token) => api.resubmitSend(entry.sendId, token, signed.signedTx));
+        }
+        if (next !== entry.status) {
+          entry.status = next;
+          entry.reason = status.reason ?? null;
+          emit(NEXT_CLIENT_EVENT.SEND, {
+            sendId: entry.sendId, status: next, reason: entry.reason, txId: entry.txId,
+          });
+          emit(NEXT_CLIENT_EVENT.HISTORY, null);
+          if (next === 'recorded') {
+            await onRecorded();
+          }
+        }
+      } catch (e) {
+        log.error('Could not read a Hathor Next payment.', e);
+      }
+      tick();
+    }, sendPollMs);
+    tick();
+  }
+  /* eslint-enable no-param-reassign */
 
   // The most a payment may cost: the backend's quote, never above the app's own cap.
   function maxFee() {
@@ -520,6 +610,7 @@ export function createBackendNextClient({
     balances = {};
     lines.clear();
     sends.clear();
+    creations.clear();
     tail = null;
   }
 
@@ -604,6 +695,7 @@ export function createBackendNextClient({
         timing = { genesisMs: remote.next.genesis_ms, epochMs: remote.next.epoch_ms };
         sendFee = BigInt(remote.next.send_fee ?? '0');
         transferConfig = remote.transfer ?? null;
+        issuance = remote.issuance === true;
         const pubA = hexToBytes(config.serviceViewPub);
         walletId = walletIdOf(pubA, keys.pubB);
         // One ledger per Hathor Next wallet and network, whatever Hathor Network runs beside it.
@@ -612,6 +704,10 @@ export function createBackendNextClient({
         ledger = createSignLedger(
           storage,
           `multichain:nextSigned:${config.nextNetworkId}:${bytesToHex(walletId)}`,
+        );
+        nonces = createNonceStore(
+          storage,
+          `multichain:nextTokenNonces:${config.nextNetworkId}:${bytesToHex(walletId)}`,
         );
         address = encodeAddress(config.serviceViewPub, bytesToHex(keys.pubB));
 
@@ -876,34 +972,7 @@ export function createBackendNextClient({
         // Signed and saved: the identical bytes go again until the backend has them.
         log.error('The signatures did not reach the Hathor Next backend; resubmitting.', e);
       }
-      const follow = () => schedule(async () => {
-        if (mine !== generation || send.status === 'recorded' || send.status === 'failed') return;
-        try {
-          const status = await withSession((token) => api.getSend(send.sendId, token));
-          const next = SEND_STATUS[status.status] ?? 'pending';
-          if (status.status === 'rejected') {
-            await ledger.markRejected(send.txId, status.reason);
-          }
-          if (status.status === 'awaiting_signatures') {
-            await withSession((token) => api.resubmitSend(send.sendId, token, signed.signedTx));
-          }
-          if (next !== send.status) {
-            send.status = next;
-            send.reason = status.reason ?? null;
-            emit(NEXT_CLIENT_EVENT.SEND, {
-              sendId: send.sendId, status: next, reason: send.reason, txId: send.txId,
-            });
-            emit(NEXT_CLIENT_EVENT.HISTORY, null);
-            if (next === 'recorded') {
-              await Promise.all([refreshHistory(), refreshBalances()]);
-            }
-          }
-        } catch (e) {
-          log.error('Could not read a Hathor Next payment.', e);
-        }
-        follow();
-      }, sendPollMs);
-      follow();
+      followSent(mine, send, signed, () => Promise.all([refreshHistory(), refreshBalances()]));
       return { sendId: send.sendId };
     },
 
@@ -918,6 +987,216 @@ export function createBackendNextClient({
       const send = sends.get(sendId);
       return send
         ? { sendId, status: send.status, reason: send.reason, txId: send.txId }
+        : null;
+    },
+
+    /** @returns {boolean} Whether this backend creates tokens on Hathor Next */
+    canCreateTokens() {
+      return connected && issuance;
+    },
+
+    /**
+     * Creates a token on Hathor Next, its whole supply paid to this wallet. The backend builds the
+     * creation; this client derives the token's mint and melt keys from the words (they never
+     * leave the app; their public halves go into the token), checks every byte against what the
+     * user approved, signs each input once, and only then sends the signatures. The outcome
+     * arrives as SEND events; the token's id is the creation's transaction id.
+     *
+     * The words are needed once, to derive the keys at a nonce no other token of this wallet has
+     * used, and are dropped before this returns.
+     *
+     * @param {{ words: string, symbol: string, name: string, amount: bigint }} creation
+     * @returns {Promise<{ sendId: string, tokenId: string }>}
+     */
+    async createToken({ words, symbol, name, amount }) {
+      requireConnected();
+      if (!keys) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
+      }
+      if (!issuance) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TOKENS_UNAVAILABLE);
+      }
+      if (!online) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.OFFLINE);
+      }
+      if (sweeping) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.SWEEPING);
+      }
+      const bytesOf = (text) => utf8ToBytes(text).length;
+      if (!symbol || !name || bytesOf(symbol) > MAX_SYMBOL_BYTES || bytesOf(name) > MAX_NAME_BYTES
+        || amount <= 0n) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED);
+      }
+      const native = config.nativeTokenId;
+      if (sendFee > (balances[native]?.available ?? 0n)) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS);
+      }
+      const mine = generation;
+      const id = bytesToHex(walletId);
+
+      // The keys, at a nonce the registry and this device both show free, reserved on disk first.
+      // The registry is read before the seed exists, so the seed lives only while it derives.
+      const started = lockCount;
+      let registry;
+      try {
+        registry = await readRegistry();
+      } catch (e) {
+        log.error('Could not read the Hathor Next token registry.', e);
+        throw new NextClientError(e.unreachable ? NEXT_CLIENT_ERROR.OFFLINE
+          : NEXT_CLIENT_ERROR.TOKEN_AUTHORITIES_UNKNOWN);
+      }
+      const seed = await mnemonicToSeed(words);
+      let scan;
+      const derived = { mint: new Map(), melt: new Map() };
+      try {
+        if (lockCount !== started) {
+          throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
+        }
+        const derivePub = (kind, n) => {
+          const { pub } = deriveAuthority(seed, HATHOR_NEXT_ACCOUNT_INDEX, kind, n);
+          derived[kind].set(n, pub);
+          return pub;
+        };
+        try {
+          scan = scanAuthorities(derivePub, registry);
+        } catch (e) {
+          if (!(e instanceof AuthoritiesWithheldError)) {
+            log.error('Could not read the Hathor Next token registry.', e);
+          }
+          throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_AUTHORITIES_UNKNOWN);
+        }
+        // The next nonce is at most one past the scan's window: derive its keys too, so nothing
+        // needs the seed once the reservation is on disk.
+        const window = scan.highest + 1 + AUTHORITY_GAP;
+        derivePub('mint', window);
+        derivePub('melt', window);
+      } finally {
+        seed.fill(0);
+      }
+      let nonce;
+      try {
+        nonce = await nonces.reserve(scan);
+      } catch (e) {
+        if (e instanceof NonceBeyondReachError) {
+          throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_NONCE_BEYOND_REACH);
+        }
+        log.error('Could not reserve a nonce for a Hathor Next token.', e);
+        throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_AUTHORITIES_UNKNOWN);
+      }
+      const mintAuthority = derived.mint.get(nonce);
+      const meltAuthority = derived.melt.get(nonce);
+      if (lockCount !== started || !mintAuthority || !meltAuthority) {
+        await nonces.release(nonce);
+        throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
+      }
+
+      let request;
+      try {
+        request = await withSession((token) => api.createToken(id, token, {
+          intent_id: bytesToHex(randomBytes(16)),
+          symbol,
+          name,
+          amount: amount.toString(),
+          mint_authority: bytesToHex(mintAuthority),
+          melt_authority: bytesToHex(meltAuthority),
+          max_fee: maxFee().toString(),
+        }));
+      } catch (e) {
+        // Nothing was signed: no creation carrying the nonce exists, so the next one takes it.
+        await nonces.release(nonce);
+        throw prepareError(e, null, NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED);
+      }
+      const cancel = () => withSession((token) => api.cancelSend(request.id, token))
+        .catch((e) => log.error('Could not cancel an unsigned Hathor Next token creation.', e));
+      if (!keys) {
+        await cancel();
+        await nonces.release(nonce);
+        throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
+      }
+      const context = {
+        b: keys.b,
+        pubB: keys.pubB,
+        intent: { symbol, name, amount, mintAuthority, meltAuthority },
+        nativeTokenId: native,
+        serviceViewPub: config.serviceViewPub,
+        maxFee: maxFee(),
+        nowS: Math.floor(nowMs() / 1000),
+        ledger,
+      };
+      let signed;
+      try {
+        signed = await verifyAndSign(request, context, checkCreateRequest);
+      } catch (e) {
+        if (e instanceof LedgerConflictError) {
+          // An earlier transaction signed these outputs: it goes out again, and this one waits.
+          await cancel();
+          await nonces.release(nonce);
+          await resubmit(e.entry);
+          throw new NextClientError(NEXT_CLIENT_ERROR.EARLIER_PENDING);
+        }
+        if (e instanceof SignRefusedError) {
+          log.error(`A Hathor Next token creation was refused before signing: ${e.message}`);
+          await cancel();
+          await nonces.release(nonce);
+          throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_REFUSED);
+        }
+        throw e;
+      }
+      // Signed: bytes carrying the nonce exist, so it never comes round again.
+      await nonces.markSigned(nonce);
+      const creation = {
+        sendId: request.id,
+        txId: signed.txId,
+        symbol,
+        name,
+        amount,
+        status: 'pending',
+        reason: null,
+        at: nowMs(),
+      };
+      creations.set(creation.sendId, creation);
+      try {
+        await withSession((token) => api.signSend(request.id, token, signed.signatures));
+      } catch (e) {
+        log.error('The signatures did not reach the Hathor Next backend; resubmitting.', e);
+      }
+      // Recorded: the registry names the token now, and the balance holds its supply. The token's
+      // id is the recorded transaction's, which the builder could have made other than the bytes
+      // signed here (it holds the excess's secret): the registry row carrying this wallet's own
+      // keys at this nonce names the token that exists.
+      const mintHex = bytesToHex(mintAuthority);
+      followSent(mine, creation, signed, async () => {
+        await refreshTokens();
+        await Promise.all([refreshHistory(), refreshBalances()]);
+        try {
+          const row = (await readRegistry())
+            .find((r) => r.mint_authority?.toLowerCase() === mintHex);
+          if (row && row.token_id.toLowerCase() !== creation.txId) {
+            creation.txId = row.token_id.toLowerCase();
+            emit(NEXT_CLIENT_EVENT.SEND, {
+              sendId: creation.sendId,
+              status: creation.status,
+              reason: creation.reason,
+              txId: creation.txId,
+            });
+          }
+        } catch (e) {
+          log.error('Could not read the created token from the registry.', e);
+        }
+      });
+      return { sendId: creation.sendId, tokenId: signed.txId };
+    },
+
+    /**
+     * A token creation's state as this client knows it.
+     *
+     * @param {string} sendId
+     * @returns {{ sendId: string, status: string, reason: string|null, txId: string|null }|null}
+     */
+    getCreation(sendId) {
+      const creation = creations.get(sendId);
+      return creation
+        ? { sendId, status: creation.status, reason: creation.reason, txId: creation.txId }
         : null;
     },
 

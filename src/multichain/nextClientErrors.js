@@ -51,6 +51,17 @@ export const NEXT_CLIENT_ERROR = {
   TRANSFER_NOT_SENT: 'transfer-not-sent',
   // The amount needs more outputs than one transaction holds.
   TRANSFER_TOO_MANY_INPUTS: 'transfer-too-many-inputs',
+  // The backend doesn't create tokens, or its wallet service can't settle a creation.
+  TOKENS_UNAVAILABLE: 'tokens-unavailable',
+  // The backend couldn't prepare the creation: nothing was created.
+  TOKEN_PREPARE_FAILED: 'token-prepare-failed',
+  // The backend built another token than the one approved: nothing was signed.
+  TOKEN_REFUSED: 'token-refused',
+  // The token registry couldn't be read, so no nonce can be proven free for the token's keys.
+  TOKEN_AUTHORITIES_UNKNOWN: 'token-authorities-unknown',
+  // Too many creations started and didn't finish: a new token couldn't be found again from the
+  // words.
+  TOKEN_NONCE_BEYOND_REACH: 'token-nonce-beyond-reach',
 };
 
 /**
@@ -90,6 +101,16 @@ export function nextClientErrorMessage(code) {
       return t`The transfer didn't go through. Nothing left your wallet.`;
     case NEXT_CLIENT_ERROR.TRANSFER_TOO_MANY_INPUTS:
       return t`This amount needs too many of your Hathor Network outputs for one transfer. Try a smaller amount.`;
+    case NEXT_CLIENT_ERROR.TOKENS_UNAVAILABLE:
+      return t`Tokens can't be created on this Hathor Next network yet.`;
+    case NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED:
+      return t`Hathor Next couldn't prepare this token. Nothing was created.`;
+    case NEXT_CLIENT_ERROR.TOKEN_REFUSED:
+      return t`Hathor Next prepared a different token than the one you approved, so nothing was signed or created.`;
+    case NEXT_CLIENT_ERROR.TOKEN_AUTHORITIES_UNKNOWN:
+      return t`Hathor Next's list of tokens couldn't be read, so this wallet can't safely pick the keys for a new token. Nothing was created. Try again later.`;
+    case NEXT_CLIENT_ERROR.TOKEN_NONCE_BEYOND_REACH:
+      return t`Too many token creations were started without finishing. A new token couldn't be found again from your recovery words, so none was created.`;
     default:
       return t`Something went wrong on Hathor Next.`;
   }

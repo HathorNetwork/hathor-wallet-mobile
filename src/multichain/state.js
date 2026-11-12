@@ -63,6 +63,8 @@ export const NEXT_INITIAL_STATE = {
   sweeping: false,
   // The flat fee of a payment, in the native token's units.
   sendFee: 0n,
+  // Whether the backend creates tokens.
+  canCreateTokens: false,
   // tokenId → { id, name, symbol, lastActivityAt }
   tokens: {},
   // tokenId → { status, data: { available } }
@@ -90,6 +92,17 @@ const SEND_INITIAL_STATE = {
  */
 export const SEND_IN_FLIGHT = [OPERATION_STATUS.SENDING, 'pending'];
 
+// A token creation, as a payment: sent at most once, and followed until it settles. `tokenId` is
+// the creation's transaction id, known once it is signed.
+const CREATE_TOKEN_INITIAL_STATE = {
+  status: OPERATION_STATUS.IDLE,
+  draftId: null,
+  sendId: null,
+  tokenId: null,
+  reason: null,
+  error: null,
+};
+
 // A transfer in these states is still being decided: a reset leaves it as it is.
 const TRANSFER_IN_FLIGHT = [OPERATION_STATUS.SENDING, OPERATION_STATUS.UNCONFIRMED];
 
@@ -109,6 +122,7 @@ export const MULTICHAIN_INITIAL_STATE = {
   // The transfers between chains, newest first (TransferRecord, src/multichain/bridge.js)
   transfers: [],
   send: SEND_INITIAL_STATE,
+  createToken: CREATE_TOKEN_INITIAL_STATE,
   transfer: TRANSFER_INITIAL_STATE,
   // A Hathor Next backend for local testing: { url, pins }, or null for the side chain's own
   devBackend: null,
@@ -149,6 +163,7 @@ export function multichainReducer(state = MULTICHAIN_INITIAL_STATE, action) {
         },
         transfers: [],
         send: SEND_INITIAL_STATE,
+        createToken: CREATE_TOKEN_INITIAL_STATE,
       };
     case types.MULTICHAIN_NEXT_HISTORY_UPDATE: {
       const { tokenId, status, data, cursor } = action.payload;
@@ -179,6 +194,14 @@ export function multichainReducer(state = MULTICHAIN_INITIAL_STATE, action) {
         return state;
       }
       return { ...state, send: SEND_INITIAL_STATE };
+    case types.MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE:
+      return { ...state, createToken: { ...state.createToken, ...action.payload } };
+    case types.MULTICHAIN_NEXT_CREATE_TOKEN_RESET:
+      // A creation on its way outlives the screen that started it, as a payment does.
+      if (SEND_IN_FLIGHT.includes(state.createToken.status)) {
+        return state;
+      }
+      return { ...state, createToken: CREATE_TOKEN_INITIAL_STATE };
     case types.MULTICHAIN_TRANSFER_UPDATE:
       return { ...state, transfer: { ...state.transfer, ...action.payload } };
     case types.MULTICHAIN_TRANSFER_RESET:
