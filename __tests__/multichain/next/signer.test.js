@@ -21,7 +21,12 @@ import {
   verifyAndSign,
 } from '../../../src/multichain/next/signer';
 import { INPUT_DOMAIN, verifyIn } from '../../../src/multichain/next/kit/inputSig';
-import { parseTx, signingHashOf, txIdOf } from '../../../src/multichain/next/kit/tx';
+import {
+  parseTx,
+  signingHashOf,
+  spentOutputsOfBytes,
+  txIdOf,
+} from '../../../src/multichain/next/kit/tx';
 import { encodeAddress } from '../../../src/multichain/next/kit/address';
 import { publicKeyOf } from '../../../src/multichain/next/kit/keys';
 import { bytesToBigintLE, bytesToHex, hexToBytes } from '../../../src/multichain/next/kit/scalar';
@@ -37,6 +42,9 @@ const inputsOf = (vector) => {
     global_index: Number(tx.inputs[i].outputIndex),
   }));
 };
+
+// The outputs a vector's inputs spend, as the ledger names them.
+const spentOf = (vector) => inputsOf(vector).map((input) => String(input.global_index));
 
 function requestOf(vector, patch = {}) {
   return {
@@ -174,7 +182,7 @@ describe('signing a Hathor Next sign request', () => {
     const fakeHash = signingHashOf(bytes, tx);
     fakeHash[0] = fakeHash[0] === 0 ? 1 : 0;
     const inputKeys = CASE.inputs.map((i) => hexToBytes(i.one_time_key));
-    const conflict = refusal(() => context.ledger.check(fakeHash, inputKeys));
+    const conflict = refusal(() => context.ledger.check(fakeHash, spentOf(CASE), inputKeys));
     expect(conflict).toBeInstanceOf(LedgerConflictError);
     expect(conflict.entry.txId).toBe(first.txId);
   });
@@ -236,6 +244,84 @@ describe('what the sign-once ledger and the inputs guard', () => {
     }
   });
 
+  // A declared output pays the wallet's spend key itself, so two of its coins can share one key:
+  // a token creation's change does, every time.
+  describe('an input is the output it spends, not its key', () => {
+    // An earlier transaction of this wallet: CASE's bytes, spending other outputs. In v2 an
+    // input's output index is the 8 bytes before its signature.
+    const EARLIER_TX = (() => {
+      const bytes = hexToBytes(CASE.unsigned_tx);
+      const view = new DataView(bytes.buffer, bytes.byteOffset);
+      for (const input of parseTx(bytes).inputs) {
+        view.setBigUint64(input.signatureOffset - 8, input.outputIndex + 100n, true);
+      }
+      return bytesToHex(bytes);
+    })();
+    const EARLIER_SPENT = spentOutputsOfBytes(hexToBytes(EARLIER_TX));
+    const sameKeys = CASE.inputs.map((i) => i.one_time_key);
+    const earlier = {
+      sendId: 'earlier',
+      signingHash: 'ab'.repeat(32),
+      txId: 'cd'.repeat(32),
+      signatures: [],
+      signedAt: 1,
+      recorded: true,
+    };
+    const otherHashOf = (vector) => {
+      const bytes = hexToBytes(vector.unsigned_tx);
+      const hash = signingHashOf(bytes, parseTx(bytes));
+      hash[0] = hash[0] === 0 ? 1 : 0;
+      return hash;
+    };
+
+    it('signs a coin whose key an earlier transaction\'s other coin shares', async () => {
+      const context = contextOf(CASE);
+      await context.ledger.record({
+        ...earlier, signedTx: EARLIER_TX, outputs: EARLIER_SPENT, inputs: sameKeys,
+      });
+      expect(CASE.format).toBe('v2');
+      expect(EARLIER_SPENT).toEqual(spentOf(CASE).map((g) => String(BigInt(g) + 100n)));
+      const signed = await verifyAndSign(requestOf(CASE), context);
+      expect(context.ledger.entries().map((e) => e.txId)).toEqual([earlier.txId, signed.txId]);
+      expect(context.ledger.entries()[1].outputs).toEqual(spentOf(CASE));
+    });
+
+    it('still holds an output signed before, whatever key names it', async () => {
+      const context = contextOf(CASE);
+      const first = await verifyAndSign(requestOf(CASE), context);
+      const conflict = refusal(() => context.ledger.check(
+        otherHashOf(CASE),
+        [spentOf(CASE)[1]],
+        [new Uint8Array(32)],
+      ));
+      expect(conflict).toBeInstanceOf(LedgerConflictError);
+      expect(conflict.entry.txId).toBe(first.txId);
+    });
+
+    it('reads the outputs of an entry saved before the ledger named them from its bytes', async () => {
+      // The same keys, other outputs: free.
+      const freeCtx = contextOf(CASE);
+      await freeCtx.ledger.record({ ...earlier, signedTx: EARLIER_TX, inputs: sameKeys });
+      await expect(verifyAndSign(requestOf(CASE), freeCtx)).resolves.toBeTruthy();
+
+      // Other keys, the same outputs: held.
+      const heldCtx = contextOf(CASE);
+      await heldCtx.ledger.record({
+        ...earlier, signedTx: CASE.unsigned_tx, inputs: ['00'.repeat(32), '11'.repeat(32)],
+      });
+      await expect(verifyAndSign(requestOf(CASE), heldCtx))
+        .rejects.toBeInstanceOf(LedgerConflictError);
+    });
+
+    it('holds by key an entry whose outputs can\'t be read', async () => {
+      const context = contextOf(CASE);
+      await context.ledger.record({ ...earlier, signedTx: 'zz', inputs: sameKeys });
+      await expect(verifyAndSign(requestOf(CASE), context))
+        .rejects.toBeInstanceOf(LedgerConflictError);
+      expect(context.ledger.check(otherHashOf(CASE), ['1', '2'], [new Uint8Array(32)])).toBeNull();
+    });
+  });
+
   it('gives no signature when the ledger can\'t be saved', async () => {
     const context = contextOf(CASE, {
       ledger: createSignLedger(memoryStorage({ failWrites: true }), 'ledger'),
@@ -261,11 +347,11 @@ describe('what the sign-once ledger and the inputs guard', () => {
     const otherHash = signingHashOf(bytes, parseTx(bytes));
     otherHash[0] = otherHash[0] === 0 ? 1 : 0;
     const inputKeys = CASE.inputs.map((i) => hexToBytes(i.one_time_key));
-    expect(refusal(() => context.ledger.check(otherHash, inputKeys)))
+    expect(refusal(() => context.ledger.check(otherHash, spentOf(CASE), inputKeys)))
       .toBeInstanceOf(LedgerConflictError);
 
     await context.ledger.markRejected(txId, 'fee too low');
-    expect(context.ledger.check(otherHash, inputKeys)).toBeNull();
+    expect(context.ledger.check(otherHash, spentOf(CASE), inputKeys)).toBeNull();
     expect(context.ledger.pending()).toHaveLength(0);
     expect(context.ledger.entries()).toMatchObject([{ txId, rejected: true, reason: 'fee too low' }]);
   });
