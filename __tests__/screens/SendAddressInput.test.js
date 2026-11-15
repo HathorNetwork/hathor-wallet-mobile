@@ -5,7 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { jest, describe, test, expect, afterEach } from '@jest/globals';
+import {
+  jest, describe, test, expect, afterEach, beforeEach,
+} from '@jest/globals';
 
 const mockNavigation = { navigate: jest.fn(), goBack: jest.fn() };
 let mockRouteParams = {};
@@ -16,6 +18,11 @@ jest.mock('@react-navigation/native', () => ({
 }));
 // The status bar's height, which the keyboard offset of the screen counts.
 jest.mock('react-native-status-bar-height', () => ({ getStatusBarHeight: () => 20 }));
+// thoth.id names are resolved against the network; the tests decide the answer.
+jest.mock('../../src/utils/thothId', () => ({
+  ...jest.requireActual('../../src/utils/thothId'),
+  resolveThothName: jest.fn(),
+}));
 
 /* eslint-disable import/first */
 import React from 'react';
@@ -29,6 +36,7 @@ import { PRE_SETTINGS_TESTNET } from '../../src/constants';
 import { STYLE } from '../../src/styles/themes';
 import HathorHeader from '../../src/components/HathorHeader';
 import SendAddressInput from '../../src/screens/SendAddressInput';
+import { THOTH_ID_ERROR, ThothIdError, resolveThothName } from '../../src/utils/thothId';
 /* eslint-enable import/first */
 
 // Testnet addresses built with wallet-lib's address encoders from fixed keys.
@@ -99,7 +107,8 @@ describe('SendAddressInput', () => {
   test('takes the address in a field that wraps it, to paste or type', async () => {
     const { input, texts } = await render();
 
-    expect(texts()).toContain('Address to send');
+    // thoth.id runs on the testnet, so a name is accepted there too.
+    expect(texts()).toContain('Address or name to send');
     expect(input().props).toEqual(expect.objectContaining({
       placeholder: 'Paste or type address',
       multiline: true,
@@ -132,6 +141,47 @@ describe('SendAddressInput', () => {
     await rerender();
     expect(input().props.value).toBe(P2SH);
     expect(nextButton().props.disabled).toBe(false);
+  });
+
+  describe('thoth.id names', () => {
+    beforeEach(() => { jest.useFakeTimers(); });
+    afterEach(() => { jest.useRealTimers(); });
+
+    // Lets the debounce run out and the resolution settle.
+    const settle = () => act(async () => { await jest.runOnlyPendingTimersAsync(); });
+
+    test('sends to the address a name resolves to, with the name beside it', async () => {
+      resolveThothName.mockResolvedValue({ address: P2PKH });
+      const { type, nextButton, texts } = await render();
+
+      await type('Alice.htr');
+      // Nothing to send to while the name is being resolved.
+      expect(nextButton().props.disabled).toBe(true);
+      expect(texts()).toContain('Resolving alice.htr...');
+
+      await settle();
+      expect(resolveThothName).toHaveBeenCalledWith('alice.htr', expect.objectContaining({ network: 'testnet' }));
+      expect(texts()).toContain(`alice.htr → ${P2PKH}`);
+      expect(nextButton().props.disabled).toBe(false);
+
+      await act(async () => { nextButton().props.onPress(); });
+      expect(mockNavigation.navigate).toHaveBeenCalledWith(
+        'SendAmountInput',
+        { address: P2PKH, name: 'alice.htr' },
+      );
+    });
+
+    test('shows why a name could not be resolved', async () => {
+      resolveThothName.mockRejectedValue(
+        new ThothIdError(THOTH_ID_ERROR.NAME_NOT_FOUND, 'not found'),
+      );
+      const { type, nextButton, texts } = await render();
+
+      await type('nobody.htr');
+      await settle();
+      expect(texts()).toContain('nobody.htr is not registered.');
+      expect(nextButton().props.disabled).toBe(true);
+    });
   });
 
   test('keeps the button above the keyboard, under the header', async () => {
