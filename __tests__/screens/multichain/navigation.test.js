@@ -101,6 +101,7 @@ const PinScreenStub = ({ navigation, route }) => {
 };
 const Home = () => <Text>HOME</Text>;
 const SendAddressInputStub = ({ route }) => <Text>{`SEND TO ${route.params?.address ?? ''}`}</Text>;
+const SendAmountInputStub = () => <Text>AMOUNT</Text>;
 
 // The app's shape: a root stack whose 'App' holds Main (a navigator of its own, with Home and
 // Send, itself a stack) and the screens opened above it. NavigationService.resetToMain resets to
@@ -109,6 +110,7 @@ const SendStack = createStackNavigator();
 const Send = () => (
   <SendStack.Navigator screenOptions={{ headerShown: false }}>
     <SendStack.Screen name='SendAddressInput' component={SendAddressInputStub} />
+    <SendStack.Screen name='SendAmountInput' component={SendAmountInputStub} />
   </SendStack.Navigator>
 );
 const MainStack = createStackNavigator();
@@ -155,6 +157,13 @@ const appRoutes = () => {
   const root = navigationRef.current.getRootState();
   return root.routes[root.index].state.routes.map((route) => route.name);
 };
+// The screens Send holds, bottom to top.
+const sendRoutes = () => {
+  const root = navigationRef.current.getRootState();
+  const app = root.routes[root.index].state;
+  const main = app.routes.find((route) => route.name === 'Main').state;
+  return main.routes.find((route) => route.name === 'Send').state.routes.map((route) => route.name);
+};
 const buttons = (renderer, title) => renderer.root.findAllByType(NewHathorButton)
   .filter((node) => node.props.title === title);
 
@@ -196,6 +205,31 @@ describe('a Hathor Next address scanned from the Dashboard', () => {
     const reader = renderer.root.findByType(QRCodeReader);
     await act(async () => { reader.props.onSuccess({ data: OWN_ADDRESS }); });
     expect(appRoutes()).toEqual(['Main']);
+    const texts = renderer.root.findAllByType(Text).map((node) => node.props.children);
+    expect(texts).toContain(`SEND TO ${OWN_ADDRESS}`);
+  });
+
+  test('over a Send left half way, goes back to its address step instead of adding one', async () => {
+    const { store } = makeStore();
+    const renderer = await mountApp(store);
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'Main',
+        params: { screen: 'Send', params: { screen: 'SendAddressInput', params: { address: 'x' } } },
+      });
+    });
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'Main',
+        params: { screen: 'Send', params: { screen: 'SendAmountInput' } },
+      });
+    });
+    expect(sendRoutes()).toEqual(['SendAddressInput', 'SendAmountInput']);
+    await act(async () => { navigationRef.current.navigate('App', { screen: 'UnifiedQRScanner' }); });
+    const reader = renderer.root.findByType(QRCodeReader);
+    await act(async () => { reader.props.onSuccess({ data: OWN_ADDRESS }); });
+    expect(appRoutes()).toEqual(['Main']);
+    expect(sendRoutes()).toEqual(['SendAddressInput']);
     const texts = renderer.root.findAllByType(Text).map((node) => node.props.children);
     expect(texts).toContain(`SEND TO ${OWN_ADDRESS}`);
   });
