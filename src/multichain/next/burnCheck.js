@@ -157,6 +157,10 @@ export function checkBurn(txHex, {
     || (tx.headers ?? []).length > 0 || tx.isNanoContract?.()) {
     refuse('The burn is not a plain transaction.');
   }
+  // Signed like every other byte, and a transaction with any is refused by hathor-core.
+  if (tx.signalBits !== 0) {
+    refuse('The burn carries signal bits.');
+  }
   if (!KNOWN_TRANSFER_ADDRESSES.includes(transferAddress)) {
     refuse('The burn pays an address that is not the chain transfer\'s.');
   }

@@ -34,7 +34,7 @@ import {
   isSideChainConnected,
   selectSideChainConfig,
 } from '../multichain/gating';
-import { addressChain, normalizeNextAddress } from '../multichain/address';
+import { addressChain, nextAddressError, normalizeNextAddress } from '../multichain/address';
 import { CHAIN, isTransferAddress } from '../multichain/chains';
 import { ChainTag } from '../components/Multichain/ChainTag';
 
@@ -97,14 +97,21 @@ export const SendAddressInput = () => {
     ? addressChain(formModel.address, network, { allowShielded })
     : null;
 
+  // Trimmed, as the address goes on: the chain above is read trimmed too, so an address pasted
+  // with a line break shows its chain and is taken.
   const validate = () => {
-    const transferError = transferAddressError(formModel.address);
+    const address = formModel.address.trim();
+    const transferError = transferAddressError(address);
     if (transferError) {
       return { isValid: false, message: transferError };
     }
-    return chain === CHAIN.HATHOR_NEXT
-      ? { isValid: true }
-      : validateAddress(formModel.address, network, { allowShielded });
+    if (chain === CHAIN.HATHOR_NEXT) {
+      // A Hathor Next address the app won't pay gets its own words: the legacy form, or a key
+      // nobody can spend from.
+      const refused = nextAddressError(address);
+      return refused ? { isValid: false, message: refused } : { isValid: true };
+    }
+    return validateAddress(address, network, { allowShielded });
   };
 
   const isAddressValid = () => {

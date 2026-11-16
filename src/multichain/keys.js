@@ -5,16 +5,24 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { cryptoUtils } from '@hathor/wallet-lib';
 import { multichainKeyMap } from '../constants';
 import { logger } from '../logger';
 import { STORE } from '../store';
 import { ensureNextClient } from './nextClient';
+import {
+  bigintToBytesLE,
+  bytesToBigintLE,
+  bytesToHex,
+  hexToBytes,
+} from './next/kit/scalar';
 
 const log = logger('multichain-keys');
 
 /**
  * What the wallet saved about Hathor Next. All of it is public: the address, the public spend key,
- * and the networks the wallet was registered on. Its keys are never saved.
+ * and the networks the wallet was registered on. The spend secret is saved apart, encrypted with
+ * the PIN (prepareNextKeysWithPin).
  *
  * @returns {{
  *   address: string|null,
@@ -60,6 +68,48 @@ export function hasUsedNext() {
  */
 export async function prepareNextKeys(words) {
   const { address = null, pubB = null } = await ensureNextClient().prepareKeys({ words });
+  saveNext(address ? { address } : { pubB });
+  return address;
+}
+
+/**
+ * Derives the Hathor Next keys with the PIN. The words are stretched (2,048 rounds of PBKDF2, which
+ * hold the JS thread for seconds on a phone) only the first time: the spend secret they give is
+ * then kept on this device, encrypted with the PIN as the wallet's words are, and every later
+ * unlock decrypts it instead. A copy the PIN doesn't open (the PIN changed) or that is another
+ * wallet's is derived again from the words, and saved again. It is under the wallet's keys, so a
+ * wallet reset clears it.
+ *
+ * @param {string} pinCode
+ * @param {Function} wordsOf The wallet's words, decrypted with the PIN: (pinCode) => Promise
+ * @returns {Promise<string|null>} The address, as prepareNextKeys
+ */
+export async function prepareNextKeysWithPin(pinCode, wordsOf) {
+  const client = ensureNextClient();
+  const saved = STORE.getItem(multichainKeyMap.nextSecret);
+  if (saved && client.prepareKeysFromSecret) {
+    try {
+      const secret = cryptoUtils.decryptData(saved.secret, pinCode);
+      const { pubB } = client.prepareKeysFromSecret({
+        spendSecret: bytesToBigintLE(hexToBytes(secret)),
+      });
+      if (pubB === saved.pubB) {
+        saveNext({ pubB });
+        return null;
+      }
+      log.error('The saved Hathor Next secret is not this wallet\'s; deriving it again.');
+    } catch (e) {
+      log.error('The saved Hathor Next secret could not be read with this PIN; deriving it again.', e);
+    }
+  }
+  const words = await wordsOf(pinCode);
+  const { address = null, pubB = null, spendSecret } = await client.prepareKeys({ words });
+  if (spendSecret !== undefined) {
+    STORE.setItem(multichainKeyMap.nextSecret, {
+      pubB,
+      secret: cryptoUtils.encryptData(bytesToHex(bigintToBytesLE(spendSecret)), pinCode),
+    });
+  }
   saveNext(address ? { address } : { pubB });
   return address;
 }

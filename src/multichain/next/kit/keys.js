@@ -41,7 +41,9 @@ const SECP256K1_N = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0
 
 /**
  * The BIP39 seed of a mnemonic: PBKDF2-HMAC-SHA512, 2048 rounds, salt "mnemonic" ‖ passphrase.
- * Asynchronous, so the stretching doesn't hold the UI thread.
+ * Asynchronous, but noble's loop yields to microtasks only: under the New Architecture the JS
+ * thread is held for the whole stretch, seconds on a phone. An unlock with the PIN avoids it by
+ * decrypting the spend secret it saved (multichain/keys.js).
  *
  * @param {string} mnemonic
  * @param {string} [passphrase]

@@ -15,9 +15,13 @@ import {
   parseNextQrCode,
   sameNextAddress,
   validateTransferAddress,
+  nextAddressError,
 } from '../../src/multichain/address';
 import { CHAIN } from '../../src/multichain/chains';
 import { fakePeerAddress } from './fakes/fakeAddress';
+import { encodeAddress } from '../../src/multichain/next/kit/address';
+import { publicKeyOf } from '../../src/multichain/next/kit/keys';
+import { bytesToHex } from '../../src/multichain/next/kit/scalar';
 
 // Hathor Next's own address vectors (clients/wallet-sdk/fixtures/address/v2.json): what the real
 // client emits is the first, `samba1z…`.
@@ -74,12 +78,26 @@ describe('normalizeNextAddress and sameNextAddress', () => {
 });
 
 describe('parseNextQrCode', () => {
-  test('reads an address, alone or in a payment request', () => {
-    expect(parseNextQrCode(NEXT_ADDRESS)).toBe(NEXT_ADDRESS);
-    expect(parseNextQrCode(`${NEXT_ADDRESS}?amount=100`)).toBe(NEXT_ADDRESS);
-    expect(parseNextQrCode(`samba:${NEXT_ADDRESS}?amount=1.5&token=00`)).toBe(NEXT_ADDRESS);
-    expect(parseNextQrCode(UPPERCASE.address)).toBe(UPPERCASE.address.toLowerCase());
-    expect(parseNextQrCode(LEGACY.address)).toBe(normalizeNextAddress(LEGACY.address));
+  test('reads an address alone, in its canonical form', () => {
+    expect(parseNextQrCode(NEXT_ADDRESS)).toEqual({ address: NEXT_ADDRESS });
+    expect(parseNextQrCode(` ${NEXT_ADDRESS}? `)).toEqual({ address: NEXT_ADDRESS });
+    expect(parseNextQrCode(`samba:${NEXT_ADDRESS}`)).toEqual({ address: NEXT_ADDRESS });
+    expect(parseNextQrCode(UPPERCASE.address))
+      .toEqual({ address: UPPERCASE.address.toLowerCase() });
+    // The legacy form has no checksum: a scanned one is refused, as a typed one is.
+    expect(parseNextQrCode(LEGACY.address)).toEqual({ error: expect.stringMatching(/samba1z/) });
+  });
+
+  test('refuses a payment request, rather than drop its amount and token', () => {
+    for (const request of [
+      `${NEXT_ADDRESS}?amount=100`,
+      `samba:${NEXT_ADDRESS}?amount=1.5&token=00`,
+      `${NEXT_ADDRESS}?token=00`,
+    ]) {
+      expect(parseNextQrCode(request)).toEqual({
+        error: 'Payment request QR codes are not supported. Please use a simple address QR code.',
+      });
+    }
   });
 
   test('reads nothing from other QR codes', () => {
@@ -126,5 +144,32 @@ describe('validateTransferAddress', () => {
       isValid: false,
       message: 'This is a Hathor Next address. Enter a Hathor Network address.',
     });
+  });
+});
+
+describe('a Hathor Next address the app won\'t pay', () => {
+  test('is the legacy form, which has no checksum to catch a typo', () => {
+    expect(nextAddressError(LEGACY.address)).toBe(
+      'This is an old Hathor Next address, with no checksum to catch a typo. '
+        + 'Ask for the address that starts with samba1z.',
+    );
+    expect(validateTransferAddress(LEGACY.address, network)).toEqual({
+      isValid: false, message: nextAddressError(LEGACY.address),
+    });
+    expect(nextAddressError(normalizeNextAddress(LEGACY.address))).toBeNull();
+  });
+
+  test('has a key nobody can spend from', () => {
+    const identityView = encodeAddress('00'.repeat(32), bytesToHex(publicKeyOf(11n)));
+    const identitySpend = encodeAddress(bytesToHex(publicKeyOf(7n)), '00'.repeat(32));
+    for (const address of [identityView, identitySpend]) {
+      expect(nextAddressError(address))
+        .toBe('Nobody can spend from this Hathor Next address, so it can\'t be paid.');
+    }
+  });
+
+  test('is never one the app already takes', () => {
+    expect(nextAddressError(NEXT_ADDRESS)).toBeNull();
+    expect(nextAddressError('not an address')).toBeNull();
   });
 });

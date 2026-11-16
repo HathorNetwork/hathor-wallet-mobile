@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { t } from 'ttag';
 import { renderValue } from '../utils';
 import { NEXT_DECIMAL_PLACES } from './chains';
 
@@ -89,4 +90,18 @@ export function nextAmountForDisplay(amount, hathorDecimalPlaces) {
 export function renderNextValue(amount, hathorDecimalPlaces, amountFormat) {
   const shown = nextAmountForDisplay(amount, hathorDecimalPlaces);
   return renderValue(shown.amount, false, shown.decimalPlaces, amountFormat);
+}
+
+/**
+ * Why an amount typed into a Hathor Next form can't be taken, or null. More than one separator
+ * ("1.234,56") is refused: the app's parser keeps only what comes before the second one, so the
+ * field would show one amount and the form take a smaller one.
+ *
+ * @param {string|null|undefined} text
+ * @returns {string|null}
+ */
+export function amountTextError(text) {
+  return (String(text ?? '').match(/[.,]/g) ?? []).length > 1
+    ? t`Use only one decimal separator.`
+    : null;
 }

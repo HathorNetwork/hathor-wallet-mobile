@@ -11,6 +11,7 @@ import { jest, describe, test, expect, afterEach } from '@jest/globals';
 jest.mock('../../src/multichain/chains', () => require('./fakes/chainsModule'));
 
 /* eslint-disable import/first */
+import { Address, Network, helpersUtils } from '@hathor/wallet-lib';
 import {
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
@@ -39,6 +40,10 @@ import { FAKE_NETWORK } from './fakes/sideChain';
 /* eslint-enable import/first */
 
 const actualChains = jest.requireActual('../../src/multichain/chains');
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 const state = ({
   flag = true,
@@ -105,6 +110,15 @@ describe("devnet-alpha's side chain", () => {
     expect(actualChains.isTransferAddress('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL', config)).toBe(true);
   });
 
+  test('refuses the P2SH address of a transfer address\'s hash too', () => {
+    const net = new Network('privatenet');
+    const hash = new Address('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL', { network: net })
+      .decode().subarray(1, 21);
+    const p2sh = helpersUtils.encodeAddressP2SH(hash, net).base58;
+    expect(p2sh).not.toBe('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL');
+    expect(actualChains.isTransferAddress(p2sh, null)).toBe(true);
+  });
+
   test('is known by the node, with or without its trailing slash', () => {
     expect(actualChains.getSideChainConfig('privatenet', null, DEVNET_NODE.replace(/\/$/, '')))
       .toMatchObject({ client: 'backend' });
@@ -148,6 +162,41 @@ describe('getSideChainConfig', () => {
 
   test('gives no side chain before the wallet knows its network', () => {
     expect(actualChains.getSideChainConfig(null)).toBeNull();
+  });
+});
+
+describe('mainnet', () => {
+  test('has no side chain, whatever names one', () => {
+    expect(actualChains.getSideChainConfig('mainnet')).toBeNull();
+  });
+
+  test("keeps the flag off with mainnet's network settings, whatever Unleash says", () => {
+    const onMainnet = { ...state(), networkSettings: { network: 'mainnet' } };
+    expect(getMultichainFeatureToggle(onMainnet)).toBe(false);
+    expect(isSideChainAvailable(onMainnet)).toBe(false);
+    expect(isSideChainConnected(onMainnet)).toBe(false);
+    expect(isWaitingForNext(onMainnet)).toBe(false);
+    // Another network's settings leave the flag to Unleash.
+    expect(getMultichainFeatureToggle({ ...state(), networkSettings: { network: 'testnet' } }))
+      .toBe(true);
+  });
+});
+
+describe('the side chain setting, saved', () => {
+  test('counts only its own keys, set to true', () => {
+    const base = state({ connected: false });
+    const withMap = (connectedNetworks) => ({
+      ...base, multichain: { ...base.multichain, connectedNetworks },
+    });
+    expect(isSideChainConnected(withMap(Object.create({ [FAKE_NETWORK]: true })))).toBe(false);
+    expect(isSideChainConnected(withMap({ [FAKE_NETWORK]: 'yes' }))).toBe(false);
+    expect(isSideChainConnected(withMap({ [FAKE_NETWORK]: true }))).toBe(true);
+  });
+
+  test('gives a name such as constructor no side chain', () => {
+    for (const name of ['constructor', '__proto__', 'toString', 'hasOwnProperty']) {
+      expect(actualChains.getSideChainConfig(name)).toBeNull();
+    }
   });
 });
 
@@ -310,5 +359,39 @@ describe('the token map', () => {
     expect(canTransfer(config, CHAIN.HATHOR_NEXT, CHAIN.HATHOR)).toBe(false);
     expect(canTransfer(null, CHAIN.HATHOR, CHAIN.HATHOR_NEXT)).toBe(false);
     expect(otherChain(CHAIN.HATHOR)).toBe(CHAIN.HATHOR_NEXT);
+  });
+});
+
+describe('a side chain on the real pins', () => {
+  const DEVNET = 'https://legacy-node.devnet-alpha.samba.hathor.network/v1a/';
+  const local = { url: 'http://192.168.0.10:8930', pins: { next: {}, transfer: null } };
+
+  test('is none on mainnet, even with the devnet\'s node or a backend for local testing', () => {
+    // A mainnet wallet service names the network mainnet; the node was pointed at the devnet.
+    expect(actualChains.getSideChainConfig('mainnet', null, DEVNET)).toBeNull();
+    expect(actualChains.getSideChainConfig('mainnet', local, DEVNET)).toBeNull();
+    expect(actualChains.getSideChainConfig('mainnet', local, null)).toBeNull();
+  });
+
+  test('is none on a network other than the one it names', () => {
+    expect(actualChains.getSideChainConfig('privatenet', null, DEVNET)).not.toBeNull();
+    expect(actualChains.getSideChainConfig('testnet', null, DEVNET)).toBeNull();
+  });
+
+  test('is never one a backend for local testing could pass as, once its network holds value', () => {
+    const valued = {
+      holdsValue: true, nextNetworkId: 7, nativeTokenId: 'aa'.repeat(32), serviceViewPub: 'bb'.repeat(32),
+    };
+    const pins = (next) => ({ next: { network_id: 1, native_token: 'cc'.repeat(32), service_view_pub: 'dd'.repeat(32), ...next } });
+    expect(actualChains.impersonatedSideChain(pins({ network_id: 7 }), [valued])).toBe(valued);
+    expect(actualChains.impersonatedSideChain(pins({ native_token: 'aa'.repeat(32) }), [valued]))
+      .toBe(valued);
+    expect(actualChains.impersonatedSideChain(pins({ service_view_pub: 'bb'.repeat(32) }), [valued]))
+      .toBe(valued);
+    expect(actualChains.impersonatedSideChain(pins({}), [valued])).toBeNull();
+    const playMoney = { ...valued, holdsValue: false };
+    expect(actualChains.impersonatedSideChain(pins({ network_id: 7 }), [playMoney])).toBeNull();
+    // None of the pinned networks holds value yet.
+    expect(actualChains.impersonatedSideChain(pins({ network_id: 1003 }))).toBeNull();
   });
 });

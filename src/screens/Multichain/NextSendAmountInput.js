@@ -30,7 +30,7 @@ import { shortBalanceAdvice } from '../../multichain/transfer';
 import { nextTokenList } from '../../multichain/tokens';
 import { useTransferContext } from './ChainTransferScreen';
 import { getKeyboardAvoidingViewTopDistance } from '../../utils';
-import { renderNextValue } from '../../multichain/amount';
+import { amountTextError, renderNextValue } from '../../multichain/amount';
 import { useNavigation, useParams } from '../../hooks/navigation';
 import { COLORS } from '../../styles/themes';
 
@@ -50,9 +50,11 @@ export const selectNextSendFee = (state) => state.multichain.next.sendFee;
  * @param {string} nativeSymbol
  * @returns {string}
  */
-export const feeShortText = (feeText, nativeSymbol) => (
-  t`The network fee is paid in ${nativeSymbol}. You need ${feeText} ${nativeSymbol} on Hathor Next.`
-);
+export const feeShortText = (feeText, nativeSymbol) => {
+  // Each placeholder has a name of its own: ttag can't translate a message that repeats one.
+  const feeSymbol = nativeSymbol;
+  return t`The network fee is paid in ${nativeSymbol}. You need ${feeText} ${feeSymbol} on Hathor Next.`;
+};
 
 /**
  * The amount of a Hathor Next payment, in one of the tokens the wallet holds there: the native
@@ -111,9 +113,10 @@ export default function NextSendAmountInput() {
   };
 
   const onAmountChange = (text, value) => {
+    const textError = amountTextError(text);
     setAmountText(text);
-    setAmount(value);
-    setError(null);
+    setAmount(textError ? null : value);
+    setError(textError);
     setAdvice(null);
   };
 

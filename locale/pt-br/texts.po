@@ -65,7 +65,7 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "This wallet does not support shielded addresses."
 msgstr "Esta wallet não suporta endereços blindados."
 
-#: src/multichain/address.js:156 src/multichain/nextClientErrors.js:95
+#: src/multichain/address.js:199 src/multichain/nextClientErrors.js:100
 #: src/utils.js:305
 msgid "Invalid address"
 msgstr "Endereço inválido"
@@ -479,7 +479,7 @@ msgstr "Voltar"
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
 #: src/screens/Multichain/NextCreateTokenScreen.js:79
-#: src/screens/Multichain/NextSendAmountInput.js:149
+#: src/screens/Multichain/NextSendAmountInput.js:152
 #: src/screens/SendAmountInput.js:165
 msgid "Invalid amount"
 msgstr "Quantidade inválida"
@@ -510,8 +510,8 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421
 #: src/screens/Multichain/NextCreateTokenScreen.js:194
-#: src/screens/Multichain/NextSendAmountInput.js:226
-#: src/screens/SendAddressInput.js:201 src/screens/SendAmountInput.js:287
+#: src/screens/Multichain/NextSendAmountInput.js:229
+#: src/screens/SendAddressInput.js:208 src/screens/SendAmountInput.js:287
 msgid "Next"
 msgstr "Próximo"
 
@@ -585,10 +585,10 @@ msgstr "Depósito"
 #: src/components/Multichain/TransferDetailsModal.js:129
 #: src/components/Shielded/FeeBreakdown.js:70
 #: src/screens/CreateTokenConfirm.js:293
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:172
-#: src/screens/Multichain/ChainTransferScreen.js:250
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:175
+#: src/screens/Multichain/ChainTransferScreen.js:256
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:189
-#: src/screens/Multichain/NextSendConfirmScreen.js:260
+#: src/screens/Multichain/NextSendConfirmScreen.js:277
 #: src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
 msgstr "Taxa de Rede"
@@ -869,7 +869,7 @@ msgid "Tokens found"
 msgstr "Tokens encontrados"
 
 #: src/screens/ImportTokensScreen.js:209
-#: src/screens/Multichain/ChainTransferScreen.js:259
+#: src/screens/Multichain/ChainTransferScreen.js:265
 msgid "Continue"
 msgstr "Continuar"
 
@@ -958,7 +958,7 @@ msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
 #: src/components/ImportTokensModal.js:72
-#: src/components/Multichain/MultichainLoadScreen.js:50
+#: src/components/Multichain/MultichainLoadScreen.js:69
 #: src/components/Multichain/TokenHistoryList.js:54
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
@@ -966,7 +966,7 @@ msgstr "Digite suas palavras separadas por espaços"
 #: src/components/Reown/SendTransactionRequest.js:552
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:176
-#: src/screens/PinScreen.js:306 src/screens/TokenSwapLoadingScreen.js:90
+#: src/screens/PinScreen.js:315 src/screens/TokenSwapLoadingScreen.js:90
 msgid "Try again"
 msgstr "Tente novamente"
 
@@ -988,8 +988,9 @@ msgstr "**${ loadedData.addresses } endereços** encontrados"
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
-#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:224
-#: src/screens/PinScreen.js:341 src/screens/Settings.js:312
+#: src/components/Multichain/MultichainLoadScreen.js:81
+#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:227
+#: src/screens/PinScreen.js:350 src/screens/Settings.js:312
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
 
@@ -1030,7 +1031,7 @@ msgstr "Saldo Disponível"
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/NanoContractRegisterQrCodeScreen.js:26
-#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:102
+#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:108
 msgid "Manual"
 msgstr "Digitar"
 
@@ -1045,28 +1046,28 @@ msgstr "Registrar Nano Contract"
 msgid "Scan the nano contract ID QR code"
 msgstr "Escaneie o QR code do ID do Nano Contract"
 
-#: src/screens/PasskeyLockScreen.js:119
+#: src/screens/PasskeyLockScreen.js:122
 msgid "Unlock cancelled."
 msgstr "Desbloqueamento cancelado."
 
-#: src/screens/PasskeyLockScreen.js:135
+#: src/screens/PasskeyLockScreen.js:138
 msgid "Could not verify your passkey. Please try again."
 msgstr "Não foi possível verificar sua passkey. Tente novamente."
 
-#: src/screens/PasskeyLockScreen.js:188
+#: src/screens/PasskeyLockScreen.js:191
 #, javascript-format
 msgid "Unlock with the passkey \"${ passkeyLabel }\""
 msgstr "Desbloquear com passkey \"${ passkeyLabel }\""
 
-#: src/screens/PasskeyLockScreen.js:189
+#: src/screens/PasskeyLockScreen.js:192
 msgid "Unlock with your passkey"
 msgstr "Desbloquear com sua passkey"
 
-#: src/screens/PasskeyLockScreen.js:209
+#: src/screens/PasskeyLockScreen.js:212
 msgid "Unlock"
 msgstr "Desbloquear"
 
-#: src/screens/PinScreen.js:295
+#: src/screens/PinScreen.js:304
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
@@ -1079,11 +1080,11 @@ msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:332 src/screens/Reown/ReownList.js:176
+#: src/screens/PinScreen.js:341 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:372 src/screens/PinScreen.js:376
+#: src/screens/PinScreen.js:381 src/screens/PinScreen.js:385
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
@@ -1153,12 +1154,12 @@ msgid "You can register Tokens, Nano Contracts or Reown manually."
 msgstr "Você pode registrar Tokens, Nano Contracts ou o Reown manualmente."
 
 #: src/screens/RegisterOptionsScreen.js:43
-#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:66
-#: src/screens/UnifiedQRScanner.js:83
+#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:72
+#: src/screens/UnifiedQRScanner.js:89
 msgid "Feature Not Available"
 msgstr "Funcionalidade não disponível."
 
-#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:83
+#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:89
 msgid "The nano contract feature is not enabled."
 msgstr "Nano Contracts não estão habilitados."
 
@@ -1168,7 +1169,7 @@ msgstr "Nano Contracts não estão habilitados."
 msgid "OK"
 msgstr "OK"
 
-#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:66
+#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:72
 msgid "The reown feature is not enabled."
 msgstr "Reown não está habilitado."
 
@@ -1300,30 +1301,30 @@ msgstr ""
 "Este endereço é só para transferências para a Hathor Next, e tudo o que for "
 "enviado diretamente a ele é perdido. Use Transferir entre cadeias."
 
-#: src/screens/SendAddressInput.js:136
+#: src/screens/SendAddressInput.js:143
 msgid "Scan QR code"
 msgstr "Ler QR code"
 
-#: src/screens/SendAddressInput.js:152
+#: src/screens/SendAddressInput.js:159
 msgid "SEND TOKENS"
 msgstr "ENVIAR TOKENS"
 
-#: src/screens/SendAddressInput.js:164
+#: src/screens/SendAddressInput.js:171
 msgid "Address to send"
 msgstr "Endereço para enviar"
 
-#: src/screens/SendAddressInput.js:178
+#: src/screens/SendAddressInput.js:185
 msgid "Paste or type address"
 msgstr "Cole ou digite o endereço"
 
-#: src/screens/Multichain/NextSendAmountInput.js:216
-#: src/screens/SendAddressInput.js:208
+#: src/screens/Multichain/NextSendAmountInput.js:219
+#: src/screens/SendAddressInput.js:215
 msgid "Transfer between chains"
 msgstr "Transferir entre cadeias"
 
-#: src/multichain/nextClientErrors.js:80
-#: src/screens/Multichain/ChainTransferScreen.js:148
-#: src/screens/Multichain/NextSendAmountInput.js:155
+#: src/multichain/nextClientErrors.js:85
+#: src/screens/Multichain/ChainTransferScreen.js:154
+#: src/screens/Multichain/NextSendAmountInput.js:158
 #: src/screens/SendAmountInput.js:170
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
@@ -1478,8 +1479,8 @@ msgid "Transaction summary"
 msgstr "Resumo da transação"
 
 #: src/components/Multichain/TransferDetailsModal.js:124
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:167
-#: src/screens/Multichain/ChainTransferScreen.js:191
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:170
+#: src/screens/Multichain/ChainTransferScreen.js:197
 #: src/screens/SendConfirmScreen.js:647
 msgid "To"
 msgstr "Para"
@@ -1502,12 +1503,12 @@ msgstr[1] "Taxa de Privacidade (${ shieldedCount } saídas)"
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:261
+#: src/screens/Multichain/NextSendConfirmScreen.js:278
 #: src/screens/SendConfirmScreen.js:724
 msgid "Total"
 msgstr "Total"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:277
+#: src/screens/Multichain/NextSendConfirmScreen.js:294
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:302
 #: src/screens/SendConfirmScreen.js:733
 msgid "Send"
@@ -1517,21 +1518,21 @@ msgstr "Enviar"
 msgid "Invalid QR code"
 msgstr "QR code inválido"
 
-#: src/screens/SendScanQRCode.js:80
+#: src/screens/SendScanQRCode.js:85
 msgid "SEND"
 msgstr "ENVIAR"
 
-#: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:87
-#: src/screens/UnifiedQRScanner.js:110
+#: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:92
+#: src/screens/UnifiedQRScanner.js:116
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
-#: src/components/Multichain/DevBackendSettings.js:69
+#: src/components/Multichain/DevBackendSettings.js:111
 #: src/screens/Settings.js:177
 msgid "Enter your 6-digit pin to connect to Hathor Next"
 msgstr "Digite seu PIN de 6 dígitos para conectar à Hathor Next"
 
-#: src/components/Multichain/DevBackendSettings.js:70
+#: src/components/Multichain/DevBackendSettings.js:112
 #: src/screens/Settings.js:178
 msgid "Connect to Hathor Next"
 msgstr "Conectar à Hathor Next"
@@ -1650,17 +1651,16 @@ msgstr "TROCAR"
 msgid "TOKENS"
 msgstr "TOKENS"
 
-#.  If none of the patterns match, show an error or handle accordingly
-#: src/screens/UnifiedQRScanner.js:91
+#: src/screens/UnifiedQRScanner.js:56 src/screens/UnifiedQRScanner.js:97
 msgid "Invalid QR Code"
 msgstr "QR code inválido"
 
 #.  If none of the patterns match, show an error or handle accordingly
-#: src/screens/UnifiedQRScanner.js:91
+#: src/screens/UnifiedQRScanner.js:97
 msgid "The scanned QR code is not in a recognized format."
 msgstr "O QR code escaneado não está em um formato reconhecível."
 
-#: src/screens/UnifiedQRScanner.js:97
+#: src/screens/UnifiedQRScanner.js:103
 msgid "Scan QR Code"
 msgstr "Leia o QR code"
 
@@ -2039,26 +2039,27 @@ msgstr "Digite seu PIN de 6 dígitos para autorizar a transferência"
 msgid "Authorize the transfer"
 msgstr "Autorizar a transferência"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:108
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:111
 msgid "Transferring to Hathor Next…"
 msgstr "Transferindo para a Hathor Next…"
 
 #: src/components/AmountInputAccessory.js:105
 #: src/components/Multichain/TransferDetailsModal.js:105
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:115
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:118
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:136
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:145
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:157
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:166
-#: src/screens/Multichain/NextSendConfirmScreen.js:207
-#: src/screens/Multichain/NextSendConfirmScreen.js:216
-#: src/screens/Multichain/NextSendConfirmScreen.js:228
-#: src/screens/Multichain/NextSendConfirmScreen.js:237
+#: src/screens/Multichain/NextSendConfirmScreen.js:208
+#: src/screens/Multichain/NextSendConfirmScreen.js:217
+#: src/screens/Multichain/NextSendConfirmScreen.js:226
+#: src/screens/Multichain/NextSendConfirmScreen.js:238
+#: src/screens/Multichain/NextSendConfirmScreen.js:247
 msgid "Done"
 msgstr "Ok"
 
 #.  Signed, with no answer yet: the app keeps asking, and no other transfer starts.
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:123
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:126
 msgid "We couldn't confirm the transfer yet."
 msgstr "Ainda não conseguimos confirmar a transferência."
 
@@ -2068,49 +2069,50 @@ msgstr "Ainda não conseguimos confirmar a transferência."
 #: src/components/Reown/InsufficientFundsModal.js:43
 #: src/components/Reown/NetworkMismatchModal.js:54
 #: src/components/Reown/TokenInfoModal.js:114
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:125
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:128
 msgid "Close"
 msgstr "Fechar"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:132
+#: src/sagas/multichain.js:145
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:135
 msgid "The transfer failed."
 msgstr "A transferência falhou."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:145
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:148
 msgid "CONFIRM TRANSFER"
 msgstr "CONFIRMAR TRANSFERÊNCIA"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:154
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:157
 msgid "You send"
 msgstr "Você envia"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:160
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:163
 msgid "You receive"
 msgstr "Você recebe"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:167
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:170
 msgid "To your address"
 msgstr "Para o seu endereço"
 
 #: src/components/Multichain/TransferDetailsModal.js:127
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:171
-#: src/screens/Multichain/ChainTransferScreen.js:249
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:174
+#: src/screens/Multichain/ChainTransferScreen.js:255
 msgid "Bridge fee"
 msgstr "Taxa da ponte"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:173
-#: src/screens/Multichain/ChainTransferScreen.js:251
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:176
+#: src/screens/Multichain/ChainTransferScreen.js:257
 msgid "Arrives in"
 msgstr "Chega em"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:177
-#: src/screens/Multichain/ChainTransferScreen.js:254
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:180
+#: src/screens/Multichain/ChainTransferScreen.js:260
 msgid "One-way: you can't move these tokens back to Hathor Network yet."
 msgstr ""
 "Só de ida: você ainda não pode mover esses tokens de volta para a Hathor "
 "Network."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:183
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:186
 msgid "Confirm and send"
 msgstr "Confirmar e enviar"
 
@@ -2121,52 +2123,52 @@ msgstr ""
 "Transferências da ${ source } para a ${ destination } ainda não estão "
 "disponíveis."
 
-#: src/screens/Multichain/ChainTransferScreen.js:144
+#: src/screens/Multichain/ChainTransferScreen.js:150
 msgid "The smallest transfer is ${ minimum }."
 msgstr "A menor transferência é de ${ minimum }."
 
-#: src/screens/Multichain/ChainTransferScreen.js:168
+#: src/screens/Multichain/ChainTransferScreen.js:174
 msgid "TRANSFER BETWEEN CHAINS"
 msgstr "TRANSFERIR ENTRE CADEIAS"
 
-#: src/screens/Multichain/ChainTransferScreen.js:178
+#: src/screens/Multichain/ChainTransferScreen.js:184
 msgid "From"
 msgstr "De"
 
-#: src/screens/Multichain/ChainTransferScreen.js:185
+#: src/screens/Multichain/ChainTransferScreen.js:191
 msgid "Swap From and To"
 msgstr "Inverter origem e destino"
 
 #: src/components/Multichain/NextTokenPicker.js:52
-#: src/screens/Multichain/ChainTransferScreen.js:195
+#: src/screens/Multichain/ChainTransferScreen.js:201
 msgid "Token"
 msgstr "Token"
 
-#: src/screens/Multichain/ChainTransferScreen.js:196
+#: src/screens/Multichain/ChainTransferScreen.js:202
 #, javascript-format
 msgid "${ symbol } · ${ availableText } available"
 msgstr "${ symbol } · ${ availableText } disponível"
 
-#: src/screens/Multichain/ChainTransferScreen.js:199
+#: src/screens/Multichain/ChainTransferScreen.js:205
 msgid "Hathor Next address"
 msgstr "Endereço da Hathor Next"
 
-#: src/screens/Multichain/ChainTransferScreen.js:212
+#: src/screens/Multichain/ChainTransferScreen.js:218
 msgid "Paste or type a Hathor Next address"
 msgstr "Cole ou digite um endereço da Hathor Next"
 
-#: src/screens/Multichain/ChainTransferScreen.js:226
+#: src/screens/Multichain/ChainTransferScreen.js:232
 msgid "Use my Hathor Next address"
 msgstr "Usar meu endereço da Hathor Next"
 
 #: src/components/Reown/CreateTokenRequest.js:103
-#: src/screens/Multichain/ChainTransferScreen.js:231
+#: src/screens/Multichain/ChainTransferScreen.js:237
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:186
-#: src/screens/Multichain/NextSendConfirmScreen.js:253
+#: src/screens/Multichain/NextSendConfirmScreen.js:263
 msgid "Amount"
 msgstr "Quantidade"
 
-#: src/screens/Multichain/ChainTransferScreen.js:245
+#: src/screens/Multichain/ChainTransferScreen.js:251
 msgid "You'll receive"
 msgstr "Você receberá"
 
@@ -2258,7 +2260,6 @@ msgid "The name can't start or end with a space, nor be this long."
 msgstr "O nome não pode começar nem terminar com espaço, nem ser tão longo."
 
 #: src/screens/Multichain/NextCreateTokenScreen.js:116
-#: src/screens/Multichain/NextSendAmountInput.js:54
 #, javascript-format
 msgid ""
 "The network fee is paid in ${ nativeSymbol }. You need ${ feeText } $"
@@ -2294,61 +2295,74 @@ msgid "Amount to create"
 msgstr "Quantidade a criar"
 
 #: src/screens/Multichain/NextCreateTokenScreen.js:182
-#: src/screens/Multichain/NextSendAmountInput.js:209
+#: src/screens/Multichain/NextSendAmountInput.js:212
 #, javascript-format
 msgid "Network fee: ${ feeText } ${ nativeSymbol }"
 msgstr "Taxa de rede: ${ feeText } ${ nativeSymbol }"
 
-#: src/screens/Multichain/NextSendAmountInput.js:174
-#: src/screens/Multichain/NextSendConfirmScreen.js:249
+#: src/screens/Multichain/NextSendAmountInput.js:56
+#, javascript-format
+msgid ""
+"The network fee is paid in ${ nativeSymbol }. You need ${ feeText } $"
+"{ feeSymbol } on Hathor Next."
+msgstr ""
+"A taxa de rede é paga em ${ nativeSymbol }. Você precisa de ${ feeText } $"
+"{ feeSymbol } na Hathor Next."
+
+#: src/screens/Multichain/NextSendAmountInput.js:177
+#: src/screens/Multichain/NextSendConfirmScreen.js:259
 #, javascript-format
 msgid "SEND ${ symbol }"
 msgstr "ENVIAR ${ symbol }"
 
-#: src/screens/Multichain/NextSendAmountInput.js:207
+#: src/screens/Multichain/NextSendAmountInput.js:210
 #, javascript-format
 msgid "${ availableText } ${ symbol } available"
 msgstr "${ availableText } ${ symbol } disponível"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:139
+#: src/screens/Multichain/NextSendConfirmScreen.js:140
 msgid "The passkey couldn't authorize the payment."
 msgstr "A passkey não conseguiu autorizar o pagamento."
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:155
+#: src/screens/Multichain/NextSendConfirmScreen.js:156
 msgid "Enter your 6-digit pin to authorize the payment"
 msgstr "Digite seu PIN de 6 dígitos para autorizar o pagamento"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:156
+#: src/screens/Multichain/NextSendConfirmScreen.js:157
 msgid "Authorize the payment"
 msgstr "Autorizar o pagamento"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:235
+#: src/screens/Multichain/NextSendConfirmScreen.js:245
 msgid "The payment couldn't be sent."
 msgstr "Não foi possível enviar o pagamento."
 
-#: src/components/Multichain/NextTxDetailsModal.js:98
+#: src/components/Multichain/NextTxDetailsModal.js:101
 #: src/components/NanoContract/EditAddressModal.js:63
 #: src/components/NanoContract/SelectAddressModal.js:131
 #: src/components/Reown/GetAddressRequest.js:42
 #: src/components/Reown/SendTransactionRequest.js:343
 #: src/components/Reown/SignMessageRequest.js:40
 #: src/components/Reown/SignOracleDataRequest.js:59
-#: src/screens/Multichain/NextSendConfirmScreen.js:255
+#: src/screens/Multichain/NextSendConfirmScreen.js:265
 msgid "Address"
 msgstr "Endereço"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:266
+#: src/screens/Multichain/NextSendConfirmScreen.js:270
+msgid "Token id"
+msgstr "ID do token"
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:283
 msgid "An earlier payment is still on its way. You can send once it settles."
 msgstr ""
 "Um pagamento anterior ainda está a caminho. Você poderá enviar depois que "
 "ele for concluído."
 
 #: src/components/PrivacyModeCard.js:50
-#: src/screens/Multichain/NextSendConfirmScreen.js:271
+#: src/screens/Multichain/NextSendConfirmScreen.js:288
 msgid "Private"
 msgstr "Privado"
 
-#: src/multichain/nextClientErrors.js:83 src/sagas/multichain.js:112
+#: src/multichain/nextClientErrors.js:88 src/sagas/multichain.js:142
 msgid "Couldn't connect to Hathor Next."
 msgstr "Não foi possível conectar à Hathor Next."
 
@@ -2530,15 +2544,41 @@ msgid ""
 "Sending from a passkey wallet isn't supported in this version of the app yet."
 msgstr "Enviar de uma carteira com passkey ainda não é suportado nessa versão."
 
-#: src/multichain/address.js:147
+#: src/multichain/address.js:72
+msgid ""
+"This is an old Hathor Next address, with no checksum to catch a typo. Ask "
+"for the address that starts with samba1z."
+msgstr ""
+"Este é um endereço antigo da Hathor Next, sem checksum para detectar um erro "
+"de digitação. Peça o endereço que começa com samba1z."
+
+#: src/multichain/address.js:75
+msgid "Nobody can spend from this Hathor Next address, so it can't be paid."
+msgstr ""
+"Ninguém consegue gastar a partir deste endereço da Hathor Next, então ele "
+"não pode receber pagamentos."
+
+#: src/multichain/address.js:132
+msgid ""
+"Payment request QR codes are not supported. Please use a simple address QR "
+"code."
+msgstr ""
+"QR codes de solicitação de pagamento não são suportados. Use um QR code só "
+"com o endereço."
+
+#: src/multichain/address.js:190
 msgid "This is a Hathor Network address. Enter a Hathor Next address."
 msgstr ""
 "Este é um endereço da Hathor Network. Digite um endereço da Hathor Next."
 
-#: src/multichain/address.js:153
+#: src/multichain/address.js:196
 msgid "This is a Hathor Next address. Enter a Hathor Network address."
 msgstr ""
 "Este é um endereço da Hathor Next. Digite um endereço da Hathor Network."
+
+#: src/multichain/amount.js:105
+msgid "Use only one decimal separator."
+msgstr "Use só um separador decimal."
 
 #: src/multichain/content.js:28
 msgid "Sending"
@@ -2557,10 +2597,14 @@ msgid "Not settled yet"
 msgstr "Ainda não liquidado"
 
 #: src/multichain/content.js:36
+msgid "Expired"
+msgstr "Expirado"
+
+#: src/multichain/content.js:38
 msgid "Needs attention"
 msgstr "Requer atenção"
 
-#: src/multichain/content.js:43
+#: src/multichain/content.js:45
 msgid ""
 "Settled means final. The payment is on the ledger for good — there is no "
 "waiting for confirmations and no chance of it being reversed."
@@ -2568,15 +2612,15 @@ msgstr ""
 "Liquidado significa final. O pagamento está no ledger para sempre — não há "
 "espera por confirmações e nenhuma chance de ser revertido."
 
-#: src/multichain/content.js:46
+#: src/multichain/content.js:48
 msgid "Settled and irreversible."
 msgstr "Liquidado e irreversível."
 
-#: src/multichain/content.js:49
+#: src/multichain/content.js:51
 msgid "Waiting for the network to record it."
 msgstr "Aguardando a rede registrá-lo."
 
-#: src/multichain/content.js:52
+#: src/multichain/content.js:54
 msgid ""
 "Signed and handed to the network. Your statement is up to date and this "
 "payment isn't on it yet, so the network is most likely still working on it: "
@@ -2595,11 +2639,11 @@ msgstr ""
 "carteira e nenhuma taxa é paga. As moedas reservadas para ele continuam "
 "separadas, e a carteira continua verificando."
 
-#: src/multichain/content.js:55
+#: src/multichain/content.js:57
 msgid "The network turned it down"
 msgstr "A rede recusou"
 
-#: src/multichain/content.js:58
+#: src/multichain/content.js:60
 msgid ""
 "The network looked at this payment and turned it down, so it will never "
 "settle. Nothing left your wallet, no fee was paid, and the coins that were "
@@ -2609,11 +2653,21 @@ msgstr ""
 "Nada saiu da sua carteira, nenhuma taxa foi paga, e as moedas que foram "
 "reservadas para ele já voltaram. Não há nada a esperar."
 
-#: src/multichain/content.js:61
+#: src/multichain/content.js:63
+msgid ""
+"This payment expired before the network got its signatures, so it will never "
+"settle. Nothing left your wallet, no fee was paid, and its coins are free "
+"again."
+msgstr ""
+"Este pagamento expirou antes de a rede receber as assinaturas, então ele "
+"nunca será liquidado. Nada saiu da sua carteira, nenhuma taxa foi paga e as "
+"moedas dele estão livres de novo."
+
+#: src/multichain/content.js:66
 msgid "The network said:"
 msgstr "A rede disse:"
 
-#: src/multichain/content.js:64
+#: src/multichain/content.js:69
 msgid ""
 "Every Hathor Next payment is private: the amount, the token and who you paid "
 "never appear on the ledger. Only the exact network fee is public."
@@ -2621,7 +2675,7 @@ msgstr ""
 "Todo pagamento na Hathor Next é privado: o valor, o token e para quem você "
 "pagou nunca aparecem no ledger. Apenas a taxa exata da rede é pública."
 
-#: src/multichain/content.js:67
+#: src/multichain/content.js:72
 msgid ""
 "Share this address as often as you like. Every payment to it lands on a "
 "different one-time key, so nobody can link them together — not even by "
@@ -2631,22 +2685,22 @@ msgstr ""
 "em uma chave de uso único diferente, então ninguém consegue relacioná-los — "
 "nem mesmo observando o ledger."
 
-#: src/multichain/content.js:70
+#: src/multichain/content.js:75
 msgid ""
 "Syncing your Hathor Next balance. It can still rise until the sync ends."
 msgstr ""
 "Sincronizando seu saldo da Hathor Next. Ele ainda pode aumentar até a "
 "sincronização terminar."
 
-#: src/multichain/content.js:73 src/multichain/nextClientErrors.js:78
+#: src/multichain/content.js:78 src/multichain/nextClientErrors.js:83
 msgid "You can send once your balance finishes syncing."
 msgstr "Você poderá enviar quando seu saldo terminar de sincronizar."
 
-#: src/components/OfflineBar.js:60 src/multichain/nextClientErrors.js:76
+#: src/components/OfflineBar.js:60 src/multichain/nextClientErrors.js:81
 msgid "No internet connection"
 msgstr "Sem conexão com a internet"
 
-#: src/multichain/nextClientErrors.js:85
+#: src/multichain/nextClientErrors.js:90
 msgid ""
 "Hathor Next prepared a different payment than the one you approved, so "
 "nothing was signed or sent."
@@ -2654,11 +2708,11 @@ msgstr ""
 "A Hathor Next preparou um pagamento diferente do que você aprovou, então "
 "nada foi assinado nem enviado."
 
-#: src/multichain/nextClientErrors.js:87
+#: src/multichain/nextClientErrors.js:92
 msgid "Hathor Next couldn't prepare this payment. Nothing was sent."
 msgstr "A Hathor Next não conseguiu preparar este pagamento. Nada foi enviado."
 
-#: src/multichain/nextClientErrors.js:89
+#: src/multichain/nextClientErrors.js:94
 msgid ""
 "Sending all of these funds would make the amount public on Hathor Next. Send "
 "a little less, so some comes back to you as change."
@@ -2666,7 +2720,7 @@ msgstr ""
 "Enviar todo este saldo deixaria o valor público na Hathor Next. Envie um "
 "pouco menos, para que uma parte volte para você como troco."
 
-#: src/multichain/nextClientErrors.js:91
+#: src/multichain/nextClientErrors.js:96
 msgid ""
 "The network fee would come from HTR that arrived in public, from a transfer "
 "between chains, and would make its amount public on Hathor Next. Send some "
@@ -2676,7 +2730,7 @@ msgstr ""
 "entre cadeias, e tornaria esse valor público na Hathor Next. Envie um pouco "
 "de HTR para o seu próprio endereço da Hathor Next primeiro e tente de novo."
 
-#: src/multichain/nextClientErrors.js:93
+#: src/multichain/nextClientErrors.js:98
 msgid ""
 "An earlier payment from these funds hasn't settled yet, so it was sent "
 "again. Try this payment once it settles."
@@ -2684,7 +2738,7 @@ msgstr ""
 "Um pagamento anterior com estes fundos ainda não foi concluído, então ele "
 "foi enviado de novo. Tente este pagamento depois que ele for concluído."
 
-#: src/multichain/nextClientErrors.js:97
+#: src/multichain/nextClientErrors.js:102
 msgid ""
 "Hathor Next prepared a different transfer than the one you approved, so "
 "nothing was signed or sent."
@@ -2692,7 +2746,7 @@ msgstr ""
 "A Hathor Next preparou uma transferência diferente da que você aprovou, "
 "então nada foi assinado nem enviado."
 
-#: src/multichain/nextClientErrors.js:99
+#: src/multichain/nextClientErrors.js:104
 msgid ""
 "We couldn't confirm the transfer yet. Check your Hathor Network history "
 "before trying again."
@@ -2700,11 +2754,11 @@ msgstr ""
 "Ainda não conseguimos confirmar a transferência. Confira seu histórico na "
 "Hathor Network antes de tentar de novo."
 
-#: src/multichain/nextClientErrors.js:101
+#: src/multichain/nextClientErrors.js:106
 msgid "The transfer didn't go through. Nothing left your wallet."
 msgstr "A transferência não foi concluída. Nada saiu da sua carteira."
 
-#: src/multichain/nextClientErrors.js:103
+#: src/multichain/nextClientErrors.js:108
 msgid ""
 "This amount needs too many of your Hathor Network outputs for one transfer. "
 "Try a smaller amount."
@@ -2712,15 +2766,15 @@ msgstr ""
 "Este valor precisa de saídas demais da Hathor Network para uma só "
 "transferência. Tente um valor menor."
 
-#: src/multichain/nextClientErrors.js:105
+#: src/multichain/nextClientErrors.js:110
 msgid "Tokens can't be created on this Hathor Next network yet."
 msgstr "Ainda não é possível criar tokens nesta rede da Hathor Next."
 
-#: src/multichain/nextClientErrors.js:107
+#: src/multichain/nextClientErrors.js:112
 msgid "Hathor Next couldn't prepare this token. Nothing was created."
 msgstr "A Hathor Next não conseguiu preparar este token. Nada foi criado."
 
-#: src/multichain/nextClientErrors.js:109
+#: src/multichain/nextClientErrors.js:114
 msgid ""
 "Hathor Next prepared a different token than the one you approved, so nothing "
 "was signed or created."
@@ -2728,7 +2782,7 @@ msgstr ""
 "A Hathor Next preparou um token diferente do que você aprovou, então nada "
 "foi assinado nem criado."
 
-#: src/multichain/nextClientErrors.js:111
+#: src/multichain/nextClientErrors.js:116
 msgid ""
 "Hathor Next's list of tokens couldn't be read, so this wallet can't safely "
 "pick the keys for a new token. Nothing was created. Try again later."
@@ -2737,7 +2791,7 @@ msgstr ""
 "não consegue escolher com segurança as chaves de um novo token. Nada foi "
 "criado. Tente novamente mais tarde."
 
-#: src/multichain/nextClientErrors.js:113
+#: src/multichain/nextClientErrors.js:118
 msgid ""
 "Too many token creations were started without finishing. A new token "
 "couldn't be found again from your recovery words, so none was created."
@@ -2746,7 +2800,23 @@ msgstr ""
 "poderia ser encontrado de novo a partir das suas palavras de recuperação, "
 "então nenhum foi criado."
 
-#: src/multichain/nextClientErrors.js:115
+#: src/multichain/nextClientErrors.js:120
+msgid ""
+"Hathor Next's network changed, and this version of the app can't connect to "
+"it. Update the app, or disconnect the side chain for now."
+msgstr ""
+"A rede da Hathor Next mudou, e esta versão do app não consegue se conectar a "
+"ela. Atualize o app ou desconecte a cadeia lateral por enquanto."
+
+#: src/multichain/nextClientErrors.js:122
+msgid ""
+"Couldn't sign in to Hathor Next: your phone's date and time are off. Set "
+"them to update automatically, then try again."
+msgstr ""
+"Não foi possível entrar na Hathor Next: a data e a hora do seu celular estão "
+"erradas. Configure-as para atualizar automaticamente e tente novamente."
+
+#: src/multichain/nextClientErrors.js:124
 msgid "Something went wrong on Hathor Next."
 msgstr "Algo deu errado na Hathor Next."
 
@@ -2759,16 +2829,16 @@ msgstr "cerca de 1 minuto"
 msgid "about ${ minutes } minutes"
 msgstr "cerca de ${ minutes } minutos"
 
-#: src/multichain/transfer.js:98
+#: src/multichain/transfer.js:100
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName }. Transfers from $"
-"{ otherName } to ${ chainName } aren't available yet."
+"{ otherName } to ${ toName } aren't available yet."
 msgstr ""
 "Você tem ${ have } ${ symbol } na ${ chainName }. Transferências da $"
-"{ otherName } para a ${ chainName } ainda não estão disponíveis."
+"{ otherName } para a ${ toName } ainda não estão disponíveis."
 
-#: src/multichain/transfer.js:104
+#: src/multichain/transfer.js:106
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName }. Send from ${ otherName } "
@@ -2777,16 +2847,16 @@ msgstr ""
 "Você tem ${ have } ${ symbol } na ${ chainName }. Enviar da ${ otherName } "
 "em vez disso? Chega em ${ eta }."
 
-#: src/multichain/transfer.js:114
+#: src/multichain/transfer.js:117
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName } and ${ otherHave } $"
-"{ symbol } on ${ otherName }."
+"{ otherSymbol } on ${ otherName }."
 msgstr ""
 "Você tem ${ have } ${ symbol } na ${ chainName } e ${ otherHave } $"
-"{ symbol } na ${ otherName }."
+"{ otherSymbol } na ${ otherName }."
 
-#: src/multichain/transfer.js:119
+#: src/multichain/transfer.js:122
 msgid "${ both } Transfer the rest to ${ chainName } first."
 msgstr "${ both } Transfira o restante para a ${ chainName } primeiro."
 
@@ -3125,7 +3195,7 @@ msgstr "Processando"
 msgid "Voided"
 msgstr "Inválida"
 
-#: src/components/Multichain/NextTxDetailsModal.js:104
+#: src/components/Multichain/NextTxDetailsModal.js:107
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
 #: src/components/TxDetailsModal.js:143
@@ -3269,7 +3339,7 @@ msgstr "Sim"
 msgid "No"
 msgstr "Não"
 
-#: src/components/Multichain/NextTxRow.js:37
+#: src/components/Multichain/NextTxRow.js:48
 #: src/components/Reown/CreateTokenRequest.js:86
 msgid "Fee"
 msgstr "Taxa"
@@ -4041,41 +4111,50 @@ msgstr "Cadeia"
 msgid "Connecting to Hathor Next…"
 msgstr "Conectando à Hathor Next…"
 
-#: src/components/Multichain/DevBackendSettings.js:81
+#: src/components/Multichain/DevBackendSettings.js:123
 msgid "This backend runs a Hathor Next network this app can't use."
 msgstr "Este backend roda uma rede Hathor Next que este app não pode usar."
 
-#: src/components/Multichain/DevBackendSettings.js:86
+#: src/components/Multichain/DevBackendSettings.js:129
+msgid ""
+"This backend gives the values of a Hathor Next network that holds value, so "
+"it can't be used for testing."
+msgstr ""
+"Este backend usa os valores de uma rede da Hathor Next que tem valor, então "
+"não pode ser usado para testes."
+
+#: src/components/Multichain/DevBackendSettings.js:134
 msgid "Couldn't reach this backend."
 msgstr "Não foi possível acessar este backend."
 
-#: src/components/Multichain/DevBackendSettings.js:98
+#: src/components/Multichain/DevBackendSettings.js:146
 msgid "Hathor Next backend"
 msgstr "Backend da Hathor Next"
 
-#: src/components/Multichain/DevBackendSettings.js:101
+#: src/components/Multichain/DevBackendSettings.js:149
 #, javascript-format
 msgid "Network ${ networkId }, native token ${ nativeToken }"
 msgstr "Rede ${ networkId }, token nativo ${ nativeToken }"
 
-#: src/components/Multichain/DevBackendSettings.js:104
+#: src/components/Multichain/DevBackendSettings.js:152
 msgid ""
-"Hathor Next runs on this backend on every network but mainnet. Its keys "
-"never leave this device: the backend only gets public keys and signatures."
+"Hathor Next runs on this backend on every network but mainnet. Your keys "
+"never leave this device: the backend gets public keys and signatures, and "
+"its wallet service sees your payments and their amounts."
 msgstr ""
 "A Hathor Next roda neste backend em todas as redes, exceto a mainnet. Suas "
-"chaves nunca saem deste dispositivo: o backend recebe apenas chaves públicas "
-"e assinaturas."
+"chaves nunca saem deste aparelho: o backend recebe chaves públicas e "
+"assinaturas, e o wallet service dele vê seus pagamentos e os valores deles."
 
-#: src/components/Multichain/DevBackendSettings.js:108
+#: src/components/Multichain/DevBackendSettings.js:156
 msgid "Stop using this backend"
 msgstr "Parar de usar este backend"
 
-#: src/components/Multichain/DevBackendSettings.js:117
+#: src/components/Multichain/DevBackendSettings.js:165
 msgid "Hathor Next backend (local testing)"
 msgstr "Backend da Hathor Next (teste local)"
 
-#: src/components/Multichain/DevBackendSettings.js:127
+#: src/components/Multichain/DevBackendSettings.js:175
 msgid ""
 "Runs Hathor Next on a backend you run, instead of the network's own. After "
 "you set it, Hathor Next loads again on it."
@@ -4083,11 +4162,15 @@ msgstr ""
 "Roda a Hathor Next em um backend que você executa, no lugar do da rede. "
 "Depois de defini-lo, a Hathor Next carrega de novo nele."
 
-#: src/components/Multichain/DevBackendSettings.js:130
+#: src/components/Multichain/DevBackendSettings.js:178
 msgid "Use this backend"
 msgstr "Usar este backend"
 
-#: src/components/Multichain/MultichainLoadScreen.js:59
+#: src/components/Multichain/MultichainLoadScreen.js:75
+msgid "Disconnect side chain"
+msgstr "Desconectar a cadeia lateral"
+
+#: src/components/Multichain/MultichainLoadScreen.js:91
 msgid "Loading Hathor Next…"
 msgstr "Carregando a Hathor Next…"
 
@@ -4105,27 +4188,27 @@ msgstr "${ arrivingText } ${ token.symbol } a caminho"
 msgid "Here is my Hathor Next address: ${ address }"
 msgstr "Este é o meu endereço da Hathor Next: ${ address }"
 
-#: src/components/Multichain/NextTxDetailsModal.js:88
+#: src/components/Multichain/NextTxDetailsModal.js:91
 msgid "Status"
 msgstr "Status"
 
-#: src/components/Multichain/NextTxDetailsModal.js:94
+#: src/components/Multichain/NextTxDetailsModal.js:97
 msgid "Date"
 msgstr "Data"
 
-#: src/components/Multichain/NextTxDetailsModal.js:112
+#: src/components/Multichain/NextTxDetailsModal.js:115
 msgid "View on explorer"
 msgstr "Ver no explorer"
 
-#: src/components/Multichain/NextTxRow.js:40
+#: src/components/Multichain/NextTxRow.js:51
 msgid "Received"
 msgstr "Recebido"
 
-#: src/components/Multichain/NextTxRow.js:43
+#: src/components/Multichain/NextTxRow.js:54
 msgid "Sent"
 msgstr "Enviado"
 
-#: src/components/Multichain/NextTxRow.js:46
+#: src/components/Multichain/NextTxRow.js:57
 #, javascript-format
 msgid "Sent to ${ peer }"
 msgstr "Enviado para ${ peer }"
@@ -4198,14 +4281,14 @@ msgstr "Transferido para a ${ destination }"
 
 #.  Between the wallet's own addresses on all chains, the row's amount is what the transfer cost,
 #.  not what it moved: the line under the title says both.
-#: src/components/Multichain/TransferRow.js:145
+#: src/components/Multichain/TransferRow.js:149
 #, javascript-format
 msgid "${ moved } ${ symbol } moved · ${ shown } fee"
 msgstr "${ moved } ${ symbol } movidos · taxa de ${ shown }"
 
 #.  Between the wallet's own addresses on all chains, the row's amount is what the transfer cost,
 #.  not what it moved: the line under the title says both.
-#: src/components/Multichain/TransferRow.js:146
+#: src/components/Multichain/TransferRow.js:150
 msgid "${ moved } ${ symbol } moved"
 msgstr "${ moved } ${ symbol } movidos"
 

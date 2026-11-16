@@ -98,6 +98,10 @@ export function transferTitle(transfer, kind) {
  * @returns {{ amount: bigint, incoming: boolean }}
  */
 export function transferChange(transfer, kind) {
+  // Refused by the network: nothing moved, and no fee was paid.
+  if (transfer.status === TRANSFER_STATUS.FAILED) {
+    return { amount: 0n, incoming: false };
+  }
   if (kind === HISTORY_ROW.TRANSFER_DESTINATION) {
     return { amount: BigInt(transfer.receiveAmount), incoming: true };
   }
@@ -169,14 +173,16 @@ export const TransferRow = ({
         />
         <View style={styles.middle}>
           <Text style={styles.title} numberOfLines={1}>{transferTitle(transfer, kind)}</Text>
-          {kind === HISTORY_ROW.TRANSFER && transfer.toOwn && (
+          {kind === HISTORY_ROW.TRANSFER && transfer.toOwn && !failed && (
             <Text style={styles.secondary}>{movedLine}</Text>
           )}
           {status}
         </View>
-        <Text style={[styles.amount, incoming && styles.positive]} numberOfLines={1}>
-          {signed}
-        </Text>
+        {!failed && (
+          <Text style={[styles.amount, incoming && styles.positive]} numberOfLines={1}>
+            {signed}
+          </Text>
+        )}
       </View>
     </TouchableHighlight>
   );

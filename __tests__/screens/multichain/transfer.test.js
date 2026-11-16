@@ -375,3 +375,20 @@ describe("Send's way to the transfer", () => {
     expect(button(renderer, 'Transfer between chains')).toBeUndefined();
   });
 });
+
+describe('the amount of a transfer', () => {
+  test('is refused with two separators, rather than taken as less than it shows', async () => {
+    const navigation = { navigate: jest.fn(), goBack: jest.fn() };
+    const renderer = await mount(
+      makeStore().store,
+      <ChainTransferScreen navigation={navigation} />,
+    );
+    await act(async () => { addressInput(renderer).props.onChangeText(NEXT_ADDRESS); });
+    // "1.234,56": the parser would take 1.23 HTR while the field shows all of it.
+    const amount = renderer.root.findByType(AmountTextInput);
+    await act(async () => { amount.props.onAmountUpdate('1.234,56', 123n); });
+    expect(textOf(renderer)).toContain('Use only one decimal separator.');
+    await act(async () => { button(renderer, 'Continue').props.onPress(); });
+    expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+});

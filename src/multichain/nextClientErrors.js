@@ -62,6 +62,11 @@ export const NEXT_CLIENT_ERROR = {
   // Too many creations started and didn't finish: a new token couldn't be found again from the
   // words.
   TOKEN_NONCE_BEYOND_REACH: 'token-nonce-beyond-reach',
+  // The backend is on another Hathor Next network than the one this app pins: the network was
+  // reset or replaced, and the app needs an update.
+  NETWORK_CHANGED: 'network-changed',
+  // The wallet service refused the login for its time: the phone's clock is off.
+  CLOCK: 'clock',
 };
 
 /**
@@ -111,6 +116,10 @@ export function nextClientErrorMessage(code) {
       return t`Hathor Next's list of tokens couldn't be read, so this wallet can't safely pick the keys for a new token. Nothing was created. Try again later.`;
     case NEXT_CLIENT_ERROR.TOKEN_NONCE_BEYOND_REACH:
       return t`Too many token creations were started without finishing. A new token couldn't be found again from your recovery words, so none was created.`;
+    case NEXT_CLIENT_ERROR.NETWORK_CHANGED:
+      return t`Hathor Next's network changed, and this version of the app can't connect to it. Update the app, or disconnect the side chain for now.`;
+    case NEXT_CLIENT_ERROR.CLOCK:
+      return t`Couldn't sign in to Hathor Next: your phone's date and time are off. Set them to update automatically, then try again.`;
     default:
       return t`Something went wrong on Hathor Next.`;
   }
@@ -127,4 +136,17 @@ export class NextClientError extends Error {
     this.code = code;
     Object.assign(this, details);
   }
+}
+
+/**
+ * The words a failure is shown with: the client's own, translated, for one of its errors; for
+ * anything else (a bug, a network library's message, a server's words) the fallback, so the user
+ * never reads an untranslated exception.
+ *
+ * @param {Error} e
+ * @param {Function} [fallback] The words for any other failure
+ * @returns {string}
+ */
+export function userErrorText(e, fallback = () => nextClientErrorMessage()) {
+  return e instanceof NextClientError ? e.message : fallback();
 }

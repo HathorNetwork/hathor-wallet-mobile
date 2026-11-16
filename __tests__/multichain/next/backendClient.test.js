@@ -102,7 +102,15 @@ const HISTORY = [
 /**
  * A backend that checks what the client signs, as the real one's wallet service does.
  */
-function fakeBackend({ remote = REMOTE_CONFIG, registerAs = null, expireOnce = false } = {}) {
+function fakeBackend({
+  remote = REMOTE_CONFIG,
+  registerAs = null,
+  expireOnce = false,
+  balances = null,
+  history = null,
+  tokens = null,
+  loginError = null,
+} = {}) {
   const requests = [];
   const registered = {};
   let tokenCount = 0;
@@ -117,7 +125,8 @@ function fakeBackend({ remote = REMOTE_CONFIG, registerAs = null, expireOnce = f
     requests.push({ method, path, headers, body });
     const data = body ? JSON.parse(body) : null;
     if (method === 'GET' && path === '/v1/config') return json(200, remote);
-    if (method === 'GET' && path === '/v1/tokens') {
+    if (method === 'GET' && path.split('?')[0] === '/v1/tokens') {
+      if (tokens) return json(200, tokens(new URLSearchParams(path.split('?')[1] ?? '')));
       return json(200, { tokens: [{ token_id: OTHER_TOKEN, symbol: 'TKN', name: 'Token' }] });
     }
     if (method === 'POST' && path === '/v1/wallets') {
@@ -144,6 +153,7 @@ function fakeBackend({ remote = REMOTE_CONFIG, registerAs = null, expireOnce = f
       });
     }
     const session = path.match(/^\/v1\/wallets\/([0-9a-f]{64})\/session$/);
+    if (method === 'POST' && session && loginError) return json(401, { error: loginError });
     if (method === 'POST' && session) {
       const authPub = registered[session[1]]?.[data.scope];
       const message = loginMessage(hexToBytes(session[1]), data.scope, data.ts);
@@ -161,13 +171,16 @@ function fakeBackend({ remote = REMOTE_CONFIG, registerAs = null, expireOnce = f
       }
       return json(200, {
         balance_state: 'live',
-        balances: [
+        balances: balances ?? [
           { token: NATIVE, tracked: '899000000', referenceable: '899000000' },
           { token: OTHER_TOKEN, tracked: '42', referenceable: '42' },
         ],
       });
     }
-    if (path.includes('/history')) return json(200, { history: HISTORY });
+    if (path.includes('/history')) {
+      if (history) return json(200, history(new URLSearchParams(path.split('?')[1] ?? '')));
+      return json(200, { history: HISTORY });
+    }
     return json(404, { error: 'not found' });
   };
   return { fetchImpl, requests };
@@ -252,7 +265,7 @@ describe('the Hathor Next backend client', () => {
     client = createBackendNextClient({ fetchImpl: backend.fetchImpl, WebSocketImpl: null });
     await client.prepareKeys({ words: WORDS });
     await expect(client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' }))
-      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.CONNECT_FAILED });
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NETWORK_CHANGED });
     expect(backend.requests.map((r) => r.path)).toEqual(['/v1/config']);
   });
 
@@ -449,5 +462,127 @@ describe('losing the backend', () => {
       client.disconnect();
       jest.useRealTimers();
     }
+  });
+});
+
+describe('what the backend answers, read with care', () => {
+  let client = null;
+  afterEach(() => {
+    client?.disconnect();
+    client = null;
+    jest.useRealTimers();
+  });
+
+  it('leaves out a balance it can\'t read, and still connects', async () => {
+    client = await connectedClient(fakeBackend({
+      balances: [
+        { token: NATIVE, referenceable: '899000000' },
+        { token: OTHER_TOKEN, referenceable: 'not a number' },
+        { token: 'ab'.repeat(32), referenceable: '-5' },
+      ],
+    }));
+    expect(client.getBalances().balances).toEqual({ [NATIVE]: { available: 899000000n } });
+  });
+
+  it('reads at most so many statement pages, whatever the backend says comes next', async () => {
+    let pages = 0;
+    const backend = fakeBackend({
+      history: () => {
+        pages += 1;
+        return { history: [], next: `cursor-${pages}` };
+      },
+    });
+    client = await connectedClient(backend);
+    expect(pages).toBeLessThanOrEqual(50);
+  });
+
+  it('reads the registry on until every token the wallet holds is named', async () => {
+    const backend = fakeBackend({
+      tokens: (query) => (query.get('from')
+        ? { tokens: [{ token_id: OTHER_TOKEN, symbol: 'TKN', name: 'Token' }] }
+        : { tokens: [{ token_id: 'ef'.repeat(32), symbol: 'X', name: 'X' }], next: 'page-2' }),
+    });
+    client = await connectedClient(backend);
+    expect(client.getTokens().find((token) => token.id === OTHER_TOKEN))
+      .toMatchObject({ name: 'Token', symbol: 'TKN' });
+  });
+
+  it("shows a token's name and symbol safe: no control characters, within the caps", async () => {
+    const backend = fakeBackend({
+      tokens: () => ({
+        tokens: [{
+          token_id: OTHER_TOKEN,
+          symbol: 'H\u202eTR\u0007',
+          name: `Hathor\n${'x'.repeat(100)}`,
+        }],
+      }),
+    });
+    client = await connectedClient(backend);
+    const token = client.getTokens().find((t) => t.id === OTHER_TOKEN);
+    expect(token.symbol).toBe('HTR');
+    expect(new TextEncoder().encode(token.name).length).toBeLessThanOrEqual(64);
+    expect(token.name).not.toMatch(/\n/);
+  });
+
+  it("says the phone's clock is off when the wallet service refuses the login for its time", async () => {
+    const backend = fakeBackend({
+      loginError: 'auth-timestamp-shift: the timestamp is shifted 300 s from this server\'s clock',
+    });
+    client = createBackendNextClient({ fetchImpl: backend.fetchImpl, WebSocketImpl: null });
+    await client.prepareKeys({ words: WORDS });
+    await expect(client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.CLOCK });
+  });
+
+  it('stops a connect that a disconnect overtook, before its next request', async () => {
+    const backend = fakeBackend();
+    let release;
+    const slowConfig = new Promise((resolve) => { release = resolve; });
+    const fetchImpl = async (url, options) => {
+      if (url.endsWith('/v1/config')) await slowConfig;
+      return backend.fetchImpl(url, options);
+    };
+    client = createBackendNextClient({ fetchImpl, WebSocketImpl: null });
+    await client.prepareKeys({ words: WORDS });
+    const connecting = client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+    client.disconnect();
+    release();
+    await expect(connecting).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
+    expect(backend.requests.map((r) => r.path)).toEqual(['/v1/config']);
+  });
+
+  it('takes a feed frame of null for nothing', async () => {
+    const sockets = [];
+    class Socket {
+      constructor() { sockets.push(this); }
+
+      close() {}
+    }
+    client = createBackendNextClient({ fetchImpl: fakeBackend().fetchImpl, WebSocketImpl: Socket });
+    await client.prepareKeys({ words: WORDS });
+    await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+    expect(() => sockets[0].onmessage({ data: 'null' })).not.toThrow();
+  });
+
+  it('reconnects a feed ended as soon as it opens ever more slowly', async () => {
+    jest.useFakeTimers();
+    const sockets = [];
+    class Socket {
+      constructor() {
+        sockets.push(this);
+        setTimeout(() => {
+          this.onopen?.();
+          this.onclose?.();
+        }, 0);
+      }
+
+      close() {}
+    }
+    client = createBackendNextClient({ fetchImpl: fakeBackend().fetchImpl, WebSocketImpl: Socket });
+    await client.prepareKeys({ words: WORDS });
+    await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+    await jest.advanceTimersByTimeAsync(120000);
+    // 1 s, 2 s, 4 s… up to 30 s apart: a dozen sockets in two minutes, not one a second.
+    expect(sockets.length).toBeLessThan(20);
   });
 });

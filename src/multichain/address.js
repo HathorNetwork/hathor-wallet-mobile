@@ -49,6 +49,34 @@ export function isNextAddress(text) {
   return nextAddressKeys(text) !== null;
 }
 
+const isIdentity = (key) => key.every((byte) => byte === 0);
+
+/**
+ * Why a Hathor Next address can't be paid where a person typed or scanned it, or null when it
+ * can (or isn't a Hathor Next address at all). The legacy form `samba:` + hex has no checksum, so
+ * a typo in it still reads as two other keys, and the app would show and pay a well-formed
+ * address nobody holds; the backend refuses it for a transfer for that reason, and only ever
+ * sees the canonical form. A key that is the identity is one nobody can spend from.
+ *
+ * @param {string|null|undefined} text
+ * @returns {string|null}
+ */
+export function nextAddressError(text) {
+  let decoded;
+  try {
+    decoded = decodeAddressKeys((text ?? '').trim());
+  } catch (e) {
+    return null;
+  }
+  if (decoded.form === 'legacy') {
+    return t`This is an old Hathor Next address, with no checksum to catch a typo. Ask for the address that starts with samba1z.`;
+  }
+  if (isIdentity(decoded.view) || isIdentity(decoded.spend)) {
+    return t`Nobody can spend from this Hathor Next address, so it can't be paid.`;
+  }
+  return null;
+}
+
 /**
  * The canonical form of a Hathor Next address: the lowercase `samba1z…` of its keys, whichever
  * form was typed or scanned.
@@ -74,23 +102,34 @@ export function sameNextAddress(a, b) {
 }
 
 /**
- * The Hathor Next address a scanned QR code holds: the address alone, or a payment request on it
- * (`samba:<address>?amount=…`). The amount and token of a payment request are dropped, as Hathor
- * Network's scanner drops them.
+ * What a scanned QR code holds for Hathor Next: `{ address }` for an address alone, in its
+ * canonical form, `{ error }` for a payment request on one (`samba:<address>?amount=…`), or null
+ * when it holds no Hathor Next address. A payment request is refused, as Hathor Network's scanner
+ * refuses one: taking only its address would drop the amount and the token it asks for without a
+ * word.
  *
  * @param {string|null|undefined} data
- * @returns {string|null} The address in its canonical form, or null when the QR code holds none
+ * @returns {{ address: string }|{ error: string }|null}
  */
 export function parseNextQrCode(data) {
   const value = (data ?? '').trim();
-  const [head] = value.split('?');
+  const [head, ...rest] = value.split('?');
   // The legacy form starts with the scheme's own letters: it is an address as it stands.
-  const direct = normalizeNextAddress(head);
-  if (direct) {
-    return direct;
+  const address = normalizeNextAddress(head)
+    ?? (SCHEME_RE.test(head) ? normalizeNextAddress(head.replace(SCHEME_RE, '')) : null);
+  if (!address) {
+    return null;
   }
-  return SCHEME_RE.test(head) ? normalizeNextAddress(head.replace(SCHEME_RE, '')) : null;
+  const refused = nextAddressError(head) ?? nextAddressError(head.replace(SCHEME_RE, ''));
+  if (refused) {
+    return { error: refused };
+  }
+  // A bare `?` asks for nothing.
+  return rest.join('?') ? { error: paymentRequestText() } : { address };
 }
+
+/** Why a payment request's QR code is refused. */
+export const paymentRequestText = () => t`Payment request QR codes are not supported. Please use a simple address QR code.`;
 
 /**
  * Whether a text is a valid Hathor Network address of the network the wallet runs on.
@@ -138,6 +177,10 @@ export function addressChain(address, network, { allowShielded = true } = {}) {
  */
 export function validateTransferAddress(address, network, toChain = CHAIN.HATHOR_NEXT) {
   const chain = addressChain(address, network);
+  const refused = chain === CHAIN.HATHOR_NEXT ? nextAddressError(address) : null;
+  if (refused) {
+    return { isValid: false, message: refused };
+  }
   if (chain === toChain) {
     return { isValid: true };
   }

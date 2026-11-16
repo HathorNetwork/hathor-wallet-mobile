@@ -18,6 +18,7 @@ import {
   SignRefusedError,
   checkSignRequest,
   createSignLedger,
+  MAX_SETTLED_ENTRIES,
   verifyAndSign,
 } from '../../../src/multichain/next/signer';
 import { EXCESS_DOMAIN, INPUT_DOMAIN, verifyIn } from '../../../src/multichain/next/kit/inputSig';
@@ -38,6 +39,7 @@ import {
   concatBytes,
   hexToBytes,
   modOrder,
+  ORDER,
   scalarFromCanonical,
 } from '../../../src/multichain/next/kit/scalar';
 
@@ -509,5 +511,113 @@ describe('each check of a payment, on its own', () => {
     const intent = { ...context.intent, to: 'not an address' };
     expect(refusedFor(requestOf(CASE), { ...context, intent }))
       .toMatch(/^An address can't be read/);
+  });
+});
+
+describe('the sign-once ledger, kept small and true to disk', () => {
+  // As the app's store does: the value is in memory before the write to disk ends.
+  function storeLike({ failWrites = false } = {}) {
+    const memory = {};
+    return {
+      getItem: (key) => memory[key] ?? null,
+      setItemAsync: async (key, value) => {
+        memory[key] = value;
+        if (failWrites) throw new Error('disk full');
+      },
+    };
+  }
+
+  it('keeps no entry in memory whose write to disk failed', async () => {
+    const storage = storeLike({ failWrites: true });
+    const context = contextOf(CASE, { ledger: createSignLedger(storage, 'ledger') });
+    await expect(verifyAndSign(requestOf(CASE), context)).rejects.toThrow('disk full');
+    // Asked again, the same request is not answered with signatures that were never saved.
+    expect(context.ledger.entries()).toHaveLength(0);
+    expect(storage.getItem('ledger') ?? { entries: [] }).toEqual({ entries: [] });
+  });
+
+  it('keeps a settled entry without its signed bytes, still holding what it spent', async () => {
+    const context = contextOf(CASE);
+    const { txId } = await verifyAndSign(requestOf(CASE), context);
+    await context.ledger.markRecorded(txId);
+    const [entry] = context.ledger.entries();
+    expect(entry).toMatchObject({ txId, recorded: true, outputs: spentOf(CASE) });
+    expect(entry).not.toHaveProperty('signedTx');
+    expect(entry).not.toHaveProperty('signatures');
+    // A recorded transaction is never signed again, and its outputs stay held.
+    await expect(verifyAndSign(requestOf(CASE), context))
+      .rejects.toThrow('This transaction was already recorded.');
+  });
+
+  it('keeps only the newest settled entries', async () => {
+    const storage = memoryStorage();
+    const ledger = createSignLedger(storage, 'ledger');
+    for (let i = 0; i < MAX_SETTLED_ENTRIES + 5; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await ledger.record({
+        txId: `tx-${i}`, sendId: `s-${i}`, outputs: [String(1000 + i)], signedAt: i,
+      });
+      // eslint-disable-next-line no-await-in-loop
+      await ledger.markRecorded(`tx-${i}`);
+    }
+    const entries = ledger.entries();
+    expect(entries).toHaveLength(MAX_SETTLED_ENTRIES);
+    expect(entries.map((e) => e.txId)).not.toContain('tx-0');
+    expect(entries.map((e) => e.txId)).toContain(`tx-${MAX_SETTLED_ENTRIES + 4}`);
+  });
+});
+
+describe('shapes the network refuses, refused before signing', () => {
+  const refusedFor = (request, context = contextOf(CASE)) => {
+    const e = refusal(() => checkSignRequest(request, context));
+    expect(e).toBeInstanceOf(SignRefusedError);
+    return e.message;
+  };
+
+  it('refuses a transaction that spends one output twice', () => {
+    const twice = forge(CASE, (b) => {
+      const tx = parseTx(b);
+      const inputsOff = 36 + (tx.width === 'u128' ? 16 : 8) + 1 + 32 * tx.table.length;
+      b.set(b.slice(inputsOff, inputsOff + 8), inputsOff + 72);
+      return b;
+    });
+    const tx = parseTx(hexToBytes(twice));
+    const inputs = inputsOf(CASE).map((input, i) => ({
+      ...input, global_index: Number(tx.inputs[i].outputIndex),
+    }));
+    expect(refusedFor(requestOf(CASE, { unsigned_tx: twice, inputs })))
+      .toBe('The transaction spends an output twice.');
+  });
+
+  it('refuses an amount width other than the network\'s', () => {
+    expect(refusedFor(requestOf(CASE), contextOf(CASE, { amountWidth: 'u128' })))
+      .toBe('The transaction\'s amounts are u64; this network takes u128.');
+  });
+
+  it('refuses an input offset that is not a canonical scalar', () => {
+    const inputs = inputsOf(CASE).map((input, i) => (i === 0
+      ? {
+        ...input,
+        otk_offset: bytesToHex(bigintToBytesLE(
+          bytesToBigintLE(hexToBytes(input.otk_offset)) + ORDER,
+        )),
+      }
+      : input));
+    expect(refusedFor(requestOf(CASE, { inputs })))
+      .toBe('An input\'s offset is not a canonical scalar.');
+  });
+
+  it('refuses a v3 transaction whose excess is the identity', () => {
+    const V3 = vectors.cases.find((c) => c.format === 'v3');
+    const bytes = hexToBytes(V3.unsigned_tx);
+    const tx = parseTx(bytes);
+    bytes.set(new Uint8Array(32), tx.sections.coreLen - 32);
+    // An identity excess "signs" with s = k: s·G = R + e·0.
+    const k = 4242n;
+    const msg = signingHashOf(bytes, parseTx(bytes));
+    bytes.set(concatBytes(publicKeyOf(k), bigintToBytesLE(k)), tx.excess.signatureOffset);
+    expect(refusedFor(requestOf(V3, { unsigned_tx: bytesToHex(bytes) }), contextOf(V3)))
+      .toBe('The transaction\'s excess is the identity.');
+    expect(msg).toHaveLength(32);
   });
 });

@@ -9,7 +9,12 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { lockScreen, multichainLoadRequested } from '../../actions';
+import {
+  lockScreen,
+  multichainConnectSettingChanged,
+  multichainLoadRequested,
+  resetOnLockScreen,
+} from '../../actions';
 import { NEXT_STATUS } from '../../multichain/state';
 import { STORE } from '../../store';
 import { COLORS } from '../../styles/themes';
@@ -18,8 +23,11 @@ import Spinner from '../Spinner';
 
 /**
  * What the app shows while it waits for Hathor Next, with the side chain connected: the app opens
- * only once both chains have loaded. If Hathor Next fails, Try again is the only way on: there is
- * no opening the app on one chain.
+ * only once both chains have loaded. If Hathor Next fails, there is no opening the app on one
+ * chain while the side chain stays connected. The ways on are Try again, Disconnect side chain
+ * (the app then opens on Hathor Network alone, as before the side chain was turned on) and Reset
+ * wallet, the wallet's own error screen's last resort. Settings is out of reach here, and a
+ * backend that stays down would otherwise keep the wallet shut at every start.
  *
  * Try again needs the Hathor Next keys. They are derived at unlock, so they are missing only when
  * that failed: a passkey wallet's Try again runs the passkey ceremony, and a seed wallet's locks
@@ -39,6 +47,17 @@ export function MultichainLoadScreen() {
     dispatch(multichainLoadRequested());
   };
 
+  const disconnect = () => {
+    dispatch(multichainConnectSettingChanged(false));
+  };
+
+  // As the wallet's own error screen does: the lock screen shows the reset, and its back button
+  // returns here.
+  const reset = () => {
+    dispatch(resetOnLockScreen());
+    dispatch(lockScreen());
+  };
+
   if (status === NEXT_STATUS.FAILED) {
     return (
       <View style={styles.wrapper}>
@@ -49,6 +68,19 @@ export function MultichainLoadScreen() {
           onPress={tryAgain}
           title={t`Try again`}
         />
+        <SimpleButton
+          containerStyle={styles.button}
+          textStyle={styles.buttonText}
+          onPress={disconnect}
+          title={t`Disconnect side chain`}
+        />
+        <View style={styles.reset}>
+          <SimpleButton
+            textStyle={styles.buttonText}
+            onPress={reset}
+            title={t`Reset wallet`}
+          />
+        </View>
       </View>
     );
   }
@@ -82,6 +114,10 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 12,
+  },
+  reset: {
+    position: 'absolute',
+    bottom: 48,
   },
   buttonText: {
     fontSize: 18,

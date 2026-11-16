@@ -15,6 +15,7 @@ import {
   bytesToHex,
   hexToBytes,
   modOrder,
+  ORDER,
 } from './kit/scalar';
 import { TOKEN_INDEX_NATIVE } from './kit/txV2';
 import {
@@ -74,6 +75,10 @@ function ownInputs(request, tx, b) {
   if (inputs.length !== tx.nIn) {
     refuse('The inputs don\'t match the transaction.');
   }
+  // An output spent twice in one transaction is refused by the network.
+  if (new Set(tx.inputs.map((input) => input.outputIndex.toString())).size !== tx.nIn) {
+    refuse('The transaction spends an output twice.');
+  }
   const secrets = [];
   const keys = [];
   for (const [i, input] of inputs.entries()) {
@@ -81,7 +86,13 @@ function ownInputs(request, tx, b) {
     if (spends !== tx.inputs[i].outputIndex) {
       refuse('An input is not the output the transaction spends.');
     }
-    const p = modOrder(bytesToBigintLE(hexToBytes(input.otk_offset)) + b);
+    // The offset as a canonical scalar: another encoding of it would name the same key.
+    const offsetBytes = hexToBytes(input.otk_offset);
+    const offset = bytesToBigintLE(offsetBytes);
+    if (offsetBytes.length !== 32 || offset >= ORDER) {
+      refuse('An input\'s offset is not a canonical scalar.');
+    }
+    const p = modOrder(offset + b);
     const key = hexToBytes(input.one_time_key);
     if (bytesToHex(publicKeyOf(p)) !== bytesToHex(key)) {
       refuse('An input is not this wallet\'s.');
@@ -104,6 +115,7 @@ function ownInputs(request, tx, b) {
  * @param {string} context.nativeTokenId The network's native token (pinned)
  * @param {string} context.serviceViewPub The wallet service's view key (pinned)
  * @param {string} [context.wireFormat] The network's wire format, 'v2' or 'v3' (pinned)
+ * @param {string} [context.amountWidth] The network's amount width, 'u64' or 'u128'
  * @param {bigint} context.maxFee The most the user agreed to pay
  * @param {number} [context.nowS] The time, in unix seconds
  * @returns {{ bytes: Uint8Array, tx: Object, signingHash: Uint8Array, secrets: bigint[],
@@ -116,6 +128,7 @@ export function checkSignRequest(request, {
   nativeTokenId,
   serviceViewPub,
   wireFormat,
+  amountWidth,
   maxFee,
   nowS = Math.floor(Date.now() / 1000),
 }) {
@@ -137,6 +150,10 @@ export function checkSignRequest(request, {
   if (wireFormat && tx.format !== wireFormat) {
     refuse(`The transaction is ${tx.format}; this network takes ${wireFormat}.`);
   }
+  // The version byte, not only the family: a u128 transaction on a u64 network is refused there.
+  if (amountWidth && tx.width !== amountWidth) {
+    refuse(`The transaction's amounts are ${tx.width}; this network takes ${amountWidth}.`);
+  }
   const signingHash = signingHashOf(bytes, tx);
   // This shape names no token: its outputs hide theirs and the fee is native. A table makes a
   // transaction the network refuses, whose inputs would stay locked by the sign-once ledger.
@@ -146,6 +163,10 @@ export function checkSignRequest(request, {
 
   if (!verifyIn(EXCESS_DOMAIN, tx.excess.point, signingHash, tx.excess.signature)) {
     refuse('The transaction\'s excess signature is wrong.');
+  }
+  // An identity excess signs for nothing, and a v3 network refuses it.
+  if (tx.format === 'v3' && tx.excess.point.every((byte) => byte === 0)) {
+    refuse('The transaction\'s excess is the identity.');
   }
 
   // The fee: in the native token, as quoted, and no more than the user agreed to.
@@ -204,6 +225,9 @@ export function checkSignRequest(request, {
   }
   return { bytes, tx, signingHash, secrets, keys };
 }
+
+/** How many settled entries a ledger keeps: the newest, to tell a request again for one apart. */
+export const MAX_SETTLED_ENTRIES = 200;
 
 /**
  * What a token creation's sign request must show before it is signed: exactly the token the user
@@ -342,17 +366,29 @@ export function checkCreateRequest(request, {
  * bytes; one whose bytes don't read holds by its keys, which can only hold more.
  *
  * An entry ends one of two ways. Recorded: the chain has the transaction, its inputs are spent.
- * Rejected: the network refused the transaction by name, as the backend reports from the wallet
- * service's verdict, and its inputs are free again. A rejected entry is kept, as the evidence of
- * what was signed, but no longer holds its inputs. Nothing else frees them: a payment that expired
- * or whose fate is unknown goes out again, byte for byte.
+ * Rejected: the backend says the transaction can never land, and its inputs are free again: the
+ * network refused it by name, it expired before the backend took its signatures, or the wallet
+ * service no longer keeps it, so it can't be submitted again. The app trusts that answer as it
+ * trusts the backend's `rejected`. A settled entry is kept small, without its signed bytes, and
+ * only the newest MAX_SETTLED_ENTRIES of them are kept. Nothing else frees an input: a payment
+ * whose fate is unknown goes out again, byte for byte.
  *
  * @param {{ getItem: Function, setItemAsync: Function }} storage A durable write is awaited
  * @param {string} key Where the ledger is saved
  */
 export function createSignLedger(storage, key) {
   const load = () => storage.getItem(key) ?? { entries: [] };
-  const save = (entries) => storage.setItemAsync(key, { entries });
+  // The store's memory takes a value before its write to disk ends: a write that fails puts the
+  // value that was there back, so no entry counts that isn't on disk.
+  const save = async (entries) => {
+    const previous = load();
+    try {
+      await storage.setItemAsync(key, { entries });
+    } catch (e) {
+      storage.setItemAsync(key, previous).catch(() => {});
+      throw e;
+    }
+  };
   const outputsOf = (entry) => {
     if (Array.isArray(entry.outputs)) {
       return entry.outputs;
@@ -363,12 +399,32 @@ export function createSignLedger(storage, key) {
       return null;
     }
   };
+  // A settled entry keeps only what the check needs, so the ledger stays small: it is one row of
+  // the storage the app reads whole at every start. The outputs a recorded transaction spent go
+  // on holding, and the newest settled entries are kept, up to MAX_SETTLED_ENTRIES.
   const settle = async (txId, patch) => {
     const { entries } = load();
-    if (entries.some((e) => e.txId === txId && !e.recorded && !e.rejected)) {
-      await save(entries.map((e) => (e.txId === txId ? { ...e, ...patch } : e)));
+    if (!entries.some((e) => e.txId === txId && !e.recorded && !e.rejected)) {
+      return;
     }
+    const settled = entries.map((e) => (e.txId === txId ? compact({ ...e, ...patch }) : e));
+    const pending = settled.filter((e) => !e.recorded && !e.rejected);
+    const done = settled.filter((e) => e.recorded || e.rejected)
+      .sort((a, b) => (b.signedAt ?? 0) - (a.signedAt ?? 0))
+      .slice(0, MAX_SETTLED_ENTRIES);
+    await save([...pending, ...done]);
   };
+  const compact = (entry) => ({
+    txId: entry.txId,
+    sendId: entry.sendId,
+    signingHash: entry.signingHash,
+    outputs: outputsOf(entry) ?? [],
+    signedAt: entry.signedAt,
+    ...(entry.recorded ? { recorded: true } : {}),
+    ...(entry.rejected
+      ? { rejected: true, rejectedAt: entry.rejectedAt, reason: entry.reason }
+      : {}),
+  });
   return {
     /**
      * @param {Uint8Array} signingHash
@@ -415,7 +471,8 @@ export function createSignLedger(storage, key) {
     },
 
     /**
-     * The network refused the transaction: its inputs are free for another one.
+     * The network refused the transaction, or it expired before the backend took its signatures:
+     * its inputs are free for another one.
      *
      * @param {string} txId
      * @param {string|null} reason
@@ -462,6 +519,10 @@ export async function verifyAndSign(request, context, check = checkSignRequest) 
   const { bytes, tx, signingHash, secrets, keys } = checked;
   const outputs = spentOutputs(tx);
   const previous = context.ledger.check(signingHash, outputs, keys);
+  if (previous && !previous.signatures) {
+    // Settled and kept small: a transaction recorded once is never signed again.
+    refuse('This transaction was already recorded.');
+  }
   if (previous) {
     return {
       signatures: previous.signatures,

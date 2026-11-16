@@ -32,7 +32,7 @@ jest.mock('../../../src/multichain/bridge', () => require('../../multichain/fake
 
 /* eslint-disable import/first */
 import React from 'react';
-import { Keyboard, Text, TextInput } from 'react-native';
+import { Alert, Keyboard, Text, TextInput } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
@@ -174,6 +174,14 @@ describe('the Send address step', () => {
     },
   );
 
+  test('takes a Hathor Network address pasted with a line break, as its chain says', async () => {
+    const { renderer, navigation } = await typeAddress(`${HATHOR_ADDRESS}\n`);
+    expect(renderer.root.findByType(ChainTag).props.chain).toBe('hathor');
+    expect(button(renderer, 'Next').props.disabled).toBe(false);
+    await act(async () => { button(renderer, 'Next').props.onPress(); });
+    expect(navigation.navigate).toHaveBeenCalledWith('SendAmountInput', { address: HATHOR_ADDRESS });
+  });
+
   test('takes no Hathor Next address before the side chain is connected', async () => {
     const { renderer } = await typeAddress(NEXT_ADDRESS, { connected: false });
     expect(button(renderer, 'Next').props.disabled).toBe(true);
@@ -204,6 +212,18 @@ describe('a send short on Hathor Next', () => {
       toAddress: NEXT_ADDRESS,
       amount: '3010',
     });
+  });
+
+  test('refuses an amount with two separators, rather than send less than it shows', async () => {
+    const navigation = { navigate: jest.fn(), goBack: jest.fn() };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS } });
+    const renderer = await mount(makeStore().store, <NextSendAmountInput />);
+    await act(async () => {
+      renderer.root.findByType(AmountTextInput).props.onAmountUpdate('1.234,56', 123400000n);
+    });
+    expect(textOf(renderer)).toContain('Use only one decimal separator.');
+    expect(button(renderer, 'Next').props.disabled).toBe(true);
   });
 
   test('says only that funds are short when no chain has them', async () => {
@@ -253,7 +273,7 @@ describe('a Hathor Next payment in another token', () => {
     const { renderer, navigation, pickAtt, next } = await amountStep();
     expect(renderer.root.findByType(NextTokenPicker).props.options).toEqual([
       { id: '00', symbol: 'HTR', name: 'Hathor', balance: '3.00' },
-      { id: ATT, symbol: 'ATT', name: 'App Test Token', balance: '250.00' },
+      { id: ATT, symbol: 'ATT', name: 'App Test Token · c230a6', balance: '250.00' },
     ]);
     await pickAtt();
     expect(textOf(renderer)).toEqual(expect.arrayContaining([
@@ -403,6 +423,24 @@ describe('the Hathor Next send confirmation (sign-once)', () => {
     expect(sends()).toHaveLength(1);
   });
 
+  test('carries no PIN: the keys are in memory, and the PIN only authorizes', async () => {
+    STORE.isPasskeyWallet.mockReturnValue(false);
+    const navigation = {
+      navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn(), addListener: () => () => {},
+    };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS, amount: '100000000' } });
+    const { store, actions } = makeStore();
+    const renderer = await mount(store, <NextSendConfirmScreen />);
+    await act(async () => { button(renderer, 'Send').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([name]) => name === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    const [send] = actions.filter((a) => a.type === types.MULTICHAIN_NEXT_SEND_REQUESTED);
+    expect(send.payload).not.toHaveProperty('pinCode');
+    expect(JSON.stringify(send.payload, (_k, v) => (typeof v === 'bigint' ? `${v}` : v)))
+      .not.toContain('123456');
+  });
+
   test("shows the network's words when the payment is turned down", async () => {
     const { store, renderer, sendButton, sends } = await renderConfirm();
     await act(async () => { sendButton().props.onPress(); });
@@ -499,16 +537,85 @@ describe('the Hathor Next send confirmation (sign-once)', () => {
 
 describe('the scanner', () => {
   test('opens Send with a Hathor Next address once the side chain is connected', async () => {
-    const navigation = { navigate: jest.fn(), replace: jest.fn() };
+    const navigation = { navigate: jest.fn(), replace: jest.fn(), popTo: jest.fn() };
     const renderer = await mount(
       makeStore().store,
       <UnifiedQRScanner navigation={navigation} />,
     );
     const reader = renderer.root.findByType(QRCodeReader);
     await act(async () => { reader.props.onSuccess({ data: NEXT_ADDRESS }); });
-    expect(navigation.navigate).toHaveBeenCalledWith('Main', {
+    // Back to the Main on the stack: navigate would put a second one above the scanner.
+    expect(navigation.popTo).toHaveBeenCalledWith('Main', {
       screen: 'Send',
       params: { screen: 'SendAddressInput', params: { address: NEXT_ADDRESS } },
     });
+    expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+
+  test('refuses a Hathor Next payment request, rather than drop its amount and token', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const navigation = { navigate: jest.fn(), replace: jest.fn(), popTo: jest.fn() };
+    const renderer = await mount(
+      makeStore().store,
+      <UnifiedQRScanner navigation={navigation} />,
+    );
+    const reader = renderer.root.findByType(QRCodeReader);
+    await act(async () => { reader.props.onSuccess({ data: `${NEXT_ADDRESS}?amount=100` }); });
+    expect(alert).toHaveBeenCalledWith(
+      'Invalid QR Code',
+      'Payment request QR codes are not supported. Please use a simple address QR code.',
+      expect.anything(),
+    );
+    expect(navigation.popTo).not.toHaveBeenCalled();
+    expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+});
+
+describe('the Hathor Next send confirmation, after review', () => {
+  const ATT = 'c230a6631f721ad5cab42b3eeb726513274f411134bbcd474471a76088979873';
+
+  async function confirm(params) {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    jest.spyOn(passkeySigner, 'withPasskeyWords').mockImplementation(async (fn) => fn('words'));
+    const navigation = {
+      navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn(), addListener: () => () => {},
+    };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({ params });
+    const env = makeStore({
+      next: {
+        tokens: {
+          '00': { id: '00', name: 'Hathor', symbol: 'HTR' },
+          [ATT]: { id: ATT, name: 'App Test Token', symbol: 'ATT' },
+        },
+        balances: {
+          '00': { status: 'ready', data: { available: 300000000n } },
+          [ATT]: { status: 'ready', data: { available: 25000000000n } },
+        },
+      },
+    });
+    const renderer = await mount(env.store, <NextSendConfirmScreen />);
+    return { ...env, renderer };
+  }
+
+  test("shows a token's full id when it isn't the native one", async () => {
+    const { renderer } = await confirm({
+      address: NEXT_ADDRESS, amount: '100000000', tokenId: ATT,
+    });
+    expect(textOf(renderer)).toEqual(expect.arrayContaining(['Token id', ATT]));
+  });
+
+  test('says a payment that expired never settles, and its coins are free again', async () => {
+    const { store, renderer, actions } = await confirm({ address: NEXT_ADDRESS, amount: '100000000' });
+    await act(async () => { button(renderer, 'Send').props.onPress(); });
+    const [request] = actions.filter((a) => a.type === types.MULTICHAIN_NEXT_SEND_REQUESTED);
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({
+        status: OPERATION_STATUS.EXPIRED, draftId: request.payload.draftId,
+      }));
+    });
+    const [outcome] = renderer.root.findAllByType(FeedbackModal);
+    expect(outcome.props.text).toMatch(/^Expired\. This payment expired before the network got its signatures/);
+    expect(outcome.props.text).not.toMatch(/turned it down/);
   });
 });

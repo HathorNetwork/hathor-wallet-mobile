@@ -14,6 +14,7 @@ import {
   delay,
   fork,
   put,
+  race,
   select,
   spawn,
   take,
@@ -44,22 +45,29 @@ import { WALLET_STATUS } from './wallet';
 import { createBridge } from '../multichain/bridge';
 import { CHAIN } from '../multichain/chains';
 import {
-  getMultichainFeatureToggle,
+  getMultichainRolloutFlag,
   isSideChainAvailable,
   isSideChainConnected,
   selectMultichainNetwork,
   selectSideChainConfig,
+  selectSideChainKey,
 } from '../multichain/gating';
 import { waitForFeatureToggleInitialization } from './helpers';
 import {
   hasUsedNext,
   loadSavedNext,
   prepareNextKeys,
+  prepareNextKeysWithPin,
   saveNext,
   pendingUnlockDerivation,
 } from '../multichain/keys';
 import { ensureNextClient, getNextClient, setNextClient } from '../multichain/nextClient';
-import { NEXT_CLIENT_EVENT, NextClientError, NEXT_CLIENT_ERROR } from '../multichain/nextClientErrors';
+import {
+  NEXT_CLIENT_EVENT,
+  NextClientError,
+  NEXT_CLIENT_ERROR,
+  userErrorText,
+} from '../multichain/nextClientErrors';
 import {
   CONNECT_STATUS,
   NEXT_STATUS,
@@ -108,8 +116,80 @@ export function* syncDevBackend() {
   }
 }
 
+/**
+ * The drafts already sent, for as long as the app runs. Sign-once must not rest on the payment's
+ * state alone: the confirm screen clears it when it closes, and a confirm screen left mounted
+ * would then send the same draft again.
+ */
+const sentDrafts = new Set();
+
+/**
+ * How long a payment handed to Hathor Next may go without an outcome before the screen says it
+ * hasn't settled yet and lets the user leave. The wallet keeps following it.
+ */
+export const SEND_SETTLE_MS = 30000;
+
+/** A payment's outcomes: anything else is still on its way. */
+const SEND_SETTLED = [
+  OPERATION_STATUS.RECORDED,
+  OPERATION_STATUS.UNCONFIRMED,
+  OPERATION_STATUS.FAILED,
+  OPERATION_STATUS.EXPIRED,
+  OPERATION_STATUS.ERROR,
+];
+
 /** What the user is told when Hathor Next can't be loaded. */
 export const connectFailedText = () => t`Couldn't connect to Hathor Next.`;
+
+/** What the user is told when a transfer fails for a reason that has no words of its own. */
+export const transferFailedText = () => t`The transfer failed.`;
+
+// The failures of a load that say what to do: a network that changed under the app (update it),
+// and a clock the wallet service refused (set it).
+const LOAD_FAILURES_TOLD = [NEXT_CLIENT_ERROR.NETWORK_CHANGED, NEXT_CLIENT_ERROR.CLOCK];
+
+/**
+ * What the loading screen says when Hathor Next couldn't load.
+ *
+ * @param {Error} e
+ * @returns {string}
+ */
+function loadFailedText(e) {
+  if (isExpectedPasskeyError(e)) {
+    return e.message;
+  }
+  if (e instanceof NextClientError && LOAD_FAILURES_TOLD.includes(e.code)) {
+    return e.message;
+  }
+  return connectFailedText();
+}
+
+/**
+ * The transfer signed without an answer on the network and backend the wallet is on now, or null.
+ * It is saved with where it was signed: asked about on another backend it could only be unknown,
+ * and no transfer could start there.
+ *
+ * @returns {string|null} Its id
+ */
+function* uncertainTransferHere() {
+  const saved = STORE.getItem(multichainKeyMap.uncertainTransfer);
+  const network = yield select(selectMultichainNetwork);
+  const backendUrl = (yield select(selectSideChainConfig))?.backendUrl ?? null;
+  return saved?.id && saved.network === network && saved.backendUrl === backendUrl
+    ? saved.id
+    : null;
+}
+
+/**
+ * Saves a transfer signed without an answer, with where it was signed.
+ *
+ * @param {string} transferId
+ */
+function* rememberUncertainTransfer(transferId) {
+  const network = yield select(selectMultichainNetwork);
+  const backendUrl = (yield select(selectSideChainConfig))?.backendUrl ?? null;
+  STORE.setItem(multichainKeyMap.uncertainTransfer, { id: transferId, network, backendUrl });
+}
 
 /**
  * The bridge of the network the wallet runs on.
@@ -134,8 +214,11 @@ export function* currentBridge() {
  * @param {string} pinCode
  */
 export function* deriveKeysWithPin(pinCode) {
-  const words = yield call([STORE, STORE.getWalletWords], pinCode);
-  const address = yield call(prepareNextKeys, words);
+  const address = yield call(
+    prepareNextKeysWithPin,
+    pinCode,
+    (pin) => STORE.getWalletWords(pin),
+  );
   yield put(multichainNextUpdate({ keysReady: true, ...(address ? { address } : {}) }));
   return address;
 }
@@ -208,9 +291,11 @@ export function* onNextKeysDerived() {
  * locks the app to get the PIN) runs again.
  */
 export function* onNextKeysUnlockRequested({ payload }) {
-  // It waits for Unleash, so the flag below is Unleash's answer (or its default, off).
+  // It waits for Unleash, so the flag below is Unleash's answer (or its default, off). The flag
+  // as Unleash gives it, on any network: the keys stay in memory, so switching to a network with a
+  // side chain needs no PIN.
   yield call(syncDevBackend);
-  const multichainOn = yield select(getMultichainFeatureToggle);
+  const multichainOn = yield select(getMultichainRolloutFlag);
   if (!multichainOn || ensureNextClient().hasKeys()) {
     return;
   }
@@ -266,8 +351,8 @@ const TRANSFER_POLL_MS = 15000;
 export function* pollPendingTransfers() {
   while (true) {
     yield delay(TRANSFER_POLL_MS);
-    const { status, uncertainId } = yield select((state) => state.multichain.transfer);
-    if (uncertainId && status === OPERATION_STATUS.UNCONFIRMED) {
+    const uncertainId = yield call(uncertainTransferHere);
+    if (uncertainId) {
       try {
         const bridge = yield call(currentBridge);
         yield call(resolveUncertainTransfer, bridge, uncertainId, 1);
@@ -456,6 +541,16 @@ function* stopNext({ dropKeys = false } = {}) {
  * @param {boolean} options.interactive Whether the user asked for it, so a passkey may run
  */
 export function* loadNext({ pinCode, interactive }) {
+  // Every reload of the wallet starts it again (a reconnect, coming back from the background): a
+  // Hathor Next already loaded on this network stays as it is, with the payments it follows.
+  const client = getNextClient();
+  const network = yield select(selectMultichainNetwork);
+  const config = yield select(selectSideChainConfig);
+  const status = yield select((state) => state.multichain.next.status);
+  if (status === NEXT_STATUS.READY && client?.hasKeys() && client.getNetwork() === network
+    && connectedConfig === config) {
+    return;
+  }
   try {
     yield put(multichainNextUpdate({ status: NEXT_STATUS.CONNECTING, error: null }));
     const hasKeys = yield call(ensureKeys, { pinCode, interactive });
@@ -466,8 +561,7 @@ export function* loadNext({ pinCode, interactive }) {
   } catch (e) {
     log.error('Hathor Next could not be loaded.', e);
     yield call(stopNext);
-    const error = isExpectedPasskeyError(e) ? e.message : connectFailedText();
-    yield put(multichainNextUpdate({ status: NEXT_STATUS.FAILED, error }));
+    yield put(multichainNextUpdate({ status: NEXT_STATUS.FAILED, error: loadFailedText(e) }));
   }
 }
 
@@ -479,8 +573,8 @@ export function* loadNext({ pinCode, interactive }) {
  * @param {string} [pinCode]
  */
 export function* turnOnSideChain(pinCode) {
-  const network = yield select(selectMultichainNetwork);
-  if (!network) {
+  const key = yield select(selectSideChainKey);
+  if (!key || !(yield select(isSideChainAvailable))) {
     return;
   }
   try {
@@ -498,7 +592,7 @@ export function* turnOnSideChain(pinCode) {
     yield put(multichainConnectUpdate({ status: CONNECT_STATUS.CONNECTING }));
     yield call(connectNext);
     const current = yield select((state) => state.multichain.connectedNetworks);
-    const connectedNetworks = { ...current, [network]: true };
+    const connectedNetworks = { ...current, [key]: true };
     STORE.setItem(multichainKeyMap.connectedNetworks, connectedNetworks);
     yield put(multichainConnectedNetworksSet(connectedNetworks));
     yield put(multichainConnectUpdate({ status: CONNECT_STATUS.IDLE }));
@@ -520,7 +614,10 @@ export function* turnOnSideChain(pinCode) {
 }
 
 /**
- * Runs a load of Hathor Next as the one a way out cancels.
+ * Runs a load of Hathor Next as the one a way out cancels. It is detached from the handler that
+ * started it: those handlers are takeLatest, and the next action of their type would cancel the
+ * load half way, leaving "Loading Hathor Next…" with nothing running. Only a way out (exitNext)
+ * or the next load cancels it.
  *
  * @param {Function} load loadNext or turnOnSideChain
  * @param {...*} args
@@ -529,7 +626,7 @@ function* runConnect(load, ...args) {
   if (connectTask?.isRunning()) {
     yield cancel(connectTask);
   }
-  connectTask = yield fork(load, ...args);
+  connectTask = yield spawn(load, ...args);
 }
 
 /**
@@ -566,6 +663,13 @@ export function* onWalletStarted() {
   }));
   if (yield select(isSideChainConnected)) {
     yield call(runConnect, loadNext, { interactive: false });
+    return;
+  }
+  // The flags this start read may have turned the side chain off: a Hathor Next still running
+  // from before stops here, since no "flags updated" action comes for them.
+  const status = yield select((state) => state.multichain.next.status);
+  if (status !== NEXT_STATUS.STOPPED) {
+    yield call(exitNext);
   }
 }
 
@@ -585,16 +689,21 @@ export function* onLoadRequested({ payload }) {
 export function* onConnectSettingChanged({ payload }) {
   yield call(syncDevBackend);
   if (payload.connected) {
+    // Only where the flag is on and the network has a side chain; mainnet never has one.
+    if (!(yield select(isSideChainAvailable))) {
+      log.error('The side chain was asked to turn on where there is none.');
+      return;
+    }
     yield call(runConnect, turnOnSideChain, payload.pinCode);
     return;
   }
-  const network = yield select(selectMultichainNetwork);
-  if (!network) {
+  const key = yield select(selectSideChainKey);
+  if (!key) {
     return;
   }
   const current = yield select((state) => state.multichain.connectedNetworks);
   const connectedNetworks = { ...current };
-  delete connectedNetworks[network];
+  delete connectedNetworks[key];
   STORE.setItem(multichainKeyMap.connectedNetworks, connectedNetworks);
   yield put(multichainConnectedNetworksSet(connectedNetworks));
   yield call(exitNext);
@@ -701,7 +810,7 @@ export function* onNextHistoryRequested({ payload }) {
 export function* onNextSendRequested({ payload }) {
   const { tokenId, to, amount, draftId } = payload;
   const send = yield select((state) => state.multichain.send);
-  if (send.draftId === draftId) {
+  if (send.draftId === draftId || sentDrafts.has(draftId)) {
     log.error('A Hathor Next draft was asked to be sent twice; the second request was ignored.');
     return;
   }
@@ -709,6 +818,12 @@ export function* onNextSendRequested({ payload }) {
     log.error('A Hathor Next draft was asked to be sent while another payment is on its way; it was ignored.');
     return;
   }
+  // Only where the side chain is connected: a request from anywhere else signs nothing.
+  if (!(yield select(isSideChainConnected))) {
+    log.error('A Hathor Next payment was asked for where the side chain is not connected.');
+    return;
+  }
+  sentDrafts.add(draftId);
   yield put(multichainNextSendUpdate({
     status: OPERATION_STATUS.SENDING,
     draftId,
@@ -717,9 +832,10 @@ export function* onNextSendRequested({ payload }) {
     reason: null,
     error: null,
   }));
+  let sendId;
   try {
     const client = getNextClient();
-    const { sendId } = yield call([client, client.send], { tokenId, to, amount });
+    ({ sendId } = yield call([client, client.send], { tokenId, to, amount }));
     yield put(multichainNextSendUpdate({ sendId }));
     // The payment may have settled while send() ran: its event came before the saga knew the id,
     // so the state it reached is read once now.
@@ -733,7 +849,39 @@ export function* onNextSendRequested({ payload }) {
     }
   } catch (e) {
     log.error('The Hathor Next payment was refused before it was signed.', e);
-    yield put(multichainNextSendUpdate({ status: OPERATION_STATUS.ERROR, error: e.message }));
+    yield put(multichainNextSendUpdate({
+      status: OPERATION_STATUS.ERROR,
+      error: userErrorText(e),
+    }));
+    return;
+  }
+  yield call(awaitSendOutcome, sendId);
+}
+
+/**
+ * Waits for a payment's outcome, for SEND_SETTLE_MS at most. With none by then (the network is
+ * slow, or Hathor Next reconnected and lost track of it), the payment is shown as not settled
+ * yet: the screen's spinner gives way and the user can leave. A later outcome still lands, and
+ * the payment itself is safe either way: what was signed is sent again until it settles.
+ *
+ * @param {string} sendId
+ */
+function* awaitSendOutcome(sendId) {
+  const settled = (state) => SEND_SETTLED.includes(state.multichain.send.status);
+  if (yield select(settled)) {
+    return;
+  }
+  const { timeout } = yield race({
+    outcome: take((action) => action.type === types.MULTICHAIN_NEXT_SEND_UPDATE
+      && SEND_SETTLED.includes(action.payload?.status)),
+    timeout: delay(SEND_SETTLE_MS),
+  });
+  if (!timeout) {
+    return;
+  }
+  const send = yield select((state) => state.multichain.send);
+  if (send.sendId === sendId && !SEND_SETTLED.includes(send.status)) {
+    yield put(multichainNextSendUpdate({ status: OPERATION_STATUS.UNCONFIRMED }));
   }
 }
 
@@ -816,20 +964,30 @@ export function* resolveUncertainTransfer(bridge, transferId, tries) {
     for (let i = 0; i < tries; i += 1) {
       try {
         const record = yield call([bridge, bridge.resolveTransfer], transferId);
-        if (record) {
-          yield put(multichainTransferUpdate({
-            status: OPERATION_STATUS.DONE,
-            record,
-            error: null,
-            uncertainId: null,
-          }));
-          yield call(refreshTransfers);
-        } else {
+        STORE.removeItem(multichainKeyMap.uncertainTransfer);
+        // Reached the network and was refused there (its inputs spent, for one): nothing moved.
+        if (!record || record.status === TRANSFER_STATUS.FAILED) {
+          if (record) {
+            log.error(`A transfer's burn was refused: ${record.reason}`);
+          }
           yield put(multichainTransferUpdate({
             status: OPERATION_STATUS.ERROR,
             error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT).message,
             uncertainId: null,
           }));
+          return true;
+        }
+        yield put(multichainTransferUpdate({
+          status: OPERATION_STATUS.DONE,
+          record,
+          error: null,
+          uncertainId: null,
+        }));
+        // Its own step: a read that fails leaves the transfer settled as done.
+        try {
+          yield call(refreshTransfers);
+        } catch (e) {
+          log.error('Could not read the transfers between chains after a transfer.', e);
         }
         return true;
       } catch (e) {
@@ -859,7 +1017,12 @@ export function* onTransferRequested({ payload }) {
     toAddress,
     pinCode,
   } = payload;
-  const pendingId = yield select((state) => state.multichain.transfer.uncertainId);
+  // Only where the side chain is connected: a request from anywhere else burns nothing.
+  if (!(yield select(isSideChainConnected))) {
+    log.error('A transfer between chains was asked for where the side chain is not connected.');
+    return;
+  }
+  const pendingId = yield call(uncertainTransferHere);
   let bridge = null;
   if (pendingId) {
     bridge = yield call(currentBridge);
@@ -887,8 +1050,16 @@ export function* onTransferRequested({ payload }) {
       [bridge, bridge.transfer],
       { from, to, tokenId, amount, toAddress, ownAddress, pinCode },
     );
+    // Reached the network and was refused there (its inputs spent, for one): nothing moved.
+    if (record.status === TRANSFER_STATUS.FAILED) {
+      log.error(`A transfer's burn was refused: ${record.reason}`);
+      yield put(multichainTransferUpdate({
+        status: OPERATION_STATUS.ERROR,
+        error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT).message,
+      }));
+      return;
+    }
     yield put(multichainTransferUpdate({ status: OPERATION_STATUS.DONE, record }));
-    yield call(refreshTransfers);
   } catch (e) {
     if (e instanceof PasskeyCancelledError) {
       // The user dismissed the passkey: nothing was signed, and the transfer can be confirmed
@@ -898,6 +1069,7 @@ export function* onTransferRequested({ payload }) {
     }
     if (e?.code === NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN && e.transferId) {
       // Signed, with no answer: never shown as a failure, never retried blindly.
+      yield call(rememberUncertainTransfer, e.transferId);
       yield put(multichainTransferUpdate({
         status: OPERATION_STATUS.UNCONFIRMED,
         error: e.message,
@@ -907,7 +1079,18 @@ export function* onTransferRequested({ payload }) {
       return;
     }
     log.error('The transfer between chains failed.', e);
-    yield put(multichainTransferUpdate({ status: OPERATION_STATUS.ERROR, error: e.message }));
+    yield put(multichainTransferUpdate({
+      status: OPERATION_STATUS.ERROR,
+      error: userErrorText(e, transferFailedText),
+    }));
+    return;
+  }
+  // The transfer went through: reading the list again is its own step, and a read that fails
+  // leaves the transfer done. Shown as failed, it would let the user transfer a second time.
+  try {
+    yield call(refreshTransfers);
+  } catch (e) {
+    log.error('Could not read the transfers between chains after a transfer.', e);
   }
 }
 
@@ -948,6 +1131,8 @@ export function* onLockChanged({ payload: locked }) {
 }
 
 export function* saga() {
+  // A new run of the saga is a new app: no draft has been sent in it.
+  sentDrafts.clear();
   // The watchers start at once, so nothing dispatched before Unleash answers is missed. The
   // backend for local testing is settled as soon as it answers, and every handler that reaches
   // Hathor Next waits for that (syncDevBackend).
