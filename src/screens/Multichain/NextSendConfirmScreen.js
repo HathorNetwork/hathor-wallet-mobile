@@ -101,14 +101,14 @@ export default function NextSendConfirmScreen() {
   const render = (value) => `${renderNextValue(value, hathorDecimalPlaces)} ${symbol}`;
   const outcome = send.draftId === draftId ? send.status : OPERATION_STATUS.IDLE;
 
-  const submit = (pinCode) => {
+  // The PIN only authorizes: the keys are in memory since the unlock, so it goes nowhere.
+  const submit = () => {
     setAuthorized(true);
     dispatch(multichainNextSendRequested({
       tokenId: config.nativeTokenId,
       to: address,
       amount,
       draftId,
-      pinCode,
     }));
   };
 

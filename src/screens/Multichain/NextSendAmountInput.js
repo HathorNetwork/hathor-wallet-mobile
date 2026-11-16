@@ -28,7 +28,7 @@ import { selectSideChainConfig } from '../../multichain/gating';
 import { shortBalanceAdvice } from '../../multichain/transfer';
 import { useTransferContext } from './ChainTransferScreen';
 import { getKeyboardAvoidingViewTopDistance } from '../../utils';
-import { renderNextValue } from '../../multichain/amount';
+import { amountTextError, renderNextValue } from '../../multichain/amount';
 import { useNavigation, useParams } from '../../hooks/navigation';
 import { COLORS } from '../../styles/themes';
 
@@ -73,9 +73,10 @@ export default function NextSendAmountInput() {
   const feeText = render(fee);
 
   const onAmountChange = (text, value) => {
+    const textError = amountTextError(text);
     setAmountText(text);
-    setAmount(value);
-    setError(null);
+    setAmount(textError ? null : value);
+    setError(textError);
     setAdvice(null);
   };
 

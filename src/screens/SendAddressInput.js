@@ -81,9 +81,11 @@ export const SendAddressInput = () => {
     ? addressChain(formModel.address, network, { allowShielded })
     : null;
 
+  // Trimmed, as the address goes on: the chain above is read trimmed too, so an address pasted
+  // with a line break shows its chain and is taken.
   const validate = () => (chain === CHAIN.HATHOR_NEXT
     ? { isValid: true }
-    : validateAddress(formModel.address, network, { allowShielded }));
+    : validateAddress(formModel.address.trim(), network, { allowShielded }));
 
   const isAddressValid = () => {
     if (!formModel.address) return false;

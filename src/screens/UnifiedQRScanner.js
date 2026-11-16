@@ -50,12 +50,18 @@ const UnifiedQRScanner = ({ navigation }) => {
     const nanoContractPattern = /^[a-f0-9]{64}$/;
 
     // With the side chain connected, a Hathor Next address opens Send with it: the address says
-    // the send is on Hathor Next.
-    const nextAddress = sideChainConnected ? parseNextQrCode(qrData) : null;
-    if (nextAddress) {
-      navigation.navigate('Main', {
+    // the send is on Hathor Next. A payment request is refused, as Hathor Network's is.
+    const next = sideChainConnected ? parseNextQrCode(qrData) : null;
+    if (next?.error) {
+      showAlert(t`Invalid QR Code`, next.error);
+      return;
+    }
+    if (next) {
+      // Back to the Main already on the stack: navigate would put a second Main above this
+      // scanner (React Navigation 7), and leave the scanner mounted under it.
+      navigation.popTo('Main', {
         screen: 'Send',
-        params: { screen: 'SendAddressInput', params: { address: nextAddress } },
+        params: { screen: 'SendAddressInput', params: { address: next.address } },
       });
       return;
     }
