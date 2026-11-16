@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { jest, describe, test, expect } from '@jest/globals';
+import { jest, describe, test, expect, afterEach } from '@jest/globals';
 
 // eslint-disable-next-line global-require
 jest.mock('../../src/multichain/chains', () => require('./fakes/chainsModule'));
@@ -26,6 +26,10 @@ import { FAKE_NETWORK } from './fakes/sideChain';
 /* eslint-enable import/first */
 
 const actualChains = jest.requireActual('../../src/multichain/chains');
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 const state = ({
   flag = true,
@@ -52,6 +56,41 @@ describe('getSideChainConfig', () => {
 
   test('gives no side chain before the wallet knows its network', () => {
     expect(actualChains.getSideChainConfig(null)).toBeNull();
+  });
+});
+
+describe('mainnet', () => {
+  test('has no side chain, whatever names one', () => {
+    expect(actualChains.getSideChainConfig('mainnet')).toBeNull();
+  });
+
+  test("keeps the flag off with mainnet's network settings, whatever Unleash says", () => {
+    const onMainnet = { ...state(), networkSettings: { network: 'mainnet' } };
+    expect(getMultichainFeatureToggle(onMainnet)).toBe(false);
+    expect(isSideChainAvailable(onMainnet)).toBe(false);
+    expect(isSideChainConnected(onMainnet)).toBe(false);
+    expect(isWaitingForNext(onMainnet)).toBe(false);
+    // Another network's settings leave the flag to Unleash.
+    expect(getMultichainFeatureToggle({ ...state(), networkSettings: { network: 'testnet' } }))
+      .toBe(true);
+  });
+});
+
+describe('the side chain setting, saved', () => {
+  test('counts only its own keys, set to true', () => {
+    const base = state({ connected: false });
+    const withMap = (connectedNetworks) => ({
+      ...base, multichain: { ...base.multichain, connectedNetworks },
+    });
+    expect(isSideChainConnected(withMap(Object.create({ [FAKE_NETWORK]: true })))).toBe(false);
+    expect(isSideChainConnected(withMap({ [FAKE_NETWORK]: 'yes' }))).toBe(false);
+    expect(isSideChainConnected(withMap({ [FAKE_NETWORK]: true }))).toBe(true);
+  });
+
+  test('gives a name such as constructor no side chain', () => {
+    for (const name of ['constructor', '__proto__', 'toString', 'hasOwnProperty']) {
+      expect(actualChains.getSideChainConfig(name)).toBeNull();
+    }
   });
 });
 

@@ -156,6 +156,7 @@ export class PinScreen extends React.Component {
     if (this.props.isLockScreen) {
       // in case it's the lock screen, we just have to execute the data migration
       // method an change redux state. No need to execute callback or go back on navigation
+      let unlockedPin = null;
       try {
         await STORE.handleDataMigration(pin);
         const actualPin = await biometricsMigration(pin);
@@ -166,8 +167,6 @@ export class PinScreen extends React.Component {
 
           const words = await STORE.getWalletWords(actualPin);
           this.props.startWalletRequested({ words, pin: actualPin });
-          // A wallet that used Hathor Next derives its keys now, so switching to it needs no PIN.
-          this.props.multichainNextKeysUnlockRequested({ pinCode: actualPin });
         } else {
           if (actualPin !== pin) {
             // The biometry migration re-encrypted the running wallet's access data, so a reload
@@ -180,15 +179,25 @@ export class PinScreen extends React.Component {
             pinCode: actualPin,
             source: SHIELDED_UNLOCK_SOURCE.LOCK_SCREEN,
           });
-          this.props.multichainNextKeysUnlockRequested({ pinCode: actualPin });
         }
         this.props.unlockScreen();
+        unlockedPin = actualPin;
       } catch (e) {
         log.error(e);
         this.props.onExceptionCaptured(
           e,
           true, // Fatal since we can't start the wallet
         );
+      }
+      // A wallet that used Hathor Next derives its keys now, so switching to it needs no PIN. It
+      // runs once the screen is unlocked, outside the unlock's try: nothing it does can stop the
+      // wallet from opening, or be reported as a fatal error.
+      if (unlockedPin) {
+        try {
+          this.props.multichainNextKeysUnlockRequested({ pinCode: unlockedPin });
+        } catch (e) {
+          log.error('Could not ask for the Hathor Next keys at unlock.', e);
+        }
       }
     } else {
       // dismiss the pin screen first because doing it after the callback can
