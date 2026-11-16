@@ -29,7 +29,7 @@ import { validateTransferAddress } from '../../multichain/address';
 import { arrivalText } from '../../multichain/transfer';
 import { createBridge } from '../../multichain/bridge';
 import { canTransfer, CHAIN, CHAIN_NAME } from '../../multichain/chains';
-import { renderNextValue } from '../../multichain/amount';
+import { amountTextError, renderNextValue } from '../../multichain/amount';
 import { selectMultichainNetwork, selectSideChainConfig } from '../../multichain/gating';
 import { getKeyboardAvoidingViewTopDistance, renderValue } from '../../utils';
 import { COLORS } from '../../styles/themes';
@@ -117,15 +117,21 @@ export default function ChainTransferScreen({ navigation, route }) {
   };
 
   const onAmountChange = (text, value) => {
+    const error = amountTextError(text);
     setAmountText(text);
-    setAmount(value);
-    setAmountError(null);
+    setAmount(error ? null : value);
+    setAmountError(error);
   };
 
   const onContinue = () => {
     const validation = validateTransferAddress(address, network, to);
     if (!validation.isValid) {
       setAddressError(validation.message);
+      return;
+    }
+    const textError = amountTextError(amountText);
+    if (textError) {
+      setAmountError(textError);
       return;
     }
     if (!amount || amount < quote.min) {

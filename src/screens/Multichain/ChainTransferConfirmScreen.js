@@ -90,9 +90,12 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
     });
   };
 
+  // Back to the Dashboard, with the transfer's screens gone. navigate('Main') from here, above
+  // Main, would put a second Main on the stack (React Navigation 7) and leave this screen mounted
+  // under it, its Confirm on again.
   const done = () => {
     dispatch(multichainTransferReset());
-    NavigationService.navigate('Main', { screen: 'Home' });
+    NavigationService.resetToMain();
   };
 
   const renderFeedback = () => {

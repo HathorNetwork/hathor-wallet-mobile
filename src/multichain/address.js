@@ -34,20 +34,26 @@ export function isNextAddress(text) {
 }
 
 /**
- * The Hathor Next address a scanned QR code holds: the address alone, or a payment request on it.
- * The amount and token of a payment request are dropped, as Hathor Network's scanner drops them.
+ * What a scanned QR code holds for Hathor Next: `{ address }` for an address alone, `{ error }`
+ * for a payment request on one (`samba:…?amount=…`), or null when it holds no Hathor Next
+ * address. A payment request is refused, as Hathor Network's scanner refuses one: taking only its
+ * address would drop the amount and the token it asks for without a word.
  *
  * @param {string|null|undefined} data
- * @returns {string|null} The address, or null when the QR code holds none
+ * @returns {{ address: string }|{ error: string }|null}
  */
 export function parseNextQrCode(data) {
   const value = (data ?? '').trim();
   const match = NEXT_URI_RE.exec(value);
   if (match) {
-    return match[1];
+    // A bare `?` asks for nothing.
+    return match[2] && match[2] !== '?' ? { error: paymentRequestText() } : { address: match[1] };
   }
-  return NEXT_PLACEHOLDER_ADDRESS_RE.test(value) ? value : null;
+  return NEXT_PLACEHOLDER_ADDRESS_RE.test(value) ? { address: value } : null;
 }
+
+/** Why a payment request's QR code is refused. */
+export const paymentRequestText = () => t`Payment request QR codes are not supported. Please use a simple address QR code.`;
 
 /**
  * Whether a text is a valid Hathor Network address of the network the wallet runs on.

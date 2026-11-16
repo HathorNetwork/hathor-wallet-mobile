@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { FULL_NETWORK_MAINNET } from '../constants';
+
 /**
  * The chains a wallet can use on a network with a side chain: the network's own chain, and its
  * side chain.
@@ -78,13 +80,18 @@ const SIDE_CHAINS = {};
 /**
  * The side chain of a network, or null when it has none. Pass the name the fullnode reports
  * (state.fullNodeNetworkName): a custom network pointed at a side chain's nodes has it too.
+ * Mainnet has none.
  *
  * @param {string|null|undefined} networkName
  * @returns {Object|null} The side chain config
  */
 export function getSideChainConfig(networkName) {
-  if (!networkName) {
+  // Mainnet never has a side chain, whatever names one: this is the one place that decides.
+  if (!networkName || networkName === FULL_NETWORK_MAINNET) {
     return null;
   }
-  return SIDE_CHAINS[networkName] ?? null;
+  // Own keys only: a name such as `constructor` is no side chain.
+  return Object.prototype.hasOwnProperty.call(SIDE_CHAINS, networkName)
+    ? SIDE_CHAINS[networkName]
+    : null;
 }
