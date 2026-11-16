@@ -45,7 +45,9 @@ import { TokenChains } from './Multichain/TokenChains';
  *   used by both display modes. An item's own `decimalPlaces` wins: a list of both chains has
  *   amounts in Hathor Next's units.
  *
- * An item with `chains` (the Dashboard's list of both chains) shows them under its name.
+ * An item with `chains` (the Dashboard's list of both chains) shows them under its name. An item
+ * with `idTag` (a Hathor Next token, whose name anyone may choose) shows its name cut and the tag
+ * whole after it, so a long name never hides the id.
  */
 const TokenSelect = (props) => {
   const tokens = Object.values(props.tokens);
@@ -66,13 +68,26 @@ const TokenSelect = (props) => {
         <View style={styles.itemWrapper}>
           <TokenAvatar uid={item.uid} symbol={item.symbol} size={40} />
           <View style={styles.itemCenterWrapper}>
-            <Text
-              style={styles.nameText}
-              numberOfLines={1}
-              ellipsizeMode='tail'
-            >
-              {item.name}
-            </Text>
+            {item.idTag ? (
+              <View style={styles.nameRow}>
+                <Text
+                  style={[styles.nameText, styles.nameShrink]}
+                  numberOfLines={1}
+                  ellipsizeMode='tail'
+                >
+                  {item.plainName}
+                </Text>
+                <Text style={styles.nameText}>{` · ${item.idTag}`}</Text>
+              </View>
+            ) : (
+              <Text
+                style={styles.nameText}
+                numberOfLines={1}
+                ellipsizeMode='tail'
+              >
+                {item.name}
+              </Text>
+            )}
             {item.chains && (
               <TokenChains
                 chains={item.chains}
@@ -153,6 +168,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
     color: COLORS.textColor,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    minWidth: 0,
+  },
+  nameShrink: {
+    flexShrink: 1,
   },
   rightSymbolText: {
     fontSize: 13,
