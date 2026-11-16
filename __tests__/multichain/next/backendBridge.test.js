@@ -68,7 +68,34 @@ function unsignedBurn({ spend = SPEND, amount = 700n } = {}) {
   return tx.toHex();
 }
 
-function fakes({ burn = unsignedBurn(), signTransfer = null, transfer = null } = {}) {
+// The burn as the wallet's Hathor Network node shows it: spending one of this wallet's outputs,
+// paying `amount` to the transfer address, its data output naming `spend` on Hathor Next.
+function burnOnChain(hash, { spend = SPEND, amount = 700, spender = CHANGE } = {}) {
+  const payload = concatBytes(
+    Uint8Array.of(0x43, 0x54, 1),
+    hexToBytes(DEST_NETWORK),
+    hexToBytes(VIEW),
+    hexToBytes(spend),
+  );
+  const script = concatBytes(Uint8Array.of(0x4c, payload.length), payload, Uint8Array.of(0xac));
+  return {
+    tx: {
+      hash,
+      inputs: [{ decoded: { address: spender } }],
+      outputs: [
+        { value: 1, token_data: 0, script: Buffer.from(script).toString('base64'), decoded: {} },
+        { value: amount, token_data: 0, script: '', decoded: { address: TRANSFER } },
+      ],
+    },
+  };
+}
+
+function fakes({
+  burn = unsignedBurn(),
+  signTransfer = null,
+  transfer = null,
+  onChain = (hash) => burnOnChain(hash),
+} = {}) {
   const calls = { created: null, signed: null, sign: 0, cancelled: [], markedUsed: 0 };
   const wallet = {
     getUtxosForAmount: async () => ({ utxos: UTXOS, changeAmount: 299n }),
@@ -82,6 +109,8 @@ function fakes({ burn = unsignedBurn(), signTransfer = null, transfer = null } =
       tx.inputs.forEach((input, i) => { input.data = Buffer.from([0xab, i]); });
       return tx;
     },
+    getFullTxById: async (hash) => onChain(hash),
+    isAddressMine: async (address) => address === CHANGE,
   };
   const client = {
     getNetwork: () => 'privatenet',
@@ -189,10 +218,12 @@ describe('the bridge through the Hathor Next backend', () => {
 
   it('never takes a transfer for this wallet\'s own unless its destination says so', async () => {
     // A status that doesn't say where the burn goes: the transfer sent here keeps its own choice.
+    // The wallet's node doesn't have the listed burns yet, so they say nothing either.
     const { wallet, client } = fakes({
       signTransfer: async (id) => ({
         id, amount: '700', burn_tx_id: 'ee'.repeat(32), status: 'pushed', confirmations: 0, needed: 21,
       }),
+      onChain: () => { throw new Error('not found'); },
     });
     const bridge = createBackendBridge(CONFIG, { wallet, network, client });
     await expect(bridge.transfer(transferArgs))
@@ -349,6 +380,50 @@ describe('the bridge through the Hathor Next backend', () => {
         transfers: [transfer],
       });
       expect(rows.map((row) => row.key)).toEqual(['next:paid', 'transfer:arrived']);
+    });
+  });
+});
+
+describe('what the backend says of a transfer, against the wallet\'s own copy', () => {
+  it('lets a transfer stand for a Hathor Network transaction only when that is this wallet\'s burn', async () => {
+    // The backend names, as a transfer of this wallet's, a payment someone else made.
+    const { wallet, client } = fakes({
+      onChain: (hash) => burnOnChain(hash, { spender: 'WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo' }),
+    });
+    const bridge = createBackendBridge(CONFIG, { wallet, network, client });
+    const list = await bridge.getTransfers();
+    expect(list.map((r) => [r.id, r.sourceTxId, r.debitedOnSource])).toEqual([
+      ['new', null, false],
+      ['old', null, false],
+      ['bad', null, false],
+    ]);
+  });
+
+  it('takes the amount and destination from the burn, not from the backend', async () => {
+    const elsewhere = bytesToHex(publicKeyOf(13n));
+    const { wallet, client } = fakes({
+      onChain: (hash) => burnOnChain(hash, { amount: 42, spend: elsewhere }),
+    });
+    const bridge = createBackendBridge(CONFIG, { wallet, network, client });
+    const [newest] = await bridge.getTransfers();
+    expect(newest).toMatchObject({
+      id: 'new',
+      amount: '42',
+      toAddress: encodeAddress(VIEW, elsewhere),
+      toOwn: false,
+      sourceTxId: 'dd'.repeat(32),
+    });
+  });
+
+  it.each([
+    ['an empty answer', async () => null],
+    ['an answer without its state', async (id) => ({ id, amount: '700' })],
+  ])('keeps a signed transfer uncertain on %s, never a plain failure', async (_label, signTransfer) => {
+    const { wallet, client } = fakes({ signTransfer });
+    const bridge = createBackendBridge(CONFIG, { wallet, network, client });
+    await expect(bridge.transfer(transferArgs)).rejects.toMatchObject({
+      code: NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN,
+      transferId: 'transfer-1',
     });
   });
 });

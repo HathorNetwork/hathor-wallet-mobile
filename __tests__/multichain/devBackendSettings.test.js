@@ -6,7 +6,10 @@
  */
 
 import { describe, test, expect } from '@jest/globals';
-import { isUsableBackendConfig } from '../../src/components/Multichain/DevBackendSettings';
+import {
+  isUsableBackendConfig,
+  usedBackendConfig,
+} from '../../src/components/Multichain/DevBackendSettings';
 import { CHAIN, devBackendSideChain, transferReceiveSymbol } from '../../src/multichain/chains';
 import { combinedTokenList } from '../../src/multichain/tokens';
 import { hathorToNextAmount, mintScaleOf } from '../../src/multichain/amount';
@@ -91,5 +94,50 @@ describe('a backend for local testing', () => {
     expect(config.tokenMap).toEqual([]);
     expect(config).toMatchObject({ nativeTokenSymbol: 'USDT', nativeTokenName: 'Tether USD' });
     expect(transferReceiveSymbol(config, 'HTR')).toBe('USDT');
+  });
+});
+
+describe('a backend for local testing, read with care', () => {
+  const TRANSFER = {
+    transfer_address: 'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL',
+    destination_network: 'cd'.repeat(32),
+    confirmations: 21,
+    mean_block_ms: 5000,
+  };
+
+  test('is refused when its transfer values can\'t pick where a burn goes', () => {
+    expect(isUsableBackendConfig({ ...pinsOf({}), transfer: TRANSFER })).toBe(true);
+    for (const wrong of [
+      { transfer_address: 'not an address' },
+      { destination_network: 'cd' },
+      { confirmations: -1 },
+      { mean_block_ms: 0 },
+    ]) {
+      expect(isUsableBackendConfig({ ...pinsOf({}), transfer: { ...TRANSFER, ...wrong } }))
+        .toBe(false);
+    }
+  });
+
+  test('keeps only the values the app uses, its token\'s names made safe', () => {
+    const used = usedBackendConfig({
+      ...pinsOf({ native_token_symbol: 'H\u202eTR', native_token_name: 'Hathor', debug: 'x' }),
+      hathor: { network: 'privatenet', extra: 1 },
+      transfer: { ...TRANSFER, data_output_value: '1', secret: 'x' },
+      server: { version: '1.2' },
+    });
+    expect(used).toEqual({
+      hathor: { network: 'privatenet' },
+      next: {
+        network_id: 1777,
+        native_token: 'aa'.repeat(32),
+        service_view_pub: 'bb'.repeat(32),
+        wire_format: 'v2',
+        genesis_ms: 1793398418273,
+        epoch_ms: 500,
+        native_token_symbol: 'HTR',
+        native_token_name: 'Hathor',
+      },
+      transfer: TRANSFER,
+    });
   });
 });

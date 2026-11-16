@@ -13,12 +13,15 @@ import NewHathorButton from '../NewHathorButton';
 import SimpleInput from '../SimpleInput';
 import { multichainDevBackendSet } from '../../actions';
 import { useNavigation } from '../../hooks/navigation';
+import { impersonatedSideChain } from '../../multichain/chains';
 import { createBackendApi } from '../../multichain/next/backendApi';
+import { tokenText } from '../../multichain/next/tokenText';
 import { isSideChainConnected, selectDevBackend } from '../../multichain/gating';
 import { STORE } from '../../store';
 import { COLORS } from '../../styles/themes';
 
 const HEX_64 = /^[0-9a-f]{64}$/;
+const BASE58_ADDRESS = /^[1-9A-HJ-NP-Za-km-z]{25,35}$/;
 /** The wire formats the signer reads (kit/tx.js). */
 const SIGNED_FORMATS = ['v2', 'v3'];
 
@@ -30,13 +33,52 @@ const SIGNED_FORMATS = ['v2', 'v3'];
  */
 export function isUsableBackendConfig(pins) {
   const next = pins?.next;
+  const transfer = pins?.transfer;
   return Boolean(next)
     && Number.isSafeInteger(next.network_id)
     && HEX_64.test(next.native_token ?? '')
     && HEX_64.test(next.service_view_pub ?? '')
     && SIGNED_FORMATS.includes(next.wire_format)
     && Number.isSafeInteger(next.genesis_ms)
-    && Number.isSafeInteger(next.epoch_ms);
+    && Number.isSafeInteger(next.epoch_ms)
+    && (pins.hathor?.network === undefined || typeof pins.hathor.network === 'string')
+    // Its transfer values pick where a burn sends the HTR: checked as the network's own are.
+    && (transfer === null || transfer === undefined || (
+      BASE58_ADDRESS.test(transfer.transfer_address ?? '')
+      && HEX_64.test(transfer.destination_network ?? '')
+      && Number.isSafeInteger(transfer.confirmations) && transfer.confirmations >= 0
+      && Number.isSafeInteger(transfer.mean_block_ms) && transfer.mean_block_ms > 0
+    ));
+}
+
+/**
+ * The values of a backend's GET /v1/config the app uses, and nothing else: what is saved, and
+ * what the side chain is built from (devBackendSideChain).
+ *
+ * @param {Object} pins A usable GET /v1/config (isUsableBackendConfig)
+ * @returns {Object}
+ */
+export function usedBackendConfig(pins) {
+  const { next, transfer, hathor } = pins;
+  return {
+    ...(hathor?.network ? { hathor: { network: hathor.network } } : {}),
+    next: {
+      network_id: next.network_id,
+      native_token: next.native_token,
+      service_view_pub: next.service_view_pub,
+      wire_format: next.wire_format,
+      genesis_ms: next.genesis_ms,
+      epoch_ms: next.epoch_ms,
+      native_token_symbol: tokenText(next.native_token_symbol, 16) ?? undefined,
+      native_token_name: tokenText(next.native_token_name, 64) ?? undefined,
+    },
+    transfer: transfer ? {
+      transfer_address: transfer.transfer_address,
+      destination_network: transfer.destination_network,
+      confirmations: transfer.confirmations,
+      mean_block_ms: transfer.mean_block_ms,
+    } : null,
+  };
 }
 
 const shortHex = (hex) => `${hex.slice(0, 8)}…${hex.slice(-8)}`;
@@ -81,7 +123,13 @@ export function DevBackendSettings() {
         setError(t`This backend runs a Hathor Next network this app can't use.`);
         return;
       }
-      switchTo({ url: trimmed, pins });
+      // A backend for testing never passes as a network that holds value: the wallet would sign
+      // there, with its real ledger and address.
+      if (impersonatedSideChain(pins)) {
+        setError(t`This backend gives the values of a Hathor Next network that holds value, so it can't be used for testing.`);
+        return;
+      }
+      switchTo({ url: trimmed, pins: usedBackendConfig(pins) });
     } catch (e) {
       setError(t`Couldn't reach this backend.`);
     } finally {
@@ -101,7 +149,7 @@ export function DevBackendSettings() {
           {t`Network ${networkId}, native token ${nativeToken}`}
         </Text>
         <Text style={styles.note}>
-          {t`Hathor Next runs on this backend on every network but mainnet. Its keys never leave this device: the backend only gets public keys and signatures.`}
+          {t`Hathor Next runs on this backend on every network but mainnet. Your keys never leave this device: the backend gets public keys and signatures, and its wallet service sees your payments and their amounts.`}
         </Text>
         <NewHathorButton
           secondary

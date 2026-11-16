@@ -77,7 +77,11 @@ import { deriveFakeNextAddress, fakePeerAddress } from '../multichain/fakes/fake
 import { fakeLedgerKey, loadLedger, resetLedger } from '../multichain/fakes/fakeLedger';
 import { FAKE_SCENARIO } from '../multichain/fakes/scenarios';
 import { FAKE_NETWORK, FAKE_SIDE_CHAIN } from '../multichain/fakes/sideChain';
-import { isSideChainAvailable, selectSideChainConfig } from '../../src/multichain/gating';
+import {
+  isSideChainAvailable,
+  selectSideChainConfig,
+  selectSideChainKey,
+} from '../../src/multichain/gating';
 import {
   CONNECT_STATUS,
   NEXT_STATUS,
@@ -731,6 +735,123 @@ describe('a transfer signed without an answer', () => {
   });
 });
 
+describe('a transfer that settles', () => {
+  const run = (bridge) => {
+    const dispatched = [];
+    const done = runSaga(
+      { dispatch: (action) => dispatched.push(action), getState: () => ({}) },
+      resolveUncertainTransfer,
+      bridge,
+      'transfer-1',
+      1,
+    ).toPromise();
+    return { dispatched, done };
+  };
+  const record = (status) => ({ id: 'transfer-1', status, reason: 'inputs spent' });
+
+  test('as sent stays done when reading the transfers again fails', async () => {
+    // The state can't give a bridge here: reading the transfers again throws.
+    const bridge = { resolveTransfer: async () => record(TRANSFER_STATUS.PENDING) };
+    const { dispatched, done } = run(bridge);
+    await expect(done).resolves.toBe(true);
+    const statuses = dispatched.map((a) => a.payload?.status).filter(Boolean);
+    expect(statuses).toEqual([OPERATION_STATUS.DONE]);
+  });
+
+  test('as refused by hathor-core is not sent, never done', async () => {
+    const bridge = { resolveTransfer: async () => record(TRANSFER_STATUS.FAILED) };
+    const { dispatched, done } = run(bridge);
+    await expect(done).resolves.toBe(true);
+    expect(dispatched.map((a) => a.payload?.status)).toEqual([OPERATION_STATUS.ERROR]);
+    expect(dispatched[0].payload.error).toBe("The transfer didn't go through. Nothing left your wallet.");
+  });
+
+  test('refused by hathor-core as soon as it is signed shows no success', async () => {
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue({
+      transfer: async () => ({ id: 'transfer-1', status: TRANSFER_STATUS.FAILED, reason: 'spent' }),
+      getTransfers: async () => [],
+    });
+    env.dispatch(multichainTransferRequested({ amount: 10000n, toAddress: ADDRESS, pinCode: PIN }));
+    await wait(1000);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      error: "The transfer didn't go through. Nothing left your wallet.",
+    });
+  });
+});
+
+describe('a transfer signed without an answer, kept where it was signed', () => {
+  afterEach(() => STORE.removeItem(multichainKeyMap.uncertainTransfer));
+
+  test('is asked about after a restart, before another transfer starts', async () => {
+    STORE.setItem(multichainKeyMap.uncertainTransfer, {
+      id: 'transfer-1', network: NETWORK, backendUrl: null,
+    });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    const bridge = {
+      transfer: jest.fn(async () => ({ id: 'transfer-2', status: TRANSFER_STATUS.PENDING })),
+      resolveTransfer: jest.fn(async () => { throw new Error('unreachable'); }),
+      getTransfers: async () => [],
+    };
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+    env.dispatch(multichainTransferRequested({ amount: 10000n, toAddress: ADDRESS, pinCode: PIN }));
+    await wait(1000);
+    expect(bridge.resolveTransfer).toHaveBeenCalledWith('transfer-1');
+    expect(bridge.transfer).not.toHaveBeenCalled();
+  });
+
+  test('is not asked about on another backend, where a transfer can start', async () => {
+    STORE.setItem(multichainKeyMap.uncertainTransfer, {
+      id: 'transfer-1', network: NETWORK, backendUrl: 'http://another.backend',
+    });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    const bridge = {
+      transfer: jest.fn(async () => ({ id: 'transfer-2', status: TRANSFER_STATUS.PENDING })),
+      resolveTransfer: jest.fn(async () => null),
+      getTransfers: async () => [],
+    };
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+    env.dispatch(multichainTransferRequested({ amount: 10000n, toAddress: ADDRESS, pinCode: PIN }));
+    await wait(1000);
+    expect(bridge.resolveTransfer).not.toHaveBeenCalled();
+    expect(bridge.transfer).toHaveBeenCalled();
+  });
+});
+
+describe('the keys at an unlock on mainnet', () => {
+  test('are still derived with the flag on, though Hathor Next stays off there', async () => {
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    const env = setup({ networkSettings: PRE_SETTINGS_MAINNET, start: false });
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+    await wait(10);
+    // Switching to a network with a side chain then needs no PIN.
+    expect(getNextClient().hasKeys()).toBe(true);
+    expect(isSideChainAvailable(env.getState())).toBe(false);
+  });
+});
+
+describe('a load that fails for a reason the user can act on', () => {
+  test.each([
+    [NEXT_CLIENT_ERROR.NETWORK_CHANGED, /Update the app/],
+    [NEXT_CLIENT_ERROR.CLOCK, /date and time/],
+  ])('says so (%s)', async (code, words) => {
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
+    const env = setup({ start: false });
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+    await wait(10);
+    jest.spyOn(ensureNextClient(), 'connect').mockRejectedValue(new NextClientError(code));
+    env.dispatch(startWalletSuccess());
+    await wait(1000);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.FAILED);
+    expect(env.getState().multichain.next.error).toMatch(words);
+  });
+});
+
 describe('the backend for local testing', () => {
   test('stays unused while its flag is off, even when one was saved', async () => {
     STORE.setItem(multichainKeyMap.devBackend, {
@@ -786,7 +907,19 @@ describe('Hathor Next Devnet', () => {
         backendUrl: 'https://wallet-backend.devnet-alpha.samba.hathor.network',
       }),
     }));
-    expect(env.getState().multichain.connectedNetworks).toEqual({ privatenet: true });
+    // Saved under the network and its node: every privatenet reports the same name.
+    expect(env.getState().multichain.connectedNetworks).toEqual({
+      'privatenet https://legacy-node.devnet-alpha.samba.hathor.network/v1a': true,
+    });
+  });
+
+  test('keeps the setting under the node: another privatenet reports the same name', async () => {
+    const env = setup({
+      network: 'privatenet',
+      networkSettings: { ...PRE_SETTINGS_NEXT_DEVNET, nodeUrl: 'http://192.168.0.10:8080/v1a/' },
+    });
+    await wait(0);
+    expect(selectSideChainKey(env.getState())).toBe('privatenet http://192.168.0.10:8080/v1a');
   });
 
   test('has no side chain on another privatenet, so Settings offers none', async () => {
@@ -956,10 +1089,12 @@ describe('a load of Hathor Next', () => {
     STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
     STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
     const env = setup({ flag: false, start: false });
-    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
     env.dispatch(startWalletSuccess());
     await wait(10);
+    // The flag comes on: the unlock derives the keys, and the flags' handler loads Hathor Next.
     env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+    await wait(10);
     env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
     await wait(100);
     // The flags update again while the load runs: the handler is takeLatest.
@@ -1017,9 +1152,9 @@ describe('a Hathor Next payment, without an outcome', () => {
 
 // Every bridge the saga makes from now on is the fake one, changed by `change`.
 function withBridge(change) {
-  const bridgeModule = jest.requireMock('../../src/multichain/bridge');
-  const original = bridgeModule.createBridge;
-  jest.spyOn(bridgeModule, 'createBridge')
+  const mocked = jest.requireMock('../../src/multichain/bridge');
+  const original = mocked.createBridge;
+  jest.spyOn(mocked, 'createBridge')
     .mockImplementation((config, options) => change(original(config, options)));
 }
 

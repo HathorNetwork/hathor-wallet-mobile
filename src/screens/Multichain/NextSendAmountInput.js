@@ -50,9 +50,11 @@ export const selectNextSendFee = (state) => state.multichain.next.sendFee;
  * @param {string} nativeSymbol
  * @returns {string}
  */
-export const feeShortText = (feeText, nativeSymbol) => (
-  t`The network fee is paid in ${nativeSymbol}. You need ${feeText} ${nativeSymbol} on Hathor Next.`
-);
+export const feeShortText = (feeText, nativeSymbol) => {
+  // Each placeholder has a name of its own: ttag can't translate a message that repeats one.
+  const feeSymbol = nativeSymbol;
+  return t`The network fee is paid in ${nativeSymbol}. You need ${feeText} ${feeSymbol} on Hathor Next.`;
+};
 
 /**
  * The amount of a Hathor Next payment, in one of the tokens the wallet holds there: the native

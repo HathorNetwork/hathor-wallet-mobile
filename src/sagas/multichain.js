@@ -44,7 +44,7 @@ import { WALLET_STATUS } from './wallet';
 import { createBridge } from '../multichain/bridge';
 import { CHAIN } from '../multichain/chains';
 import {
-  getMultichainFeatureToggle,
+  getMultichainRolloutFlag,
   isSideChainAvailable,
   isSideChainConnected,
   selectMultichainNetwork,
@@ -56,6 +56,7 @@ import {
   hasUsedNext,
   loadSavedNext,
   prepareNextKeys,
+  prepareNextKeysWithPin,
   saveNext,
   pendingUnlockDerivation,
 } from '../multichain/keys';
@@ -132,6 +133,7 @@ const SEND_SETTLED = [
   OPERATION_STATUS.RECORDED,
   OPERATION_STATUS.UNCONFIRMED,
   OPERATION_STATUS.FAILED,
+  OPERATION_STATUS.EXPIRED,
   OPERATION_STATUS.ERROR,
 ];
 
@@ -140,6 +142,53 @@ export const connectFailedText = () => t`Couldn't connect to Hathor Next.`;
 
 /** What the user is told when a transfer fails for a reason that has no words of its own. */
 export const transferFailedText = () => t`The transfer failed.`;
+
+// The failures of a load that say what to do: a network that changed under the app (update it),
+// and a clock the wallet service refused (set it).
+const LOAD_FAILURES_TOLD = [NEXT_CLIENT_ERROR.NETWORK_CHANGED, NEXT_CLIENT_ERROR.CLOCK];
+
+/**
+ * What the loading screen says when Hathor Next couldn't load.
+ *
+ * @param {Error} e
+ * @returns {string}
+ */
+function loadFailedText(e) {
+  if (isExpectedPasskeyError(e)) {
+    return e.message;
+  }
+  if (e instanceof NextClientError && LOAD_FAILURES_TOLD.includes(e.code)) {
+    return e.message;
+  }
+  return connectFailedText();
+}
+
+/**
+ * The transfer signed without an answer on the network and backend the wallet is on now, or null.
+ * It is saved with where it was signed: asked about on another backend it could only be unknown,
+ * and no transfer could start there.
+ *
+ * @returns {string|null} Its id
+ */
+function* uncertainTransferHere() {
+  const saved = STORE.getItem(multichainKeyMap.uncertainTransfer);
+  const network = yield select(selectMultichainNetwork);
+  const backendUrl = (yield select(selectSideChainConfig))?.backendUrl ?? null;
+  return saved?.id && saved.network === network && saved.backendUrl === backendUrl
+    ? saved.id
+    : null;
+}
+
+/**
+ * Saves a transfer signed without an answer, with where it was signed.
+ *
+ * @param {string} transferId
+ */
+function* rememberUncertainTransfer(transferId) {
+  const network = yield select(selectMultichainNetwork);
+  const backendUrl = (yield select(selectSideChainConfig))?.backendUrl ?? null;
+  STORE.setItem(multichainKeyMap.uncertainTransfer, { id: transferId, network, backendUrl });
+}
 
 /**
  * The bridge of the network the wallet runs on.
@@ -164,8 +213,11 @@ export function* currentBridge() {
  * @param {string} pinCode
  */
 export function* deriveKeysWithPin(pinCode) {
-  const words = yield call([STORE, STORE.getWalletWords], pinCode);
-  const address = yield call(prepareNextKeys, words);
+  const address = yield call(
+    prepareNextKeysWithPin,
+    pinCode,
+    (pin) => STORE.getWalletWords(pin),
+  );
   yield put(multichainNextUpdate({ keysReady: true, ...(address ? { address } : {}) }));
   return address;
 }
@@ -238,9 +290,11 @@ export function* onNextKeysDerived() {
  * locks the app to get the PIN) runs again.
  */
 export function* onNextKeysUnlockRequested({ payload }) {
-  // It waits for Unleash, so the flag below is Unleash's answer (or its default, off).
+  // It waits for Unleash, so the flag below is Unleash's answer (or its default, off). The flag
+  // as Unleash gives it, on any network: the keys stay in memory, so switching to a network with a
+  // side chain needs no PIN.
   yield call(syncDevBackend);
-  const multichainOn = yield select(getMultichainFeatureToggle);
+  const multichainOn = yield select(getMultichainRolloutFlag);
   if (!multichainOn || ensureNextClient().hasKeys()) {
     return;
   }
@@ -296,8 +350,8 @@ const TRANSFER_POLL_MS = 15000;
 export function* pollPendingTransfers() {
   while (true) {
     yield delay(TRANSFER_POLL_MS);
-    const { status, uncertainId } = yield select((state) => state.multichain.transfer);
-    if (uncertainId && status === OPERATION_STATUS.UNCONFIRMED) {
+    const uncertainId = yield call(uncertainTransferHere);
+    if (uncertainId) {
       try {
         const bridge = yield call(currentBridge);
         yield call(resolveUncertainTransfer, bridge, uncertainId, 1);
@@ -479,8 +533,10 @@ export function* loadNext({ pinCode, interactive }) {
   // Hathor Next already loaded on this network stays as it is, with the payments it follows.
   const client = getNextClient();
   const network = yield select(selectMultichainNetwork);
+  const config = yield select(selectSideChainConfig);
   const status = yield select((state) => state.multichain.next.status);
-  if (status === NEXT_STATUS.READY && client?.hasKeys() && client.getNetwork() === network) {
+  if (status === NEXT_STATUS.READY && client?.hasKeys() && client.getNetwork() === network
+    && connectedConfig === config) {
     return;
   }
   try {
@@ -493,8 +549,7 @@ export function* loadNext({ pinCode, interactive }) {
   } catch (e) {
     log.error('Hathor Next could not be loaded.', e);
     yield call(stopNext);
-    const error = isExpectedPasskeyError(e) ? e.message : connectFailedText();
-    yield put(multichainNextUpdate({ status: NEXT_STATUS.FAILED, error }));
+    yield put(multichainNextUpdate({ status: NEXT_STATUS.FAILED, error: loadFailedText(e) }));
   }
 }
 
@@ -846,20 +901,30 @@ export function* resolveUncertainTransfer(bridge, transferId, tries) {
     for (let i = 0; i < tries; i += 1) {
       try {
         const record = yield call([bridge, bridge.resolveTransfer], transferId);
-        if (record) {
-          yield put(multichainTransferUpdate({
-            status: OPERATION_STATUS.DONE,
-            record,
-            error: null,
-            uncertainId: null,
-          }));
-          yield call(refreshTransfers);
-        } else {
+        STORE.removeItem(multichainKeyMap.uncertainTransfer);
+        // Reached the network and was refused there (its inputs spent, for one): nothing moved.
+        if (!record || record.status === TRANSFER_STATUS.FAILED) {
+          if (record) {
+            log.error(`A transfer's burn was refused: ${record.reason}`);
+          }
           yield put(multichainTransferUpdate({
             status: OPERATION_STATUS.ERROR,
             error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT).message,
             uncertainId: null,
           }));
+          return true;
+        }
+        yield put(multichainTransferUpdate({
+          status: OPERATION_STATUS.DONE,
+          record,
+          error: null,
+          uncertainId: null,
+        }));
+        // Its own step: a read that fails leaves the transfer settled as done.
+        try {
+          yield call(refreshTransfers);
+        } catch (e) {
+          log.error('Could not read the transfers between chains after a transfer.', e);
         }
         return true;
       } catch (e) {
@@ -894,7 +959,7 @@ export function* onTransferRequested({ payload }) {
     log.error('A transfer between chains was asked for where the side chain is not connected.');
     return;
   }
-  const pendingId = yield select((state) => state.multichain.transfer.uncertainId);
+  const pendingId = yield call(uncertainTransferHere);
   let bridge = null;
   if (pendingId) {
     bridge = yield call(currentBridge);
@@ -922,6 +987,15 @@ export function* onTransferRequested({ payload }) {
       [bridge, bridge.transfer],
       { from, to, tokenId, amount, toAddress, ownAddress, pinCode },
     );
+    // Reached the network and was refused there (its inputs spent, for one): nothing moved.
+    if (record.status === TRANSFER_STATUS.FAILED) {
+      log.error(`A transfer's burn was refused: ${record.reason}`);
+      yield put(multichainTransferUpdate({
+        status: OPERATION_STATUS.ERROR,
+        error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT).message,
+      }));
+      return;
+    }
     yield put(multichainTransferUpdate({ status: OPERATION_STATUS.DONE, record }));
   } catch (e) {
     if (e instanceof PasskeyCancelledError) {
@@ -932,6 +1006,7 @@ export function* onTransferRequested({ payload }) {
     }
     if (e?.code === NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN && e.transferId) {
       // Signed, with no answer: never shown as a failure, never retried blindly.
+      yield call(rememberUncertainTransfer, e.transferId);
       yield put(multichainTransferUpdate({
         status: OPERATION_STATUS.UNCONFIRMED,
         error: e.message,

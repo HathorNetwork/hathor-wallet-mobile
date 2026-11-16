@@ -38,6 +38,8 @@ export const OPERATION_STATUS = {
   RECORDED: 'recorded',
   UNCONFIRMED: 'unconfirmed',
   FAILED: 'failed',
+  // The backend never took the payment's signatures: it won't settle, and its coins are free.
+  EXPIRED: 'expired',
   ERROR: 'error',
   DONE: 'done',
 };

@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { Address } from '@hathor/wallet-lib';
 import { FULL_NETWORK_MAINNET, NODE_SERVER_NEXT_DEVNET_URL } from '../constants';
 
 /**
@@ -64,8 +65,29 @@ export function isTransferAddress(address, config) {
   if (!typed) {
     return false;
   }
-  return KNOWN_TRANSFER_ADDRESSES.includes(typed)
-    || typed === config?.transfer?.transfer_address;
+  const known = [...KNOWN_TRANSFER_ADDRESSES, config?.transfer?.transfer_address].filter(Boolean);
+  if (known.includes(typed)) {
+    return true;
+  }
+  // By the hash it pays to, whatever its kind: the P2SH address of a transfer address's hash
+  // loses its HTR all the same.
+  const hash = addressHash(typed);
+  return hash !== null && known.some((pinned) => addressHash(pinned) === hash);
+}
+
+/**
+ * The hash a Hathor Network address pays to, as hex, whatever its version byte; null when the
+ * text isn't an address.
+ *
+ * @param {string} address
+ * @returns {string|null}
+ */
+function addressHash(address) {
+  try {
+    return Buffer.from(new Address(address).decode()).subarray(1, 21).toString('hex');
+  } catch (e) {
+    return null;
+  }
 }
 
 /**
@@ -145,6 +167,12 @@ export function devBackendSideChain({ url, pins }) {
     nativeTokenName: carriesHtr ? 'Hathor' : (pins.next.native_token_name ?? 'Tether USD'),
     serviceViewPub: pins.next.service_view_pub,
     wireFormat: pins.next.wire_format,
+    // The Hathor Network this side chain transfers from, as the backend names it: on any other
+    // network, it is no side chain.
+    hathorNetwork: pins.hathor?.network ?? null,
+    // Whether its network holds value. None does yet: devnet-alpha and local networks hold play
+    // money. A backend set up for local testing can never pass as one that does.
+    holdsValue: false,
     // The app's own ceiling on a payment's fee, in the native token's base units, whatever the
     // backend quotes.
     maxSendFee: DEV_MAX_SEND_FEE,
@@ -195,6 +223,33 @@ const DEVNET_ALPHA_HATHOR_NEXT = devBackendSideChain({
   pins: DEVNET_ALPHA_PINS,
 });
 
+/** Every side chain this app pins, by network name or by node. */
+const PINNED_SIDE_CHAINS = () => [
+  ...Object.values(SIDE_CHAINS),
+  // eslint-disable-next-line no-use-before-define
+  ...SIDE_CHAINS_BY_NODE.map((entry) => entry.config),
+];
+
+/**
+ * The pinned side chain holding value that a backend's values would make it pass as, or null.
+ * Nothing a wallet signs names a Hathor Next network, and its spend key is the same on all of
+ * them: a backend that gave the network id, native token or view key of a network holding value
+ * would get the wallet's real ledger and address there, and signatures valid there. A backend set
+ * up for local testing that does is refused.
+ *
+ * @param {Object} pins A backend's GET /v1/config
+ * @param {Object[]} [pinned] The side chains pinned in this app
+ * @returns {Object|null} The side chain it would pass as
+ */
+export function impersonatedSideChain(pins, pinned = PINNED_SIDE_CHAINS()) {
+  const next = pins?.next ?? {};
+  return pinned.find((config) => config.holdsValue && (
+    config.nextNetworkId === next.network_id
+    || config.nativeTokenId === next.native_token
+    || config.serviceViewPub === next.service_view_pub
+  )) ?? null;
+}
+
 /**
  * The side chains of networks whose fullnode reports a name other networks share: every
  * privatenet reports 'privatenet'. By the node the wallet runs on (its network settings' nodeUrl).
@@ -227,7 +282,8 @@ export function nodeSideChain(nodeUrl) {
  * (state.fullNodeNetworkName): a custom network pointed at a side chain's nodes has it too. Pass
  * the node too (the network settings' nodeUrl): a network whose name others share, such as
  * devnet-alpha's privatenet, is known by its node. A backend set up for local testing gives every
- * network but mainnet a side chain, in place of its own. Mainnet has none.
+ * network but mainnet a side chain, in place of its own. Mainnet has none, and a side chain is
+ * none on a network other than the one it names.
  *
  * @param {string|null|undefined} networkName
  * @param {{ url: string, pins: Object }|null} [devBackend] The backend for local testing in force
@@ -248,12 +304,17 @@ export function getSideChainConfig(networkName, devBackend = null, nodeUrl = nul
   // Mainnet never has a side chain, whatever names one: this is the one place that decides.
   if (networkName && networkName !== FULL_NETWORK_MAINNET) {
     if (devBackend) {
-      value = devBackendSideChain(devBackend);
+      value = impersonatedSideChain(devBackend.pins) ? null : devBackendSideChain(devBackend);
     } else {
       // Own keys only: a name such as `constructor` is no side chain.
       value = (Object.prototype.hasOwnProperty.call(SIDE_CHAINS, networkName)
         ? SIDE_CHAINS[networkName]
         : null) ?? nodeSideChain(nodeUrl);
+    }
+    // A side chain names the Hathor Network it transfers from: pinned by its node alone, a
+    // wallet whose network settings point a mainnet wallet service at that node would get it.
+    if (value?.hathorNetwork && value.hathorNetwork !== networkName) {
+      value = null;
     }
   }
   lastConfig = { networkName, devBackend, nodeUrl, value };

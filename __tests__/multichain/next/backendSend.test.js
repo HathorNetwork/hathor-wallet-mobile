@@ -45,6 +45,8 @@ function memoryStorage(initial = {}) {
   return {
     getItem: (key) => (key in data ? JSON.parse(data[key]) : null),
     setItemAsync: async (key, value) => { data[key] = JSON.stringify(value); },
+    removeItem: (key) => { delete data[key]; },
+    items: () => data,
   };
 }
 
@@ -63,11 +65,12 @@ const OTHER_TOKEN = 'c230a6631f721ad5cab42b3eeb726513274f411134bbcd474471a760889
 function fakeBackend({
   request = null,
   resubmitStatus = 'submitted',
-  sendStatus = null,
+  sendStatus: initialSendStatus = null,
   earlierStatus = null,
   balances = [{ token: NATIVE, referenceable: '100000' }],
 } = {}) {
   const calls = [];
+  let sendStatus = initialSendStatus;
   const resubmitted = [];
   let signatures = null;
   const json = (status, body) => ({
@@ -110,7 +113,7 @@ function fakeBackend({
       return json(200, { balance_state: 'live', balances });
     }
     if (path.includes('/history')) return json(200, { history: [] });
-    if (path === '/v1/tokens') return json(200, { tokens: [] });
+    if (path.split('?')[0] === '/v1/tokens') return json(200, { tokens: [] });
     if (method === 'POST' && path.endsWith('/sends')) {
       return json(200, request ?? {
         id: 'send-1',
@@ -126,6 +129,12 @@ function fakeBackend({
     }
     if (path.endsWith('/resubmit')) {
       resubmitted.push({ path, signedTx: data.signed_tx });
+      if (resubmitStatus === 'forgotten') {
+        return json(409, {
+          error: "this send's reservation was released and the wallet service no longer keeps it; "
+            + 'it cannot be resubmitted',
+        });
+      }
       return json(200, { status: resubmitStatus, reason: resubmitStatus === 'rejected' ? 'fee too low' : null });
     }
     if (path === '/v1/sends/send-1/signatures') {
@@ -150,6 +159,7 @@ function fakeBackend({
     calls,
     resubmitted,
     signatures: () => signatures,
+    setSendStatus: (status) => { sendStatus = status; },
   };
 }
 
@@ -379,7 +389,7 @@ describe('outputs an earlier payment signed', () => {
       txId: 'cd'.repeat(32),
     };
     const data = {
-      [`multichain:nextSigned:1777:${walletId}`]: JSON.stringify({ entries: [earlier] }),
+      [`wallet:multichain:nextSigned:1777:0:${walletId}`]: JSON.stringify({ entries: [earlier] }),
     };
     const backend = fakeBackend();
     client = await connected(backend, memoryStorage(data));
@@ -418,7 +428,8 @@ describe('a payment the network rejected', () => {
   });
   const ledgerKey = () => {
     const walletId = bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), hexToBytes(CASE.pub_b)));
-    return `multichain:nextSigned:1777:${walletId}`;
+    // Under the wallet's keys, so a reset clears it; the genesis tells a chain reset apart.
+    return `wallet:multichain:nextSigned:1777:0:${walletId}`;
   };
 
   it('frees its outputs: a later payment signs them, and the entry stays as evidence', async () => {
@@ -437,10 +448,11 @@ describe('a payment the network rejected', () => {
     })).resolves.toMatchObject({ sendId: 'send-1' });
     expect(backend.signatures()).toHaveLength(CASE.inputs.length);
     const { entries } = storage.getItem(ledgerKey());
-    expect(entries).toMatchObject([
-      { sendId: 'send-0', rejected: true, reason: 'fee too low' },
-      { sendId: 'send-1' },
-    ]);
+    const rejected = entries.find((entry) => entry.sendId === 'send-0');
+    expect(rejected).toMatchObject({ rejected: true, reason: 'fee too low' });
+    expect(entries.map((entry) => entry.sendId)).toContain('send-1');
+    // Settled, it keeps only what the check needs: the ledger is one row the app reads at start.
+    expect(rejected).not.toHaveProperty('signedTx');
   });
 
   it('is freed when the verdict comes while a later payment waits on it', async () => {
@@ -474,8 +486,25 @@ describe('a payment the network rejected', () => {
     expect(client.getSend('send-1')).toMatchObject({ status: 'failed', reason: 'fee too low' });
   });
 
-  it('frees nothing on any other answer: an expired or unknown payment goes out again', async () => {
-    for (const resubmitStatus of ['expired', 'submitted', 'failed']) {
+  it.each([
+    ['expired before the backend took its signatures', 'expired'],
+    ['no longer kept by the wallet service, so it can never be sent again', 'forgotten'],
+  ])('is freed when the backend says it %s', async (_label, resubmitStatus) => {
+    const storage = memoryStorage({
+      [ledgerKey()]: JSON.stringify({ entries: [earlierEntry()] }),
+    });
+    const backend = fakeBackend({ resubmitStatus });
+    client = await connected(backend, storage);
+    await expect(client.send({
+      tokenId: NATIVE,
+      to: PAYMENT.address,
+      amount: BigInt(PAYMENT.amount),
+    })).resolves.toMatchObject({ sendId: 'send-1' });
+    expect(backend.signatures()).toHaveLength(CASE.inputs.length);
+  });
+
+  it('frees nothing on any other answer: a payment submitted or failed goes out again', async () => {
+    for (const resubmitStatus of ['submitted', 'failed']) {
       const data = { [ledgerKey()]: JSON.stringify({ entries: [earlierEntry()] }) };
       const backend = fakeBackend({ resubmitStatus });
       // eslint-disable-next-line no-await-in-loop
@@ -568,5 +597,106 @@ describe('a Hathor Next payment in another token', () => {
     await expect(client.send({ tokenId: OTHER_TOKEN, to: PAYMENT.address, amount: 30000n }))
       .rejects.toMatchObject({ code: 'insufficient-funds' });
     expect(backend.calls.some((c) => c.method === 'POST' && c.path.endsWith('/sends'))).toBe(false);
+  });
+});
+
+describe('a payment on its way', () => {
+  let client = null;
+  afterEach(() => {
+    client?.disconnect();
+    client = null;
+  });
+
+  const waitFor = (status) => new Promise((resolve) => {
+    client.on(NEXT_CLIENT_EVENT.SEND, (event) => {
+      if (event.status === status) resolve(event);
+    });
+  });
+
+  it('is not settled yet when the backend says it failed: its outputs stay held', async () => {
+    const storage = memoryStorage();
+    const backend = fakeBackend({ sendStatus: { status: 'failed', reason: 'busy' } });
+    client = await connected(backend, storage);
+    const unconfirmed = waitFor('unconfirmed');
+    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+    await expect(unconfirmed).resolves.toMatchObject({ sendId: 'send-1' });
+    const { entries } = storage.getItem(Object.keys(storage.items()).find(
+      (key) => key.startsWith('wallet:multichain:nextSigned:'),
+    ));
+    expect(entries).toMatchObject([{ sendId: 'send-1' }]);
+    expect(entries[0].rejected).toBeUndefined();
+  });
+
+  it('expired, with its signatures never taken: its outputs are free', async () => {
+    const storage = memoryStorage();
+    const backend = fakeBackend({ sendStatus: { status: 'expired', reason: null } });
+    client = await connected(backend, storage);
+    const expired = waitFor('expired');
+    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+    await expect(expired).resolves.toMatchObject({ sendId: 'send-1' });
+    const { entries } = storage.getItem(Object.keys(storage.items()).find(
+      (key) => key.startsWith('wallet:multichain:nextSigned:'),
+    ));
+    expect(entries).toMatchObject([{ sendId: 'send-1', rejected: true, reason: 'expired' }]);
+  });
+
+  it('is followed again after a reconnect to the same network, and settles', async () => {
+    const backend = fakeBackend({ sendStatus: { status: 'submitted' } });
+    client = await connected(backend);
+    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+    // A wallet reload connects again: the payment it follows must not be lost.
+    await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+    expect(client.getSend('send-1')).toMatchObject({ status: 'pending' });
+    const recorded = waitFor('recorded');
+    backend.setSendStatus({ status: 'recorded' });
+    await expect(recorded).resolves.toMatchObject({ sendId: 'send-1' });
+  });
+});
+
+describe('a lock while a payment asks about an earlier one', () => {
+  it('signs nothing: the keys are read for each round, and they are gone', async () => {
+    const walletId = bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), hexToBytes(CASE.pub_b)));
+    const storage = memoryStorage({
+      [`wallet:multichain:nextSigned:1777:0:${walletId}`]: JSON.stringify({
+        entries: [{
+          sendId: 'send-0',
+          signingHash: 'ab'.repeat(32),
+          inputs: CASE.inputs.map((i) => i.one_time_key),
+          signatures: [],
+          signedTx: 'cafe',
+          txId: 'cd'.repeat(32),
+        }],
+      }),
+    });
+    const backend = fakeBackend({ earlierStatus: { status: 'rejected', reason: 'fee too low' } });
+    let client = null;
+    // The app locks while the backend is asked about the earlier payment.
+    const fetchImpl = async (url, options) => {
+      if (url.endsWith('/v1/sends/send-0') && options.method === 'GET') {
+        client.forgetKeys();
+      }
+      return backend.fetchImpl(url, options);
+    };
+    client = await connected({ ...backend, fetchImpl }, storage);
+    try {
+      await expect(client.send({
+        tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount),
+      })).rejects.toMatchObject({ code: 'no-keys' });
+      expect(backend.signatures()).toBeNull();
+    } finally {
+      client.disconnect();
+    }
+  });
+});
+
+describe('the sign-once ledger kept before', () => {
+  it('is dropped, under its old key outside the wallet\'s', async () => {
+    const walletId = bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), hexToBytes(CASE.pub_b)));
+    const storage = memoryStorage({
+      [`multichain:nextSigned:1777:${walletId}`]: JSON.stringify({ entries: [] }),
+    });
+    const client = await connected(fakeBackend(), storage);
+    client.disconnect();
+    expect(Object.keys(storage.items())).not.toContain(`multichain:nextSigned:1777:${walletId}`);
   });
 });

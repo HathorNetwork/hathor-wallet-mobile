@@ -6,12 +6,19 @@
  */
 
 import { logger } from '../../logger';
-import { normalizeNextAddress, sameNextAddress } from '../address';
+import { nextAddressError, normalizeNextAddress, sameNextAddress } from '../address';
 import { mintScaleOf } from '../amount';
 import { CHAIN } from '../chains';
 import { NEXT_CLIENT_ERROR, NextClientError } from '../nextClientErrors';
 import { TRANSFER_STATUS } from '../state';
-import { BURN_DATA_VALUE, checkBurn, inputDataOf } from './burnCheck';
+import {
+  BURN_DATA_VALUE,
+  checkBurn,
+  dataScriptPayload,
+  inputDataOf,
+  parseBurnPayload,
+} from './burnCheck';
+import { encodeAddress } from './kit/address';
 import { SignRefusedError } from './signer';
 
 const log = logger('multichain-backend-bridge');
@@ -36,13 +43,24 @@ const NEVER_SENT = new Set(['awaiting_signatures', 'cancelled']);
  * A transfer as the screens show it, from the backend's status of its burn. A burn that never
  * reached the network (awaiting its signatures, or cancelled) is no transfer: null.
  *
+ * Only what this wallet saw for itself makes a transfer stand for one of its Hathor Network
+ * transactions (sourceTxId, which hides that transaction's own row) and count as gone from its
+ * balance (debitedOnSource): the burn this app checked before signing it, or the wallet's own copy
+ * of the burn, read from its Hathor Network node (ownBurn). Its amount and destination are then
+ * those, never the backend's.
+ *
  * @param {Object} status The backend's TransferStatus
  * @param {Object} config The side chain config
  * @param {string|null} ownAddress
- * @param {string|null} [chosen] Where this transfer was asked to go, when it was asked here
+ * @param {{ burnTxId?: string, amount?: string, destination?: string }|null} [own] What this
+ *   wallet saw of the burn
  * @returns {Object|null} TransferRecord
+ * @throws When the status can't be read: no state, or an amount that isn't one
  */
-export function recordOf(status, config, ownAddress, chosen = null) {
+export function recordOf(status, config, ownAddress, own = null) {
+  if (typeof status?.status !== 'string') {
+    throw new Error('A transfer status without its state.');
+  }
   if (NEVER_SENT.has(status.status)) {
     return null;
   }
@@ -60,17 +78,21 @@ export function recordOf(status, config, ownAddress, chosen = null) {
   const arriveAt = state === TRANSFER_STATUS.ARRIVED
     ? sentAt + needed * blockMs
     : Date.now() + left * blockMs;
-  // Where the burn goes, as the backend reports it or as this transfer chose it. Unknown, it is
+  // Where the burn goes, as this wallet saw it, or else as the backend reports it. Unknown, it is
   // never taken for this wallet's own address: someone else's HTR would count as arriving here.
-  const toAddress = status.destination ?? chosen ?? null;
+  const toAddress = own?.destination ?? status.destination ?? null;
+  const amount = own?.amount ?? status.amount;
+  if (typeof amount !== 'string' || !/^[0-9]+$/.test(amount)) {
+    throw new Error('A transfer status without a readable amount.');
+  }
   return {
     id: status.id,
     from: CHAIN.HATHOR,
     to: CHAIN.HATHOR_NEXT,
     hathorTokenId: NATIVE_HTR,
     nextTokenId: config.nativeTokenId,
-    amount: status.amount,
-    receiveAmount: (BigInt(status.amount) * mintScaleOf(config)).toString(),
+    amount,
+    receiveAmount: (BigInt(amount) * mintScaleOf(config)).toString(),
     bridgeFee: '0',
     networkFee: BURN_DATA_VALUE.toString(),
     toAddress,
@@ -78,9 +100,9 @@ export function recordOf(status, config, ownAddress, chosen = null) {
     sentAt,
     arriveAt,
     status: state,
-    sourceTxId: status.burn_tx_id ?? null,
-    // A failed burn never left the balance; any other the backend pushed did.
-    debitedOnSource: Boolean(status.burn_tx_id) && !failed,
+    sourceTxId: own?.burnTxId ?? null,
+    // A failed burn never left the balance; any other this wallet saw for itself did.
+    debitedOnSource: Boolean(own?.burnTxId) && !failed,
     reason: status.reason ?? null,
     progress: {
       stage: status.status,
@@ -110,6 +132,55 @@ export function createBackendBridge(config, { wallet, network, client }) {
   const cancel = (transferId) => client.cancelTransfer(transferId).catch((e) => {
     log.error('Could not cancel an unsigned transfer.', e);
   });
+
+  // The wallet's own copies of burns, read once each: a burn on the chain doesn't change.
+  const ownBurns = new Map();
+
+  /**
+   * The wallet's own copy of a burn, from its Hathor Network node, not from the backend: whether
+   * it spends this wallet's outputs, what it paid the pinned transfer address, and where its data
+   * output says the HTR arrives. Null when it is no burn of this wallet's to that address, or
+   * can't be read yet (then it is read again next time).
+   *
+   * @param {string} burnTxId
+   * @returns {Promise<{ burnTxId: string, amount: string, destination: string }|null>}
+   */
+  const ownBurn = async (burnTxId) => {
+    if (typeof burnTxId !== 'string' || !/^[0-9a-f]{64}$/.test(burnTxId)) {
+      return null;
+    }
+    if (ownBurns.has(burnTxId)) {
+      return ownBurns.get(burnTxId);
+    }
+    let tx;
+    try {
+      ({ tx } = await wallet.getFullTxById(burnTxId));
+    } catch (e) {
+      log.error('Could not read a transfer\'s burn from Hathor Network.', e);
+      return null;
+    }
+    const outputs = Array.isArray(tx?.outputs) ? tx.outputs : [];
+    const paid = outputs.find((o) => Number(o.token_data) === 0
+      && o.decoded?.address === pins?.transfer_address);
+    const payload = outputs.map((o) => {
+      try {
+        return parseBurnPayload(dataScriptPayload(Buffer.from(o.script, 'base64')));
+      } catch (e) {
+        return null;
+      }
+    }).find(Boolean);
+    const spender = tx?.inputs?.[0]?.decoded?.address;
+    const mine = typeof spender === 'string' && await wallet.isAddressMine(spender);
+    const found = paid && payload && mine && payload.destinationNetwork === pins.destination_network
+      ? {
+        burnTxId,
+        amount: String(paid.value),
+        destination: encodeAddress(payload.view, payload.spend),
+      }
+      : null;
+    ownBurns.set(burnTxId, found);
+    return found;
+  };
 
   return {
     tokenMap: [{ hathor: NATIVE_HTR, next: config.nativeTokenId }],
@@ -147,7 +218,8 @@ export function createBackendBridge(config, { wallet, network, client }) {
       if (tokenId !== NATIVE_HTR) {
         throw new NextClientError(NEXT_CLIENT_ERROR.UNAVAILABLE);
       }
-      const destination = normalizeNextAddress(toAddress);
+      // Only the canonical form, with its checksum, and never a key nobody can spend from.
+      const destination = nextAddressError(toAddress) ? null : normalizeNextAddress(toAddress);
       if (!destination) {
         throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_BAD_ADDRESS);
       }
@@ -189,17 +261,26 @@ export function createBackendBridge(config, { wallet, network, client }) {
         }
         throw e;
       }
-      if (changeAddress && (await wallet.getCurrentAddress()).address === changeAddress) {
-        await wallet.getCurrentAddress({ markAsUsed: true });
-      }
-      let status;
+      // Signed: from here on, nothing ends as a plain failure, which would let the user burn
+      // again. Anything that goes wrong leaves the transfer uncertain, to be settled by asking.
+      let record;
       try {
-        status = await client.signTransfer(request.id, inputDataOf(signed));
+        if (changeAddress && (await wallet.getCurrentAddress()).address === changeAddress) {
+          await wallet.getCurrentAddress({ markAsUsed: true });
+        }
+        const status = await client.signTransfer(request.id, inputDataOf(signed));
+        // The burn this app checked stands for the transfer: the destination chosen, the amount
+        // moved. Its id is the backend's word until the wallet's own copy shows it.
+        const seen = await ownBurn(status?.burn_tx_id);
+        record = recordOf(status, config, ownAddress, {
+          burnTxId: seen?.burnTxId,
+          amount: amount.toString(),
+          destination,
+        });
       } catch (e) {
-        log.error('A signed transfer got no answer from the backend.', e);
+        log.error('A signed transfer got no answer the app could read.', e);
         throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, { transferId: request.id });
       }
-      const record = recordOf(status, config, ownAddress, destination);
       if (!record) {
         throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, { transferId: request.id });
       }
@@ -216,13 +297,13 @@ export function createBackendBridge(config, { wallet, network, client }) {
      * @throws When the backend can't be read: still uncertain
      */
     async resolveTransfer(transferId) {
-      const status = await client.getTransfer(transferId);
-      if (status.status === 'awaiting_signatures') {
+      let status = await client.getTransfer(transferId);
+      if (status?.status === 'awaiting_signatures') {
         await client.cancelTransfer(transferId);
         // Cancelled, unless the signatures arrived meanwhile: read it once more.
-        return recordOf(await client.getTransfer(transferId), config, client.getAddress());
+        status = await client.getTransfer(transferId);
       }
-      return recordOf(status, config, client.getAddress());
+      return recordOf(status, config, client.getAddress(), await ownBurn(status?.burn_tx_id));
     },
 
     /** @returns {Promise<Object[]>} TransferRecords, newest first */
@@ -232,8 +313,16 @@ export function createBackendBridge(config, { wallet, network, client }) {
       }
       const ownAddress = client.getAddress();
       const list = await client.getTransfers();
-      return list
-        .map((status) => recordOf(status, config, ownAddress))
+      // A transfer the app can't read is left out, and logged: the others still show.
+      const records = await Promise.all(list.map(async (status) => {
+        try {
+          return recordOf(status, config, ownAddress, await ownBurn(status?.burn_tx_id));
+        } catch (e) {
+          log.error('A transfer from the backend could not be read; it was left out.', e);
+          return null;
+        }
+      }));
+      return records
         .filter(Boolean)
         .sort((a, b) => b.sentAt - a.sentAt);
     },

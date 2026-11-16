@@ -200,6 +200,12 @@ export const multichainKeyMap = {
   connectedNetworks: 'wallet:multichain:connectedNetworks',
   next: 'wallet:multichain:next',
   devBackend: 'wallet:multichain:devBackend',
+  // A transfer signed without an answer, with the network and backend it was signed on: until it
+  // settles, no other transfer starts there, also after a restart.
+  uncertainTransfer: 'wallet:multichain:uncertainTransfer',
+  // The Hathor Next spend secret, encrypted with the PIN as the wallet's words are: an unlock
+  // decrypts it instead of stretching the words again. It never leaves the device.
+  nextSecret: 'wallet:multichain:nextSecret',
 };
 
 /**

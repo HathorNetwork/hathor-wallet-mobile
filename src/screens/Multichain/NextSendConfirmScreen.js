@@ -18,6 +18,7 @@ import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
 import { multichainNextSendRequested, multichainNextSendReset } from '../../actions';
 import { renderNextValue } from '../../multichain/amount';
 import {
+  expiredBody,
   finalitySentence,
   nextStatusLabel,
   privateSendStatement,
@@ -207,6 +208,15 @@ export default function NextSendConfirmScreen() {
             action={<NewHathorButton title={t`Done`} onPress={exit} />}
           />
         );
+      case OPERATION_STATUS.EXPIRED:
+        return (
+          <FeedbackModal
+            icon={icon(errorIcon)}
+            text={`${nextStatusLabel('expired')}. ${expiredBody()}`}
+            onDismiss={exit}
+            action={<NewHathorButton title={t`Done`} onPress={exit} />}
+          />
+        );
       case OPERATION_STATUS.UNCONFIRMED:
         return (
           <FeedbackModal
@@ -254,6 +264,13 @@ export default function NextSendConfirmScreen() {
         <Text style={styles.amount}>{render(amount)}</Text>
         <Text style={styles.label}>{t`Address`}</Text>
         <Text style={styles.address} selectable>{address}</Text>
+        {/* Anyone can name a token anything on Hathor Next: its id is what tells it apart. */}
+        {!native && (
+          <>
+            <Text style={styles.label}>{t`Token id`}</Text>
+            <Text style={styles.address} selectable>{tokenId}</Text>
+          </>
+        )}
         <View style={styles.summary}>
           {/* The fee is always in the native token: a total adds up only when the payment is
               too. */}

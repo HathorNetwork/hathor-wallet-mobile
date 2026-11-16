@@ -273,7 +273,7 @@ describe('a Hathor Next payment in another token', () => {
     const { renderer, navigation, pickAtt, next } = await amountStep();
     expect(renderer.root.findByType(NextTokenPicker).props.options).toEqual([
       { id: '00', symbol: 'HTR', name: 'Hathor', balance: '3.00' },
-      { id: ATT, symbol: 'ATT', name: 'App Test Token', balance: '250.00' },
+      { id: ATT, symbol: 'ATT', name: 'App Test Token · c230a6', balance: '250.00' },
     ]);
     await pickAtt();
     expect(textOf(renderer)).toEqual(expect.arrayContaining([
@@ -425,7 +425,9 @@ describe('the Hathor Next send confirmation (sign-once)', () => {
 
   test('carries no PIN: the keys are in memory, and the PIN only authorizes', async () => {
     STORE.isPasskeyWallet.mockReturnValue(false);
-    const navigation = { navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn() };
+    const navigation = {
+      navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn(), addListener: () => () => {},
+    };
     useNavigation.mockReturnValue(navigation);
     useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS, amount: '100000000' } });
     const { store, actions } = makeStore();
@@ -566,5 +568,54 @@ describe('the scanner', () => {
     );
     expect(navigation.popTo).not.toHaveBeenCalled();
     expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+});
+
+describe('the Hathor Next send confirmation, after review', () => {
+  const ATT = 'c230a6631f721ad5cab42b3eeb726513274f411134bbcd474471a76088979873';
+
+  async function confirm(params) {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    jest.spyOn(passkeySigner, 'withPasskeyWords').mockImplementation(async (fn) => fn('words'));
+    const navigation = {
+      navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn(), addListener: () => () => {},
+    };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({ params });
+    const env = makeStore({
+      next: {
+        tokens: {
+          '00': { id: '00', name: 'Hathor', symbol: 'HTR' },
+          [ATT]: { id: ATT, name: 'App Test Token', symbol: 'ATT' },
+        },
+        balances: {
+          '00': { status: 'ready', data: { available: 300000000n } },
+          [ATT]: { status: 'ready', data: { available: 25000000000n } },
+        },
+      },
+    });
+    const renderer = await mount(env.store, <NextSendConfirmScreen />);
+    return { ...env, renderer };
+  }
+
+  test("shows a token's full id when it isn't the native one", async () => {
+    const { renderer } = await confirm({
+      address: NEXT_ADDRESS, amount: '100000000', tokenId: ATT,
+    });
+    expect(textOf(renderer)).toEqual(expect.arrayContaining(['Token id', ATT]));
+  });
+
+  test('says a payment that expired never settles, and its coins are free again', async () => {
+    const { store, renderer, actions } = await confirm({ address: NEXT_ADDRESS, amount: '100000000' });
+    await act(async () => { button(renderer, 'Send').props.onPress(); });
+    const [request] = actions.filter((a) => a.type === types.MULTICHAIN_NEXT_SEND_REQUESTED);
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({
+        status: OPERATION_STATUS.EXPIRED, draftId: request.payload.draftId,
+      }));
+    });
+    const [outcome] = renderer.root.findAllByType(FeedbackModal);
+    expect(outcome.props.text).toMatch(/^Expired\. This payment expired before the network got its signatures/);
+    expect(outcome.props.text).not.toMatch(/turned it down/);
   });
 });

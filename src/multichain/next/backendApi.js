@@ -127,7 +127,18 @@ export function createBackendApi(baseUrl, { fetchImpl = (...args) => fetch(...ar
       return request('GET', `${wallet(walletId)}/history${qs ? `?${qs}` : ''}`, { token });
     },
 
-    getTokens: () => request('GET', '/v1/tokens'),
+    /**
+     * The tokens created on the network, a page at a time.
+     *
+     * @param {{ from?: string, limit?: number }} [page]
+     */
+    getTokens: ({ from, limit } = {}) => {
+      const query = new URLSearchParams();
+      if (from) query.set('from', from);
+      if (limit) query.set('limit', String(limit));
+      const qs = query.toString();
+      return request('GET', `/v1/tokens${qs ? `?${qs}` : ''}`);
+    },
 
     /**
      * Asks the backend to build a payment. It answers with a sign request the app checks before

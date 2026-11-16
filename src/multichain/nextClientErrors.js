@@ -51,6 +51,11 @@ export const NEXT_CLIENT_ERROR = {
   TRANSFER_NOT_SENT: 'transfer-not-sent',
   // The amount needs more outputs than one transaction holds.
   TRANSFER_TOO_MANY_INPUTS: 'transfer-too-many-inputs',
+  // The backend is on another Hathor Next network than the one this app pins: the network was
+  // reset or replaced, and the app needs an update.
+  NETWORK_CHANGED: 'network-changed',
+  // The wallet service refused the login for its time: the phone's clock is off.
+  CLOCK: 'clock',
 };
 
 /**
@@ -90,6 +95,10 @@ export function nextClientErrorMessage(code) {
       return t`The transfer didn't go through. Nothing left your wallet.`;
     case NEXT_CLIENT_ERROR.TRANSFER_TOO_MANY_INPUTS:
       return t`This amount needs too many of your Hathor Network outputs for one transfer. Try a smaller amount.`;
+    case NEXT_CLIENT_ERROR.NETWORK_CHANGED:
+      return t`Hathor Next's network changed, and this version of the app can't connect to it. Update the app, or disconnect the side chain for now.`;
+    case NEXT_CLIENT_ERROR.CLOCK:
+      return t`Couldn't sign in to Hathor Next: your phone's date and time are off. Set them to update automatically, then try again.`;
     default:
       return t`Something went wrong on Hathor Next.`;
   }

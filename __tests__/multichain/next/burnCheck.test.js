@@ -64,6 +64,7 @@ function burnHex({
   version = 1,
   tokens = [],
   headers = [],
+  signalBits = 0,
 } = {}) {
   const outs = outputs ?? [
     new Output(BURN_DATA_VALUE, dataScript(data)),
@@ -74,6 +75,7 @@ function burnHex({
     version,
     tokens,
     headers,
+    signalBits,
     timestamp: 1790000000,
     parents: ['aa'.repeat(32), 'bb'.repeat(32)],
     weight: 1,
@@ -237,6 +239,7 @@ describe('each check of the burn, on its own', () => {
   const REFUSED = {
     unreadable: /^The burn can't be read/,
     shape: 'The burn is not a plain transaction.',
+    signal: 'The burn carries signal bits.',
     inputs: 'The burn spends other outputs than the ones this wallet chose.',
     data: 'The burn doesn\'t start with its data output.',
     destination: 'The burn sends the HTR somewhere else than the chosen Hathor Next address.',
@@ -280,6 +283,12 @@ describe('each check of the burn, on its own', () => {
       { timestamp: 1790000000, parents: ['aa'.repeat(32), 'bb'.repeat(32)], weight: 1, nonce: 0 },
     );
     expect(refusedFor(creation.toHex())).toBe(REFUSED.shape);
+  });
+
+  it('refuses a burn with signal bits, which hathor-core refuses on a transaction', () => {
+    for (const signalBits of [0x01, 0x80, 0xff]) {
+      expect(refusedFor(burnHex({ signalBits }))).toBe(REFUSED.signal);
+    }
   });
 
   it('refuses a burn that leaves out one of the chosen inputs', () => {

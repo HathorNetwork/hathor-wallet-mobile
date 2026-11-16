@@ -44,8 +44,13 @@ import {
   setFeatureToggles,
   setFullNodeNetworkName,
   types,
+  networkSettingsUpdateState,
 } from '../../src/actions';
-import { MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE, MULTICHAIN_FEATURE_TOGGLE } from '../../src/constants';
+import {
+  MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
+  MULTICHAIN_FEATURE_TOGGLE,
+  PRE_SETTINGS_TESTNET,
+} from '../../src/constants';
 import { STORE } from '../../src/store';
 import { DevBackendSettings } from '../../src/components/Multichain/DevBackendSettings';
 import { FAKE_NETWORK } from '../multichain/fakes/sideChain';
@@ -73,6 +78,8 @@ async function render({ backend = null, passkey = false } = {}) {
     return next(action);
   };
   const store = createStore(reducer, applyMiddleware(record));
+  // The wallet's saved network settings: Hathor Next never shows on mainnet's.
+  store.dispatch(networkSettingsUpdateState(PRE_SETTINGS_TESTNET));
   store.dispatch(setFeatureToggles({
     [MULTICHAIN_FEATURE_TOGGLE]: true,
     [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: true,

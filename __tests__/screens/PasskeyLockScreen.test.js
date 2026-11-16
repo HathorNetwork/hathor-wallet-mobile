@@ -118,8 +118,14 @@ describe('PasskeyLockScreen', () => {
   ])('derives the Hathor Next keys only with the multichain flag on (%s)', async (name, toggles, on) => {
     const derive = jest.spyOn(multichainKeys, 'prepareNextKeysAtUnlock')
       .mockResolvedValue(null);
-    await render({ toggles });
-    expect(derive).toHaveBeenCalledWith(WORDS, on);
+    const { typesOf } = await render({ toggles });
+    // With the flag off, nothing is derived and no "keys derived" action goes out.
+    if (on) {
+      expect(derive).toHaveBeenCalledWith(WORDS, true);
+    } else {
+      expect(derive).not.toHaveBeenCalled();
+    }
+    expect(typesOf().includes(types.MULTICHAIN_NEXT_KEYS_DERIVED)).toBe(on);
   });
 
   test('starts the wallet when none runs', async () => {

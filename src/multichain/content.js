@@ -32,6 +32,8 @@ export function nextStatusLabel(status) {
       return t`Failed`;
     case 'unconfirmed':
       return t`Not settled yet`;
+    case 'expired':
+      return t`Expired`;
     case 'attention':
       return t`Needs attention`;
     default:
@@ -56,6 +58,9 @@ export const rejectedTitle = () => t`The network turned it down`;
 
 /** (src/content/sendOutcome.ts) */
 export const rejectedBody = () => t`The network looked at this payment and turned it down, so it will never settle. Nothing left your wallet, no fee was paid, and the coins that were set aside for it are already back. There is nothing to wait for.`;
+
+/** A payment whose signatures never reached the network in time. */
+export const expiredBody = () => t`This payment expired before the network got its signatures, so it will never settle. Nothing left your wallet, no fee was paid, and its coins are free again.`;
 
 /** What precedes the node's own words about a refusal. (src/content/finality.ts) */
 export const verdictLead = () => t`The network said:`;

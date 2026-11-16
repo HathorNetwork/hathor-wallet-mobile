@@ -98,8 +98,11 @@ const PasskeyLockScreen = () => {
           // the app knows when the words arrive. It never throws, and the unlock doesn't wait: a
           // load that comes first waits for it, and one that failed runs again once it's done.
           const multichainOn = getMultichainFeatureToggleAtUnlock(store.getState());
-          prepareNextKeysAtUnlock(words, multichainOn)
-            .then(() => dispatch(multichainNextKeysDerived()));
+          if (multichainOn) {
+            prepareNextKeysAtUnlock(words, multichainOn)
+              .then(() => dispatch(multichainNextKeysDerived()))
+              .catch((e) => log.error('Could not tell the app the Hathor Next keys are ready.', e));
+          }
           return register ? register(words) : undefined;
         },
       });

@@ -9,7 +9,9 @@ import { describe, test, expect } from '@jest/globals';
 import { CHAIN, transferReceiveSymbol } from '../../src/multichain/chains';
 import { shortBalanceAdvice } from '../../src/multichain/transfer';
 import { nextToHathorRoundedUp } from '../../src/multichain/amount';
-import { progressText } from '../../src/components/Multichain/TransferRow';
+import { progressText, transferChange } from '../../src/components/Multichain/TransferRow';
+import { HISTORY_ROW } from '../../src/multichain/history';
+import { TRANSFER_STATUS } from '../../src/multichain/state';
 import { fakePeerAddress } from './fakes/fakeAddress';
 import { FAKE_SIDE_CHAIN } from './fakes/sideChain';
 
@@ -122,5 +124,21 @@ describe("what a transfer of Hathor Network's native token becomes on Hathor Nex
   test('the same token where the bridge carries it, the native token where it mints that', () => {
     expect(transferReceiveSymbol(config, 'TNT')).toBe('TNT');
     expect(transferReceiveSymbol({ tokenMap: [], nativeTokenSymbol: 'USDT' }, 'TNT')).toBe('USDT');
+  });
+});
+
+describe("a failed transfer's row", () => {
+  test('moved nothing and paid no fee', () => {
+    const failed = {
+      status: TRANSFER_STATUS.FAILED,
+      amount: '1000',
+      networkFee: '1',
+      bridgeFee: '0',
+      receiveAmount: '1000',
+      toOwn: true,
+    };
+    for (const kind of [HISTORY_ROW.TRANSFER, HISTORY_ROW.TRANSFER_SOURCE]) {
+      expect(transferChange(failed, kind)).toEqual({ amount: 0n, incoming: false });
+    }
   });
 });

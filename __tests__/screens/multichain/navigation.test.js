@@ -47,10 +47,11 @@ import FeedbackModal from '../../../src/components/FeedbackModal';
 import NewHathorButton from '../../../src/components/NewHathorButton';
 import { PortalProvider } from '../../../src/components/Portal';
 import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
 import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 /* eslint-enable import/first */
 
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
+const OWN_ADDRESS = fakePeerAddress('cd34');
 
 let mounted = null;
 let pinCallback = null;
@@ -184,6 +185,27 @@ describe('leaving a transfer', () => {
     expect(appRoutes()).toEqual(['Main']);
     const requests = actions.filter((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED);
     expect(requests).toHaveLength(1);
+  });
+});
+
+describe('leaving a transfer not confirmed yet', () => {
+  test('Close leaves, and its message with it', async () => {
+    const { store } = makeStore();
+    const renderer = await mountApp(store);
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'ChainTransferConfirm',
+        params: {
+          from: 'hathor', to: 'hathor-next', tokenId: '00', amount: '10000', toAddress: OWN_ADDRESS,
+        },
+      });
+    });
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.UNCONFIRMED }));
+    });
+    const [unconfirmed] = renderer.root.findAllByType(FeedbackModal);
+    await act(async () => { unconfirmed.props.action.props.onPress(); });
+    expect(appRoutes()).toEqual(['Main']);
   });
 });
 
