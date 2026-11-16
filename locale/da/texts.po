@@ -1934,7 +1934,7 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
-#: src/sagas/multichain.js:108
+#: src/sagas/multichain.js:111
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:118
 msgid "The transfer failed."
 msgstr ""
@@ -2074,7 +2074,7 @@ msgstr "Adresse"
 msgid "Private"
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:105
+#: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:108
 msgid "Couldn't connect to Hathor Next."
 msgstr ""
 
