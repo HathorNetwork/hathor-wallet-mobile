@@ -173,6 +173,30 @@ describe('the Dashboard with the side chain connected', () => {
     expect(actions).toContainEqual(expect.objectContaining({ payload: HTR }));
   });
 
+  test("never lets a long name hide a Hathor Next token's id", async () => {
+    useNavigation.mockReturnValue({ navigate: jest.fn() });
+    const longName = 'Hathor Network Official Stable Token Of Every Chain';
+    const { store } = makeStore();
+    const { next } = store.getState().multichain;
+    store.dispatch({
+      type: types.MULTICHAIN_NEXT_UPDATE,
+      payload: {
+        tokens: {
+          ...next.tokens,
+          b1: { id: 'b1', name: longName, symbol: 'TST', lastActivityAt: 2 },
+        },
+      },
+    });
+    const renderer = await mount(store, <Dashboard />);
+    const texts = renderer.root.findAllByType(Text);
+    const name = texts.find((node) => node.props.children === longName);
+    const tag = texts.find((node) => node.props.children === ' · b1');
+    // The name is the one cut to its line; the id has a text of its own, never cut.
+    expect(name.props.numberOfLines).toBe(1);
+    expect([].concat(name.props.style)).toContainEqual(expect.objectContaining({ flexShrink: 1 }));
+    expect(tag.props.numberOfLines).toBeUndefined();
+  });
+
   test('changes nothing without the side chain', async () => {
     useNavigation.mockReturnValue({ navigate: jest.fn() });
     const { store } = makeStore({ connected: false });

@@ -137,6 +137,9 @@ const SEND_SETTLED = [
   OPERATION_STATUS.ERROR,
 ];
 
+/** "Connect to side chain" is turning on, in these states. */
+const TURNING_ON = [CONNECT_STATUS.UNLOCKING, CONNECT_STATUS.CONNECTING];
+
 /** What the user is told when Hathor Next can't be loaded. */
 export const connectFailedText = () => t`Couldn't connect to Hathor Next.`;
 
@@ -653,10 +656,17 @@ export function* onWalletStarted() {
     yield call(runConnect, loadNext, { interactive: false });
     return;
   }
+  // "Connect to side chain" is turning on: the setting is saved once it loaded, so the side chain
+  // isn't connected yet. A reload now (a reconnect) leaves it to finish, where the side chain is
+  // still there.
+  const turningOn = yield select((state) => TURNING_ON.includes(state.multichain.connect.status));
+  if (turningOn && connectTask?.isRunning() && (yield select(isSideChainAvailable))) {
+    return;
+  }
   // The flags this start read may have turned the side chain off: a Hathor Next still running
-  // from before stops here, since no "flags updated" action comes for them.
+  // from before, or still turning on, stops here, since no "flags updated" action comes for them.
   const status = yield select((state) => state.multichain.next.status);
-  if (status !== NEXT_STATUS.STOPPED) {
+  if (status !== NEXT_STATUS.STOPPED || connectTask?.isRunning()) {
     yield call(exitNext);
   }
 }
@@ -806,9 +816,18 @@ export function* onNextSendRequested({ payload }) {
     log.error('A Hathor Next draft was asked to be sent while another payment is on its way; it was ignored.');
     return;
   }
-  // Only where the side chain is connected: a request from anywhere else signs nothing.
+  // Only where the side chain is connected: a request from anywhere else signs nothing. The
+  // confirm screen says so, instead of waiting for an outcome that never comes.
   if (!(yield select(isSideChainConnected))) {
     log.error('A Hathor Next payment was asked for where the side chain is not connected.');
+    yield put(multichainNextSendUpdate({
+      status: OPERATION_STATUS.ERROR,
+      draftId,
+      sendId: null,
+      txId: null,
+      reason: null,
+      error: connectFailedText(),
+    }));
     return;
   }
   sentDrafts.add(draftId);
@@ -954,9 +973,15 @@ export function* onTransferRequested({ payload }) {
     toAddress,
     pinCode,
   } = payload;
-  // Only where the side chain is connected: a request from anywhere else burns nothing.
+  // Only where the side chain is connected: a request from anywhere else burns nothing. The
+  // confirm screen says so.
   if (!(yield select(isSideChainConnected))) {
     log.error('A transfer between chains was asked for where the side chain is not connected.');
+    yield put(multichainTransferUpdate({
+      status: OPERATION_STATUS.ERROR,
+      record: null,
+      error: connectFailedText(),
+    }));
     return;
   }
   const pendingId = yield call(uncertainTransferHere);

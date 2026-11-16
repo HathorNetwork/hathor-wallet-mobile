@@ -23,11 +23,19 @@ export const shortTokenId = (id) => id.trim().toLowerCase().slice(0, 6);
  * activity (there is no price feed to rank by value). Anyone can create a token on Hathor Next
  * under any name and symbol, "Hathor" and "HTR" included, and send it to any wallet, where it
  * lists itself: every token but the native one carries its short id in its name, so a look-alike
- * can always be told apart. Screens still find every token by its id.
+ * can always be told apart. Screens still find every token by its id. A list that cuts long names
+ * shows `plainName` cut and `idTag` whole, so a long name never hides the id.
  *
  * @param {{ [id: string]: { id, name, symbol, lastActivityAt } }} tokens
  * @param {string} nativeTokenId
- * @returns {{ uid: string, name: string, symbol: string, lastActivityAt: number|null }[]}
+ * @returns {{
+ *   uid: string,
+ *   name: string,
+ *   plainName: string,
+ *   idTag: string|null,
+ *   symbol: string,
+ *   lastActivityAt: number|null,
+ * }[]}
  */
 export function nextTokenList(tokens, nativeTokenId) {
   return Object.values(tokens)
@@ -36,6 +44,8 @@ export function nextTokenList(tokens, nativeTokenId) {
       name: token.id === nativeTokenId
         ? token.name
         : `${token.name} · ${shortTokenId(token.id)}`,
+      plainName: token.name,
+      idTag: token.id === nativeTokenId ? null : shortTokenId(token.id),
       symbol: token.symbol,
       lastActivityAt: token.lastActivityAt ?? null,
     }))
@@ -103,6 +113,8 @@ export function arrivingAmounts(transfers, ids, scale) {
  *   hathorUid: string|null,
  *   nextId: string|null,
  *   name: string,
+ *   plainName: string,
+ *   idTag: string|null,
  *   symbol: string,
  *   chains: string[],
  *   status: string,
@@ -136,6 +148,8 @@ export function combinedTokenList({
         hathorUid: token.uid,
         nextId: null,
         name: token.name,
+        plainName: token.name,
+        idTag: null,
         symbol: token.symbol,
         chains: [CHAIN.HATHOR],
         status: balance?.status ?? TOKEN_DOWNLOAD_STATUS.LOADING,
@@ -158,6 +172,8 @@ export function combinedTokenList({
       hathorUid: token.uid,
       nextId,
       name: token.name,
+      plainName: token.name,
+      idTag: null,
       symbol: token.symbol,
       chains: [CHAIN.HATHOR, CHAIN.HATHOR_NEXT],
       status: balance?.status ?? TOKEN_DOWNLOAD_STATUS.LOADING,
@@ -178,6 +194,8 @@ export function combinedTokenList({
       hathorUid: null,
       nextId: token.uid,
       name: token.name,
+      plainName: token.plainName,
+      idTag: token.idTag,
       symbol: token.symbol,
       chains: [CHAIN.HATHOR_NEXT],
       status: TOKEN_DOWNLOAD_STATUS.READY,

@@ -958,7 +958,7 @@ msgstr "Tilgængelig saldo"
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/NanoContractRegisterQrCodeScreen.js:26
-#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:108
+#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:109
 msgid "Manual"
 msgstr ""
 
@@ -1077,12 +1077,12 @@ msgid "You can register Tokens, Nano Contracts or Reown manually."
 msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:43
-#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:72
-#: src/screens/UnifiedQRScanner.js:89
+#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:73
+#: src/screens/UnifiedQRScanner.js:90
 msgid "Feature Not Available"
 msgstr ""
 
-#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:89
+#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:90
 msgid "The nano contract feature is not enabled."
 msgstr ""
 
@@ -1092,7 +1092,7 @@ msgstr ""
 msgid "OK"
 msgstr "Okay"
 
-#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:72
+#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:73
 msgid "The reown feature is not enabled."
 msgstr ""
 
@@ -1435,7 +1435,7 @@ msgid "SEND"
 msgstr "SEND"
 
 #: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:92
-#: src/screens/UnifiedQRScanner.js:116
+#: src/screens/UnifiedQRScanner.js:117
 msgid "Scan the QR code"
 msgstr "Scan QR-koden"
 
@@ -1559,16 +1559,16 @@ msgstr ""
 msgid "TOKENS"
 msgstr ""
 
-#: src/screens/UnifiedQRScanner.js:56 src/screens/UnifiedQRScanner.js:97
+#: src/screens/UnifiedQRScanner.js:56 src/screens/UnifiedQRScanner.js:98
 msgid "Invalid QR Code"
 msgstr ""
 
 #.  If none of the patterns match, show an error or handle accordingly
-#: src/screens/UnifiedQRScanner.js:97
+#: src/screens/UnifiedQRScanner.js:98
 msgid "The scanned QR code is not in a recognized format."
 msgstr ""
 
-#: src/screens/UnifiedQRScanner.js:103
+#: src/screens/UnifiedQRScanner.js:104
 msgid "Scan QR Code"
 msgstr ""
 
@@ -1963,7 +1963,7 @@ msgstr ""
 msgid "Close"
 msgstr "Luk"
 
-#: src/sagas/multichain.js:144
+#: src/sagas/multichain.js:147
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:135
 msgid "The transfer failed."
 msgstr ""
@@ -2123,7 +2123,7 @@ msgstr ""
 msgid "Private"
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:77 src/sagas/multichain.js:141
+#: src/multichain/nextClientErrors.js:77 src/sagas/multichain.js:144
 msgid "Couldn't connect to Hathor Next."
 msgstr ""
 

@@ -547,7 +547,7 @@ describe('the scanner', () => {
     // Back to the Main on the stack: navigate would put a second one above the scanner.
     expect(navigation.popTo).toHaveBeenCalledWith('Main', {
       screen: 'Send',
-      params: { screen: 'SendAddressInput', params: { address: NEXT_ADDRESS } },
+      params: { screen: 'SendAddressInput', params: { address: NEXT_ADDRESS }, pop: true },
     });
     expect(navigation.navigate).not.toHaveBeenCalled();
   });

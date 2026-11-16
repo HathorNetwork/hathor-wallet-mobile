@@ -1054,8 +1054,37 @@ describe('mainnet', () => {
     await wait(2000);
     expect(sendSpy).not.toHaveBeenCalled();
     expect(loadLedger(NETWORK).transfers).toHaveLength(0);
-    expect(env.getState().multichain.send.status).toBe(OPERATION_STATUS.IDLE);
-    expect(env.getState().multichain.transfer.status).toBe(OPERATION_STATUS.IDLE);
+    // Refused out loud, so a confirm screen still open doesn't wait for an outcome.
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      draftId: 'mainnet-draft',
+      error: "Couldn't connect to Hathor Next.",
+    });
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      error: "Couldn't connect to Hathor Next.",
+    });
+  });
+});
+
+describe('a request where the side chain was turned off', () => {
+  test('signs and burns nothing, and says so to the confirm screen still open', async () => {
+    const env = setup();
+    await connect(env);
+    const sendSpy = jest.spyOn(getNextClient(), 'send');
+    env.dispatch(multichainConnectSettingChanged(false));
+    await wait(10);
+    env.dispatch(multichainNextSendRequested({
+      tokenId: HTR, to: deriveFakeNextAddress('someone'), amount: 1n, draftId: 'off-draft',
+    }));
+    env.dispatch(multichainTransferRequested({ amount: 10000n, toAddress: ADDRESS, pinCode: PIN }));
+    await wait(2000);
+    expect(sendSpy).not.toHaveBeenCalled();
+    expect(loadLedger(NETWORK).transfers).toHaveLength(0);
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.ERROR, draftId: 'off-draft',
+    });
+    expect(env.getState().multichain.transfer.status).toBe(OPERATION_STATUS.ERROR);
   });
 });
 
@@ -1070,6 +1099,34 @@ describe('a wallet reload', () => {
     await wait(2000);
     expect(connectSpy).not.toHaveBeenCalled();
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+  });
+
+  test('leaves "Connect to side chain" to finish turning on', async () => {
+    const env = setup();
+    env.dispatch(multichainConnectSettingChanged(true, { pinCode: PIN }));
+    await wait(10);
+    expect(env.getState().multichain.connect.status).toBe(CONNECT_STATUS.CONNECTING);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.CONNECTING);
+    // A reconnect reloads the wallet while the setting turns on: it isn't saved yet.
+    env.dispatch(startWalletSuccess());
+    await wait(2000);
+    const { multichain } = env.getState();
+    expect(multichain.connectedNetworks).toEqual({ [NETWORK]: true });
+    expect(multichain.connect.status).toBe(CONNECT_STATUS.IDLE);
+    expect(multichain.next.status).toBe(NEXT_STATUS.READY);
+  });
+
+  test('stops a setting turning on when the flag went off at the start', async () => {
+    const env = setup();
+    env.dispatch(multichainConnectSettingChanged(true, { pinCode: PIN }));
+    // Before Hathor Next itself starts connecting: the keys are still being derived.
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: false }));
+    env.dispatch(startWalletSuccess());
+    await wait(2000);
+    const { multichain } = env.getState();
+    expect(multichain.connectedNetworks).toEqual({});
+    expect(multichain.next.status).toBe(NEXT_STATUS.STOPPED);
   });
 
   test('stops a Hathor Next still running when the side chain is off at the start', async () => {

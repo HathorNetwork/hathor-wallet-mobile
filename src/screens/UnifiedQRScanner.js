@@ -58,10 +58,11 @@ const UnifiedQRScanner = ({ navigation }) => {
     }
     if (next) {
       // Back to the Main already on the stack: navigate would put a second Main above this
-      // scanner (React Navigation 7), and leave the scanner mounted under it.
+      // scanner (React Navigation 7), and leave the scanner mounted under it. Within Send, back
+      // to its address step too: a Send left half way already has one, under the later steps.
       navigation.popTo('Main', {
         screen: 'Send',
-        params: { screen: 'SendAddressInput', params: { address: next.address } },
+        params: { screen: 'SendAddressInput', params: { address: next.address }, pop: true },
       });
       return;
     }
