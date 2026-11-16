@@ -21,6 +21,10 @@ import { NANO_CONTRACT_FEATURE_TOGGLE, REOWN_FEATURE_TOGGLE } from '../constants
 import { parseNextQrCode } from '../multichain/address';
 import { isSideChainConnected } from '../multichain/gating';
 
+// Each scan of a Hathor Next address, numbered: Send's address step takes the scanned address
+// again even when it is the one it was given before, after the user edited the field.
+let scanCount = 0;
+
 const UnifiedQRScanner = ({ navigation }) => {
   const dispatch = useDispatch();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -60,9 +64,14 @@ const UnifiedQRScanner = ({ navigation }) => {
       // Back to the Main already on the stack: navigate would put a second Main above this
       // scanner (React Navigation 7), and leave the scanner mounted under it. Within Send, back
       // to its address step too: a Send left half way already has one, under the later steps.
+      scanCount += 1;
       navigation.popTo('Main', {
         screen: 'Send',
-        params: { screen: 'SendAddressInput', params: { address: next.address }, pop: true },
+        params: {
+          screen: 'SendAddressInput',
+          params: { address: next.address, scan: scanCount },
+          pop: true,
+        },
       });
       return;
     }

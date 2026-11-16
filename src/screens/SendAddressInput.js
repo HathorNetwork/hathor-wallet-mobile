@@ -64,12 +64,14 @@ export const SendAddressInput = () => {
   // line tall, so the card's padding wouldn't take the tap otherwise.
   const inputRef = useRef(null);
 
-  // The QR code scanner comes back to this screen with the address it read.
+  // The QR code scanner comes back to this screen with the address it read. Each scan of the
+  // Dashboard's scanner has a number of its own: a second scan of the same address fills it in
+  // again over what the user typed since.
   useEffect(() => {
     if (route.params?.address) {
       setFormModel((prev) => ({ ...prev, address: route.params.address, error: null }));
     }
-  }, [route.params?.address]);
+  }, [route.params?.address, route.params?.scan]);
 
   const onAddressChange = (text) => {
     setFormModel({ address: text, error: null });

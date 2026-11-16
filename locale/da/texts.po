@@ -471,7 +471,7 @@ msgstr ""
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421
 #: src/screens/Multichain/NextSendAmountInput.js:172
-#: src/screens/SendAddressInput.js:177 src/screens/SendAmountInput.js:287
+#: src/screens/SendAddressInput.js:179 src/screens/SendAmountInput.js:287
 msgid "Next"
 msgstr "Næste"
 
@@ -957,7 +957,7 @@ msgstr "Tilgængelig saldo"
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/NanoContractRegisterQrCodeScreen.js:26
-#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:109
+#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:118
 msgid "Manual"
 msgstr ""
 
@@ -1076,22 +1076,22 @@ msgid "You can register Tokens, Nano Contracts or Reown manually."
 msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:43
-#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:73
-#: src/screens/UnifiedQRScanner.js:90
+#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:82
+#: src/screens/UnifiedQRScanner.js:99
 msgid "Feature Not Available"
 msgstr ""
 
-#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:90
+#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:99
 msgid "The nano contract feature is not enabled."
 msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:45
 #: src/screens/RegisterOptionsScreen.js:57 src/screens/SendScanQRCode.js:40
-#: src/screens/UnifiedQRScanner.js:39
+#: src/screens/UnifiedQRScanner.js:43
 msgid "OK"
 msgstr "Okay"
 
-#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:73
+#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:82
 msgid "The reown feature is not enabled."
 msgstr ""
 
@@ -1214,24 +1214,24 @@ msgstr "Skift pinkode"
 msgid "Lock wallet"
 msgstr "Lås wallet"
 
-#: src/screens/SendAddressInput.js:112
+#: src/screens/SendAddressInput.js:114
 msgid "Scan QR code"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:128
+#: src/screens/SendAddressInput.js:130
 msgid "SEND TOKENS"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:140
+#: src/screens/SendAddressInput.js:142
 msgid "Address to send"
 msgstr "Adresse, der skal sendes til"
 
-#: src/screens/SendAddressInput.js:154
+#: src/screens/SendAddressInput.js:156
 msgid "Paste or type address"
 msgstr ""
 
 #: src/screens/Multichain/NextSendAmountInput.js:162
-#: src/screens/SendAddressInput.js:184
+#: src/screens/SendAddressInput.js:186
 msgid "Transfer between chains"
 msgstr ""
 
@@ -1428,7 +1428,7 @@ msgid "SEND"
 msgstr "SEND"
 
 #: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:92
-#: src/screens/UnifiedQRScanner.js:117
+#: src/screens/UnifiedQRScanner.js:126
 msgid "Scan the QR code"
 msgstr "Scan QR-koden"
 
@@ -1546,16 +1546,16 @@ msgstr ""
 msgid "TOKENS"
 msgstr ""
 
-#: src/screens/UnifiedQRScanner.js:56 src/screens/UnifiedQRScanner.js:98
+#: src/screens/UnifiedQRScanner.js:60 src/screens/UnifiedQRScanner.js:107
 msgid "Invalid QR Code"
 msgstr ""
 
 #.  If none of the patterns match, show an error or handle accordingly
-#: src/screens/UnifiedQRScanner.js:98
+#: src/screens/UnifiedQRScanner.js:107
 msgid "The scanned QR code is not in a recognized format."
 msgstr ""
 
-#: src/screens/UnifiedQRScanner.js:104
+#: src/screens/UnifiedQRScanner.js:113
 msgid "Scan QR Code"
 msgstr ""
 
