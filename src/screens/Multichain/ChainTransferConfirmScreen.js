@@ -21,6 +21,7 @@ import { CHAIN, transferReceiveSymbol } from '../../multichain/chains';
 import { renderNextValue } from '../../multichain/amount';
 import { selectSideChainConfig } from '../../multichain/gating';
 import { OPERATION_STATUS } from '../../multichain/state';
+import { NEXT_CLIENT_ERROR } from '../../multichain/nextClientErrors';
 import NavigationService from '../../NavigationService';
 import { renderValue } from '../../utils';
 import { COLORS } from '../../styles/themes';
@@ -45,9 +46,11 @@ export const transferSentText = (etaSeconds, symbol) => {
 
 /**
  * What an earlier transfer's outcome says on a screen whose own transfer wasn't made: it went
- * through, it ended otherwise (in the words given), or it still has no answer.
+ * through, Hathor Next no longer knows it (its HTR may have left the wallet), it ended otherwise
+ * (in the words given), or it still has no answer.
  */
 export const earlierTransferDoneText = () => t`Your earlier transfer went through. This one wasn't sent: check your balance, then confirm it if you still want it.`;
+export const earlierTransferForgottenText = () => t`Hathor Next no longer knows your earlier transfer, and its HTR may have left your wallet. This one wasn't sent: check your Hathor Network history, then confirm it if you still want it.`;
 export const earlierTransferEndedText = (outcome) => t`Your earlier transfer is settled: ${outcome} This one wasn't sent yet, and you can confirm it now.`;
 export const earlierTransferPendingText = () => t`An earlier transfer hasn't been confirmed yet. You can make another one once it settles.`;
 
@@ -149,7 +152,9 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
         return (
           <FeedbackModal
             icon={<Image source={errorIcon} style={styles.feedbackIcon} resizeMode='contain' />}
-            text={earlierTransferEndedText(transfer.error ?? t`The transfer failed.`)}
+            text={transfer.errorCode === NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN
+              ? earlierTransferForgottenText()
+              : earlierTransferEndedText(transfer.error ?? t`The transfer failed.`)}
             onDismiss={again}
           />
         );

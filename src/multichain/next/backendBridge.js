@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { TxNotFoundError } from '@hathor/wallet-lib/lib/errors';
 import { logger } from '../../logger';
 import { nextAddressError, normalizeNextAddress, sameNextAddress } from '../address';
 import { mintScaleOf } from '../amount';
@@ -151,7 +152,9 @@ export function createBackendBridge(config, { wallet, network, client }) {
   });
 
   // The wallet's own copies of burns, read once each, for this transfer address and destination.
-  const reads = burnReadsOf(wallet);
+  // The screens make a bridge without a wallet, only for its quote and directions: it reads no
+  // burn.
+  const reads = wallet ? burnReadsOf(wallet) : new Map();
   const readKey = (burnTxId) => `${pins?.transfer_address}:${pins?.destination_network}:${burnTxId}`;
 
   /**
@@ -209,10 +212,27 @@ export function createBackendBridge(config, { wallet, network, client }) {
   };
 
   /**
+   * Whether the backend no longer knows a transfer its read answered 404 for. A 404 alone doesn't
+   * say so: the backend answers it too while transfers aren't configured, and a proxy can answer
+   * it during a deploy, while the backend still keeps the signed burn and pushes it later. The
+   * backend's list of this wallet's transfers, read without it, does: the backend keeps every
+   * transfer it took, with no expiry.
+   *
+   * @param {string} transferId
+   * @returns {Promise<boolean>}
+   * @throws When the list can't be read: whether the backend knows it is still unknown
+   */
+  const backendForgot = async (transferId) => {
+    const listed = await client.getTransfers();
+    return !listed.some((status) => status?.id === transferId);
+  };
+
+  /**
    * A transfer the backend no longer knows (a reset devnet, a record it dropped), settled by what
    * the wallet's own node says of the outputs its burn spends: none spent, or spent by anything
-   * but this wallet's burn, and nothing left the wallet. A burn that did reach the network, or a
-   * transfer saved without its outputs, has nobody left to finish it: it ends as forgotten.
+   * but this wallet's burn, and nothing left the wallet. A burn that did reach the network, a
+   * transfer saved without its outputs, or one whose outputs the node doesn't have (Hathor
+   * Network was reset too) has nobody left to finish it: it ends as forgotten.
    *
    * @param {{ txId: string, index: number }[]|undefined} inputs
    * @returns {Promise<null>} null: it never went through
@@ -223,9 +243,21 @@ export function createBackendBridge(config, { wallet, network, client }) {
       throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN);
     }
     for (const { txId, index } of inputs) {
-      // eslint-disable-next-line no-await-in-loop
-      const { meta } = await wallet.getFullTxById(txId);
-      const spenders = (meta?.spent_outputs ?? [])
+      let meta;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        ({ meta } = await wallet.getFullTxById(txId));
+      } catch (e) {
+        if (e instanceof TxNotFoundError) {
+          throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN);
+        }
+        throw e;
+      }
+      // Without the list of what spent its outputs, the node says nothing of them: read again.
+      if (!Array.isArray(meta?.spent_outputs)) {
+        throw new Error('The node gave an output\'s transaction without what spent it.');
+      }
+      const spenders = meta.spent_outputs
         .filter(([output]) => output === index)
         .flatMap(([, ids]) => ids);
       for (const spender of spenders) {
@@ -351,8 +383,8 @@ export function createBackendBridge(config, { wallet, network, client }) {
     /**
      * Settles a transfer signed without an answer: its record when the burn reached the network;
      * null when it never did, after cancelling it on the backend, so nothing is left behind and
-     * a new transfer can't burn twice. One the backend no longer knows is settled by the outputs
-     * its burn spends (settleForgotten).
+     * a new transfer can't burn twice. One the backend no longer knows (backendForgot) is settled
+     * by the outputs its burn spends (settleForgotten).
      *
      * @param {string} transferId
      * @param {{ inputs?: { txId: string, index: number }[] }} [saved] The outputs its burn spends
@@ -364,7 +396,7 @@ export function createBackendBridge(config, { wallet, network, client }) {
       try {
         status = await client.getTransfer(transferId);
       } catch (e) {
-        if (e instanceof BackendError && e.status === 404) {
+        if (e instanceof BackendError && e.status === 404 && await backendForgot(transferId)) {
           return settleForgotten(inputs);
         }
         throw e;

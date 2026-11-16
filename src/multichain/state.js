@@ -99,6 +99,8 @@ const TRANSFER_INITIAL_STATE = {
   status: OPERATION_STATUS.IDLE,
   record: null,
   error: null,
+  // The error's NEXT_CLIENT_ERROR code, when its words depend on whose screen shows it.
+  errorCode: null,
   // A transfer signed without an answer: no other one starts until it settles.
   uncertainId: null,
   // The confirm screen whose request the outcome is: any other shows it as an earlier transfer's.

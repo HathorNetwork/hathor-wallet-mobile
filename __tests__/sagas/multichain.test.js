@@ -862,7 +862,7 @@ describe('a transfer signed without an answer, as the screens see it', () => {
     expect(env.getState().multichain.transfer.requestId).not.toBe('screen-2');
   });
 
-  test('the backend no longer knows ends, and frees the next transfer', async () => {
+  test('the backend no longer knows ends, and the user hears it before the next transfer goes', async () => {
     saved({ inputs: [{ txId: '01'.repeat(32), index: 1 }] });
     const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
     await connect(env);
@@ -874,14 +874,45 @@ describe('a transfer signed without an answer, as the screens see it', () => {
       getTransfers: async () => [],
     };
     jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
-    env.dispatch(multichainTransferRequested({ amount: 500n, toAddress: ADDRESS, pinCode: PIN }));
+    const request = multichainTransferRequested({
+      amount: 500n, toAddress: ADDRESS, pinCode: PIN, requestId: 'screen-2',
+    });
+    env.dispatch(request);
     await wait(1000);
     expect(bridge.resolveTransfer).toHaveBeenCalledWith('transfer-1', {
       inputs: [{ txId: '01'.repeat(32), index: 1 }],
     });
     expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toBeNull();
-    // Nothing left to ask: the new transfer went ahead.
+    // Its HTR may have left the wallet: nothing else burns before the user hears so, as the
+    // earlier transfer's outcome.
+    expect(bridge.transfer).not.toHaveBeenCalled();
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+      uncertainId: null,
+    });
+    expect(env.getState().multichain.transfer.requestId).not.toBe('screen-2');
+    // Confirmed again, with nothing left to ask: it goes ahead.
+    env.dispatch(request);
+    await wait(1000);
     expect(bridge.transfer).toHaveBeenCalledTimes(1);
+  });
+
+  test('one that never went through lets the next transfer go ahead at once', async () => {
+    saved({ inputs: [{ txId: '01'.repeat(32), index: 1 }] });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    const bridge = {
+      transfer: jest.fn(async () => ({ id: 'transfer-2', status: TRANSFER_STATUS.PENDING })),
+      resolveTransfer: jest.fn(async () => null),
+      getTransfers: async () => [],
+    };
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+    env.dispatch(multichainTransferRequested({ amount: 500n, toAddress: ADDRESS, pinCode: PIN }));
+    await wait(1000);
+    // Nothing left the wallet: the transfer asked for now is the one that goes.
+    expect(bridge.transfer).toHaveBeenCalledTimes(1);
+    expect(env.getState().multichain.transfer.status).toBe(OPERATION_STATUS.DONE);
   });
 
   test('stays with its network: another shows none, and it shows again back there', async () => {
@@ -1108,6 +1139,38 @@ describe('the flag of the backend for local testing', () => {
       expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
     } finally {
       STORE.removeItem(multichainKeyMap.devBackend);
+    }
+  });
+
+  test('shows a transfer signed without an answer on the backend it was signed on, and only there', async () => {
+    STORE.setItem(multichainKeyMap.devBackend, LOCAL);
+    STORE.setItem(multichainKeyMap.uncertainTransfer, {
+      id: 'transfer-1', network: NETWORK, backendUrl: null,
+    });
+    try {
+      const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+      await connect(env);
+      expect(env.getState().multichain.transfer).toMatchObject({
+        status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1',
+      });
+      env.dispatch(setFeatureToggles({
+        [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: true,
+      }));
+      env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+      await wait(2000);
+      // The local backend never had it: a confirm screen there takes no other's for its own.
+      expect(env.getState().multichain.transfer).toMatchObject({
+        status: OPERATION_STATUS.IDLE, uncertainId: null,
+      });
+      env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
+      env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+      await wait(2000);
+      expect(env.getState().multichain.transfer).toMatchObject({
+        status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1',
+      });
+    } finally {
+      STORE.removeItem(multichainKeyMap.devBackend);
+      STORE.removeItem(multichainKeyMap.uncertainTransfer);
     }
   });
 

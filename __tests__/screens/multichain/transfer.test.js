@@ -43,8 +43,10 @@ import ChainTransferScreen from '../../../src/screens/Multichain/ChainTransferSc
 import ChainTransferConfirmScreen, {
   earlierTransferDoneText,
   earlierTransferEndedText,
+  earlierTransferForgottenText,
   earlierTransferPendingText,
 } from '../../../src/screens/Multichain/ChainTransferConfirmScreen';
+import { NEXT_CLIENT_ERROR, NextClientError } from '../../../src/multichain/nextClientErrors';
 import { SendAddressInput } from '../../../src/screens/SendAddressInput';
 import AmountTextInput from '../../../src/components/AmountTextInput';
 import FeedbackModal from '../../../src/components/FeedbackModal';
@@ -337,6 +339,30 @@ describe('the transfer between chains', () => {
     });
     expect(renderer.root.findByType(FeedbackModal).props.text)
       .toBe(earlierTransferEndedText('Nothing left your wallet.'));
+  });
+
+  test('never calls an earlier transfer Hathor Next forgot settled: its HTR may have left', async () => {
+    const { store } = makeStore();
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={holdableNavigation()}
+          route={{ params: { amount: '500', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.ERROR,
+        error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN).message,
+        errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+        requestId: null,
+      }));
+    });
+    const { text } = renderer.root.findByType(FeedbackModal).props;
+    expect(text).toBe(earlierTransferForgottenText());
+    expect(text).toContain('may have left your wallet');
+    expect(text).not.toContain('settled');
   });
 
   test("names Hathor Network's native token by the symbol the fullnode reports", async () => {

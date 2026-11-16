@@ -142,6 +142,7 @@ const TRANSFER_CLEARED = {
   status: OPERATION_STATUS.IDLE,
   record: null,
   error: null,
+  errorCode: null,
   uncertainId: null,
   requestId: null,
 };
@@ -789,8 +790,10 @@ export function* onConnectSettingChanged({ payload }) {
 export function* onFeatureToggleUpdated() {
   // The backend for local testing has a flag of its own: when it turns on or off, Hathor Next
   // runs on another backend, and loads again there. The keys stay: they are the same on every
-  // backend, while the address carries each one's view key.
+  // backend, while the address carries each one's view key. A transfer signed without an answer
+  // is that backend's: the one of the backend the wallet is on now shows, and no other.
   yield call(syncDevBackend);
+  yield call(showUncertainTransfer);
   const config = yield select(selectSideChainConfig);
   if (connectedConfig && connectedConfig.backendUrl !== config?.backendUrl) {
     yield call(exitNext);
@@ -1017,6 +1020,7 @@ export function* resolveUncertainTransfer(bridge, uncertain, tries) {
           yield put(multichainTransferUpdate({
             status: OPERATION_STATUS.ERROR,
             error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT).message,
+            errorCode: NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT,
             uncertainId: null,
           }));
           return true;
@@ -1043,6 +1047,7 @@ export function* resolveUncertainTransfer(bridge, uncertain, tries) {
           yield put(multichainTransferUpdate({
             status: OPERATION_STATUS.ERROR,
             error: e.message,
+            errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
             uncertainId: null,
           }));
           return true;
@@ -1083,6 +1088,7 @@ export function* onTransferRequested({ payload }) {
       requestId,
       record: null,
       error: connectFailedText(),
+      errorCode: null,
     }));
     return;
   }
@@ -1091,10 +1097,13 @@ export function* onTransferRequested({ payload }) {
   if (pending) {
     bridge = yield call(currentBridge);
     const settled = yield call(resolveUncertainTransfer, bridge, pending, 1);
-    const status = yield select((state) => state.multichain.transfer.status);
-    // Settled as sent: that transfer is the outcome, shown as the earlier one's (its requestId
-    // isn't this request's), and a new one waits for the user.
-    if (!settled || status === OPERATION_STATUS.DONE) {
+    const { status, errorCode } = yield select((state) => state.multichain.transfer);
+    // Settled as sent, or forgotten (its HTR may have left the wallet): that transfer is the
+    // outcome, shown as the earlier one's (its requestId isn't this request's), and a new one
+    // waits for the user. Only one that never went through lets this one go on.
+    const forgotten = status === OPERATION_STATUS.ERROR
+      && errorCode === NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN;
+    if (!settled || status === OPERATION_STATUS.DONE || forgotten) {
       if (!settled) {
         yield put(multichainTransferUpdate({
           status: OPERATION_STATUS.UNCONFIRMED,
@@ -1110,6 +1119,7 @@ export function* onTransferRequested({ payload }) {
     requestId,
     record: null,
     error: null,
+    errorCode: null,
   }));
   try {
     bridge = bridge ?? (yield call(currentBridge));
@@ -1126,6 +1136,7 @@ export function* onTransferRequested({ payload }) {
       yield put(multichainTransferUpdate({
         status: OPERATION_STATUS.ERROR,
         error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT).message,
+        errorCode: NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT,
       }));
       return;
     }
@@ -1157,6 +1168,7 @@ export function* onTransferRequested({ payload }) {
     yield put(multichainTransferUpdate({
       status: OPERATION_STATUS.ERROR,
       error: userErrorText(e, transferFailedText),
+      errorCode: e?.code ?? null,
     }));
     return;
   }
