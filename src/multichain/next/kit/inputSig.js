@@ -8,7 +8,14 @@
 import { RistrettoPoint } from '@noble/curves/ed25519';
 import { randomBytes } from '@noble/hashes/utils';
 import { hashToScalar } from './hash';
-import { ORDER, bigintToBytesLE, bytesToBigintLE, concatBytes, modOrder } from './scalar';
+import {
+  ORDER,
+  asciiBytes,
+  bigintToBytesLE,
+  bytesToBigintLE,
+  concatBytes,
+  modOrder,
+} from './scalar';
 
 /**
  * The signatures of a transaction's transparent inputs and of its excess, ported from
@@ -49,8 +56,13 @@ export function signAuthority(x, msg, entropy = randomBytes(32)) {
   return signIn(AUTHORITY_DOMAIN, x, RistrettoPoint.BASE.multiply(x).toRawBytes(), msg, entropy);
 }
 
+// The nonce mixes the challenge's domain too: one secret's signatures of one message under two
+// domains (an input, and the same key as a token's authority) never share a nonce.
 function signIn(domain, p, key, msg, entropy) {
-  const k = hashToScalar('hathor-wallet/input-nonce/v1', [bigintToBytesLE(p), key, msg, entropy]);
+  const k = hashToScalar(
+    'hathor-wallet/input-nonce/v1',
+    [asciiBytes(domain), bigintToBytesLE(p), key, msg, entropy],
+  );
   if (k === 0n || p <= 0n) {
     throw new Error('Could not sign.');
   }

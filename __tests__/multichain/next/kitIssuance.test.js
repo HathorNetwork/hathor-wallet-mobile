@@ -242,3 +242,16 @@ describe('token authorities', () => {
       .toThrow(NonceBeyondReachError);
   });
 });
+
+describe('one secret signing one message as an input and as an authority', () => {
+  it('never uses one nonce for both: the domain is in the nonce too', () => {
+    const x = 1234567n;
+    const key = publicKeyOf(x);
+    const msg = new Uint8Array(32).fill(7);
+    const entropy = new Uint8Array(32).fill(9);
+    // Even with the same randomness, R differs: a shared nonce would give the secret away.
+    const asInput = signInput(x, key, msg, entropy);
+    const asAuthority = signAuthority(x, msg, entropy);
+    expect(bytesToHex(asInput.slice(0, 32))).not.toBe(bytesToHex(asAuthority.slice(0, 32)));
+  });
+});

@@ -110,9 +110,12 @@ export default function NextCreateTokenConfirmScreen() {
     });
   };
 
+  // Back to the Dashboard, with the creation's screens gone. navigate('Main') from here, above
+  // Main, would put a second Main on the stack (React Navigation 7) and leave this screen mounted
+  // under it.
   const exit = () => {
     dispatch(multichainNextCreateTokenReset());
-    NavigationService.navigate('Main', { screen: 'Home' });
+    NavigationService.resetToMain();
   };
 
   const icon = (source) => (
@@ -141,6 +144,15 @@ export default function NextCreateTokenConfirmScreen() {
           <FeedbackModal
             icon={<Spinner />}
             text={`${nextStatusLabel('unconfirmed')}. ${unconfirmedBody()}`}
+            onDismiss={exit}
+            action={<NewHathorButton title={t`Done`} onPress={exit} />}
+          />
+        );
+      case OPERATION_STATUS.EXPIRED:
+        return (
+          <FeedbackModal
+            icon={icon(errorIcon)}
+            text={`${nextStatusLabel('expired')}. ${t`The creation expired before the network got its signatures, so the token wasn't created. Nothing left your wallet and no fee was paid.`}`}
             onDismiss={exit}
             action={<NewHathorButton title={t`Done`} onPress={exit} />}
           />

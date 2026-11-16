@@ -321,8 +321,13 @@ describe('each check of a token creation, on its own', () => {
   });
 
   it('refuses a fee in another token than the native one', () => {
-    expect(refusedFor(forged(CLAIMS, { feeToken: 0, table: [OTHER_TOKEN] })))
+    expect(refusedFor(forged(CLAIMS, { feeToken: 0 })))
       .toBe('The fee is not paid in the native token.');
+  });
+
+  it('refuses a creation carrying a token table, which the network refuses', () => {
+    expect(refusedFor(forged(CLAIMS, { table: [OTHER_TOKEN] })))
+      .toBe('The creation carries a token table.');
   });
 
   it('refuses a fee other than the quoted one, or above what the user agreed to', () => {
@@ -373,10 +378,12 @@ describe('each check of a token creation, on its own', () => {
     }
   });
 
+  // A third token can only be named through the token table, which a creation never carries: the
+  // table's check refuses it first.
   it('refuses change in a token that is neither the created one nor the native one', () => {
     const outputs = withChange({ token: OTHER_TOKEN, tokenIndex: 0 });
     expect(refusedFor(forged(outputs, { table: [OTHER_TOKEN] })))
-      .toBe('An output of the token creation is in an unexpected token.');
+      .toBe('The creation carries a token table.');
   });
 
   it('refuses a supply other than the approved amount, though every output opens', () => {

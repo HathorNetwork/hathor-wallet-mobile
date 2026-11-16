@@ -46,6 +46,7 @@ import { createBridge } from '../multichain/bridge';
 import { CHAIN } from '../multichain/chains';
 import {
   getMultichainRolloutFlag,
+  getMultichainTokenCreateFeatureToggle,
   isSideChainAvailable,
   isSideChainConnected,
   selectMultichainNetwork,
@@ -143,6 +144,9 @@ export const connectFailedText = () => t`Couldn't connect to Hathor Next.`;
 
 /** What the user is told when a transfer fails for a reason that has no words of its own. */
 export const transferFailedText = () => t`The transfer failed.`;
+
+/** What the user is told when a creation fails for a reason that has no words of its own. */
+export const creationFailedText = () => t`The token couldn't be created.`;
 
 // The failures of a load that say what to do: a network that changed under the app (update it),
 // and a clock the wallet service refused (set it).
@@ -866,22 +870,26 @@ export function* onNextSendRequested({ payload }) {
  *
  * @param {string} sendId
  */
-function* awaitSendOutcome(sendId) {
-  const settled = (state) => SEND_SETTLED.includes(state.multichain.send.status);
+function* awaitSendOutcome(sendId, {
+  stateKey = 'send',
+  updateType = types.MULTICHAIN_NEXT_SEND_UPDATE,
+  update = multichainNextSendUpdate,
+} = {}) {
+  const settled = (state) => SEND_SETTLED.includes(state.multichain[stateKey].status);
   if (yield select(settled)) {
     return;
   }
   const { timeout } = yield race({
-    outcome: take((action) => action.type === types.MULTICHAIN_NEXT_SEND_UPDATE
+    outcome: take((action) => action.type === updateType
       && SEND_SETTLED.includes(action.payload?.status)),
     timeout: delay(SEND_SETTLE_MS),
   });
   if (!timeout) {
     return;
   }
-  const send = yield select((state) => state.multichain.send);
-  if (send.sendId === sendId && !SEND_SETTLED.includes(send.status)) {
-    yield put(multichainNextSendUpdate({ status: OPERATION_STATUS.UNCONFIRMED }));
+  const current = yield select((state) => state.multichain[stateKey]);
+  if (current.sendId === sendId && !SEND_SETTLED.includes(current.status)) {
+    yield put(update({ status: OPERATION_STATUS.UNCONFIRMED }));
   }
 }
 
@@ -893,10 +901,19 @@ function* awaitSendOutcome(sendId) {
 export function* onNextCreateTokenRequested({ payload }) {
   const { symbol, name, amount, draftId, pinCode } = payload;
   const current = yield select((state) => state.multichain.createToken);
-  if (current.draftId === draftId || SEND_IN_FLIGHT.includes(current.status)) {
+  if (current.draftId === draftId || sentDrafts.has(draftId)
+    || SEND_IN_FLIGHT.includes(current.status)) {
     log.error('A Hathor Next token creation was asked for twice, or during another: ignored.');
     return;
   }
+  // Only where its flag is on and the side chain connected: a request from anywhere else creates
+  // nothing. A backend that doesn't create tokens refuses in the client.
+  if (!(yield select(getMultichainTokenCreateFeatureToggle))
+    || !(yield select(isSideChainConnected))) {
+    log.error('A Hathor Next token creation was asked for where none can be made.');
+    return;
+  }
+  sentDrafts.add(draftId);
   yield put(multichainNextCreateTokenUpdate({
     status: OPERATION_STATUS.SENDING,
     draftId,
@@ -931,9 +948,16 @@ export function* onNextCreateTokenRequested({ payload }) {
     }
     yield put(multichainNextCreateTokenUpdate({
       status: OPERATION_STATUS.ERROR,
-      error: e.message,
+      error: isExpectedPasskeyError(e) ? e.message : userErrorText(e, creationFailedText),
     }));
+    return;
   }
+  const { sendId } = yield select((state) => state.multichain.createToken);
+  yield call(awaitSendOutcome, sendId, {
+    stateKey: 'createToken',
+    updateType: types.MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE,
+    update: multichainNextCreateTokenUpdate,
+  });
 }
 
 // How often, and how many times, a transfer signed without an answer is asked about at first.

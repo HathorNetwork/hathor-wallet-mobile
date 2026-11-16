@@ -26,13 +26,13 @@ import InputLabel from '../../components/InputLabel';
 import OfflineBar from '../../components/OfflineBar';
 import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
 import { NEXT_DECIMAL_PLACES } from '../../multichain/chains';
-import { renderNextValue } from '../../multichain/amount';
+import { amountTextError, renderNextValue } from '../../multichain/amount';
 import { syncingSendBody } from '../../multichain/content';
 import { selectSideChainConfig } from '../../multichain/gating';
 import { getKeyboardAvoidingViewTopDistance } from '../../utils';
 import { useNavigation } from '../../hooks/navigation';
 import { COLORS } from '../../styles/themes';
-import { selectNextSendFee } from './NextSendAmountInput';
+import { feeShortText, selectNextSendFee } from './NextSendAmountInput';
 
 /**
  * The longest symbol and name, as the Hathor Next wallet and its web wallet take them, and the
@@ -42,6 +42,11 @@ export const MAX_SYMBOL = 12;
 export const MAX_NAME = 48;
 const MAX_SYMBOL_BYTES = 16;
 const MAX_NAME_BYTES = 64;
+// The most of a token there can be: a u64, as the network's amounts are.
+const MAX_SUPPLY = 2n ** 64n - 1n;
+// The native tokens' own names: a token named after one could pass for it on a Dashboard.
+const NATIVE_NAMES = ['hathor'];
+const NATIVE_SYMBOLS = ['HTR'];
 
 /**
  * What creating a token on Hathor Next makes public: everything about it, by the protocol. A
@@ -65,7 +70,12 @@ export function tokenKeysNote() {
  * @param {{ name: string, symbol: string, amount: bigint|null }} form
  * @returns {string|null}
  */
-export function tokenFormError({ name, symbol, amount }) {
+export function tokenFormError({ name, symbol, amount }, native = {}) {
+  const nativeSymbols = [...NATIVE_SYMBOLS, native.symbol].filter(Boolean);
+  const nativeNames = [...NATIVE_NAMES, native.name?.toLowerCase()].filter(Boolean);
+  if (nativeSymbols.includes(symbol) || nativeNames.includes(name?.trim().toLowerCase())) {
+    return t`This is a native token's name or symbol. Choose another, so your token can't be taken for it.`;
+  }
   if (symbol && !/^[A-Z0-9]*$/.test(symbol)) {
     return t`Symbols use letters and numbers only.`;
   }
@@ -77,6 +87,9 @@ export function tokenFormError({ name, symbol, amount }) {
   }
   if (amount !== null && amount <= 0n) {
     return t`Invalid amount`;
+  }
+  if (amount !== null && amount > MAX_SUPPLY) {
+    return t`That is more than a token can have.`;
   }
   return null;
 }
@@ -104,7 +117,12 @@ export default function NextCreateTokenScreen() {
   const [error, setError] = useState(null);
 
   const feeText = renderNextValue(fee, hathorDecimalPlaces);
-  const formError = tokenFormError({ name, symbol, amount });
+  // Counted as it is cut: by whole characters.
+  const nameLength = [...name].length;
+  const formError = tokenFormError(
+    { name, symbol, amount },
+    { name: config?.nativeTokenName, symbol: config?.nativeTokenSymbol },
+  );
   const ready = name.length > 0 && symbol.length > 0 && amount !== null && amount > 0n
     && !formError && !sweeping;
 
@@ -113,7 +131,7 @@ export default function NextCreateTokenScreen() {
       return;
     }
     if (fee > nativeAvailable) {
-      setError(t`The network fee is paid in ${nativeSymbol}. You need ${feeText} ${nativeSymbol} on Hathor Next.`);
+      setError(feeShortText(feeText, nativeSymbol));
       return;
     }
     navigation.navigate('NextCreateTokenConfirm', {
@@ -141,9 +159,10 @@ export default function NextCreateTokenScreen() {
             <SimpleInput
               label={t`Token name`}
               autoFocus
-              subtitle={t`${name.length}/${MAX_NAME} characters`}
+              subtitle={t`${nameLength}/${MAX_NAME} characters`}
+              // Cut at a whole character: an emoji is two code units, never cut in half.
               onChangeText={(text) => {
-                setName(text.slice(0, MAX_NAME));
+                setName([...text].slice(0, MAX_NAME).join(''));
                 setError(null);
               }}
               value={name}
@@ -169,9 +188,10 @@ export default function NextCreateTokenScreen() {
             <View style={styles.amountRow}>
               <AmountTextInput
                 onAmountUpdate={(text, value) => {
+                  const textError = amountTextError(text);
                   setAmountText(text);
-                  setAmount(value);
-                  setError(null);
+                  setAmount(textError ? null : value);
+                  setError(textError);
                 }}
                 value={amountText}
                 decimalPlaces={NEXT_DECIMAL_PLACES}

@@ -107,13 +107,6 @@ export function getMultichainDevBackendFeatureToggle(state) {
 }
 
 /**
- * The backend for local testing that is in force: the one set in Settings, and only while its
- * flag is on. A saved one waits, unused, while the flag is off.
- *
- * @param {Object} state Redux state
- * @returns {{ url: string, pins: Object }|null}
- */
-/**
  * Whether token creation on Hathor Next may show: its own flag, under the multichain one.
  *
  * @param {Object} state
@@ -140,6 +133,13 @@ export function canCreateNextTokens(state) {
     && state.multichain.next.canCreateTokens === true;
 }
 
+/**
+ * The backend for local testing that is in force: the one set in Settings, and only while its
+ * flag is on. A saved one waits, unused, while the flag is off.
+ *
+ * @param {Object} state Redux state
+ * @returns {{ url: string, pins: Object }|null}
+ */
 export function selectDevBackend(state) {
   if (!getMultichainDevBackendFeatureToggle(state)) {
     return null;

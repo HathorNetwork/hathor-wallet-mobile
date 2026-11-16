@@ -187,6 +187,39 @@ describe('the token form', () => {
   test('takes a well-formed token', () => {
     expect(tokenFormError({ name: 'App Test Token', symbol: 'ATT', amount: 1n })).toBeNull();
   });
+
+  test.each([
+    ["HTR's symbol", { name: 'Token', symbol: 'HTR', amount: 1n }],
+    ["HTR's name", { name: 'Hathor', symbol: 'ATT', amount: 1n }],
+    ["HTR's name in other letters", { name: 'HATHOR', symbol: 'ATT', amount: 1n }],
+    ["the side chain native token's symbol", { name: 'Token', symbol: 'NHTR', amount: 1n }],
+  ])('refuses %s, so the token can\'t pass for a native one', (_, form) => {
+    expect(tokenFormError(form, { name: 'new HTR', symbol: 'NHTR' }))
+      .toContain("native token's name or symbol");
+  });
+
+  test('refuses a supply above the most a token can have, before any PIN', () => {
+    expect(tokenFormError({ name: 'Token', symbol: 'ATT', amount: 2n ** 64n }))
+      .toBe('That is more than a token can have.');
+    expect(tokenFormError({ name: 'Token', symbol: 'ATT', amount: 2n ** 64n - 1n })).toBeNull();
+  });
+
+  test('cuts a long name at a whole character, never inside an emoji', async () => {
+    const { renderer } = await fill({ name: `${'a'.repeat(47)}😀😀` });
+    const [nameInput] = renderer.root.findAllByType(SimpleInput);
+    expect([...nameInput.props.value]).toHaveLength(48);
+    expect(nameInput.props.value.endsWith('😀')).toBe(true);
+  });
+
+  test('refuses an amount with two separators, rather than create less than it shows', async () => {
+    const { renderer, navigation } = await fill({ amount: null });
+    await act(async () => {
+      renderer.root.findByType(AmountTextInput).props.onAmountUpdate('1.234,56', 123400000n);
+    });
+    expect(textOf(renderer)).toContain('Use only one decimal separator.');
+    expect(button(renderer, 'Next').props.disabled).toBe(true);
+    expect(navigation.navigate).not.toHaveBeenCalled();
+  });
 });
 
 describe('the token confirmation', () => {
@@ -263,5 +296,32 @@ describe('the token confirmation', () => {
     });
     expect(button(renderer, 'Create token').props.disabled).toBe(true);
     expect(textOf(renderer)).toContain('An earlier token creation is still on its way');
+  });
+});
+
+describe('a token creation that expired', () => {
+  test('says the token wasn\'t created and nothing left the wallet, never "turned down"', async () => {
+    const navigation = {
+      navigate: jest.fn(), goBack: jest.fn(), addListener: jest.fn(() => jest.fn()),
+    };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({
+      params: { name: 'App Test Token', symbol: 'ATT', amount: '100000000000' },
+    });
+    const { store, actions } = makeStore();
+    const renderer = await mount(store, <NextCreateTokenConfirmScreen />);
+    await act(async () => { button(renderer, 'Create token').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([name]) => name === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    const [request] = actions
+      .filter((a) => a.type === types.MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED);
+    await act(async () => {
+      store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.EXPIRED, draftId: request.payload.draftId,
+      }));
+    });
+    const [outcome] = renderer.root.findAllByType(FeedbackModal);
+    expect(outcome.props.text).toMatch(/^Expired\. The creation expired before the network got its signatures/);
+    expect(outcome.props.text).not.toMatch(/turned it down/);
   });
 });

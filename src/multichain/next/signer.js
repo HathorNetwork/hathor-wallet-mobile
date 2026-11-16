@@ -276,6 +276,11 @@ export function checkCreateRequest(request, {
   if (tx.kind !== 'token-create' || request.issuance?.kind !== 'token-create') {
     refuse('The transaction is not a token creation.');
   }
+  // Its outputs pay the token it creates and the native one, neither of which the table lists: a
+  // table makes a creation the network refuses, whose inputs would stay held until then.
+  if (tx.table.length !== 0) {
+    refuse('The creation carries a token table.');
+  }
   const signingHash = signingHashOf(bytes, tx);
   // Nothing hidden (every input public, every output transparent) closes with no excess; anything
   // else must, and its signature over these bytes must hold.

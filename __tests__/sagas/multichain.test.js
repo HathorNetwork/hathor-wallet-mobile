@@ -42,6 +42,7 @@ import {
   multichainNextKeysDerived,
   multichainNextKeysUnlockRequested,
   multichainNextCreateTokenRequested,
+  multichainNextCreateTokenReset,
   multichainNextSendRequested,
   multichainNextSendReset,
   multichainNextUpdate,
@@ -60,6 +61,7 @@ import {
 import {
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
+  MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE,
   multichainKeyMap,
   PRE_SETTINGS_MAINNET,
   PRE_SETTINGS_NEXT_DEVNET,
@@ -131,7 +133,10 @@ function setup(options = {}) {
   task = runSaga({ channel, dispatch, getState: () => state }, saga);
   dispatch(networkSettingsUpdateState(networkSettings));
   if (toggles) {
-    dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: flag }));
+    dispatch(setFeatureToggles({
+      [MULTICHAIN_FEATURE_TOGGLE]: flag,
+      [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: flag,
+    }));
     dispatch(featureToggleInitialized());
   }
   dispatch(setServerInfo({ decimal_places: 2 }));
@@ -1277,6 +1282,62 @@ describe('a transfer that went through', () => {
     expect(env.getState().multichain.transfer).toMatchObject({
       status: OPERATION_STATUS.ERROR,
       error: 'The transfer failed.',
+    });
+  });
+});
+
+describe('a Hathor Next token creation, after review', () => {
+  const draft = (draftId) => multichainNextCreateTokenRequested({
+    symbol: 'ATT', name: 'App Test Token', amount: 100000000n, draftId, pinCode: PIN,
+  });
+
+  test('creates nothing while its own flag is off', async () => {
+    const env = setup();
+    await connect(env);
+    env.dispatch(setFeatureToggles({
+      [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: false,
+    }));
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-off'));
+    await wait(1000);
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  test('is never created twice, even once its state was cleared', async () => {
+    const env = setup();
+    await connect(env);
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-once'));
+    await wait(1000);
+    // The confirm screen closed and cleared the creation, but stayed mounted.
+    env.dispatch(multichainNextCreateTokenReset());
+    env.dispatch(draft('token-once'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('refused for a reason without words of its own shows translated words', async () => {
+    const env = setup();
+    await connect(env);
+    jest.spyOn(getNextClient(), 'createToken').mockRejectedValue(new Error('Network request failed'));
+    env.dispatch(draft('token-bug'));
+    await wait(1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      error: "The token couldn't be created.",
+    });
+  });
+
+  test('is shown as not settled yet when no outcome comes, so the user can leave', async () => {
+    const env = setup();
+    await connect(env);
+    jest.spyOn(getNextClient(), 'createToken')
+      .mockResolvedValue({ sendId: 'lost', tokenId: 'ab'.repeat(32) });
+    jest.spyOn(getNextClient(), 'getCreation').mockReturnValue(null);
+    env.dispatch(draft('token-lost'));
+    await wait(SEND_SETTLE_MS + 1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.UNCONFIRMED, sendId: 'lost',
     });
   });
 });
