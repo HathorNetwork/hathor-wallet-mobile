@@ -81,7 +81,7 @@ msgstr "CRIAR TOKEN DE TAXA"
 #: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:95
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:190
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:219
 #: src/screens/Multichain/NextCreateTokenScreen.js:148 src/utils.js:889
 msgid "CREATE TOKEN"
 msgstr "CRIAR TOKEN"
@@ -565,13 +565,13 @@ msgid "Amount of ${ name }"
 msgstr "Quantidade de ${ name }"
 
 #: src/screens/CreateTokenConfirm.js:272
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:194
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:223
 #: src/screens/Multichain/NextCreateTokenScreen.js:160
 msgid "Token name"
 msgstr "Nome do token"
 
 #: src/screens/CreateTokenConfirm.js:278 src/screens/CreateTokenSymbol.js:71
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:196
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:225
 #: src/screens/Multichain/NextCreateTokenScreen.js:172
 msgid "Token symbol"
 msgstr "Símbolo do token"
@@ -587,14 +587,14 @@ msgstr "Depósito"
 #: src/screens/CreateTokenConfirm.js:293
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:236
 #: src/screens/Multichain/ChainTransferScreen.js:256
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:201
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:230
 #: src/screens/Multichain/NextSendConfirmScreen.js:277
 #: src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
 msgstr "Taxa de Rede"
 
 #: src/screens/CreateTokenConfirm.js:302
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:216
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:245
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -2098,11 +2098,12 @@ msgstr "Transferindo para a Hathor Next…"
 #: src/components/AmountInputAccessory.js:105
 #: src/components/Multichain/TransferDetailsModal.js:105
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:179
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:139
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:148
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:157
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:169
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:178
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:151
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:168
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:177
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:186
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:198
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:207
 #: src/screens/Multichain/NextSendConfirmScreen.js:208
 #: src/screens/Multichain/NextSendConfirmScreen.js:217
 #: src/screens/Multichain/NextSendConfirmScreen.js:226
@@ -2201,7 +2202,7 @@ msgstr "Usar meu endereço da Hathor Next"
 
 #: src/components/Reown/CreateTokenRequest.js:103
 #: src/screens/Multichain/ChainTransferScreen.js:237
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:198
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:227
 #: src/screens/Multichain/NextSendConfirmScreen.js:263
 msgid "Amount"
 msgstr "Quantidade"
@@ -2214,20 +2215,30 @@ msgstr "Você receberá"
 msgid "HATHOR NEXT (LOCAL BACKEND)"
 msgstr "HATHOR NEXT (BACKEND LOCAL)"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:105
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:46
+msgid ""
+"The token creation was sent, but this screen lost track of it when the app "
+"left Hathor Next. Check your tokens on Hathor Next before you create this "
+"one again."
+msgstr ""
+"A criação do token foi enviada, mas esta tela deixou de acompanhá-la quando "
+"o app saiu da Hathor Next. Confira seus tokens na Hathor Next antes de criar "
+"este de novo."
+
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:123
 msgid "Enter your 6-digit pin to create the token"
 msgstr "Digite seu PIN de 6 dígitos para criar o token"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:106
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:124
 msgid "Create the token"
 msgstr "Criar o token"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:129
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:158
 #, javascript-format
 msgid "Creating ${ symbol } on Hathor Next…"
 msgstr "Criando ${ symbol } na Hathor Next…"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:135
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:164
 #, javascript-format
 msgid ""
 "${ symbol } was created on Hathor Next, and its whole supply is in your "
@@ -2236,11 +2247,11 @@ msgstr ""
 "${ symbol } foi criado na Hathor Next, e todo o seu suprimento está na sua "
 "carteira."
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:136
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:165
 msgid "Token id: ${ creation.tokenId }"
 msgstr "Id do token: ${ creation.tokenId }"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:155
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:184
 msgid ""
 "The creation expired before the network got its signatures, so the token "
 "wasn't created. Nothing left your wallet and no fee was paid."
@@ -2248,16 +2259,16 @@ msgstr ""
 "A criação expirou antes de a rede receber as assinaturas, então o token não "
 "foi criado. Nada saiu da sua carteira e nenhuma taxa foi paga."
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:165
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:194
 msgid "The token wasn't created."
 msgstr "O token não foi criado."
 
 #: src/sagas/multichain.js:162
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:176
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:205
 msgid "The token couldn't be created."
 msgstr "Não foi possível criar o token."
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:206
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:235
 msgid ""
 "An earlier token creation is still on its way. You can create another once "
 "it settles."
@@ -2266,7 +2277,7 @@ msgstr ""
 "depois que ela for concluída."
 
 #: src/components/PrivacyModeCard.js:68
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:211
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:240
 msgid "Public"
 msgstr "Público"
 

@@ -39,6 +39,12 @@ import { publicTokenNote } from './NextCreateTokenScreen';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
+/**
+ * What the screen says of a creation it saw sent, then lost track of when the app left Hathor
+ * Next.
+ */
+export const creationLostText = () => t`The token creation was sent, but this screen lost track of it when the app left Hathor Next. Check your tokens on Hathor Next before you create this one again.`;
+
 let draftCount = 0;
 
 const newDraftId = () => {
@@ -70,20 +76,32 @@ export default function NextCreateTokenConfirmScreen() {
   const hathorDecimalPlaces = useSelector((state) => state.serverInfo?.decimal_places ?? 2);
   const draftId = useRef(newDraftId()).current;
   const [authorized, setAuthorized] = useState(false);
+  // Whether this draft was seen on its way. Gone from the state after that, it was sent and its
+  // outcome is no longer followed here: the app left Hathor Next (its flag turned off, or its
+  // backend changed). It is never sent again.
+  const [sent, setSent] = useState(false);
+  const leaving = useRef(false);
   const earlierOnItsWay = creation.draftId !== draftId && SEND_IN_FLIGHT.includes(creation.status);
   const canCreate = !authorized && online && !sweeping && !earlierOnItsWay;
   const nativeSymbol = config?.nativeTokenSymbol ?? 'HTR';
   const render = (value, unit) => `${renderNextValue(value, hathorDecimalPlaces)} ${unit}`;
   const outcome = creation.draftId === draftId ? creation.status : OPERATION_STATUS.IDLE;
+  const lost = sent && !leaving.current && creation.draftId !== draftId;
   useHoldScreen(navigation, SEND_IN_FLIGHT.includes(outcome));
 
   useEffect(() => () => {
     dispatch(multichainNextCreateTokenReset());
   }, []);
 
-  // A passkey dismissed in the saga leaves the draft: Create is on again.
+  // A passkey dismissed in the saga leaves this draft idle: Create is on again.
   useEffect(() => {
-    if (authorized && creation.draftId === null && creation.status === OPERATION_STATUS.IDLE) {
+    if (creation.draftId !== draftId) {
+      return;
+    }
+    if (SEND_IN_FLIGHT.includes(creation.status)) {
+      setSent(true);
+    } else if (authorized && creation.status === OPERATION_STATUS.IDLE) {
+      setSent(false);
       setAuthorized(false);
     }
   }, [creation.draftId, creation.status]);
@@ -114,6 +132,7 @@ export default function NextCreateTokenConfirmScreen() {
   // Main, would put a second Main on the stack (React Navigation 7) and leave this screen mounted
   // under it.
   const exit = () => {
+    leaving.current = true;
     dispatch(multichainNextCreateTokenReset());
     NavigationService.resetToMain();
   };
@@ -123,6 +142,16 @@ export default function NextCreateTokenConfirmScreen() {
   );
 
   const renderOutcome = () => {
+    if (lost) {
+      return (
+        <FeedbackModal
+          icon={icon(errorIcon)}
+          text={creationLostText()}
+          onDismiss={exit}
+          action={<NewHathorButton title={t`Done`} onPress={exit} />}
+        />
+      );
+    }
     switch (outcome) {
       case OPERATION_STATUS.SENDING:
       case 'pending':

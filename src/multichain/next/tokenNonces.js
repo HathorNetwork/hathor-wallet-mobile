@@ -24,9 +24,9 @@ import { nextNonce } from './kit/authority';
  * kept apart, as a floor, so a creation the network refused, or one the registry never lists,
  * never brings a signed nonce round again.
  *
- * Saved outside the `wallet:` keys, unlike the sign-once ledger: a wallet reset that brings the
- * same words back keeps it, as a nonce signed before and used again costs two tokens their
- * privacy.
+ * A wallet reset clears it (onResetWallet), as it does the rest of the wallet: its key names the
+ * Hathor Next wallet, whose id the wallet's address gives away. What it held is mostly on chain:
+ * a restore finds every listed token again in the registry's scan, here or on another phone.
  *
  * @param {{ getItem: Function, setItemAsync: Function }} storage A durable write is awaited
  * @param {string} key

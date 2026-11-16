@@ -91,6 +91,7 @@ function fakeBackend({
   createStatus = 200,
   request = signRequest(),
   onRegistry = null,
+  amountWidth = null,
 } = {}) {
   const calls = [];
   let signatures = null;
@@ -114,6 +115,7 @@ function fakeBackend({
           genesis_ms: 0,
           epoch_ms: 500,
           send_fee: CASE.fee,
+          ...(amountWidth ? { amount_width: amountWidth } : {}),
         },
         issuance,
       });
@@ -159,7 +161,7 @@ function fakeBackend({
   return { fetchImpl, calls, signatures: () => signatures };
 }
 
-async function connected(backend, storage = memoryStorage()) {
+async function connected(backend, storage = memoryStorage(), config = CONFIG) {
   const client = createBackendNextClient({
     fetchImpl: backend.fetchImpl,
     WebSocketImpl: null,
@@ -167,7 +169,7 @@ async function connected(backend, storage = memoryStorage()) {
     sendPollMs: 5,
   });
   await client.prepareKeys({ words: derivation.mnemonic });
-  await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+  await client.connect({ network: 'privatenet', config, birthday: 'genesis' });
   return client;
 }
 
@@ -343,6 +345,17 @@ describe('a token created on Hathor Next through the backend', () => {
     expect(backend.signatures()).toBeNull();
     expect(backend.calls.some((c) => c.method === 'DELETE' && c.path === '/v1/sends/create-1'))
       .toBe(true);
+    expect(nonceRecord(storage)).toEqual({ reserved: [], signedFloor: null });
+  });
+
+  it('holds a creation to the width pinned for the network: another is refused, nothing signed', async () => {
+    // The vector's creation carries u64 amounts; this network is pinned at u128.
+    const backend = fakeBackend({ amountWidth: 'u128' });
+    const storage = memoryStorage();
+    client = await connected(backend, storage, { ...CONFIG, amountWidth: 'u128' });
+    await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_REFUSED });
+    expect(backend.signatures()).toBeNull();
     expect(nonceRecord(storage)).toEqual({ reserved: [], signedFloor: null });
   });
 

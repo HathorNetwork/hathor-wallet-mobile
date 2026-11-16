@@ -676,8 +676,9 @@ describe('a Hathor Next token creation', () => {
     env.dispatch(draft('token-2'));
     await wait(1000);
     expect(createSpy).toHaveBeenCalledTimes(1);
+    // The draft stays named, idle: its screen turns Create on again.
     expect(env.getState().multichain.createToken).toMatchObject({
-      status: OPERATION_STATUS.IDLE, draftId: null,
+      status: OPERATION_STATUS.IDLE, draftId: 'token-2',
     });
   });
 
@@ -1049,6 +1050,7 @@ describe('a wallet reset', () => {
   test('clears the transfer state and the sign-once ledgers saved before outside the wallet\'s keys', async () => {
     STORE.setItem('multichain:nextSigned:1003:abcd', { entries: [] });
     STORE.setItem('multichain:nextSigned:1777:ef01', { entries: [] });
+    STORE.setItem('multichain:nextTokenNonces:1777:ef01', { reserved: [3], signedFloor: 2 });
     const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
     env.dispatch(multichainTransferUpdate({
       status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1',
@@ -1057,6 +1059,8 @@ describe('a wallet reset', () => {
     await wait(10);
     expect(STORE.getItem('multichain:nextSigned:1003:abcd')).toBeNull();
     expect(STORE.getItem('multichain:nextSigned:1777:ef01')).toBeNull();
+    // Its key names the Hathor Next wallet reset, and so its address.
+    expect(STORE.getItem('multichain:nextTokenNonces:1777:ef01')).toBeNull();
     expect(env.getState().multichain.transfer).toMatchObject({
       status: OPERATION_STATUS.IDLE, uncertainId: null,
     });
@@ -1606,7 +1610,7 @@ describe('a Hathor Next token creation, after review', () => {
     env.dispatch(draft('token-passkey'));
     await wait(10);
     expect(env.getState().multichain.createToken).toMatchObject({
-      status: OPERATION_STATUS.IDLE, draftId: null,
+      status: OPERATION_STATUS.IDLE, draftId: 'token-passkey',
     });
     // Nothing was signed: the same draft goes when tapped again.
     env.dispatch(draft('token-passkey'));

@@ -847,10 +847,12 @@ export function* onResetWallet() {
   yield call(exitNext, { dropKeys: true });
   yield put(multichainConnectedNetworksSet({}));
   yield put(multichainTransferUpdate(TRANSFER_CLEARED));
-  // The sign-once ledgers saved before under keys outside the wallet's, of any wallet or network:
-  // the reset sweeps only the `wallet:` keys.
+  // What is saved under keys outside the wallet's, of any wallet or network, which the reset's
+  // sweep of the `wallet:` keys leaves: the sign-once ledgers saved before, and the token-creation
+  // nonces. Each key names the Hathor Next wallet, and so the address, of the wallet reset.
   Object.keys(STORE.hathorMemoryStorage ?? {})
-    .filter((key) => key.startsWith('multichain:nextSigned:'))
+    .filter((key) => key.startsWith('multichain:nextSigned:')
+      || key.startsWith('multichain:nextTokenNonces:'))
     .forEach((key) => STORE.removeItem(key));
 }
 
@@ -1004,8 +1006,9 @@ function* awaitSendOutcome(sendId, {
 export function* onNextCreateTokenRequested({ payload }) {
   const { symbol, name, amount, draftId, pinCode } = payload;
   const current = yield select((state) => state.multichain.createToken);
-  if (current.draftId === draftId || sentDrafts.has(draftId)
-    || SEND_IN_FLIGHT.includes(current.status)) {
+  // A draft whose passkey was dismissed is idle again, and goes when asked again.
+  const again = current.draftId === draftId && current.status !== OPERATION_STATUS.IDLE;
+  if (again || sentDrafts.has(draftId) || SEND_IN_FLIGHT.includes(current.status)) {
     log.error('A Hathor Next token creation was asked for twice, or during another: ignored.');
     return;
   }
@@ -1052,8 +1055,9 @@ export function* onNextCreateTokenRequested({ payload }) {
   } catch (e) {
     if (e instanceof PasskeyCancelledError) {
       // Nothing happened: the form is as it was, and Create sends this draft when tapped again.
+      // The draft stays named, idle: that, and nothing else, turns its screen's Create on again.
       sentDrafts.delete(draftId);
-      yield put(multichainNextCreateTokenUpdate({ status: OPERATION_STATUS.IDLE, draftId: null }));
+      yield put(multichainNextCreateTokenUpdate({ status: OPERATION_STATUS.IDLE, draftId }));
       return;
     }
     if (!isExpectedPasskeyError(e)) {

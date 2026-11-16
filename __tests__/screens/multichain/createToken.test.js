@@ -30,7 +30,11 @@ import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { reducer } from '../../../src/reducers/reducer';
-import { multichainNextCreateTokenUpdate, types } from '../../../src/actions';
+import {
+  multichainNextCreateTokenUpdate,
+  multichainNextReset,
+  types,
+} from '../../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_FEATURE_TOGGLE,
@@ -41,7 +45,10 @@ import { STORE } from '../../../src/store';
 import NextCreateTokenScreen, {
   tokenFormError,
 } from '../../../src/screens/Multichain/NextCreateTokenScreen';
-import NextCreateTokenConfirmScreen from '../../../src/screens/Multichain/NextCreateTokenConfirmScreen';
+import NextCreateTokenConfirmScreen, {
+  creationLostText,
+} from '../../../src/screens/Multichain/NextCreateTokenConfirmScreen';
+import NavigationService from '../../../src/NavigationService';
 import SimpleInput from '../../../src/components/SimpleInput';
 import AmountTextInput from '../../../src/components/AmountTextInput';
 import FeedbackModal from '../../../src/components/FeedbackModal';
@@ -287,6 +294,49 @@ describe('the token confirmation', () => {
     const modal = renderer.root.findByType(FeedbackModal);
     expect(modal.props.text).toContain('ATT was created on Hathor Next');
     expect(modal.props.text).toContain('ab'.repeat(32));
+  });
+
+  // Authorized with the PIN: the draft the screen asked the saga to create.
+  async function authorize({ renderer, navigation, actions }) {
+    await act(async () => { button(renderer, 'Create token').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([route]) => route === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    return actions.find((a) => a.type === types.MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED)
+      .payload.draftId;
+  }
+
+  test('turns Create on again when the passkey was dismissed: nothing was sent', async () => {
+    const screen = await confirm();
+    const draftId = await authorize(screen);
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.SENDING, draftId,
+      }));
+    });
+    // The saga gives the draft back, idle.
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.IDLE, draftId,
+      }));
+    });
+    expect(button(screen.renderer, 'Create token').props.disabled).toBe(false);
+    expect(screen.renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+  });
+
+  test('keeps Create off for a draft sent before the app left Hathor Next, and says so', async () => {
+    const screen = await confirm();
+    const draftId = await authorize(screen);
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({ status: 'pending', draftId }));
+    });
+    // The flag turned off, or the backend changed: Hathor Next's state is gone, creation and all.
+    await act(async () => { screen.store.dispatch(multichainNextReset()); });
+    // A tap would be dropped: the saga never sends a draft twice.
+    expect(button(screen.renderer, 'Create token').props.disabled).toBe(true);
+    const modal = screen.renderer.root.findByType(FeedbackModal);
+    expect(modal.props.text).toBe(creationLostText());
+    await act(async () => { modal.props.action.props.onPress(); });
+    expect(NavigationService.resetToMain).toHaveBeenCalled();
   });
 
   test('waits while an earlier creation is on its way', async () => {
