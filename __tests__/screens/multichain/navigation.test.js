@@ -25,7 +25,7 @@ jest.mock('../../../src/components/QRCodeReader', () => {
 
 /* eslint-disable import/first */
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, TextInput } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
@@ -42,6 +42,7 @@ import { STORE } from '../../../src/store';
 import NavigationService from '../../../src/NavigationService';
 import ChainTransferConfirmScreen from '../../../src/screens/Multichain/ChainTransferConfirmScreen';
 import UnifiedQRScanner from '../../../src/screens/UnifiedQRScanner';
+import { SendAddressInput } from '../../../src/screens/SendAddressInput';
 import QRCodeReader from '../../../src/components/QRCodeReader';
 import FeedbackModal from '../../../src/components/FeedbackModal';
 import NewHathorButton from '../../../src/components/NewHathorButton';
@@ -59,6 +60,7 @@ let pinCallback = null;
 beforeEach(() => {
   jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(false);
   pinCallback = null;
+  addressStep = SendAddressInputStub;
 });
 
 afterEach(async () => {
@@ -103,6 +105,9 @@ const PinScreenStub = ({ navigation, route }) => {
 const Home = () => <Text>HOME</Text>;
 const SendAddressInputStub = ({ route }) => <Text>{`SEND TO ${route.params?.address ?? ''}`}</Text>;
 const SendAmountInputStub = () => <Text>AMOUNT</Text>;
+// Send's address step: the stub, or the app's own where a test needs what it keeps typed.
+let addressStep = SendAddressInputStub;
+const AddressStep = (props) => React.createElement(addressStep, props);
 
 // The app's shape: a root stack whose 'App' holds Main (a navigator of its own, with Home and
 // Send, itself a stack) and the screens opened above it. NavigationService.resetToMain resets to
@@ -110,8 +115,9 @@ const SendAmountInputStub = () => <Text>AMOUNT</Text>;
 const SendStack = createStackNavigator();
 const Send = () => (
   <SendStack.Navigator screenOptions={{ headerShown: false }}>
-    <SendStack.Screen name='SendAddressInput' component={SendAddressInputStub} />
+    <SendStack.Screen name='SendAddressInput' component={AddressStep} />
     <SendStack.Screen name='SendAmountInput' component={SendAmountInputStub} />
+    <SendStack.Screen name='NextSendAmountInput' component={SendAmountInputStub} />
   </SendStack.Navigator>
 );
 const MainStack = createStackNavigator();
@@ -257,5 +263,29 @@ describe('a Hathor Next address scanned from the Dashboard', () => {
     expect(sendRoutes()).toEqual(['SendAddressInput']);
     const texts = renderer.root.findAllByType(Text).map((node) => node.props.children);
     expect(texts).toContain(`SEND TO ${OWN_ADDRESS}`);
+  });
+
+  test('a second scan of the same address fills it in again over what the user typed', async () => {
+    addressStep = SendAddressInput;
+    const OTHER_ADDRESS = fakePeerAddress('ab12');
+    const { store } = makeStore();
+    const renderer = await mountApp(store);
+    const field = () => renderer.root.findByType(TextInput);
+    const scan = async (data) => {
+      await act(async () => { navigationRef.current.navigate('App', { screen: 'UnifiedQRScanner' }); });
+      const reader = renderer.root.findByType(QRCodeReader);
+      await act(async () => { reader.props.onSuccess({ data }); });
+    };
+    await scan(OWN_ADDRESS);
+    expect(field().props.value).toBe(OWN_ADDRESS);
+    // The user pays another address instead, and goes on to its amount.
+    await act(async () => { field().props.onChangeText(OTHER_ADDRESS); });
+    await act(async () => { buttons(renderer, 'Next')[0].props.onPress(); });
+    expect(sendRoutes()).toEqual(['SendAddressInput', 'NextSendAmountInput']);
+
+    await scan(OWN_ADDRESS);
+    expect(sendRoutes()).toEqual(['SendAddressInput']);
+    // The address scanned, not the one typed before: Next would pay that one.
+    expect(field().props.value).toBe(OWN_ADDRESS);
   });
 });
