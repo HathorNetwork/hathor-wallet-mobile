@@ -574,8 +574,8 @@ msgstr "Depósito"
 #: src/components/Multichain/TransferDetailsModal.js:116
 #: src/components/Shielded/FeeBreakdown.js:70
 #: src/screens/CreateTokenConfirm.js:293
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:153
-#: src/screens/Multichain/ChainTransferScreen.js:235
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:156
+#: src/screens/Multichain/ChainTransferScreen.js:241
 #: src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
 msgstr "Taxa de Rede"
@@ -855,7 +855,7 @@ msgid "Tokens found"
 msgstr "Tokens encontrados"
 
 #: src/screens/ImportTokensScreen.js:209
-#: src/screens/Multichain/ChainTransferScreen.js:244
+#: src/screens/Multichain/ChainTransferScreen.js:250
 msgid "Continue"
 msgstr "Continuar"
 
@@ -1300,7 +1300,7 @@ msgid "Transfer between chains"
 msgstr "Transferir entre cadeias"
 
 #: src/multichain/nextClientErrors.js:48
-#: src/screens/Multichain/ChainTransferScreen.js:137
+#: src/screens/Multichain/ChainTransferScreen.js:143
 #: src/screens/SendAmountInput.js:134
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
@@ -1455,8 +1455,8 @@ msgid "Transaction summary"
 msgstr "Resumo da transação"
 
 #: src/components/Multichain/TransferDetailsModal.js:111
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:148
-#: src/screens/Multichain/ChainTransferScreen.js:180
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:151
+#: src/screens/Multichain/ChainTransferScreen.js:186
 #: src/screens/SendConfirmScreen.js:647
 msgid "To"
 msgstr "Para"
@@ -2004,56 +2004,56 @@ msgstr "Digite seu PIN de 6 dígitos para autorizar a transferência"
 msgid "Authorize the transfer"
 msgstr "Autorizar a transferência"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:101
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:104
 msgid "Transferring to Hathor Next…"
 msgstr "Transferindo para a Hathor Next…"
 
 #: src/components/AmountInputAccessory.js:105
 #: src/components/Multichain/TransferDetailsModal.js:99
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:108
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:111
 msgid "Done"
 msgstr "Ok"
 
 #: src/sagas/multichain.js:108
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:115
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:118
 msgid "The transfer failed."
 msgstr "A transferência falhou."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:128
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:131
 msgid "CONFIRM TRANSFER"
 msgstr "CONFIRMAR TRANSFERÊNCIA"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:135
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:138
 msgid "You send"
 msgstr "Você envia"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:141
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:144
 msgid "You receive"
 msgstr "Você recebe"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:148
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:151
 msgid "To your address"
 msgstr "Para o seu endereço"
 
 #: src/components/Multichain/TransferDetailsModal.js:114
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:152
-#: src/screens/Multichain/ChainTransferScreen.js:234
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:155
+#: src/screens/Multichain/ChainTransferScreen.js:240
 msgid "Bridge fee"
 msgstr "Taxa da ponte"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:154
-#: src/screens/Multichain/ChainTransferScreen.js:236
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:157
+#: src/screens/Multichain/ChainTransferScreen.js:242
 msgid "Arrives in"
 msgstr "Chega em"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:158
-#: src/screens/Multichain/ChainTransferScreen.js:239
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:161
+#: src/screens/Multichain/ChainTransferScreen.js:245
 msgid "One-way: you can't move these tokens back to Hathor Network yet."
 msgstr ""
 "Só de ida: você ainda não pode mover esses tokens de volta para a Hathor "
 "Network."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:164
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:167
 msgid "Confirm and send"
 msgstr "Confirmar e enviar"
 
@@ -2064,49 +2064,49 @@ msgstr ""
 "Transferências da ${ source } para a ${ destination } ainda não estão "
 "disponíveis."
 
-#: src/screens/Multichain/ChainTransferScreen.js:133
+#: src/screens/Multichain/ChainTransferScreen.js:139
 msgid "The smallest transfer is ${ minimum }."
 msgstr "A menor transferência é de ${ minimum }."
 
-#: src/screens/Multichain/ChainTransferScreen.js:157
+#: src/screens/Multichain/ChainTransferScreen.js:163
 msgid "TRANSFER BETWEEN CHAINS"
 msgstr "TRANSFERIR ENTRE CADEIAS"
 
-#: src/screens/Multichain/ChainTransferScreen.js:167
+#: src/screens/Multichain/ChainTransferScreen.js:173
 msgid "From"
 msgstr "De"
 
-#: src/screens/Multichain/ChainTransferScreen.js:174
+#: src/screens/Multichain/ChainTransferScreen.js:180
 msgid "Swap From and To"
 msgstr "Inverter origem e destino"
 
-#: src/screens/Multichain/ChainTransferScreen.js:184
+#: src/screens/Multichain/ChainTransferScreen.js:190
 msgid "Token"
 msgstr "Token"
 
-#: src/screens/Multichain/ChainTransferScreen.js:185
+#: src/screens/Multichain/ChainTransferScreen.js:191
 #, javascript-format
 msgid "HTR · ${ availableText } available"
 msgstr "HTR · ${ availableText } disponível"
 
-#: src/screens/Multichain/ChainTransferScreen.js:188
+#: src/screens/Multichain/ChainTransferScreen.js:194
 msgid "Hathor Next address"
 msgstr "Endereço da Hathor Next"
 
-#: src/screens/Multichain/ChainTransferScreen.js:201
+#: src/screens/Multichain/ChainTransferScreen.js:207
 msgid "Paste or type a Hathor Next address"
 msgstr "Cole ou digite um endereço da Hathor Next"
 
-#: src/screens/Multichain/ChainTransferScreen.js:215
+#: src/screens/Multichain/ChainTransferScreen.js:221
 msgid "Use my Hathor Next address"
 msgstr "Usar meu endereço da Hathor Next"
 
 #: src/components/Reown/CreateTokenRequest.js:103
-#: src/screens/Multichain/ChainTransferScreen.js:220
+#: src/screens/Multichain/ChainTransferScreen.js:226
 msgid "Amount"
 msgstr "Quantidade"
 
-#: src/screens/Multichain/ChainTransferScreen.js:233
+#: src/screens/Multichain/ChainTransferScreen.js:239
 msgid "You'll receive"
 msgstr "Você receberá"
 
@@ -2301,6 +2301,10 @@ msgid "This is a Hathor Next address. Enter a Hathor Network address."
 msgstr ""
 "Este é um endereço da Hathor Next. Digite um endereço da Hathor Network."
 
+#: src/multichain/amount.js:88
+msgid "Use only one decimal separator."
+msgstr "Use só um separador decimal."
+
 #: src/multichain/content.js:28
 msgid "Sending"
 msgstr "Enviando"
@@ -2420,16 +2424,16 @@ msgstr "cerca de 1 minuto"
 msgid "about ${ minutes } minutes"
 msgstr "cerca de ${ minutes } minutos"
 
-#: src/multichain/transfer.js:96
+#: src/multichain/transfer.js:98
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName }. Transfers from $"
-"{ otherName } to ${ chainName } aren't available yet."
+"{ otherName } to ${ toName } aren't available yet."
 msgstr ""
 "Você tem ${ have } ${ symbol } na ${ chainName }. Transferências da $"
-"{ otherName } para a ${ chainName } ainda não estão disponíveis."
+"{ otherName } para a ${ toName } ainda não estão disponíveis."
 
-#: src/multichain/transfer.js:102
+#: src/multichain/transfer.js:104
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName }. Send from ${ otherName } "
@@ -2438,16 +2442,16 @@ msgstr ""
 "Você tem ${ have } ${ symbol } na ${ chainName }. Enviar da ${ otherName } "
 "em vez disso? Chega em ${ eta }."
 
-#: src/multichain/transfer.js:112
+#: src/multichain/transfer.js:115
 #, javascript-format
 msgid ""
 "You have ${ have } ${ symbol } on ${ chainName } and ${ otherHave } $"
-"{ symbol } on ${ otherName }."
+"{ otherSymbol } on ${ otherName }."
 msgstr ""
 "Você tem ${ have } ${ symbol } na ${ chainName } e ${ otherHave } $"
-"{ symbol } na ${ otherName }."
+"{ otherSymbol } na ${ otherName }."
 
-#: src/multichain/transfer.js:117
+#: src/multichain/transfer.js:120
 msgid "${ both } Transfer the rest to ${ chainName } first."
 msgstr "${ both } Transfira o restante para a ${ chainName } primeiro."
 
