@@ -35,9 +35,17 @@ describe('isNextAddress', () => {
 });
 
 describe('parseNextQrCode', () => {
-  test('reads the address alone or a payment request on it', () => {
-    expect(parseNextQrCode(NEXT_ADDRESS)).toBe(NEXT_ADDRESS);
-    expect(parseNextQrCode(`${NEXT_ADDRESS}?amount=100`)).toBe(NEXT_ADDRESS);
+  test('reads the address alone', () => {
+    expect(parseNextQrCode(NEXT_ADDRESS)).toEqual({ address: NEXT_ADDRESS });
+    expect(parseNextQrCode(` ${NEXT_ADDRESS}? `)).toEqual({ address: NEXT_ADDRESS });
+  });
+
+  test('refuses a payment request, rather than drop its amount and token', () => {
+    for (const query of ['?amount=100', '?token=00', '?amount=1&token=abc']) {
+      expect(parseNextQrCode(`${NEXT_ADDRESS}${query}`)).toEqual({
+        error: 'Payment request QR codes are not supported. Please use a simple address QR code.',
+      });
+    }
   });
 
   test('reads nothing from a Hathor Network QR code', () => {

@@ -38,6 +38,7 @@ import {
 } from '../../../src/constants';
 import { Dashboard } from '../../../src/screens/Dashboard';
 import NextTokenScreen from '../../../src/screens/Multichain/NextTokenScreen';
+import CopyClipboard from '../../../src/components/CopyClipboard';
 import TokenSelect from '../../../src/components/TokenSelect';
 import { PortalProvider } from '../../../src/components/Portal';
 import { ChainFilter } from '../../../src/components/Multichain/ChainFilter';
@@ -251,6 +252,9 @@ describe('the screen of a token only Hathor Next has', () => {
       <NextTokenScreen navigation={navigation} route={{ params: { tokenId: 'b1' } }} />,
     );
     expect(textOf(renderer)).toEqual(expect.arrayContaining(['5.00 TST', 'Hathor Next']));
+    // Its id, in full and copyable: anyone can name a token anything on Hathor Next.
+    const id = renderer.root.findAllByType(CopyClipboard);
+    expect(id.map((node) => node.props.text)).toEqual(['b1']);
     expect(navigation.goBack).not.toHaveBeenCalled();
     await act(async () => { store.dispatch(multichainConnectedNetworksSet({})); });
     expect(navigation.goBack).toHaveBeenCalled();
