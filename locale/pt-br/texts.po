@@ -2783,7 +2783,7 @@ msgstr "Sim"
 msgid "No"
 msgstr "Não"
 
-#: src/components/Multichain/NextTxRow.js:37
+#: src/components/Multichain/NextTxRow.js:48
 #: src/components/Reown/CreateTokenRequest.js:86
 msgid "Fee"
 msgstr "Taxa"
@@ -3598,15 +3598,15 @@ msgstr "Data"
 msgid "View on explorer"
 msgstr "Ver no explorer"
 
-#: src/components/Multichain/NextTxRow.js:40
+#: src/components/Multichain/NextTxRow.js:51
 msgid "Received"
 msgstr "Recebido"
 
-#: src/components/Multichain/NextTxRow.js:43
+#: src/components/Multichain/NextTxRow.js:54
 msgid "Sent"
 msgstr "Enviado"
 
-#: src/components/Multichain/NextTxRow.js:46
+#: src/components/Multichain/NextTxRow.js:57
 #, javascript-format
 msgid "Sent to ${ peer }"
 msgstr "Enviado para ${ peer }"

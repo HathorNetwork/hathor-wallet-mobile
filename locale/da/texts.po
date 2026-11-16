@@ -2637,7 +2637,7 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: src/components/Multichain/NextTxRow.js:37
+#: src/components/Multichain/NextTxRow.js:48
 #: src/components/Reown/CreateTokenRequest.js:86
 msgid "Fee"
 msgstr ""
@@ -3419,15 +3419,15 @@ msgstr ""
 msgid "View on explorer"
 msgstr ""
 
-#: src/components/Multichain/NextTxRow.js:40
+#: src/components/Multichain/NextTxRow.js:51
 msgid "Received"
 msgstr "Modtaget"
 
-#: src/components/Multichain/NextTxRow.js:43
+#: src/components/Multichain/NextTxRow.js:54
 msgid "Sent"
 msgstr ""
 
-#: src/components/Multichain/NextTxRow.js:46
+#: src/components/Multichain/NextTxRow.js:57
 #, javascript-format
 msgid "Sent to ${ peer }"
 msgstr ""

@@ -20,16 +20,22 @@ const NEXT_MTK = { id: 'b3', name: 'My Token', symbol: 'MTK', lastActivityAt: 3 
 
 const ready = (available) => ({ status: 'ready', data: { available } });
 
-const list = ({ transfers = [], nextHtr = 2500000000n } = {}) => combinedTokenList({
+const NEXT_TOKENS = {
+  '00': { id: '00', name: 'Hathor', symbol: 'HTR', lastActivityAt: 5 },
+  b1: NEXT_TST_A,
+  b2: NEXT_TST_B,
+  b3: NEXT_MTK,
+};
+
+const list = ({
+  transfers = [],
+  nextHtr = 2500000000n,
+  nextTokens = NEXT_TOKENS,
+} = {}) => combinedTokenList({
   hathorTokens: { '00': HTR, a1: MY_TOKEN },
   hathorBalances: { '00': ready(9500n), a1: ready(1000n) },
   hathorDecimalPlaces: 2,
-  nextTokens: {
-    '00': { id: '00', name: 'Hathor', symbol: 'HTR', lastActivityAt: 5 },
-    b1: NEXT_TST_A,
-    b2: NEXT_TST_B,
-    b3: NEXT_MTK,
-  },
+  nextTokens,
   nextBalances: {
     '00': ready(nextHtr),
     b1: ready(500000000n),
@@ -84,6 +90,23 @@ describe('the Dashboard list of both chains', () => {
   test('tells Hathor Next tokens that share a symbol apart by their id', () => {
     const names = list().filter((row) => row.symbol === 'TST').map((row) => row.name);
     expect(names).toEqual(['Test Token · b1', 'Test Token · b2']);
+  });
+
+  test("shows every Hathor Next token's id, so one named after HTR is told apart", () => {
+    // Anyone can create a token called Hathor, HTR, and send it to any wallet.
+    const rows = list({
+      nextTokens: {
+        ...NEXT_TOKENS,
+        c9look: { id: 'c9look', name: 'Hathor', symbol: 'HTR', lastActivityAt: 1 },
+      },
+    });
+    const htr = rows.filter((row) => row.symbol === 'HTR');
+    expect(htr.map((row) => [row.name, row.chains])).toEqual([
+      ['Hathor', [CHAIN.HATHOR, CHAIN.HATHOR_NEXT]],
+      ['Hathor · c9look', [CHAIN.HATHOR_NEXT]],
+    ]);
+    // A token whose symbol no other shares carries its id too.
+    expect(rows.find((row) => row.uid === 'next:b3').name).toMatch(/ · b3$/);
   });
 
   test('shows a Hathor Next amount with all its digits when it has more than Hathor Network', () => {
