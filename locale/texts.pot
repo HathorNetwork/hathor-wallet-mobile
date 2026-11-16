@@ -58,7 +58,7 @@ msgstr ""
 msgid "This wallet does not support shielded addresses."
 msgstr ""
 
-#: src/multichain/address.js:113
+#: src/multichain/address.js:119
 #: src/utils.js:305
 msgid "Invalid address"
 msgstr ""
@@ -882,7 +882,7 @@ msgid "Enter your seed words separated by space"
 msgstr ""
 
 #: src/components/ImportTokensModal.js:72
-#: src/components/Multichain/MultichainLoadScreen.js:50
+#: src/components/Multichain/MultichainLoadScreen.js:69
 #: src/components/Multichain/TokenHistoryList.js:54
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
@@ -891,7 +891,7 @@ msgstr ""
 #: src/screens/LoadHistoryScreen.js:51
 #: src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:176
-#: src/screens/PinScreen.js:306
+#: src/screens/PinScreen.js:315
 #: src/screens/TokenSwapLoadingScreen.js:90
 msgid "Try again"
 msgstr ""
@@ -914,9 +914,10 @@ msgstr ""
 msgid "There's been an error connecting to the server."
 msgstr ""
 
+#: src/components/Multichain/MultichainLoadScreen.js:81
 #: src/screens/LoadWalletErrorScreen.js:28
 #: src/screens/PasskeyLockScreen.js:217
-#: src/screens/PinScreen.js:341
+#: src/screens/PinScreen.js:350
 #: src/screens/Settings.js:289
 msgid "Reset wallet"
 msgstr ""
@@ -993,7 +994,7 @@ msgstr ""
 msgid "Unlock"
 msgstr ""
 
-#: src/screens/PinScreen.js:295
+#: src/screens/PinScreen.js:304
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
@@ -1006,13 +1007,13 @@ msgid "Unlock Hathor Wallet"
 msgstr ""
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:332
+#: src/screens/PinScreen.js:341
 #: src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:372
-#: src/screens/PinScreen.js:376
+#: src/screens/PinScreen.js:381
+#: src/screens/PinScreen.js:385
 msgid "Biometry failed or canceled."
 msgstr ""
 
@@ -1943,6 +1944,7 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
+#: src/sagas/multichain.js:108
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:115
 msgid "The transfer failed."
 msgstr ""
@@ -2035,7 +2037,7 @@ msgid "You'll receive"
 msgstr ""
 
 #: src/multichain/nextClientErrors.js:51
-#: src/sagas/multichain.js:77
+#: src/sagas/multichain.js:105
 msgid "Couldn't connect to Hathor Next."
 msgstr ""
 
@@ -2194,11 +2196,17 @@ msgid ""
 "yet."
 msgstr ""
 
-#: src/multichain/address.js:104
-msgid "This is a Hathor Network address. Enter a Hathor Next address."
+#: src/multichain/address.js:56
+msgid ""
+"Payment request QR codes are not supported. Please use a simple address QR "
+"code."
 msgstr ""
 
 #: src/multichain/address.js:110
+msgid "This is a Hathor Network address. Enter a Hathor Next address."
+msgstr ""
+
+#: src/multichain/address.js:116
 msgid "This is a Hathor Next address. Enter a Hathor Network address."
 msgstr ""
 
@@ -2790,7 +2798,7 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: src/components/Multichain/NextTxRow.js:37
+#: src/components/Multichain/NextTxRow.js:48
 #: src/components/Reown/CreateTokenRequest.js:86
 msgid "Fee"
 msgstr ""
@@ -3539,7 +3547,11 @@ msgstr ""
 msgid "Connecting to Hathor Next…"
 msgstr ""
 
-#: src/components/Multichain/MultichainLoadScreen.js:59
+#: src/components/Multichain/MultichainLoadScreen.js:75
+msgid "Disconnect side chain"
+msgstr ""
+
+#: src/components/Multichain/MultichainLoadScreen.js:91
 msgid "Loading Hathor Next…"
 msgstr ""
 
@@ -3569,15 +3581,15 @@ msgstr ""
 msgid "View on explorer"
 msgstr ""
 
-#: src/components/Multichain/NextTxRow.js:40
+#: src/components/Multichain/NextTxRow.js:51
 msgid "Received"
 msgstr ""
 
-#: src/components/Multichain/NextTxRow.js:43
+#: src/components/Multichain/NextTxRow.js:54
 msgid "Sent"
 msgstr ""
 
-#: src/components/Multichain/NextTxRow.js:46
+#: src/components/Multichain/NextTxRow.js:57
 #, javascript-format
 msgid "Sent to ${ peer }"
 msgstr ""

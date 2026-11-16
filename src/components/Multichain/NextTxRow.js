@@ -15,15 +15,26 @@ import { renderNextValue } from '../../multichain/amount';
 import { nextStatusLabel } from '../../multichain/content';
 import { COLORS } from '../../styles/themes';
 
+// A Hathor Next address: `samba:`, the view key (the wallet service's, the same for every address
+// on a network) and the spend key, which tells one address from another.
+const NEXT_ADDRESS_KEYS_RE = /^samba:([0-9a-fA-F]{64})([0-9a-fA-F]{64})$/;
+
 /**
- * A long address with both ends kept, so it can still be checked.
+ * A long address with both ends kept, so it can still be checked. A Hathor Next address keeps the
+ * start and the end of its spend key: its first characters, the view key, are the same for every
+ * address on a network, so they tell nothing apart.
  *
  * @param {string} address
  * @returns {string}
  */
-export const middleTruncate = (address) => (
-  address.length > 18 ? `${address.slice(0, 10)}…${address.slice(-6)}` : address
-);
+export const middleTruncate = (address) => {
+  const keys = NEXT_ADDRESS_KEYS_RE.exec(address);
+  if (keys) {
+    const spend = keys[2];
+    return `samba:…${spend.slice(0, 8)}…${spend.slice(-6)}`;
+  }
+  return address.length > 18 ? `${address.slice(0, 10)}…${address.slice(-6)}` : address;
+};
 
 /**
  * What a Hathor Next row says it is. An incoming payment has no sender: Hathor Next can't know

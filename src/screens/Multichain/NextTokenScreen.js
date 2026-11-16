@@ -8,6 +8,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import CopyClipboard from '../../components/CopyClipboard';
 import HathorHeader from '../../components/HathorHeader';
 import OfflineBar from '../../components/OfflineBar';
 import { ChainTag } from '../../components/Multichain/ChainTag';
@@ -26,7 +27,8 @@ import { COLORS } from '../../styles/themes';
 /**
  * A token only Hathor Next has: its balance and its history, with Hathor Next's rules. An
  * incoming payment has no sender, the fee is a row of its own, and the statuses are Hathor Next's.
- * It closes when the side chain is turned off.
+ * Its id shows in full, and copies: names and symbols are anyone's to choose on Hathor Next, so
+ * the id is what tells a token apart. It closes when the side chain is turned off.
  */
 export default function NextTokenScreen({ navigation, route }) {
   const dispatch = useDispatch();
@@ -78,6 +80,7 @@ export default function NextTokenScreen({ navigation, route }) {
       />
       <NextBalanceView balance={balance} symbol={token.symbol} sweeping={sweeping}>
         <ChainTag style={styles.chain} />
+        <CopyClipboard text={tokenId} textStyle={styles.tokenId} />
       </NextBalanceView>
       <TokenHistoryList
         rows={rows}
@@ -108,5 +111,11 @@ const styles = StyleSheet.create({
   chain: {
     marginTop: 12,
     alignSelf: 'center',
+  },
+  tokenId: {
+    marginTop: 8,
+    marginHorizontal: 16,
+    fontSize: 12,
+    textAlign: 'center',
   },
 });
