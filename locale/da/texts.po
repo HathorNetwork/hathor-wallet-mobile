@@ -1882,11 +1882,11 @@ msgstr ""
 msgid "Contract successfully registered."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:105
+#: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:108
 msgid "Couldn't connect to Hathor Next."
 msgstr ""
 
-#: src/sagas/multichain.js:108
+#: src/sagas/multichain.js:111
 msgid "The transfer failed."
 msgstr ""
 

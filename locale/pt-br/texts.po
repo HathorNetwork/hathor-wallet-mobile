@@ -1972,11 +1972,11 @@ msgstr "Transação do Nano Contract"
 msgid "Contract successfully registered."
 msgstr "Nano Contract registrado com sucesso."
 
-#: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:105
+#: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:108
 msgid "Couldn't connect to Hathor Next."
 msgstr "Não foi possível conectar à Hathor Next."
 
-#: src/sagas/multichain.js:108
+#: src/sagas/multichain.js:111
 msgid "The transfer failed."
 msgstr "A transferência falhou."
 
