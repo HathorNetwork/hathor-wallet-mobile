@@ -5,7 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { afterEach, describe, it, expect } from '@jest/globals';
+import {
+  afterEach, describe, it, expect, jest,
+} from '@jest/globals';
 import derivation from './fixtures/derivation.json';
 import vectors from './fixtures/remote-signing.json';
 import { createBackendNextClient, prepareError } from '../../../src/multichain/next/backendClient';
@@ -23,6 +25,7 @@ import {
   modOrder,
 } from '../../../src/multichain/next/kit/scalar';
 import { parseTxV2 } from '../../../src/multichain/next/kit/txV2';
+import * as signer from '../../../src/multichain/next/signer';
 
 // The vectors' signer is account 3 of the test mnemonic: the account this client derives. So the
 // sign request below is a transaction Hathor Next's own builder made for this very wallet.
@@ -68,6 +71,8 @@ function fakeBackend({
   sendStatus: initialSendStatus = null,
   earlierStatus = null,
   balances = [{ token: NATIVE, referenceable: '100000' }],
+  transfers = [{ id: 't-1', amount: '600', status: 'confirming', confirmations: 3, needed: 21 }],
+  genesisMs = 0,
 } = {}) {
   const calls = [];
   let sendStatus = initialSendStatus;
@@ -90,7 +95,7 @@ function fakeBackend({
           native_token: NATIVE,
           service_view_pub: CASE.pub_a,
           wire_format: 'v2',
-          genesis_ms: 0,
+          genesis_ms: genesisMs,
           epoch_ms: 500,
           send_fee: CASE.fee,
         },
@@ -149,7 +154,7 @@ function fakeBackend({
       return json(200, { id: 'send-1', status: signatures ? 'recorded' : 'awaiting_signatures' });
     }
     if (method === 'GET' && path.endsWith('/transfers')) {
-      return json(200, [{ id: 't-1', amount: '600', status: 'confirming', confirmations: 3, needed: 21 }]);
+      return json(200, transfers);
     }
     if (method === 'DELETE') return json(200, {});
     return json(404, { error: 'not found' });
@@ -163,12 +168,14 @@ function fakeBackend({
   };
 }
 
-async function connected(backend, storage = memoryStorage()) {
+async function connected(backend, storage = memoryStorage(), options = {}) {
   const client = createBackendNextClient({
     fetchImpl: backend.fetchImpl,
     WebSocketImpl: null,
     storage,
     sendPollMs: 5,
+    unconfirmedPollMs: 5,
+    ...options,
   });
   await client.prepareKeys({ words: derivation.mnemonic });
   await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
@@ -554,6 +561,13 @@ describe('the wallet\'s transfers', () => {
     ]);
     client.disconnect();
   });
+
+  it('takes an answer that is no list for no answer, never for an empty list', async () => {
+    // A transfer missing from an empty list would count as one the backend no longer knows.
+    const client = await connected(fakeBackend({ transfers: { transfers: [] } }));
+    await expect(client.getTransfers()).rejects.toThrow('is not a list');
+    client.disconnect();
+  });
 });
 
 describe('a Hathor Next payment in another token', () => {
@@ -653,6 +667,20 @@ describe('a payment on its way', () => {
     await expect(recorded).resolves.toMatchObject({ sendId: 'send-1' });
   });
 
+  it('not settled yet is read only as often as it goes out again', async () => {
+    const backend = fakeBackend({ sendStatus: { status: 'failed', reason: 'busy' } });
+    client = await connected(backend, memoryStorage(), { unconfirmedPollMs: 60000 });
+    const unconfirmed = waitFor('unconfirmed');
+    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+    await unconfirmed;
+    const reads = () => backend.calls
+      .filter((c) => c.method === 'GET' && c.path === '/v1/sends/send-1').length;
+    const before = reads();
+    // A payment on its way is read every 5 ms here: one not settled yet waits a minute.
+    await new Promise((resolve) => { setTimeout(resolve, 100); });
+    expect(reads()).toBe(before);
+  });
+
   it('the backend calls failed, and no longer keeps, frees its outputs', async () => {
     const storage = memoryStorage();
     const backend = fakeBackend({
@@ -734,17 +762,19 @@ describe('a lock while a payment asks about an earlier one', () => {
 });
 
 describe('the sign-once ledger kept before', () => {
+  const walletId = bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), hexToBytes(CASE.pub_b)));
+  const entry = (sendId, extra = {}) => ({
+    sendId,
+    signingHash: 'ab'.repeat(32),
+    inputs: CASE.inputs.map((i) => i.one_time_key),
+    signatures: [],
+    signedTx: 'cafe',
+    txId: sendId.replace('send-', '').padStart(64, '0'),
+    signedAt: 1,
+    ...extra,
+  });
+
   it('moves its payments still on their way to the ledger kept now, then goes', async () => {
-    const walletId = bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), hexToBytes(CASE.pub_b)));
-    const entry = (sendId, extra = {}) => ({
-      sendId,
-      signingHash: 'ab'.repeat(32),
-      inputs: CASE.inputs.map((i) => i.one_time_key),
-      signatures: [],
-      signedTx: 'cafe',
-      txId: sendId.replace('send-', '').padStart(64, '0'),
-      ...extra,
-    });
     const storage = memoryStorage({
       [`multichain:nextSigned:1777:${walletId}`]: JSON.stringify({
         entries: [entry('send-0'), entry('send-9', { recorded: true })],
@@ -759,5 +789,41 @@ describe('the sign-once ledger kept before', () => {
     // has nothing left to hold.
     expect(entries.map((e) => e.sendId)).toEqual(['send-0']);
     expect(backend.resubmitted.map((r) => r.path)).toEqual(['/v1/sends/send-0/resubmit']);
+  });
+
+  it('moves only what was signed on this chain: anything older was the chain before a reset\'s', async () => {
+    // It named no chain. A reset chain keeps its network id and starts its output indexes over:
+    // an older payment would hold outputs of this chain that it never spent.
+    const storage = memoryStorage({
+      [`multichain:nextSigned:1777:${walletId}`]: JSON.stringify({
+        entries: [
+          entry('send-0', { signedAt: 6000 }),
+          entry('send-7', { signedAt: 4000 }),
+          entry('send-8'),
+          entry('send-9', { signedAt: undefined }),
+        ],
+      }),
+    });
+    const backend = fakeBackend({ genesisMs: 5000 });
+    const client = await connected(backend, storage);
+    client.disconnect();
+    const { entries } = storage.getItem(`wallet:multichain:nextSigned:1777:5000:${walletId}`);
+    expect(entries.map((e) => e.sendId)).toEqual(['send-0']);
+    expect(backend.resubmitted.map((r) => r.path)).toEqual(['/v1/sends/send-0/resubmit']);
+  });
+});
+
+describe('the sign-once ledger of a wallet and chain', () => {
+  it('is the same across connects: a payment from before one may still be writing to it', async () => {
+    const created = jest.spyOn(signer, 'createSignLedger');
+    try {
+      const backend = fakeBackend();
+      const client = await connected(backend);
+      await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+      client.disconnect();
+      expect(created).toHaveBeenCalledTimes(1);
+    } finally {
+      created.mockRestore();
+    }
   });
 });

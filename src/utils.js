@@ -690,7 +690,13 @@ export async function changePinOnAccessData(storage, oldPin, newPin) {
   }
 
   setKeychainPin(newPin);
-  changeNextSecretPin(oldPin, newPin);
+  // The words moved: nothing of Hathor Next can fail the change now. A secret left behind is one
+  // the new PIN doesn't open, and the next unlock derives it again.
+  try {
+    changeNextSecretPin(oldPin, newPin);
+  } catch (e) {
+    log.error('Could not move the Hathor Next secret to the new PIN.', e);
+  }
   return true;
 }
 

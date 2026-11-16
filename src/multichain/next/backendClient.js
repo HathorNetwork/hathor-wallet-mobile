@@ -99,6 +99,9 @@ const SEND_SETTLED = ['recorded', 'failed', 'expired'];
 
 // How often a payment the backend calls failed is submitted again while it is followed.
 const FAILED_RESUBMIT_MS = 60000;
+// How often a payment that isn't settled yet (the backend calls it failed) is read: no sooner
+// than it is submitted again. It can stay so for the whole session.
+const UNCONFIRMED_POLL_MS = FAILED_RESUBMIT_MS;
 
 const sendStatusOf = (status) => (
   typeof status === 'string' && Object.prototype.hasOwnProperty.call(SEND_STATUS, status)
@@ -293,6 +296,7 @@ export function createBackendNextClient({
   nowMs = () => Date.now(),
   storage = STORE,
   sendPollMs = SEND_POLL_MS,
+  unconfirmedPollMs = UNCONFIRMED_POLL_MS,
 } = {}) {
   let keys = null;
   // How many times the keys were dropped: a derivation that a lock overtook keeps nothing.
@@ -316,6 +320,9 @@ export function createBackendNextClient({
   let amountWidth = null;
   let feedSession = null;
   let ledger = null;
+  // The key the ledger is kept under: a connect to the same wallet and chain keeps the same
+  // ledger, whose writes a payment from before the connect may still be making.
+  let ledgerKey = null;
   // Whether the backend creates tokens, from GET /v1/config; and the creation nonces this device
   // handed out.
   let issuance = false;
@@ -570,7 +577,8 @@ export function createBackendNextClient({
   /* eslint-disable no-param-reassign */
   // Reads a payment's or a creation's status until it settles: each answer can move it on, free
   // its inputs or ask for its signatures again. A reconnect follows again the ones still on their
-  // way. `entry.onRecorded` runs once the statement records it.
+  // way. One not settled yet is read only as often as it is submitted again. `entry.onRecorded`
+  // runs once the statement records it.
   function followSent(mine, entry) {
     const tick = () => schedule(async () => {
       if (mine !== generation || SEND_SETTLED.includes(entry.status)) return;
@@ -611,7 +619,7 @@ export function createBackendNextClient({
         log.error('Could not read a Hathor Next payment.', e);
       }
       tick();
-    }, sendPollMs);
+    }, entry.status === 'unconfirmed' ? unconfirmedPollMs : sendPollMs);
     tick();
   }
   /* eslint-enable no-param-reassign */
@@ -900,17 +908,21 @@ export function createBackendNextClient({
         // genesis tells a chain apart from the one before a reset, which keeps the network id and
         // the view key and starts the global indexes over (pinned, so a backend can't change it).
         // Under the `wallet:` keys, so a wallet reset clears it with the rest of the wallet.
-        ledger = createSignLedger(
-          storage,
-          `wallet:multichain:nextSigned:${config.nextNetworkId}:${remote.next.genesis_ms}:`
-            + `${bytesToHex(walletId)}`,
-        );
+        const key = `wallet:multichain:nextSigned:${config.nextNetworkId}:`
+          + `${remote.next.genesis_ms}:${bytesToHex(walletId)}`;
+        if (key !== ledgerKey) {
+          ledger = createSignLedger(storage, key);
+          ledgerKey = key;
+        }
         // The ledger kept before under another key: its payments still on their way move to this
-        // one, so they keep holding their outputs and go out again below; then it goes.
+        // one, so they keep holding their outputs and go out again below; then it goes. It named
+        // no chain: only what was signed since this chain's genesis is this chain's. Anything
+        // older was signed on the chain before a reset, whose outputs this one's indexes reuse.
         const oldKey = `multichain:nextSigned:${config.nextNetworkId}:${bytesToHex(walletId)}`;
         const old = storage.getItem(oldKey);
         if (old) {
-          await ledger.adopt(Array.isArray(old.entries) ? old.entries : []);
+          const entries = Array.isArray(old.entries) ? old.entries : [];
+          await ledger.adopt(entries.filter((e) => Number(e?.signedAt) >= timing.genesisMs));
           storage.removeItem?.(oldKey);
         }
         nonces = createNonceStore(
@@ -1491,8 +1503,12 @@ export function createBackendNextClient({
       requireConnected();
       const id = bytesToHex(walletId);
       const body = await withSession((token) => api.getTransfers(id, token));
-      // The backend answers a bare list.
-      return Array.isArray(body) ? body : [];
+      // The backend answers a bare list. Anything else is no answer, never an empty list: a
+      // transfer missing from it would count as one the backend no longer knows.
+      if (!Array.isArray(body)) {
+        throw new Error('The Hathor Next backend\'s list of transfers is not a list.');
+      }
+      return body;
     },
 
     /**

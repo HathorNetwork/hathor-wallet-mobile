@@ -125,6 +125,49 @@ describe('the Hathor Next secret kept on the device', () => {
     expect(STORE.getItem(multichainKeyMap.nextSecret).xpub).toBe('xpub-other');
   });
 
+  test('never moves at the cost of the PIN change: the words moved, and the change holds', async () => {
+    await prepareNextKeysWithPin(PIN, async () => WORDS);
+    const storage = {
+      checkPin: async () => true,
+      checkPassword: async () => true,
+      changePin: async () => {},
+      changePassword: async () => {},
+    };
+    const getItem = STORE.getItem.bind(STORE);
+    jest.spyOn(STORE, 'getItem').mockImplementation((key) => {
+      if (key === multichainKeyMap.nextSecret) {
+        throw new Error('storage unreadable');
+      }
+      return getItem(key);
+    });
+    await expect(changePinOnAccessData(storage, PIN, '654321')).resolves.toBe(true);
+  });
+
+  test('is never used while the wallet\'s own public key can\'t be read, even kept without one', async () => {
+    STORE.getAvailableAccessData.mockResolvedValue({ accessData: {} });
+    await prepareNextKeysWithPin(PIN, async () => WORDS);
+    expect(STORE.getItem(multichainKeyMap.nextSecret).xpub).toBeNull();
+    // Kept with no public key, by a wallet whose key couldn't be read either: whose it is, nothing
+    // says. The words give the keys again.
+    const wordsOf = jest.fn(async () => WORDS);
+    client.forgetKeys();
+    await prepareNextKeysWithPin(PIN, wordsOf);
+    expect(wordsOf).toHaveBeenCalledTimes(1);
+  });
+
+  test('leaves no keys when its secret doesn\'t give its public key and the words can\'t be read', async () => {
+    await prepareNextKeysWithPin(PIN, async () => WORDS);
+    const saved = STORE.getItem(multichainKeyMap.nextSecret);
+    STORE.setItem(multichainKeyMap.nextSecret, {
+      ...saved, secret: cryptoUtils.encryptData('01'.padEnd(64, '0'), PIN),
+    });
+    client.forgetKeys();
+    const unreadable = async () => { throw new Error('words unreadable'); };
+    await expect(prepareNextKeysWithPin(PIN, unreadable)).rejects.toThrow('words unreadable');
+    // Never the keys of the copy: they aren't this wallet's.
+    expect(client.hasKeys()).toBe(false);
+  });
+
   test('is derived again when its secret doesn\'t give the public key kept with it', async () => {
     await prepareNextKeysWithPin(PIN, async () => WORDS);
     const saved = STORE.getItem(multichainKeyMap.nextSecret);

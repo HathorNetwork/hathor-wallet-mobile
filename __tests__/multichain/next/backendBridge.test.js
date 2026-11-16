@@ -15,6 +15,7 @@ import {
   Output,
   Transaction,
 } from '@hathor/wallet-lib';
+import { TxNotFoundError } from '@hathor/wallet-lib/lib/errors';
 import { NEXT_CLIENT_ERROR } from '../../../src/multichain/nextClientErrors';
 import { createBackendBridge, recordOf } from '../../../src/multichain/next/backendBridge';
 import { BackendError } from '../../../src/multichain/next/backendApi';
@@ -443,7 +444,7 @@ describe('a transfer the backend no longer knows', () => {
       }
       return burn(hash);
     });
-    return { wallet, bridge: createBackendBridge(CONFIG, { wallet, network, client }) };
+    return { wallet, client, bridge: createBackendBridge(CONFIG, { wallet, network, client }) };
   };
 
   it('keeps the outputs its burn spends, so the wallet\'s node can settle it', async () => {
@@ -479,6 +480,45 @@ describe('a transfer the backend no longer knows', () => {
     });
   });
 
+  it('stays uncertain on a 404 while the backend\'s list can\'t be read: transfers off, or a proxy', async () => {
+    const { wallet, client, bridge } = forgotten();
+    client.getTransfers = async () => {
+      throw new BackendError(404, 'transfers are not configured on this backend');
+    };
+    await expect(bridge.resolveTransfer('transfer-1', { inputs: INPUTS })).rejects.toMatchObject({
+      status: 404,
+    });
+    client.getTransfers = async () => { throw new Error('The list of transfers is not a list.'); };
+    await expect(bridge.resolveTransfer('transfer-1', { inputs: INPUTS })).rejects.toThrow();
+    // Nothing was settled by the node: the backend may still push the burn.
+    expect(wallet.getFullTxById).not.toHaveBeenCalled();
+  });
+
+  it('stays uncertain on a 404 while the backend still lists it', async () => {
+    const { wallet, client, bridge } = forgotten();
+    client.getTransfers = async () => [{ id: 'transfer-1', amount: '700', status: 'signed' }];
+    await expect(bridge.resolveTransfer('transfer-1', { inputs: INPUTS })).rejects.toMatchObject({
+      status: 404,
+    });
+    expect(wallet.getFullTxById).not.toHaveBeenCalled();
+  });
+
+  it('is forgotten when the node no longer has the outputs its burn spends', async () => {
+    // Hathor Network was reset too: what the burn spends isn't there, nor can the burn be.
+    const { wallet, bridge } = forgotten();
+    wallet.getFullTxById.mockRejectedValue(new TxNotFoundError());
+    await expect(bridge.resolveTransfer('transfer-1', { inputs: INPUTS })).rejects.toMatchObject({
+      code: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+    });
+  });
+
+  it('stays uncertain when the node doesn\'t say what spent its outputs', async () => {
+    const { wallet, bridge } = forgotten();
+    wallet.getFullTxById.mockResolvedValue({ tx: { hash: UTXOS[0].txId }, meta: {} });
+    const unread = bridge.resolveTransfer('transfer-1', { inputs: INPUTS });
+    await expect(unread).rejects.toThrow('without what spent it');
+  });
+
   it('stays uncertain while the node can\'t be read, or the backend fails otherwise', async () => {
     const { wallet, bridge } = forgotten();
     wallet.getFullTxById.mockRejectedValue(new Error('node down'));
@@ -490,6 +530,17 @@ describe('a transfer the backend no longer knows', () => {
     const failing = createBackendBridge(CONFIG, { wallet: other, network, client });
     await expect(failing.resolveTransfer('transfer-1', { inputs: INPUTS })).rejects.toMatchObject({
       status: 500,
+    });
+  });
+});
+
+describe('a bridge made without a wallet', () => {
+  it('quotes, as the screens ask it to', () => {
+    const { client } = fakes();
+    const bridge = createBackendBridge(CONFIG, { network, client });
+    expect(bridge.quote({ amount: 700n, available: 1000n })).toMatchObject({
+      networkFee: BURN_DATA_VALUE,
+      receiveAmount: 700n,
     });
   });
 });

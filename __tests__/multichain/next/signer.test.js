@@ -600,6 +600,36 @@ describe('the sign-once ledger, kept small and true to disk', () => {
       .toMatchObject([{ txId: signed.txId, signatures: signed.signatures }]);
   });
 
+  it('holds the outputs of an entry whose write waits behind another, before it is on disk', async () => {
+    const memory = {};
+    let release;
+    const held = new Promise((resolve) => { release = resolve; });
+    let writes = 0;
+    const storage = {
+      getItem: (key) => memory[key] ?? null,
+      setItemAsync: async (key, value) => {
+        writes += 1;
+        // The first write, of another payment, is slow: the next one waits behind it.
+        if (writes === 1) await held;
+        memory[key] = value;
+      },
+    };
+    const ledger = createSignLedger(storage, 'ledger');
+    const other = ledger.record({ txId: 'tx-other', sendId: 's-o', outputs: ['999'], signedAt: 1 });
+    const queued = ledger.record({
+      txId: 'tx-a', sendId: 's-a', signingHash: 'aa'.repeat(32), outputs: ['5'], signedAt: 2,
+    });
+    // Neither is on disk yet.
+    expect(memory.ledger).toBeUndefined();
+    // Another transaction over the same output is refused all the same: the queued entry counts.
+    const conflict = refusal(() => ledger.check(new Uint8Array(32), ['5'], [new Uint8Array(32)]));
+    expect(conflict).toBeInstanceOf(LedgerConflictError);
+    expect(conflict.entry.txId).toBe('tx-a');
+    release();
+    await Promise.all([other, queued]);
+    expect(memory.ledger.entries.map((e) => e.txId)).toEqual(['tx-other', 'tx-a']);
+  });
+
   it('never prunes nor compacts an entry still on its way, however many settle after it', async () => {
     const storage = memoryStorage();
     const ledger = createSignLedger(storage, 'ledger');
