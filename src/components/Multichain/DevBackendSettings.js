@@ -24,6 +24,8 @@ const HEX_64 = /^[0-9a-f]{64}$/;
 const BASE58_ADDRESS = /^[1-9A-HJ-NP-Za-km-z]{25,35}$/;
 /** The wire formats the signer reads (kit/tx.js). */
 const SIGNED_FORMATS = ['v2', 'v3'];
+/** The amounts' widths a transaction can have: the client holds the backend to the one it gave. */
+const AMOUNT_WIDTHS = ['u64', 'u128'];
 
 /**
  * Whether a backend's GET /v1/config is one this app can run on.
@@ -69,6 +71,7 @@ export function usedBackendConfig(pins) {
       wire_format: next.wire_format,
       genesis_ms: next.genesis_ms,
       epoch_ms: next.epoch_ms,
+      ...(AMOUNT_WIDTHS.includes(next.amount_width) ? { amount_width: next.amount_width } : {}),
       native_token_symbol: tokenText(next.native_token_symbol, 16) ?? undefined,
       native_token_name: tokenText(next.native_token_name, 64) ?? undefined,
     },

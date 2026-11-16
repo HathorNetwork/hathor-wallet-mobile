@@ -15,12 +15,20 @@ import { COLORS } from '../../styles/themes';
 /**
  * The token a Hathor Next payment sends: a box with its symbol, as Hathor Network's Send has,
  * which opens a sheet of the tokens the wallet holds on Hathor Next, each with its balance. Token
- * symbols aren't unique on Hathor Next, so each row also names the token.
+ * symbols aren't unique on Hathor Next, so each row also names the token, and its short id
+ * (idTag) whole after a name cut to the row: a long name never hides it.
  *
  * @param {Object} props
  * @param {string} props.tokenId The token picked
  * @param {string} props.symbol Its symbol
- * @param {{ id: string, symbol: string, name: string, balance: string }[]} props.options
+ * @param {{
+ *   id: string,
+ *   symbol: string,
+ *   name: string,
+ *   plainName?: string,
+ *   idTag?: string|null,
+ *   balance: string,
+ * }[]} props.options
  * @param {Function} props.onChange Called with the id of the token picked
  */
 export const NextTokenPicker = ({ tokenId, symbol, options, onChange }) => {
@@ -61,7 +69,16 @@ export const NextTokenPicker = ({ tokenId, symbol, options, onChange }) => {
               >
                 <View style={styles.rowName}>
                   <Text style={styles.rowSymbol}>{option.symbol}</Text>
-                  <Text style={styles.rowTitle} numberOfLines={1}>{option.name}</Text>
+                  {option.idTag ? (
+                    <View style={styles.rowTitleLine}>
+                      <Text style={[styles.rowTitle, styles.rowTitleName]} numberOfLines={1}>
+                        {option.plainName}
+                      </Text>
+                      <Text style={styles.rowTitle}>{` · ${option.idTag}`}</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.rowTitle} numberOfLines={1}>{option.name}</Text>
+                  )}
                 </View>
                 <Text style={styles.rowBalance}>{option.balance}</Text>
                 <Text style={styles.check}>{option.id === tokenId ? '✓' : ''}</Text>
@@ -119,6 +136,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontSize: 12,
     color: COLORS.textColorShadow,
+  },
+  rowTitleLine: {
+    flexDirection: 'row',
+    minWidth: 0,
+  },
+  rowTitleName: {
+    flexShrink: 1,
   },
   rowBalance: {
     fontSize: 14,

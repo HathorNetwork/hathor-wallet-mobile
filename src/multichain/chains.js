@@ -167,6 +167,9 @@ export function devBackendSideChain({ url, pins }) {
     nativeTokenName: carriesHtr ? 'Hathor' : (pins.next.native_token_name ?? 'Tether USD'),
     serviceViewPub: pins.next.service_view_pub,
     wireFormat: pins.next.wire_format,
+    // The chain's genesis and its amounts' width: the client refuses a backend that changed them.
+    genesisMs: pins.next.genesis_ms ?? null,
+    amountWidth: pins.next.amount_width ?? null,
     // The Hathor Network this side chain transfers from, as the backend names it: on any other
     // network, it is no side chain.
     hathorNetwork: pins.hathor?.network ?? null,
@@ -188,9 +191,9 @@ export function devBackendSideChain({ url, pins }) {
 
 /**
  * The backend of devnet-alpha, hathor-next's deployed devnet, and its GET /v1/config as the app
- * pins it. The client refuses a backend whose network, native token, view key or wire format
- * differ from these, and the burn check pays only this transfer address: a devnet reset needs them
- * updated here.
+ * pins it. The client refuses a backend whose network, native token, view key, wire format,
+ * amounts' width or genesis differ from these, and the burn check pays only this transfer
+ * address: a devnet reset needs them updated here.
  */
 const DEVNET_ALPHA_BACKEND_URL = 'https://wallet-backend.devnet-alpha.samba.hathor.network';
 const DEVNET_ALPHA_PINS = {
@@ -201,6 +204,8 @@ const DEVNET_ALPHA_PINS = {
     native_token: 'e5bcdd06b7d2b896fe194e09b55d687737af3767407d9efc957ac0ea84f1e54c',
     service_view_pub: 'b292d1f347dd954a23814d66d60adc6848d89e97f09be952bb2f5f9025fe2e0e',
     wire_format: 'v3',
+    amount_width: 'u64',
+    genesis_ms: 1794240267000,
     native_token_symbol: 'nHTR',
     native_token_name: 'new HTR (devnet-alpha play money)',
   },

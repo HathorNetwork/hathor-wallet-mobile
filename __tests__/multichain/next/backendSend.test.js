@@ -640,6 +640,50 @@ describe('a payment on its way', () => {
     expect(entries).toMatchObject([{ sendId: 'send-1', rejected: true, reason: 'expired' }]);
   });
 
+  it('the backend calls failed is still followed: it goes out again, and settles', async () => {
+    const backend = fakeBackend({ sendStatus: { status: 'failed', reason: 'busy' } });
+    client = await connected(backend);
+    const unconfirmed = waitFor('unconfirmed');
+    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+    await unconfirmed;
+    // The same signed bytes went out again, without waiting for the next connect.
+    expect(backend.resubmitted.length).toBeGreaterThan(0);
+    const recorded = waitFor('recorded');
+    backend.setSendStatus({ status: 'recorded' });
+    await expect(recorded).resolves.toMatchObject({ sendId: 'send-1' });
+  });
+
+  it('the backend calls failed, and no longer keeps, frees its outputs', async () => {
+    const storage = memoryStorage();
+    const backend = fakeBackend({
+      sendStatus: { status: 'failed', reason: 'busy' },
+      resubmitStatus: 'forgotten',
+    });
+    client = await connected(backend, storage);
+    const expired = waitFor('expired');
+    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+    await expect(expired).resolves.toMatchObject({ sendId: 'send-1', reason: 'forgotten' });
+    const { entries } = storage.getItem(Object.keys(storage.items()).find(
+      (key) => key.startsWith('wallet:multichain:nextSigned:'),
+    ));
+    expect(entries).toMatchObject([{ sendId: 'send-1', rejected: true }]);
+  });
+
+  it('heard recorded by its follow-up is recorded in the ledger: its outputs are never signed again', async () => {
+    const storage = memoryStorage();
+    const backend = fakeBackend();
+    client = await connected(backend, storage);
+    const recorded = waitFor('recorded');
+    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+    await recorded;
+    const key = Object.keys(storage.items())
+      .find((k) => k.startsWith('wallet:multichain:nextSigned:'));
+    // The statement doesn't list it yet (its history is empty): only the follow-up said so.
+    // Its ledger write follows the event.
+    await new Promise((resolve) => { setTimeout(resolve, 20); });
+    expect(storage.getItem(key).entries).toMatchObject([{ sendId: 'send-1', recorded: true }]);
+  });
+
   it('is followed again after a reconnect to the same network, and settles', async () => {
     const backend = fakeBackend({ sendStatus: { status: 'submitted' } });
     client = await connected(backend);
@@ -690,13 +734,30 @@ describe('a lock while a payment asks about an earlier one', () => {
 });
 
 describe('the sign-once ledger kept before', () => {
-  it('is dropped, under its old key outside the wallet\'s', async () => {
+  it('moves its payments still on their way to the ledger kept now, then goes', async () => {
     const walletId = bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), hexToBytes(CASE.pub_b)));
-    const storage = memoryStorage({
-      [`multichain:nextSigned:1777:${walletId}`]: JSON.stringify({ entries: [] }),
+    const entry = (sendId, extra = {}) => ({
+      sendId,
+      signingHash: 'ab'.repeat(32),
+      inputs: CASE.inputs.map((i) => i.one_time_key),
+      signatures: [],
+      signedTx: 'cafe',
+      txId: sendId.replace('send-', '').padStart(64, '0'),
+      ...extra,
     });
-    const client = await connected(fakeBackend(), storage);
+    const storage = memoryStorage({
+      [`multichain:nextSigned:1777:${walletId}`]: JSON.stringify({
+        entries: [entry('send-0'), entry('send-9', { recorded: true })],
+      }),
+    });
+    const backend = fakeBackend();
+    const client = await connected(backend, storage);
     client.disconnect();
     expect(Object.keys(storage.items())).not.toContain(`multichain:nextSigned:1777:${walletId}`);
+    const { entries } = storage.getItem(`wallet:multichain:nextSigned:1777:0:${walletId}`);
+    // The one still on its way holds its outputs here now, and went out again; a settled one
+    // has nothing left to hold.
+    expect(entries.map((e) => e.sendId)).toEqual(['send-0']);
+    expect(backend.resubmitted.map((r) => r.path)).toEqual(['/v1/sends/send-0/resubmit']);
   });
 });

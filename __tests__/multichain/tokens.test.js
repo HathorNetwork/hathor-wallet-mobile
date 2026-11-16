@@ -111,6 +111,15 @@ describe('the Dashboard list of both chains', () => {
     expect(rows.find((row) => row.uid === 'next:b3').name).toMatch(/ · b3$/);
   });
 
+  test('gives a list that cuts long names the id apart, and none to the native token', () => {
+    const rows = list();
+    expect(rows.find((row) => row.uid === 'next:b1')).toMatchObject({
+      plainName: 'Test Token', idTag: 'b1',
+    });
+    expect(rows.find((row) => row.uid === '00')).toMatchObject({ plainName: 'Hathor', idTag: null });
+    expect(rows.find((row) => row.uid === 'a1').idTag).toBeNull();
+  });
+
   test('shows a Hathor Next amount with all its digits when it has more than Hathor Network', () => {
     const mtk = list().find((row) => row.uid === 'next:b3');
     expect(mtk).toMatchObject({ available: 1234567n, decimalPlaces: 8 });

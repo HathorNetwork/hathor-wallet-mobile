@@ -383,14 +383,25 @@ export function checkCreateRequest(request, {
  */
 export function createSignLedger(storage, key) {
   const load = () => storage.getItem(key) ?? { entries: [] };
+  // Entries asked to be saved whose write hasn't ended: every check counts them already.
+  const saving = [];
+  // Writes run one at a time, in the order asked: each reads the ledger when its turn comes, so
+  // none undoes another.
+  let writes = Promise.resolve();
+  const serially = (op) => {
+    const run = writes.then(op);
+    writes = run.catch(() => {});
+    return run;
+  };
   // The store's memory takes a value before its write to disk ends: a write that fails puts the
-  // value that was there back, so no entry counts that isn't on disk.
+  // value that was there back, so no entry counts that isn't on disk. No other write ran since,
+  // so that value holds everything they saved.
   const save = async (entries) => {
     const previous = load();
     try {
       await storage.setItemAsync(key, { entries });
     } catch (e) {
-      storage.setItemAsync(key, previous).catch(() => {});
+      await storage.setItemAsync(key, previous).catch(() => {});
       throw e;
     }
   };
@@ -407,7 +418,7 @@ export function createSignLedger(storage, key) {
   // A settled entry keeps only what the check needs, so the ledger stays small: it is one row of
   // the storage the app reads whole at every start. The outputs a recorded transaction spent go
   // on holding, and the newest settled entries are kept, up to MAX_SETTLED_ENTRIES.
-  const settle = async (txId, patch) => {
+  const settle = (txId, patch) => serially(async () => {
     const { entries } = load();
     if (!entries.some((e) => e.txId === txId && !e.recorded && !e.rejected)) {
       return;
@@ -418,7 +429,7 @@ export function createSignLedger(storage, key) {
       .sort((a, b) => (b.signedAt ?? 0) - (a.signedAt ?? 0))
       .slice(0, MAX_SETTLED_ENTRIES);
     await save([...pending, ...done]);
-  };
+  });
   const compact = (entry) => ({
     txId: entry.txId,
     sendId: entry.sendId,
@@ -442,7 +453,7 @@ export function createSignLedger(storage, key) {
       const hash = bytesToHex(signingHash);
       const spends = new Set(outputs);
       const named = new Set(keys.map(bytesToHex));
-      for (const entry of load().entries) {
+      for (const entry of [...load().entries, ...saving]) {
         const held = entry.rejected ? [] : outputsOf(entry);
         const holds = held === null
           ? entry.inputs.some((k) => named.has(k))
@@ -463,7 +474,35 @@ export function createSignLedger(storage, key) {
      * @param {Object} entry
      */
     async record(entry) {
-      await save([...load().entries, entry]);
+      saving.push(entry);
+      try {
+        await serially(() => save([...load().entries, entry]));
+      } finally {
+        saving.splice(saving.indexOf(entry), 1);
+      }
+    },
+
+    /**
+     * Takes in the entries of a ledger kept before under another key: those still on their way
+     * hold their outputs here too. One already here is kept as it is.
+     *
+     * @param {Object[]} entries
+     */
+    async adopt(entries) {
+      await serially(async () => {
+        const current = load().entries;
+        const known = new Set(current.map((e) => e.txId));
+        const pending = entries.filter((e) => e && typeof e.txId === 'string'
+          && !known.has(e.txId) && !e.recorded && !e.rejected);
+        if (pending.length > 0) {
+          await save([...current, ...pending]);
+        }
+      });
+    },
+
+    /** Resolves once every write asked for so far ended, saved or not. */
+    flush() {
+      return writes;
     },
 
     /**
@@ -523,7 +562,13 @@ export async function verifyAndSign(request, context, check = checkSignRequest) 
   }
   const { bytes, tx, signingHash, secrets, keys } = checked;
   const outputs = spentOutputs(tx);
-  const previous = context.ledger.check(signingHash, outputs, keys);
+  let previous = context.ledger.check(signingHash, outputs, keys);
+  if (previous) {
+    // Its write may still be on its way: its signatures leave again only once it is on disk. One
+    // whose write failed is gone, and this transaction is signed as new.
+    await context.ledger.flush();
+    previous = context.ledger.check(signingHash, outputs, keys);
+  }
   if (previous && !previous.signatures) {
     // Settled and kept small: a transaction recorded once is never signed again.
     refuse('This transaction was already recorded.');

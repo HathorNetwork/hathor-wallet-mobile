@@ -72,6 +72,20 @@ export const SendAddressInput = () => {
     && isTransferAddress(address, sideChainConfig)
     ? t`This address is only for transfers to Hathor Next, and anything sent to it directly is lost. Use Transfer between chains instead.`
     : null);
+  // What is wrong with an address as it is typed: the transfer address, or, with the side chain
+  // connected, a Hathor Next address the app won't pay (the legacy form, or a key nobody can spend
+  // from), with its reason. Shown at once, as Next stays off for it.
+  const typedAddressError = (address) => {
+    const transferError = transferAddressError(address);
+    if (transferError) {
+      return transferError;
+    }
+    const value = (address ?? '').trim();
+    return sideChainConnected
+      && addressChain(value, network, { allowShielded }) === CHAIN.HATHOR_NEXT
+      ? nextAddressError(value)
+      : null;
+  };
   // A tap anywhere on the card around the input focuses it: an empty multiline input is one
   // line tall, so the card's padding wouldn't take the tap otherwise.
   const inputRef = useRef(null);
@@ -82,13 +96,13 @@ export const SendAddressInput = () => {
       setFormModel((prev) => ({
         ...prev,
         address: route.params.address,
-        error: transferAddressError(route.params.address),
+        error: typedAddressError(route.params.address),
       }));
     }
   }, [route.params?.address]);
 
   const onAddressChange = (text) => {
-    setFormModel({ address: text, error: transferAddressError(text) });
+    setFormModel({ address: text, error: typedAddressError(text) });
   };
 
   // The chain of a valid address, once the side chain is connected: before, a Hathor Next address

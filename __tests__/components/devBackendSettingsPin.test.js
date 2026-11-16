@@ -52,6 +52,7 @@ import {
   PRE_SETTINGS_TESTNET,
 } from '../../src/constants';
 import { STORE } from '../../src/store';
+import * as chains from '../../src/multichain/chains';
 import { DevBackendSettings } from '../../src/components/Multichain/DevBackendSettings';
 import { FAKE_NETWORK } from '../multichain/fakes/sideChain';
 /* eslint-enable import/first */
@@ -110,6 +111,20 @@ const pinScreen = () => {
   const call = mockNavigation.navigate.mock.calls.find(([name]) => name === 'PinScreen');
   return call ? call[1] : null;
 };
+
+describe('a backend for local testing that passes as a network holding value', () => {
+  test('is refused, with its reason, and nothing switches', async () => {
+    jest.spyOn(chains, 'impersonatedSideChain').mockReturnValue({ holdsValue: true });
+    const { sets, press, type } = await render({ passkey: true });
+    await type(URL);
+    await press('Use this backend');
+    expect(sets).toEqual([]);
+    expect(mockNavigation.navigate).not.toHaveBeenCalled();
+    const texts = mounted.root.findAll((node) => typeof node.props.children === 'string')
+      .map((node) => node.props.children);
+    expect(texts.join(' ')).toContain('holds value');
+  });
+});
 
 describe('switching the backend for local testing', () => {
   test('asks for the PIN first, and switches with it, so Hathor Next loads at once', async () => {

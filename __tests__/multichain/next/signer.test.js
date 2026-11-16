@@ -549,6 +549,75 @@ describe('the sign-once ledger, kept small and true to disk', () => {
       .rejects.toThrow('This transaction was already recorded.');
   });
 
+  it('never lets a failed write take away an entry another write saved', async () => {
+    const memory = {};
+    let writes = 0;
+    const storage = {
+      getItem: (key) => memory[key] ?? null,
+      setItemAsync: async (key, value) => {
+        memory[key] = value;
+        writes += 1;
+        // The disk refuses the first write, and takes every other.
+        if (writes === 1) throw new Error('disk full');
+      },
+    };
+    const ledger = createSignLedger(storage, 'ledger');
+    const a = ledger.record({ txId: 'tx-a', sendId: 's-a', outputs: ['1'], signedAt: 1 });
+    const b = ledger.record({ txId: 'tx-b', sendId: 's-b', outputs: ['2'], signedAt: 2 });
+    await expect(a).rejects.toThrow('disk full');
+    await expect(b).resolves.toBeUndefined();
+    await new Promise((resolve) => { setTimeout(resolve, 10); });
+    // tx-b was saved, and nothing took it away again.
+    expect(memory.ledger.entries.map((e) => e.txId)).toEqual(['tx-b']);
+  });
+
+  it('gives a transaction\'s signatures again only once its entry is on disk', async () => {
+    const memory = {};
+    let release;
+    const held = new Promise((resolve) => { release = resolve; });
+    let writes = 0;
+    const storage = {
+      getItem: (key) => memory[key] ?? null,
+      setItemAsync: async (key, value) => {
+        memory[key] = value;
+        writes += 1;
+        // The first write is slow, and fails; its rollback and every later one are saved.
+        if (writes === 1) {
+          await held;
+          throw new Error('disk full');
+        }
+      },
+    };
+    const context = contextOf(CASE, { ledger: createSignLedger(storage, 'ledger') });
+    const first = verifyAndSign(requestOf(CASE), context);
+    // Asked again while the first write is on its way: the answer waits for that write.
+    const second = verifyAndSign(requestOf(CASE), context);
+    release();
+    await expect(first).rejects.toThrow('disk full');
+    const signed = await second;
+    // What the second answer gave is on disk.
+    expect(memory.ledger.entries)
+      .toMatchObject([{ txId: signed.txId, signatures: signed.signatures }]);
+  });
+
+  it('never prunes nor compacts an entry still on its way, however many settle after it', async () => {
+    const storage = memoryStorage();
+    const ledger = createSignLedger(storage, 'ledger');
+    await ledger.record({
+      txId: 'tx-pending', sendId: 's-p', outputs: ['1'], signedAt: 0, signedTx: 'cafe',
+    });
+    for (let i = 0; i < MAX_SETTLED_ENTRIES + 5; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await ledger.record({
+        txId: `tx-${i}`, sendId: `s-${i}`, outputs: [String(1000 + i)], signedAt: i + 1,
+      });
+      // eslint-disable-next-line no-await-in-loop
+      await ledger.markRecorded(`tx-${i}`);
+    }
+    // The oldest entry of all, and still on its way: kept whole, its bytes ready to go out again.
+    expect(ledger.pending()).toMatchObject([{ txId: 'tx-pending', signedTx: 'cafe' }]);
+  });
+
   it('keeps only the newest settled entries', async () => {
     const storage = memoryStorage();
     const ledger = createSignLedger(storage, 'ledger');
@@ -602,6 +671,15 @@ describe('shapes the network refuses, refused before signing', () => {
           bytesToBigintLE(hexToBytes(input.otk_offset)) + ORDER,
         )),
       }
+      : input));
+    expect(refusedFor(requestOf(CASE, { inputs })))
+      .toBe('An input\'s offset is not a canonical scalar.');
+  });
+
+  it('refuses an input offset written in other than its 32 bytes', () => {
+    // A zero byte more names the same scalar, in a form no honest backend writes.
+    const inputs = inputsOf(CASE).map((input, i) => (i === 0
+      ? { ...input, otk_offset: `${input.otk_offset}00` }
       : input));
     expect(refusedFor(requestOf(CASE, { inputs })))
       .toBe('An input\'s offset is not a canonical scalar.');

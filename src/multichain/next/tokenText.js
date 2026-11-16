@@ -23,9 +23,16 @@ export function tokenText(text, maxBytes) {
     return null;
   }
   const encoder = new TextEncoder();
-  let clean = text.replace(CONTROL_CHARACTERS, '').trim();
-  while (encoder.encode(clean).length > maxBytes) {
-    clean = [...clean].slice(0, -1).join('');
+  const clean = text.replace(CONTROL_CHARACTERS, '').trim();
+  // Whole characters, while they fit: one pass, however long the text a backend sends.
+  let bytes = 0;
+  let cut = '';
+  for (const char of clean) {
+    bytes += encoder.encode(char).length;
+    if (bytes > maxBytes) {
+      break;
+    }
+    cut += char;
   }
-  return clean || null;
+  return cut || null;
 }

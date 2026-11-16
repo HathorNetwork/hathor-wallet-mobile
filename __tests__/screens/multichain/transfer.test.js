@@ -40,7 +40,11 @@ import {
 } from '../../../src/constants';
 import { STORE } from '../../../src/store';
 import ChainTransferScreen from '../../../src/screens/Multichain/ChainTransferScreen';
-import ChainTransferConfirmScreen from '../../../src/screens/Multichain/ChainTransferConfirmScreen';
+import ChainTransferConfirmScreen, {
+  earlierTransferDoneText,
+  earlierTransferEndedText,
+  earlierTransferPendingText,
+} from '../../../src/screens/Multichain/ChainTransferConfirmScreen';
 import { SendAddressInput } from '../../../src/screens/SendAddressInput';
 import AmountTextInput from '../../../src/components/AmountTextInput';
 import FeedbackModal from '../../../src/components/FeedbackModal';
@@ -229,9 +233,13 @@ describe('the transfer between chains', () => {
         amount: 10000n,
         toAddress: OWN_ADDRESS,
         pinCode: '123456',
+        requestId: expect.any(String),
       },
     });
+    const { requestId } = actions
+      .find((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED).payload;
     await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.SENDING, requestId }));
       store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE }));
     });
     const feedback = renderer.root.findByType(FeedbackModal);
@@ -241,7 +249,7 @@ describe('the transfer between chains', () => {
 
   test('stays while the transfer is sent, and keeps it when it ends without an answer', async () => {
     const navigation = holdableNavigation();
-    const { store } = makeStore();
+    const { store, actions } = makeStore();
     const renderer = await mount(
       store, (
         <ChainTransferConfirmScreen
@@ -251,8 +259,13 @@ describe('the transfer between chains', () => {
       )
     );
     expect(navigation.held()).toBe(false);
+    await act(async () => { button(renderer, 'Confirm and send').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([route]) => route === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    const { requestId } = actions
+      .find((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED).payload;
     await act(async () => {
-      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.SENDING }));
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.SENDING, requestId }));
     });
     expect(navigation.held()).toBe(true);
     expect(navigation.setOptions).toHaveBeenLastCalledWith({ gestureEnabled: false });
@@ -275,8 +288,59 @@ describe('the transfer between chains', () => {
     });
   });
 
+  test("shows an earlier transfer's outcome as that one's, then lets this one be confirmed", async () => {
+    const navigation = holdableNavigation();
+    const { store } = makeStore();
+    // Signed without an answer before this screen opened (in an earlier run of the app, say).
+    store.dispatch(multichainTransferUpdate({
+      status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1', requestId: null,
+    }));
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={navigation}
+          route={{ params: { amount: '500', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    const modalText = () => renderer.root.findByType(FeedbackModal).props.text;
+    expect(modalText()).toBe(earlierTransferPendingText());
+    expect(button(renderer, 'Confirm and send').props.disabled).toBe(true);
+    // The poll settles it as sent: never this transfer's success.
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.DONE, uncertainId: null, record: { id: 'transfer-1' },
+      }));
+    });
+    expect(modalText()).toBe(earlierTransferDoneText());
+    expect(modalText()).not.toContain('will arrive');
+    const ok = renderer.root.findByType(FeedbackModal).props.action;
+    await act(async () => { ok.props.onPress(); });
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+    expect(button(renderer, 'Confirm and send').props.disabled).toBe(false);
+  });
+
+  test("names an earlier transfer that didn't go through as that one", async () => {
+    const { store } = makeStore();
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={holdableNavigation()}
+          route={{ params: { amount: '500', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.ERROR, error: 'Nothing left your wallet.', requestId: null,
+      }));
+    });
+    expect(renderer.root.findByType(FeedbackModal).props.text)
+      .toBe(earlierTransferEndedText('Nothing left your wallet.'));
+  });
+
   test("names Hathor Network's native token by the symbol the fullnode reports", async () => {
-    const { store } = makeStore({ nativeToken: { name: 'Test Native', symbol: 'TNT' } });
+    const { store, actions } = makeStore({ nativeToken: { name: 'Test Native', symbol: 'TNT' } });
     const params = { amount: '10000', toAddress: OWN_ADDRESS };
     const form = await mount(
       store, (
@@ -296,14 +360,20 @@ describe('the transfer between chains', () => {
     expect(formText.join(' ')).not.toContain('HTR');
     await act(async () => { form.unmount(); });
 
+    const navigation = holdableNavigation();
     const confirm = await mount(
       store,
-      <ChainTransferConfirmScreen navigation={holdableNavigation()} route={{ params }} />,
+      <ChainTransferConfirmScreen navigation={navigation} route={{ params }} />,
     );
     expect(textOf(confirm)).toContain('100.00 TNT');
     expect(textOf(confirm).join(' ')).not.toContain('HTR');
+    await act(async () => { button(confirm, 'Confirm and send').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([route]) => route === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    const { requestId } = actions
+      .find((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED).payload;
     await act(async () => {
-      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE }));
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE, requestId }));
     });
     expect(confirm.root.findByType(FeedbackModal).props.text)
       .toBe('Your TNT will arrive on Hathor Next in about 2 minutes.');

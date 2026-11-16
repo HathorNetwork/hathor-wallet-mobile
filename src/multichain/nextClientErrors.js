@@ -49,6 +49,8 @@ export const NEXT_CLIENT_ERROR = {
   TRANSFER_UNCERTAIN: 'transfer-uncertain',
   // Signed, and it never reached the network: nothing left the wallet.
   TRANSFER_NOT_SENT: 'transfer-not-sent',
+  // Signed, and the backend no longer knows it: nobody can say more of it.
+  TRANSFER_FORGOTTEN: 'transfer-forgotten',
   // The amount needs more outputs than one transaction holds.
   TRANSFER_TOO_MANY_INPUTS: 'transfer-too-many-inputs',
   // The backend doesn't create tokens, or its wallet service can't settle a creation.
@@ -104,6 +106,8 @@ export function nextClientErrorMessage(code) {
       return t`We couldn't confirm the transfer yet. Check your Hathor Network history before trying again.`;
     case NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT:
       return t`The transfer didn't go through. Nothing left your wallet.`;
+    case NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN:
+      return t`Hathor Next no longer knows this transfer. Check your Hathor Network history before you transfer again.`;
     case NEXT_CLIENT_ERROR.TRANSFER_TOO_MANY_INPUTS:
       return t`This amount needs too many of your Hathor Network outputs for one transfer. Try a smaller amount.`;
     case NEXT_CLIENT_ERROR.TOKENS_UNAVAILABLE:

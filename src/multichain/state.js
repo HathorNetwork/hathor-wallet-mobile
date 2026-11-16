@@ -114,6 +114,8 @@ const TRANSFER_INITIAL_STATE = {
   error: null,
   // A transfer signed without an answer: no other one starts until it settles.
   uncertainId: null,
+  // The confirm screen whose request the outcome is: any other shows it as an earlier transfer's.
+  requestId: null,
 };
 
 export const MULTICHAIN_INITIAL_STATE = {

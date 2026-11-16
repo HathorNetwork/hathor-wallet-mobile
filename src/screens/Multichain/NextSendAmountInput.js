@@ -103,6 +103,8 @@ export default function NextSendAmountInput() {
       id: token.uid,
       symbol: token.uid === nativeTokenId ? nativeSymbol : token.symbol,
       name: token.name,
+      plainName: token.plainName,
+      idTag: token.idTag,
       balance: render(balanceOf(token.uid)),
     }));
 

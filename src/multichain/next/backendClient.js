@@ -81,8 +81,8 @@ const SEND_STATUS = {
   submitted: 'pending',
   awaiting_signatures: 'pending',
   recorded: 'recorded',
-  // Not a verdict that the bytes can never land: the wallet keeps them and submits them again at
-  // its next connect. Not settled yet.
+  // Not a verdict that the bytes can never land: the wallet keeps following them, and submits
+  // them again now and then, and at its next connect. Not settled yet.
   failed: 'unconfirmed',
   // The backend never took the signatures: the payment won't land, and its inputs are free again.
   expired: 'expired',
@@ -93,8 +93,12 @@ const SEND_STATUS = {
 // The backend's states after which a payment's inputs are free: the app takes its word for it.
 const FREES_INPUTS = ['rejected', 'expired'];
 
-// The states a payment is no longer followed in.
-const SEND_SETTLED = ['recorded', 'failed', 'expired', 'unconfirmed'];
+// The states a payment is no longer followed in. One the backend calls failed (unconfirmed) is
+// still followed: it can still settle.
+const SEND_SETTLED = ['recorded', 'failed', 'expired'];
+
+// How often a payment the backend calls failed is submitted again while it is followed.
+const FAILED_RESUBMIT_MS = 60000;
 
 const sendStatusOf = (status) => (
   typeof status === 'string' && Object.prototype.hasOwnProperty.call(SEND_STATUS, status)
@@ -145,6 +149,15 @@ export function pinMismatch(config, remote) {
   // The Hathor Network it transfers from, which the app is on (getSideChainConfig).
   if (config.hathorNetwork) {
     pins.push(['hathor.network', config.hathorNetwork, remote?.hathor?.network]);
+  }
+  // The chain's genesis, which names the sign-once ledger: a backend that changed it would get a
+  // new, empty one, and signatures again over outputs a payment still on its way spends.
+  if (config.genesisMs !== undefined && config.genesisMs !== null) {
+    pins.push(['genesis_ms', config.genesisMs, next.genesis_ms]);
+  }
+  // The amounts' width the signer holds a transaction to.
+  if (config.amountWidth) {
+    pins.push(['amount_width', config.amountWidth, next.amount_width]);
   }
   const wrong = pins.find(([, mine, theirs]) => mine !== theirs);
   return wrong ? wrong[0] : null;
@@ -267,8 +280,10 @@ function compareCursorsDesc(a, b) {
 /**
  * The Hathor Next client backed by the Hathor Next backend: the backend reads the wallet service
  * and builds transactions, and this client keeps the keys and signs. The keys live in this
- * closure only, from the unlock that derived them to the app's end; nothing secret is stored or
- * sent. Its interface is the client's (see nextClient.js).
+ * closure, from the unlock that derived them to the next lock; the client stores nothing secret,
+ * and sends only public keys and signatures. (The app keeps the spend secret encrypted with the
+ * PIN, as it keeps the words: src/multichain/keys.js.) Its interface is the client's (see
+ * nextClient.js).
  *
  * @param {{ fetchImpl?: Function, WebSocketImpl?: Function, nowMs?: Function }} [deps]
  */
@@ -374,8 +389,15 @@ export function createBackendNextClient({
     return api.login(bytesToHex(walletId), { ts, scope, sig: bytesToHex(sig) });
   }
 
+  // A login that a disconnect or another connect overtook keeps nothing: its session is another
+  // backend's, and the next request would carry it there.
   async function login() {
-    session = await openSession(SCOPE.FULL);
+    const mine = generation;
+    const opened = await openSession(SCOPE.FULL);
+    if (mine !== generation) {
+      throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+    }
+    session = opened;
   }
 
   // A call with the session, logging in again once when the session expired. A call that a
@@ -437,14 +459,26 @@ export function createBackendNextClient({
       { since: since ?? undefined, limit: HISTORY_FETCH_LIMIT },
     ));
     let added = 0;
-    for (const line of page.history ?? []) {
+    // An empty answer is an empty page, and a line the app can't read is left out, and logged:
+    // the rest of the statement still shows.
+    const history = Array.isArray(page?.history) ? page.history : [];
+    const readable = history.filter((line) => {
+      const ok = line !== null && typeof line === 'object'
+        && (typeof line.cursor === 'string' || typeof line.cursor === 'number')
+        && typeof line.token === 'string';
+      if (!ok) {
+        log.error('A Hathor Next statement line could not be read; it was left out.');
+      }
+      return ok;
+    });
+    for (const line of readable) {
       if (!lines.has(line.cursor)) {
         lines.set(line.cursor, line);
         added += 1;
       }
     }
-    const last = page.history?.[page.history.length - 1];
-    const more = Boolean(page.next) && page.next !== since;
+    const last = readable[readable.length - 1];
+    const more = Boolean(page?.next) && page.next !== since;
     return { added, tail: more ? page.next : (last?.cursor ?? since), more };
   }
 
@@ -541,7 +575,17 @@ export function createBackendNextClient({
     const tick = () => schedule(async () => {
       if (mine !== generation || SEND_SETTLED.includes(entry.status)) return;
       try {
-        const status = await withSession((token) => api.getSend(entry.sendId, token));
+        let status = await withSession((token) => api.getSend(entry.sendId, token));
+        // Failed is no verdict: the same bytes go out again, now and then, as at a connect. An
+        // answer that settles it (recorded, or its inputs free) is its state from now on.
+        if (status?.status === 'failed'
+          && nowMs() - (entry.resubmittedAt ?? 0) >= FAILED_RESUBMIT_MS) {
+          entry.resubmittedAt = nowMs();
+          const answer = await resubmit(entry);
+          if (answer && ['recorded', ...FREES_INPUTS].includes(answer.status)) {
+            status = answer;
+          }
+        }
         const next = sendStatusOf(status?.status);
         if (FREES_INPUTS.includes(status?.status)) {
           await ledger.markRejected(entry.txId, status.reason ?? status.status);
@@ -715,7 +759,9 @@ export function createBackendNextClient({
         if (mine !== generation) return;
         try {
           if (feedSession.expires_at - SESSION_RENEW_MARGIN_S <= nowS()) {
-            feedSession = await openSession(SCOPE.READ);
+            const opened = await openSession(SCOPE.READ);
+            if (mine !== generation) return;
+            feedSession = opened;
           }
           await refreshReachability();
         } catch (e) {
@@ -845,21 +891,28 @@ export function createBackendNextClient({
         }
         timing = { genesisMs: remote.next.genesis_ms, epochMs: remote.next.epoch_ms };
         sendFee = readAmount(remote.next.send_fee ?? '0') ?? 0n;
-        amountWidth = remote.next.amount_width ?? null;
+        // The pinned width, which the backend's matched: the signer holds transactions to it.
+        amountWidth = config.amountWidth ?? remote.next.amount_width ?? null;
         issuance = remote.issuance === true;
         const pubA = hexToBytes(config.serviceViewPub);
         walletId = walletIdOf(pubA, keys.pubB);
         // One ledger per Hathor Next wallet and chain, whatever Hathor Network runs beside it. The
         // genesis tells a chain apart from the one before a reset, which keeps the network id and
-        // the view key and starts the global indexes over. Under the `wallet:` keys, so a wallet
-        // reset clears it with the rest of the wallet. The ledger kept before under another key
-        // is dropped.
-        storage.removeItem?.(`multichain:nextSigned:${config.nextNetworkId}:${bytesToHex(walletId)}`);
+        // the view key and starts the global indexes over (pinned, so a backend can't change it).
+        // Under the `wallet:` keys, so a wallet reset clears it with the rest of the wallet.
         ledger = createSignLedger(
           storage,
           `wallet:multichain:nextSigned:${config.nextNetworkId}:${remote.next.genesis_ms}:`
             + `${bytesToHex(walletId)}`,
         );
+        // The ledger kept before under another key: its payments still on their way move to this
+        // one, so they keep holding their outputs and go out again below; then it goes.
+        const oldKey = `multichain:nextSigned:${config.nextNetworkId}:${bytesToHex(walletId)}`;
+        const old = storage.getItem(oldKey);
+        if (old) {
+          await ledger.adopt(Array.isArray(old.entries) ? old.entries : []);
+          storage.removeItem?.(oldKey);
+        }
         nonces = createNonceStore(
           storage,
           `multichain:nextTokenNonces:${config.nextNetworkId}:${bytesToHex(walletId)}`,
@@ -890,8 +943,9 @@ export function createBackendNextClient({
 
         await login();
         current();
-        feedSession = await openSession(SCOPE.READ);
+        const readSession = await openSession(SCOPE.READ);
         current();
+        feedSession = readSession;
         await refreshAll();
         current();
         await resubmitPending();
