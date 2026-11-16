@@ -320,6 +320,26 @@ describe('each check of a token creation, on its own', () => {
       .toBe('The transaction\'s excess signature is wrong.');
   });
 
+  it('refuses an amount width other than the network\'s', () => {
+    expect(refusedFor(requestOf(PUBLIC), { ...contextOf(PUBLIC), amountWidth: 'u128' }))
+      .toBe('The transaction\'s amounts are u64; this network takes u128.');
+    expect(refusal(() => checkCreateRequest(requestOf(PUBLIC), {
+      ...contextOf(PUBLIC), amountWidth: 'u64',
+    }))).toBeNull();
+  });
+
+  it('refuses an excess that is the identity, though its signature holds', () => {
+    const bytes = hexToBytes(HIDDEN.unsigned_tx);
+    const tx = parseIssuanceTx(bytes);
+    const pointAt = bytesToHex(bytes).indexOf(bytesToHex(tx.excess.point)) / 2;
+    bytes.set(new Uint8Array(32), pointAt);
+    // An identity excess "signs" with s = k: s·G = R + e·0.
+    const k = 4242n;
+    bytes.set(concatBytes(publicKeyOf(k), bigintToBytesLE(k)), tx.excess.signatureOffset);
+    expect(refusedFor(requestOf(HIDDEN, { unsigned_tx: bytesToHex(bytes) }), contextOf(HIDDEN)))
+      .toBe('The transaction\'s excess is the identity.');
+  });
+
   it('refuses a fee in another token than the native one', () => {
     expect(refusedFor(forged(CLAIMS, { feeToken: 0 })))
       .toBe('The fee is not paid in the native token.');

@@ -24,8 +24,9 @@ import { nextNonce } from './kit/authority';
  * kept apart, as a floor, so a creation the network refused, or one the registry never lists,
  * never brings a signed nonce round again.
  *
- * Saved outside the `wallet:` keys, as the sign-once ledger is: a wallet reset that brings the
- * same words back keeps it.
+ * Saved outside the `wallet:` keys, unlike the sign-once ledger: a wallet reset that brings the
+ * same words back keeps it, as a nonce signed before and used again costs two tokens their
+ * privacy.
  *
  * @param {{ getItem: Function, setItemAsync: Function }} storage A durable write is awaited
  * @param {string} key

@@ -1353,6 +1353,7 @@ export function createBackendNextClient({
         intent: { symbol, name, amount, mintAuthority, meltAuthority },
         nativeTokenId: native,
         serviceViewPub: config.serviceViewPub,
+        amountWidth,
         maxFee: maxFee(),
         nowS: Math.floor(nowMs() / 1000),
         ledger,

@@ -1523,6 +1523,33 @@ describe('a Hathor Next token creation, after review', () => {
     env.dispatch(draft('token-off'));
     await wait(1000);
     expect(createSpy).not.toHaveBeenCalled();
+    // The confirm screen still open says so, rather than wait for nothing.
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      draftId: 'token-off',
+      error: "The token couldn't be created.",
+    });
+  });
+
+  test('of a passkey wallet whose passkey was dismissed is created when Create is tapped again', async () => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    withPasskeyWords.mockImplementation(async (fn) => fn(WORDS));
+    const env = setup();
+    await connect(env);
+    withPasskeyWords.mockReset();
+    withPasskeyWords.mockRejectedValueOnce(new PasskeyCancelledError());
+    withPasskeyWords.mockImplementation(async (fn) => fn(WORDS));
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-passkey'));
+    await wait(10);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.IDLE, draftId: null,
+    });
+    // Nothing was signed: the same draft goes when tapped again.
+    env.dispatch(draft('token-passkey'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    expect(env.getState().multichain.createToken.draftId).toBe('token-passkey');
   });
 
   test('is never created twice, even once its state was cleared', async () => {

@@ -1007,10 +1007,19 @@ export function* onNextCreateTokenRequested({ payload }) {
     return;
   }
   // Only where its flag is on and the side chain connected: a request from anywhere else creates
-  // nothing. A backend that doesn't create tokens refuses in the client.
+  // nothing, and the confirm screen says so. A backend that doesn't create tokens refuses in the
+  // client.
   if (!(yield select(getMultichainTokenCreateFeatureToggle))
     || !(yield select(isSideChainConnected))) {
     log.error('A Hathor Next token creation was asked for where none can be made.');
+    yield put(multichainNextCreateTokenUpdate({
+      status: OPERATION_STATUS.ERROR,
+      draftId,
+      sendId: null,
+      tokenId: null,
+      reason: null,
+      error: creationFailedText(),
+    }));
     return;
   }
   sentDrafts.add(draftId);
@@ -1039,7 +1048,8 @@ export function* onNextCreateTokenRequested({ payload }) {
     }
   } catch (e) {
     if (e instanceof PasskeyCancelledError) {
-      // Nothing happened: the form is as it was.
+      // Nothing happened: the form is as it was, and Create sends this draft when tapped again.
+      sentDrafts.delete(draftId);
       yield put(multichainNextCreateTokenUpdate({ status: OPERATION_STATUS.IDLE, draftId: null }));
       return;
     }

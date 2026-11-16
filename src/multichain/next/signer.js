@@ -249,6 +249,7 @@ export const MAX_SETTLED_ENTRIES = 200;
  * @param {string} context.nativeTokenId The network's native token (pinned)
  * @param {string} context.serviceViewPub The wallet service's view key (pinned)
  * @param {bigint} context.maxFee The most the user agreed to pay
+ * @param {string} [context.amountWidth] The network's amount width, 'u64' or 'u128'
  * @param {number} [context.nowS] The time, in unix seconds
  * @returns {{ bytes: Uint8Array, tx: Object, signingHash: Uint8Array, secrets: bigint[],
  *   keys: Uint8Array[] }}
@@ -260,6 +261,7 @@ export function checkCreateRequest(request, {
   nativeTokenId,
   serviceViewPub,
   maxFee,
+  amountWidth,
   nowS = Math.floor(Date.now() / 1000),
 }) {
   if (!Number.isSafeInteger(request.expires_at) || request.expires_at <= nowS) {
@@ -276,6 +278,10 @@ export function checkCreateRequest(request, {
   if (tx.kind !== 'token-create' || request.issuance?.kind !== 'token-create') {
     refuse('The transaction is not a token creation.');
   }
+  // The version byte names the amounts' width: another than the network's is refused there.
+  if (amountWidth && tx.width !== amountWidth) {
+    refuse(`The transaction's amounts are ${tx.width}; this network takes ${amountWidth}.`);
+  }
   // Its outputs pay the token it creates and the native one, neither of which the table lists: a
   // table makes a creation the network refuses, whose inputs would stay held until then.
   if (tx.table.length !== 0) {
@@ -286,6 +292,10 @@ export function checkCreateRequest(request, {
   // else must, and its signature over these bytes must hold.
   if (tx.excess && !verifyIn(EXCESS_DOMAIN, tx.excess.point, signingHash, tx.excess.signature)) {
     refuse('The transaction\'s excess signature is wrong.');
+  }
+  // An identity excess signs for nothing, and the network refuses it.
+  if (tx.excess && tx.excess.point.every((byte) => byte === 0)) {
+    refuse('The transaction\'s excess is the identity.');
   }
   if (tx.feeTokenIndex !== TOKEN_INDEX_NATIVE) {
     refuse('The fee is not paid in the native token.');
