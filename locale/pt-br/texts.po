@@ -65,7 +65,7 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "This wallet does not support shielded addresses."
 msgstr "Esta wallet não suporta endereços blindados."
 
-#: src/multichain/address.js:113 src/utils.js:305
+#: src/multichain/address.js:119 src/utils.js:305
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
@@ -939,14 +939,14 @@ msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
 #: src/components/ImportTokensModal.js:72
-#: src/components/Multichain/MultichainLoadScreen.js:50
+#: src/components/Multichain/MultichainLoadScreen.js:69
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
 #: src/components/Reown/SendTransactionRequest.js:552
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:176
-#: src/screens/PinScreen.js:306 src/screens/TokenSwapLoadingScreen.js:90
+#: src/screens/PinScreen.js:315 src/screens/TokenSwapLoadingScreen.js:90
 msgid "Try again"
 msgstr "Tente novamente"
 
@@ -968,8 +968,9 @@ msgstr "**${ loadedData.addresses } endereços** encontrados"
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
+#: src/components/Multichain/MultichainLoadScreen.js:81
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:217
-#: src/screens/PinScreen.js:341 src/screens/Settings.js:289
+#: src/screens/PinScreen.js:350 src/screens/Settings.js:289
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
 
@@ -1042,7 +1043,7 @@ msgstr "Desbloquear com sua passkey"
 msgid "Unlock"
 msgstr "Desbloquear"
 
-#: src/screens/PinScreen.js:295
+#: src/screens/PinScreen.js:304
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
@@ -1055,11 +1056,11 @@ msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:332 src/screens/Reown/ReownList.js:176
+#: src/screens/PinScreen.js:341 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:372 src/screens/PinScreen.js:376
+#: src/screens/PinScreen.js:381 src/screens/PinScreen.js:385
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
@@ -1971,9 +1972,13 @@ msgstr "Transação do Nano Contract"
 msgid "Contract successfully registered."
 msgstr "Nano Contract registrado com sucesso."
 
-#: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:77
+#: src/multichain/nextClientErrors.js:51 src/sagas/multichain.js:105
 msgid "Couldn't connect to Hathor Next."
 msgstr "Não foi possível conectar à Hathor Next."
+
+#: src/sagas/multichain.js:108
+msgid "The transfer failed."
+msgstr "A transferência falhou."
 
 #: src/sagas/nanoContract.js:95
 msgid "Nano Contract already registered."
@@ -2144,12 +2149,20 @@ msgid ""
 "Sending from a passkey wallet isn't supported in this version of the app yet."
 msgstr "Enviar de uma carteira com passkey ainda não é suportado nessa versão."
 
-#: src/multichain/address.js:104
+#: src/multichain/address.js:56
+msgid ""
+"Payment request QR codes are not supported. Please use a simple address QR "
+"code."
+msgstr ""
+"QR codes de solicitação de pagamento não são suportados. Use um QR code só "
+"com o endereço."
+
+#: src/multichain/address.js:110
 msgid "This is a Hathor Network address. Enter a Hathor Next address."
 msgstr ""
 "Este é um endereço da Hathor Network. Digite um endereço da Hathor Next."
 
-#: src/multichain/address.js:110
+#: src/multichain/address.js:116
 msgid "This is a Hathor Next address. Enter a Hathor Network address."
 msgstr ""
 "Este é um endereço da Hathor Next. Digite um endereço da Hathor Network."
@@ -3532,7 +3545,11 @@ msgstr "${ tokenSymbol } Obter Authority"
 msgid "Connecting to Hathor Next…"
 msgstr "Conectando à Hathor Next…"
 
-#: src/components/Multichain/MultichainLoadScreen.js:59
+#: src/components/Multichain/MultichainLoadScreen.js:75
+msgid "Disconnect side chain"
+msgstr "Desconectar a cadeia lateral"
+
+#: src/components/Multichain/MultichainLoadScreen.js:91
 msgid "Loading Hathor Next…"
 msgstr "Carregando a Hathor Next…"
 
