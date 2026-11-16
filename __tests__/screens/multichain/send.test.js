@@ -63,6 +63,7 @@ import { ChainTag } from '../../../src/components/Multichain/ChainTag';
 import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
 import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
 import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
+import addressVectors from '../../multichain/next/fixtures/address-v2.json';
 /* eslint-enable import/first */
 
 const NETWORK = FAKE_NETWORK;
@@ -182,6 +183,15 @@ describe('the Send address step', () => {
     expect(navigation.navigate).toHaveBeenCalledWith('SendAmountInput', { address: HATHOR_ADDRESS });
   });
 
+  test('says at once why it refuses an old Hathor Next address, and tags no chain', async () => {
+    const legacy = addressVectors.valid.find((v) => v.form === 'legacy').address;
+    const { renderer, navigation } = await typeAddress(legacy);
+    expect(textOf(renderer).join(' ')).toContain('samba1z');
+    expect(renderer.root.findAllByType(ChainTag)).toHaveLength(0);
+    expect(button(renderer, 'Next').props.disabled).toBe(true);
+    expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+
   test('takes no Hathor Next address before the side chain is connected', async () => {
     const { renderer } = await typeAddress(NEXT_ADDRESS, { connected: false });
     expect(button(renderer, 'Next').props.disabled).toBe(true);
@@ -272,8 +282,17 @@ describe('a Hathor Next payment in another token', () => {
   test('offers the tokens the wallet holds there, and sends the one picked', async () => {
     const { renderer, navigation, pickAtt, next } = await amountStep();
     expect(renderer.root.findByType(NextTokenPicker).props.options).toEqual([
-      { id: '00', symbol: 'HTR', name: 'Hathor', balance: '3.00' },
-      { id: ATT, symbol: 'ATT', name: 'App Test Token · c230a6', balance: '250.00' },
+      {
+        id: '00', symbol: 'HTR', name: 'Hathor', plainName: 'Hathor', idTag: null, balance: '3.00',
+      },
+      {
+        id: ATT,
+        symbol: 'ATT',
+        name: 'App Test Token · c230a6',
+        plainName: 'App Test Token',
+        idTag: 'c230a6',
+        balance: '250.00',
+      },
     ]);
     await pickAtt();
     expect(textOf(renderer)).toEqual(expect.arrayContaining([
@@ -312,6 +331,22 @@ describe('a Hathor Next payment in another token', () => {
     await next(25000000001n);
     expect(textOf(renderer)).toContain('Insufficient funds');
     expect(button(renderer, 'Transfer between chains')).toBeUndefined();
+  });
+
+  test("never lets a long name hide a token's id in the sheet", async () => {
+    const longName = 'App Test Token Of A Name Far Longer Than Its Row';
+    const store = holding();
+    store.next.tokens[ATT].name = longName;
+    const { renderer } = await amountStep(store);
+    await act(async () => { renderer.root.findByType(TokenBox).props.onPress(); });
+    // The sheet shows its rows a moment after it opens.
+    await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 150); }); });
+    const texts = renderer.root.findAllByType(Text);
+    const name = texts.find((node) => node.props.children === longName);
+    const tag = texts.find((node) => node.props.children === ' · c230a6');
+    expect(name.props.numberOfLines).toBe(1);
+    expect([].concat(name.props.style)).toContainEqual(expect.objectContaining({ flexShrink: 1 }));
+    expect(tag.props.numberOfLines).toBeUndefined();
   });
 
   test('closes the keyboard when the token box opens its sheet', async () => {

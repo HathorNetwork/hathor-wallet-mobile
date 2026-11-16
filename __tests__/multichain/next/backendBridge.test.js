@@ -17,6 +17,7 @@ import {
 } from '@hathor/wallet-lib';
 import { NEXT_CLIENT_ERROR } from '../../../src/multichain/nextClientErrors';
 import { createBackendBridge, recordOf } from '../../../src/multichain/next/backendBridge';
+import { BackendError } from '../../../src/multichain/next/backendApi';
 import { BURN_DATA_VALUE } from '../../../src/multichain/next/burnCheck';
 import { encodeAddress } from '../../../src/multichain/next/kit/address';
 import { publicKeyOf } from '../../../src/multichain/next/kit/keys';
@@ -425,5 +426,102 @@ describe('what the backend says of a transfer, against the wallet\'s own copy', 
       code: NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN,
       transferId: 'transfer-1',
     });
+  });
+});
+
+describe('a transfer the backend no longer knows', () => {
+  const INPUTS = UTXOS.map(({ txId, index }) => ({ txId, index }));
+  const BURN = 'ee'.repeat(32);
+  // The wallet's node: the output the burn spends, spent by `spender` or by nothing.
+  const forgotten = ({ spender = null, burn = (hash) => burnOnChain(hash) } = {}) => {
+    const { wallet, client } = fakes();
+    client.getTransfer = async () => { throw new BackendError(404, 'unknown transfer'); };
+    wallet.getFullTxById = jest.fn(async (hash) => {
+      if (hash === UTXOS[0].txId) {
+        const spent = spender ? [[UTXOS[0].index, [spender]]] : [];
+        return { tx: { hash }, meta: { spent_outputs: spent } };
+      }
+      return burn(hash);
+    });
+    return { wallet, bridge: createBackendBridge(CONFIG, { wallet, network, client }) };
+  };
+
+  it('keeps the outputs its burn spends, so the wallet\'s node can settle it', async () => {
+    const { wallet, client } = fakes({ signTransfer: async () => null });
+    const bridge = createBackendBridge(CONFIG, { wallet, network, client });
+    await expect(bridge.transfer(transferArgs)).rejects.toMatchObject({
+      code: NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN,
+      transferId: 'transfer-1',
+      inputs: INPUTS,
+    });
+  });
+
+  it('never went through when the node has its outputs unspent', async () => {
+    const { bridge } = forgotten();
+    await expect(bridge.resolveTransfer('transfer-1', { inputs: INPUTS })).resolves.toBeNull();
+  });
+
+  it('never went through when its outputs were spent by anything but its burn', async () => {
+    const { bridge } = forgotten({
+      spender: 'ff'.repeat(32),
+      burn: (hash) => burnOnChain(hash, { spender: 'WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo' }),
+    });
+    await expect(bridge.resolveTransfer('transfer-1', { inputs: INPUTS })).resolves.toBeNull();
+  });
+
+  it('is forgotten when its burn did reach the network, or nothing says which outputs it spent', async () => {
+    const { bridge } = forgotten({ spender: BURN });
+    await expect(bridge.resolveTransfer('transfer-1', { inputs: INPUTS })).rejects.toMatchObject({
+      code: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+    });
+    await expect(bridge.resolveTransfer('transfer-1')).rejects.toMatchObject({
+      code: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+    });
+  });
+
+  it('stays uncertain while the node can\'t be read, or the backend fails otherwise', async () => {
+    const { wallet, bridge } = forgotten();
+    wallet.getFullTxById.mockRejectedValue(new Error('node down'));
+    const unread = bridge.resolveTransfer('transfer-1', { inputs: INPUTS });
+    await expect(unread).rejects.toThrow('node down');
+
+    const { wallet: other, client } = fakes();
+    client.getTransfer = async () => { throw new BackendError(500, 'oops'); };
+    const failing = createBackendBridge(CONFIG, { wallet: other, network, client });
+    await expect(failing.resolveTransfer('transfer-1', { inputs: INPUTS })).rejects.toMatchObject({
+      status: 500,
+    });
+  });
+});
+
+describe('the burns the transfers list', () => {
+  it('reads each burn from the node once, across the bridges each refresh makes', async () => {
+    const { wallet, client } = fakes();
+    wallet.getFullTxById = jest.fn(async (hash) => burnOnChain(hash));
+    await createBackendBridge(CONFIG, { wallet, network, client }).getTransfers();
+    await createBackendBridge(CONFIG, { wallet, network, client }).getTransfers();
+    // Three listed burns, each read once.
+    expect(wallet.getFullTxById).toHaveBeenCalledTimes(3);
+  });
+
+  it('reads a burn the node couldn\'t give again the next time', async () => {
+    const { wallet, client } = fakes();
+    wallet.getFullTxById = jest.fn(async () => { throw new Error('node down'); });
+    await createBackendBridge(CONFIG, { wallet, network, client }).getTransfers();
+    wallet.getFullTxById.mockImplementation(async (hash) => burnOnChain(hash));
+    const list = await createBackendBridge(CONFIG, { wallet, network, client }).getTransfers();
+    expect(list.find((r) => r.id === 'new').sourceTxId).toBe('dd'.repeat(32));
+  });
+
+  it('counts one burn once, however many transfers the backend lists it under', async () => {
+    const { wallet, client } = fakes();
+    const list = await client.getTransfers();
+    client.getTransfers = async () => [
+      ...list,
+      { id: 'again', amount: '9', status: 'confirming', burn_tx_id: 'dd'.repeat(32), created_at: 25 },
+    ];
+    const bridge = createBackendBridge(CONFIG, { wallet, network, client });
+    const records = await bridge.getTransfers();
+    expect(records.filter((r) => r.sourceTxId === 'dd'.repeat(32)).map((r) => r.id)).toEqual(['new']);
   });
 });

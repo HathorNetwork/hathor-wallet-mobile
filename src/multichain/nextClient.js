@@ -13,8 +13,10 @@ import { createBackendNextClient } from './next/backendClient';
  * and signs (next/backendClient.js). Its interface:
  *
  * - prepareKeys({ words }) → Promise<{ address } | { pubB }>: derives the keys from the seed; no
- *   network. They stay in memory only, and are the same on every network. The client knows its
- *   address only once connected: the address carries the network's view key.
+ *   network. The client keeps them in memory until the next lock, and they are the same on every
+ *   network. (The app keeps the spend secret encrypted with the PIN, as it keeps the words, so an
+ *   unlock needn't derive it again: src/multichain/keys.js.) The client knows its address only
+ *   once connected: the address carries the network's view key.
  * - hasKeys() → boolean
  * - forgetKeys() → boolean: drops the keys when the app locks; whether it dropped any
  * - connect({ network, config, birthday: 'genesis' }): registers the wallet on the network's

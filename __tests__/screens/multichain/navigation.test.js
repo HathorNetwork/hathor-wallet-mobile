@@ -183,8 +183,11 @@ describe('leaving a transfer', () => {
     expect(appRoutes()).toEqual(['Main', 'ChainTransferConfirm']);
     await act(async () => { buttons(renderer, 'Confirm and send')[0].props.onPress(); });
     await act(async () => { pinCallback('123456'); });
+    // The outcome of this screen's own request.
+    const { requestId } = actions
+      .find((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED).payload;
     await act(async () => {
-      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE }));
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE, requestId }));
     });
     const [done] = renderer.root.findAllByType(FeedbackModal);
     await act(async () => { done.props.action.props.onPress(); });

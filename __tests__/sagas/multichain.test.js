@@ -43,8 +43,10 @@ import {
   multichainNextKeysUnlockRequested,
   multichainNextSendRequested,
   multichainNextSendReset,
+  multichainNextSendUpdate,
   multichainNextUpdate,
   multichainTransferRequested,
+  multichainTransferUpdate,
   networkChanged,
   networkSettingsUpdateState,
   resetWallet,
@@ -79,6 +81,7 @@ import { FAKE_SCENARIO } from '../multichain/fakes/scenarios';
 import { FAKE_NETWORK, FAKE_SIDE_CHAIN } from '../multichain/fakes/sideChain';
 import {
   isSideChainAvailable,
+  isSideChainConnected,
   selectSideChainConfig,
   selectSideChainKey,
 } from '../../src/multichain/gating';
@@ -662,7 +665,7 @@ describe('a transfer signed without an answer', () => {
       { dispatch: (action) => dispatched.push(action), getState: () => ({}) },
       resolveUncertainTransfer,
       bridge,
-      'transfer-1',
+      { id: 'transfer-1', inputs: null },
       tries,
     ).toPromise();
     return { dispatched, done };
@@ -742,7 +745,7 @@ describe('a transfer that settles', () => {
       { dispatch: (action) => dispatched.push(action), getState: () => ({}) },
       resolveUncertainTransfer,
       bridge,
-      'transfer-1',
+      { id: 'transfer-1', inputs: null },
       1,
     ).toPromise();
     return { dispatched, done };
@@ -799,7 +802,7 @@ describe('a transfer signed without an answer, kept where it was signed', () => 
     jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
     env.dispatch(multichainTransferRequested({ amount: 10000n, toAddress: ADDRESS, pinCode: PIN }));
     await wait(1000);
-    expect(bridge.resolveTransfer).toHaveBeenCalledWith('transfer-1');
+    expect(bridge.resolveTransfer).toHaveBeenCalledWith('transfer-1', { inputs: undefined });
     expect(bridge.transfer).not.toHaveBeenCalled();
   });
 
@@ -819,6 +822,114 @@ describe('a transfer signed without an answer, kept where it was signed', () => 
     await wait(1000);
     expect(bridge.resolveTransfer).not.toHaveBeenCalled();
     expect(bridge.transfer).toHaveBeenCalled();
+  });
+});
+
+describe('a transfer signed without an answer, as the screens see it', () => {
+  afterEach(() => STORE.removeItem(multichainKeyMap.uncertainTransfer));
+  const saved = (extra = {}) => STORE.setItem(multichainKeyMap.uncertainTransfer, {
+    id: 'transfer-1', network: NETWORK, backendUrl: null, ...extra,
+  });
+
+  test('shows as not confirmed from the start, so no confirm screen takes it for its own', async () => {
+    saved();
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await wait(0);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.UNCONFIRMED,
+      uncertainId: 'transfer-1',
+      requestId: null,
+    });
+  });
+
+  test('keeps the outcome of the confirm screen that sent it, and of no other', async () => {
+    saved();
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    const bridge = {
+      transfer: jest.fn(),
+      resolveTransfer: jest.fn(async () => ({ id: 'transfer-1', status: TRANSFER_STATUS.PENDING })),
+      getTransfers: async () => [],
+    };
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+    env.dispatch(multichainTransferRequested({
+      amount: 500n, toAddress: ADDRESS, pinCode: PIN, requestId: 'screen-2',
+    }));
+    await wait(1000);
+    // The earlier transfer went through: that is the outcome, and not this screen's.
+    expect(bridge.transfer).not.toHaveBeenCalled();
+    expect(env.getState().multichain.transfer.status).toBe(OPERATION_STATUS.DONE);
+    expect(env.getState().multichain.transfer.requestId).not.toBe('screen-2');
+  });
+
+  test('the backend no longer knows ends, and frees the next transfer', async () => {
+    saved({ inputs: [{ txId: '01'.repeat(32), index: 1 }] });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    const bridge = {
+      transfer: jest.fn(async () => ({ id: 'transfer-2', status: TRANSFER_STATUS.PENDING })),
+      resolveTransfer: jest.fn(async () => {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN);
+      }),
+      getTransfers: async () => [],
+    };
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+    env.dispatch(multichainTransferRequested({ amount: 500n, toAddress: ADDRESS, pinCode: PIN }));
+    await wait(1000);
+    expect(bridge.resolveTransfer).toHaveBeenCalledWith('transfer-1', {
+      inputs: [{ txId: '01'.repeat(32), index: 1 }],
+    });
+    expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toBeNull();
+    // Nothing left to ask: the new transfer went ahead.
+    expect(bridge.transfer).toHaveBeenCalledTimes(1);
+  });
+
+  test('stays with its network: another shows none, and it shows again back there', async () => {
+    saved();
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await wait(0);
+    env.dispatch(setFullNodeNetworkName('testnet-other'));
+    env.dispatch(startWalletSuccess());
+    await wait(0);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.IDLE, uncertainId: null,
+    });
+    env.dispatch(setFullNodeNetworkName(NETWORK));
+    env.dispatch(startWalletSuccess());
+    await wait(0);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1',
+    });
+  });
+
+  test('is never taken from the confirm screen that sent it by a reload', async () => {
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await wait(0);
+    saved();
+    env.dispatch(multichainTransferUpdate({
+      status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1', requestId: 'screen-1',
+    }));
+    env.dispatch(startWalletSuccess());
+    await wait(0);
+    expect(env.getState().multichain.transfer.requestId).toBe('screen-1');
+  });
+});
+
+describe('a wallet reset', () => {
+  test('clears the transfer state and the sign-once ledgers saved before outside the wallet\'s keys', async () => {
+    STORE.setItem('multichain:nextSigned:1003:abcd', { entries: [] });
+    STORE.setItem('multichain:nextSigned:1777:ef01', { entries: [] });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    env.dispatch(multichainTransferUpdate({
+      status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1',
+    }));
+    env.dispatch(resetWallet());
+    await wait(10);
+    expect(STORE.getItem('multichain:nextSigned:1003:abcd')).toBeNull();
+    expect(STORE.getItem('multichain:nextSigned:1777:ef01')).toBeNull();
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.IDLE, uncertainId: null,
+    });
   });
 });
 
@@ -920,6 +1031,17 @@ describe('Hathor Next Devnet', () => {
     });
     await wait(0);
     expect(selectSideChainKey(env.getState())).toBe('privatenet http://192.168.0.10:8080/v1a');
+  });
+
+  test("keeps a tester's setting saved under the network's name alone, under its node now", async () => {
+    STORE.setItem(multichainKeyMap.connectedNetworks, { privatenet: true, testnet: true });
+    const env = setup({ network: 'privatenet', networkSettings: PRE_SETTINGS_NEXT_DEVNET });
+    await wait(0);
+    const key = 'privatenet https://legacy-node.devnet-alpha.samba.hathor.network/v1a';
+    expect(env.getState().multichain.connectedNetworks).toEqual({ [key]: true, testnet: true });
+    expect(STORE.getItem(multichainKeyMap.connectedNetworks))
+      .toEqual({ [key]: true, testnet: true });
+    expect(isSideChainConnected(env.getState())).toBe(true);
   });
 
   test('has no side chain on another privatenet, so Settings offers none', async () => {
@@ -1089,6 +1211,19 @@ describe('a request where the side chain was turned off', () => {
 });
 
 describe('a wallet reload', () => {
+  test('after a lock keeps Hathor Next, though the lock took the keys', async () => {
+    const env = setup();
+    await connect(env);
+    const client = getNextClient();
+    const connectSpy = jest.spyOn(client, 'connect');
+    // A lock drops the keys and keeps the session; the reconnect reloads the wallet before the PIN.
+    jest.spyOn(client, 'hasKeys').mockReturnValue(false);
+    env.dispatch(startWalletSuccess());
+    await wait(2000);
+    expect(connectSpy).not.toHaveBeenCalled();
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+  });
+
   test('keeps a Hathor Next already loaded on this network, with no new connect', async () => {
     const env = setup();
     await connect(env);
@@ -1138,6 +1273,36 @@ describe('a wallet reload', () => {
     await wait(10);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
     expect(getNextClient().getNetwork()).toBeNull();
+  });
+});
+
+describe('a connect of Hathor Next', () => {
+  test('hands the follower what the client said while it connected', async () => {
+    const env = setup();
+    await connect(env);
+    env.dispatch(multichainConnectSettingChanged(false));
+    await wait(10);
+    const client = getNextClient();
+    // What subscribes to the client's events, and when.
+    const listeners = [];
+    const on = client.on.bind(client);
+    jest.spyOn(client, 'on').mockImplementation((event, listener) => {
+      listeners.push({ event, listener });
+      return on(event, listener);
+    });
+    // A payment on its way; the connect learns it was recorded (the statement lists it now).
+    env.dispatch(multichainNextSendUpdate({
+      status: OPERATION_STATUS.SENDING, draftId: 'draft-1', sendId: 'send-1',
+    }));
+    const connectOnce = client.connect.bind(client);
+    jest.spyOn(client, 'connect').mockImplementation(async (params) => {
+      await connectOnce(params);
+      listeners.filter((l) => l.event === NEXT_CLIENT_EVENT.SEND).forEach((l) => l.listener({
+        sendId: 'send-1', status: 'recorded', reason: null, txId: 'aa'.repeat(32),
+      }));
+    });
+    await connect(env);
+    expect(env.getState().multichain.send).toMatchObject({ sendId: 'send-1', status: 'recorded' });
   });
 });
 

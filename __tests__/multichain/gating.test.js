@@ -346,6 +346,31 @@ describe('a side chain on the real pins', () => {
     expect(actualChains.getSideChainConfig('testnet', null, DEVNET)).toBeNull();
   });
 
+  test('refuses, in its place, a backend for local testing that passes as one holding value', () => {
+    // devnet-alpha's own values, given by a backend set for local testing.
+    const devBackend = () => ({
+      url: 'http://192.168.0.10:8930',
+      pins: {
+        next: {
+          network_id: 1003,
+          native_token: 'e5bcdd06b7d2b896fe194e09b55d687737af3767407d9efc957ac0ea84f1e54c',
+          service_view_pub: 'b292d1f347dd954a23814d66d60adc6848d89e97f09be952bb2f5f9025fe2e0e',
+          wire_format: 'v3',
+        },
+        transfer: null,
+      },
+    });
+    expect(actualChains.getSideChainConfig('privatenet', devBackend(), DEVNET)).not.toBeNull();
+    // Were devnet-alpha to hold value, that backend would be no side chain at all.
+    const pinned = actualChains.nodeSideChain(DEVNET);
+    pinned.holdsValue = true;
+    try {
+      expect(actualChains.getSideChainConfig('privatenet', devBackend(), DEVNET)).toBeNull();
+    } finally {
+      pinned.holdsValue = false;
+    }
+  });
+
   test('is never one a backend for local testing could pass as, once its network holds value', () => {
     const valued = {
       holdsValue: true, nextNetworkId: 7, nativeTokenId: 'aa'.repeat(32), serviceViewPub: 'bb'.repeat(32),

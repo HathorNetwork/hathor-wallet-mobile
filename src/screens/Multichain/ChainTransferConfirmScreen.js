@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
@@ -44,6 +44,16 @@ export const transferSentText = (etaSeconds, symbol) => {
 };
 
 /**
+ * What an earlier transfer's outcome says on a screen whose own transfer wasn't made: it went
+ * through, it ended otherwise (in the words given), or it still has no answer.
+ */
+export const earlierTransferDoneText = () => t`Your earlier transfer went through. This one wasn't sent: check your balance, then confirm it if you still want it.`;
+export const earlierTransferEndedText = (outcome) => t`Your earlier transfer is settled: ${outcome} This one wasn't sent yet, and you can confirm it now.`;
+export const earlierTransferPendingText = () => t`An earlier transfer hasn't been confirmed yet. You can make another one once it settles.`;
+
+let requestCount = 0;
+
+/**
  * The confirmation of a transfer between chains: what leaves, what arrives, the fees, when, and
  * that it can't come back yet. Confirming asks for the PIN (or the passkey) and spends the source
  * chain's balance.
@@ -61,6 +71,14 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
   const ownAddress = useSelector((state) => state.multichain.next.address);
   const sideChainConfig = useSelector(selectSideChainConfig);
   const transfer = useSelector((state) => state.multichain.transfer);
+  // This screen's own request: an outcome with another (an earlier transfer, settled now or still
+  // without an answer) is shown as that one's, never as this transfer's.
+  const requestId = useRef(null);
+  if (requestId.current === null) {
+    requestCount += 1;
+    requestId.current = `transfer-${Date.now()}-${requestCount}`;
+  }
+  const own = transfer.requestId === requestId.current;
   useHoldScreen(navigation, transfer.status === OPERATION_STATUS.SENDING);
 
   // A transfer's outcome belongs to this screen: a new one starts clean.
@@ -81,7 +99,7 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
   const isOwnAddress = sameNextAddress(toAddress, ownAddress);
 
   const send = (pinCode) => dispatch(multichainTransferRequested({
-    from, to, tokenId, amount, toAddress, pinCode,
+    from, to, tokenId, amount, toAddress, pinCode, requestId: requestId.current,
   }));
 
   const onConfirm = () => {
@@ -105,7 +123,45 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
     NavigationService.resetToMain();
   };
 
+  // An earlier transfer's outcome: this one was never made, and can be confirmed once it's read.
+  const renderEarlier = () => {
+    const again = () => dispatch(multichainTransferReset());
+    switch (transfer.status) {
+      case OPERATION_STATUS.DONE:
+        return (
+          <FeedbackModal
+            icon={<Image source={checkIcon} style={styles.feedbackIcon} resizeMode='contain' />}
+            text={earlierTransferDoneText()}
+            onDismiss={again}
+            action={<NewHathorButton title={t`OK`} onPress={again} />}
+          />
+        );
+      case OPERATION_STATUS.UNCONFIRMED:
+        return (
+          <FeedbackModal
+            icon={<Spinner />}
+            text={earlierTransferPendingText()}
+            onDismiss={done}
+            action={<NewHathorButton secondary title={t`Close`} onPress={done} />}
+          />
+        );
+      case OPERATION_STATUS.ERROR:
+        return (
+          <FeedbackModal
+            icon={<Image source={errorIcon} style={styles.feedbackIcon} resizeMode='contain' />}
+            text={earlierTransferEndedText(transfer.error ?? t`The transfer failed.`)}
+            onDismiss={again}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   const renderFeedback = () => {
+    if (!own && transfer.status !== OPERATION_STATUS.SENDING) {
+      return renderEarlier();
+    }
     switch (transfer.status) {
       case OPERATION_STATUS.SENDING:
         return <FeedbackModal icon={<Spinner />} text={t`Transferring to Hathor Next…`} />;

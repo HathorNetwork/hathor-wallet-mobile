@@ -2189,10 +2189,13 @@ export const multichainTransfersSet = (transfers) => ({
  * @param {bigint} payload.amount In the source chain's units
  * @param {string} payload.toAddress An address on the destination chain
  * @param {string} [payload.pinCode]
+ * @param {string} [payload.requestId] The confirm screen's own, to tell its outcome apart
  */
-export const multichainTransferRequested = ({ from, to, tokenId, amount, toAddress, pinCode }) => ({
+export const multichainTransferRequested = (
+  { from, to, tokenId, amount, toAddress, pinCode, requestId },
+) => ({
   type: types.MULTICHAIN_TRANSFER_REQUESTED,
-  payload: { from, to, tokenId, amount, toAddress, pinCode },
+  payload: { from, to, tokenId, amount, toAddress, pinCode, requestId },
 });
 
 /**

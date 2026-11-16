@@ -534,6 +534,63 @@ describe('what the backend answers, read with care', () => {
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.CLOCK });
   });
 
+  it('leaves out a statement line it can\'t read, and reads an empty answer as no lines', async () => {
+    client = await connectedClient(fakeBackend({
+      history: () => ({ history: [null, 7, { cursor: 'x' }, ...HISTORY] }),
+    }));
+    expect(client.getHistory(NATIVE).rows.length).toBeGreaterThan(0);
+    client.disconnect();
+    client = await connectedClient(fakeBackend({ history: () => null }));
+    expect(client.getHistory(NATIVE).rows).toEqual([]);
+  });
+
+  it('refuses a backend whose genesis or amounts\' width differ from the pinned ones', async () => {
+    const backend = fakeBackend();
+    client = createBackendNextClient({ fetchImpl: backend.fetchImpl, WebSocketImpl: null });
+    await client.prepareKeys({ words: WORDS });
+    const connect = (config) => client.connect({ network: 'privatenet', config, birthday: 'genesis' });
+    await expect(connect({ ...CONFIG, genesisMs: 1000001 }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NETWORK_CHANGED });
+    await expect(connect({ ...CONFIG, amountWidth: 'u128' }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NETWORK_CHANGED });
+    await expect(connect({ ...CONFIG, genesisMs: 1000000, amountWidth: 'u64' })).resolves
+      .toBeUndefined();
+  });
+
+  it('never takes the session of a login that a disconnect overtook to the next backend', async () => {
+    const a = fakeBackend();
+    const b = fakeBackend();
+    let releaseLogin;
+    const loginHeld = new Promise((resolve) => { releaseLogin = resolve; });
+    let loginAsked;
+    const loginStarted = new Promise((resolve) => { loginAsked = resolve; });
+    const fetchImpl = async (url, options) => {
+      if (url.startsWith('http://a.test')) {
+        const answer = await a.fetchImpl(url.replace('http://a.test', 'http://backend.test'), options);
+        if (!/\/session$/.test(url)) return answer;
+        loginAsked();
+        await loginHeld;
+        const body = JSON.parse(await answer.text());
+        return { ...answer, text: async () => JSON.stringify({ ...body, token: `a-${body.token}` }) };
+      }
+      return b.fetchImpl(url, options);
+    };
+    client = createBackendNextClient({ fetchImpl, WebSocketImpl: null });
+    await client.prepareKeys({ words: WORDS });
+    const toA = client.connect({
+      network: 'privatenet', config: { ...CONFIG, backendUrl: 'http://a.test/' }, birthday: 'genesis',
+    });
+    await loginStarted;
+    client.disconnect();
+    await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+    releaseLogin();
+    await expect(toA).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
+    await client.getTransfer('t-1').catch(() => {});
+    const asked = b.requests.filter((r) => r.path.startsWith('/v1/transfers'));
+    expect(asked).toHaveLength(1);
+    expect(JSON.stringify(asked[0].headers)).not.toContain('a-token');
+  });
+
   it('stops a connect that a disconnect overtook, before its next request', async () => {
     const backend = fakeBackend();
     let release;

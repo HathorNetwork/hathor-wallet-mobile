@@ -20,6 +20,7 @@ import {
 } from './burnCheck';
 import { encodeAddress } from './kit/address';
 import { SignRefusedError } from './signer';
+import { BackendError } from './backendApi';
 
 const log = logger('multichain-backend-bridge');
 
@@ -38,6 +39,22 @@ const DEFAULT_BLOCK_MS = 30000;
 const MAX_TRANSFER_INPUTS = 255;
 // Backend states of a burn that never reached the network: nothing left the wallet.
 const NEVER_SENT = new Set(['awaiting_signatures', 'cancelled']);
+
+// The wallet's own reads of burns, per wallet, kept across the bridges the app makes: a burn on
+// the chain doesn't change, and each refresh makes a bridge of its own. By the wallet, as whether
+// a burn spends its outputs is that wallet's answer.
+const burnReads = new WeakMap();
+
+/**
+ * @param {Object} wallet
+ * @returns {Map<string, Object|null>}
+ */
+function burnReadsOf(wallet) {
+  if (!burnReads.has(wallet)) {
+    burnReads.set(wallet, new Map());
+  }
+  return burnReads.get(wallet);
+}
 
 /**
  * A transfer as the screens show it, from the backend's status of its burn. A burn that never
@@ -133,32 +150,27 @@ export function createBackendBridge(config, { wallet, network, client }) {
     log.error('Could not cancel an unsigned transfer.', e);
   });
 
-  // The wallet's own copies of burns, read once each: a burn on the chain doesn't change.
-  const ownBurns = new Map();
+  // The wallet's own copies of burns, read once each, for this transfer address and destination.
+  const reads = burnReadsOf(wallet);
+  const readKey = (burnTxId) => `${pins?.transfer_address}:${pins?.destination_network}:${burnTxId}`;
 
   /**
    * The wallet's own copy of a burn, from its Hathor Network node, not from the backend: whether
    * it spends this wallet's outputs, what it paid the pinned transfer address, and where its data
-   * output says the HTR arrives. Null when it is no burn of this wallet's to that address, or
-   * can't be read yet (then it is read again next time).
+   * output says the HTR arrives. Null when it is no burn of this wallet's to that address.
    *
    * @param {string} burnTxId
    * @returns {Promise<{ burnTxId: string, amount: string, destination: string }|null>}
+   * @throws When the node can't be read
    */
-  const ownBurn = async (burnTxId) => {
+  const readOwnBurn = async (burnTxId) => {
     if (typeof burnTxId !== 'string' || !/^[0-9a-f]{64}$/.test(burnTxId)) {
       return null;
     }
-    if (ownBurns.has(burnTxId)) {
-      return ownBurns.get(burnTxId);
+    if (reads.has(readKey(burnTxId))) {
+      return reads.get(readKey(burnTxId));
     }
-    let tx;
-    try {
-      ({ tx } = await wallet.getFullTxById(burnTxId));
-    } catch (e) {
-      log.error('Could not read a transfer\'s burn from Hathor Network.', e);
-      return null;
-    }
+    const { tx } = await wallet.getFullTxById(burnTxId);
     const outputs = Array.isArray(tx?.outputs) ? tx.outputs : [];
     const paid = outputs.find((o) => Number(o.token_data) === 0
       && o.decoded?.address === pins?.transfer_address);
@@ -178,8 +190,52 @@ export function createBackendBridge(config, { wallet, network, client }) {
         destination: encodeAddress(payload.view, payload.spend),
       }
       : null;
-    ownBurns.set(burnTxId, found);
+    reads.set(readKey(burnTxId), found);
     return found;
+  };
+
+  /**
+   * As readOwnBurn, null when the node can't be read yet: it is read again next time.
+   *
+   * @param {string} burnTxId
+   */
+  const ownBurn = async (burnTxId) => {
+    try {
+      return await readOwnBurn(burnTxId);
+    } catch (e) {
+      log.error('Could not read a transfer\'s burn from Hathor Network.', e);
+      return null;
+    }
+  };
+
+  /**
+   * A transfer the backend no longer knows (a reset devnet, a record it dropped), settled by what
+   * the wallet's own node says of the outputs its burn spends: none spent, or spent by anything
+   * but this wallet's burn, and nothing left the wallet. A burn that did reach the network, or a
+   * transfer saved without its outputs, has nobody left to finish it: it ends as forgotten.
+   *
+   * @param {{ txId: string, index: number }[]|undefined} inputs
+   * @returns {Promise<null>} null: it never went through
+   * @throws {NextClientError} TRANSFER_FORGOTTEN; or when the node can't be read
+   */
+  const settleForgotten = async (inputs) => {
+    if (!Array.isArray(inputs) || inputs.length === 0) {
+      throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN);
+    }
+    for (const { txId, index } of inputs) {
+      // eslint-disable-next-line no-await-in-loop
+      const { meta } = await wallet.getFullTxById(txId);
+      const spenders = (meta?.spent_outputs ?? [])
+        .filter(([output]) => output === index)
+        .flatMap(([, ids]) => ids);
+      for (const spender of spenders) {
+        // eslint-disable-next-line no-await-in-loop
+        if (await readOwnBurn(spender)) {
+          throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN);
+        }
+      }
+    }
+    return null;
   };
 
   return {
@@ -262,7 +318,12 @@ export function createBackendBridge(config, { wallet, network, client }) {
         throw e;
       }
       // Signed: from here on, nothing ends as a plain failure, which would let the user burn
-      // again. Anything that goes wrong leaves the transfer uncertain, to be settled by asking.
+      // again. Anything that goes wrong leaves the transfer uncertain, to be settled by asking,
+      // or by the outputs it spends if the backend no longer knows it.
+      const uncertain = {
+        transferId: request.id,
+        inputs: chosen.map(({ txId, index }) => ({ txId, index })),
+      };
       let record;
       try {
         if (changeAddress && (await wallet.getCurrentAddress()).address === changeAddress) {
@@ -279,10 +340,10 @@ export function createBackendBridge(config, { wallet, network, client }) {
         });
       } catch (e) {
         log.error('A signed transfer got no answer the app could read.', e);
-        throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, { transferId: request.id });
+        throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, uncertain);
       }
       if (!record) {
-        throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, { transferId: request.id });
+        throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, uncertain);
       }
       return record;
     },
@@ -290,14 +351,24 @@ export function createBackendBridge(config, { wallet, network, client }) {
     /**
      * Settles a transfer signed without an answer: its record when the burn reached the network;
      * null when it never did, after cancelling it on the backend, so nothing is left behind and
-     * a new transfer can't burn twice.
+     * a new transfer can't burn twice. One the backend no longer knows is settled by the outputs
+     * its burn spends (settleForgotten).
      *
      * @param {string} transferId
+     * @param {{ inputs?: { txId: string, index: number }[] }} [saved] The outputs its burn spends
      * @returns {Promise<Object|null>} TransferRecord
-     * @throws When the backend can't be read: still uncertain
+     * @throws When the backend or the node can't be read: still uncertain; TRANSFER_FORGOTTEN
      */
-    async resolveTransfer(transferId) {
-      let status = await client.getTransfer(transferId);
+    async resolveTransfer(transferId, { inputs } = {}) {
+      let status;
+      try {
+        status = await client.getTransfer(transferId);
+      } catch (e) {
+        if (e instanceof BackendError && e.status === 404) {
+          return settleForgotten(inputs);
+        }
+        throw e;
+      }
       if (status?.status === 'awaiting_signatures') {
         await client.cancelTransfer(transferId);
         // Cancelled, unless the signatures arrived meanwhile: read it once more.
@@ -312,7 +383,20 @@ export function createBackendBridge(config, { wallet, network, client }) {
         return [];
       }
       const ownAddress = client.getAddress();
-      const list = await client.getTransfers();
+      // One burn is one transfer: listed again under another id, it would count twice.
+      const burns = new Set();
+      const list = (await client.getTransfers()).filter((status) => {
+        const burnTxId = status?.burn_tx_id;
+        if (typeof burnTxId !== 'string') {
+          return true;
+        }
+        if (burns.has(burnTxId)) {
+          log.error('The backend lists one burn as two transfers; the second was left out.');
+          return false;
+        }
+        burns.add(burnTxId);
+        return true;
+      });
       // A transfer the app can't read is left out, and logged: the others still show.
       const records = await Promise.all(list.map(async (status) => {
         try {

@@ -118,6 +118,13 @@ describe('a backend for local testing, read with care', () => {
     }
   });
 
+  test("keeps the amounts' width it gives, which it is then held to, and none other", () => {
+    expect(usedBackendConfig(pinsOf({ amount_width: 'u128' })).next.amount_width).toBe('u128');
+    expect(usedBackendConfig(pinsOf({ amount_width: 'u7' })).next).not.toHaveProperty('amount_width');
+    expect(devBackendSideChain({ url: 'http://x', pins: pinsOf({ amount_width: 'u64' }) }))
+      .toMatchObject({ amountWidth: 'u64', genesisMs: 1793398418273 });
+  });
+
   test('keeps only the values the app uses, its token\'s names made safe', () => {
     const used = usedBackendConfig({
       ...pinsOf({ native_token_symbol: 'H\u202eTR', native_token_name: 'Hathor', debug: 'x' }),
