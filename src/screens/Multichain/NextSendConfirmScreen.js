@@ -113,14 +113,14 @@ export default function NextSendConfirmScreen() {
   // No way back while the payment is on its way: the outcome shows here.
   useHoldScreen(navigation, SEND_IN_FLIGHT.includes(outcome));
 
-  const submit = (pinCode) => {
+  // The PIN only authorizes: the keys are in memory since the unlock, so it goes nowhere.
+  const submit = () => {
     setAuthorized(true);
     dispatch(multichainNextSendRequested({
       tokenId,
       to: address,
       amount,
       draftId,
-      pinCode,
     }));
   };
 

@@ -23,7 +23,7 @@ import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { reducer } from '../../../src/reducers/reducer';
-import { types } from '../../../src/actions';
+import { multichainConnectSettingChanged, types } from '../../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
@@ -236,29 +236,48 @@ describe('the app waiting for Hathor Next', () => {
     expect(textOf(renderer)).toContain('Loading Hathor Next…');
   });
 
-  test('offers only Try again when it fails', async () => {
-    const { store, actions } = makeStore({
-      connected: true,
-      next: { status: NEXT_STATUS.FAILED, error: "Couldn't connect to Hathor Next.", keysReady: true },
-    });
+  const failedStore = (keysReady = true) => makeStore({
+    connected: true,
+    next: { status: NEXT_STATUS.FAILED, error: "Couldn't connect to Hathor Next.", keysReady },
+  });
+  const button = (renderer, title) => renderer.root.findAllByType(SimpleButton)
+    .find((node) => node.props.title === title);
+
+  test('offers Try again, Disconnect side chain and Reset wallet when it fails', async () => {
+    const { store, actions } = failedStore();
     const renderer = await mount(store, <MultichainLoadScreen />);
     expect(textOf(renderer)).toContain("Couldn't connect to Hathor Next.");
     const buttons = renderer.root.findAllByType(SimpleButton);
-    expect(buttons.map((node) => node.props.title)).toEqual(['Try again']);
-    await act(async () => { buttons[0].props.onPress(); });
+    expect(buttons.map((node) => node.props.title))
+      .toEqual(['Try again', 'Disconnect side chain', 'Reset wallet']);
+    await act(async () => { button(renderer, 'Try again').props.onPress(); });
     expect(actions).toContainEqual({
       type: types.MULTICHAIN_LOAD_REQUESTED,
       payload: { pinCode: undefined },
     });
   });
 
-  test("locks the app for the PIN when a seed wallet's keys are missing", async () => {
-    const { store, actions } = makeStore({
-      connected: true,
-      next: { status: NEXT_STATUS.FAILED, error: 'x', keysReady: false },
-    });
+  test('turns the side chain off with Disconnect side chain, so the app can open', async () => {
+    const { store, actions } = failedStore();
     const renderer = await mount(store, <MultichainLoadScreen />);
-    await act(async () => { renderer.root.findByType(SimpleButton).props.onPress(); });
+    await act(async () => { button(renderer, 'Disconnect side chain').props.onPress(); });
+    expect(actions).toContainEqual(multichainConnectSettingChanged(false));
+  });
+
+  test('shows the reset on the lock screen with Reset wallet', async () => {
+    const { store, actions } = failedStore();
+    const renderer = await mount(store, <MultichainLoadScreen />);
+    await act(async () => { button(renderer, 'Reset wallet').props.onPress(); });
+    const seen = actions.map((a) => a.type);
+    expect(seen).toContain(types.SET_RESET_ON_LOCK_SCREEN);
+    expect(seen).toContain(types.SET_LOCK_SCREEN);
+    expect(store.getState().resetOnLockScreen).toBe(true);
+  });
+
+  test("locks the app for the PIN when a seed wallet's keys are missing", async () => {
+    const { store, actions } = failedStore(false);
+    const renderer = await mount(store, <MultichainLoadScreen />);
+    await act(async () => { button(renderer, 'Try again').props.onPress(); });
     expect(actions.map((a) => a.type)).toContain(types.SET_LOCK_SCREEN);
     expect(actions.map((a) => a.type)).not.toContain(types.MULTICHAIN_LOAD_REQUESTED);
   });

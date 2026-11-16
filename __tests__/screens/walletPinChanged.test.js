@@ -176,6 +176,24 @@ describe('PinScreen as the lock screen of a running wallet', () => {
     });
   });
 
+  test('asks for the Hathor Next keys only once the screen is unlocked, and never fatally', async () => {
+    jest.spyOn(STORE, 'handleDataMigration').mockResolvedValue(undefined);
+    biometricsMigration.mockResolvedValue(PIN);
+    const props = lockScreenProps();
+    const order = [];
+    props.unlockScreen.mockImplementation(() => order.push('unlock'));
+    props.multichainNextKeysUnlockRequested.mockImplementation(() => {
+      order.push('next keys');
+      throw new Error('a saga threw');
+    });
+    const screen = instantiate(PinScreen, props);
+
+    await screen.dismiss(PIN);
+
+    expect(order).toEqual(['unlock', 'next keys']);
+    expect(props.onExceptionCaptured).not.toHaveBeenCalled();
+  });
+
   test('asks for the Hathor Next keys with the password the biometry migration set', async () => {
     jest.spyOn(STORE, 'handleDataMigration').mockResolvedValue(undefined);
     biometricsMigration.mockResolvedValue(PASSWORD);

@@ -74,23 +74,30 @@ export function sameNextAddress(a, b) {
 }
 
 /**
- * The Hathor Next address a scanned QR code holds: the address alone, or a payment request on it
- * (`samba:<address>?amount=…`). The amount and token of a payment request are dropped, as Hathor
- * Network's scanner drops them.
+ * What a scanned QR code holds for Hathor Next: `{ address }` for an address alone, in its
+ * canonical form, `{ error }` for a payment request on one (`samba:<address>?amount=…`), or null
+ * when it holds no Hathor Next address. A payment request is refused, as Hathor Network's scanner
+ * refuses one: taking only its address would drop the amount and the token it asks for without a
+ * word.
  *
  * @param {string|null|undefined} data
- * @returns {string|null} The address in its canonical form, or null when the QR code holds none
+ * @returns {{ address: string }|{ error: string }|null}
  */
 export function parseNextQrCode(data) {
   const value = (data ?? '').trim();
-  const [head] = value.split('?');
+  const [head, ...rest] = value.split('?');
   // The legacy form starts with the scheme's own letters: it is an address as it stands.
-  const direct = normalizeNextAddress(head);
-  if (direct) {
-    return direct;
+  const address = normalizeNextAddress(head)
+    ?? (SCHEME_RE.test(head) ? normalizeNextAddress(head.replace(SCHEME_RE, '')) : null);
+  if (!address) {
+    return null;
   }
-  return SCHEME_RE.test(head) ? normalizeNextAddress(head.replace(SCHEME_RE, '')) : null;
+  // A bare `?` asks for nothing.
+  return rest.join('?') ? { error: paymentRequestText() } : { address };
 }
+
+/** Why a payment request's QR code is refused. */
+export const paymentRequestText = () => t`Payment request QR codes are not supported. Please use a simple address QR code.`;
 
 /**
  * Whether a text is a valid Hathor Network address of the network the wallet runs on.

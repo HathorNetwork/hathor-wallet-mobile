@@ -2150,11 +2150,10 @@ export const multichainNextHistoryUpdate = ({ tokenId, status, data, cursor }) =
  * @param {string} payload.to A Hathor Next address
  * @param {bigint} payload.amount In Hathor Next's units
  * @param {string} payload.draftId The draft this send spends
- * @param {string} [payload.pinCode]
  */
-export const multichainNextSendRequested = ({ tokenId, to, amount, draftId, pinCode }) => ({
+export const multichainNextSendRequested = ({ tokenId, to, amount, draftId }) => ({
   type: types.MULTICHAIN_NEXT_SEND_REQUESTED,
-  payload: { tokenId, to, amount, draftId, pinCode },
+  payload: { tokenId, to, amount, draftId },
 });
 
 /**

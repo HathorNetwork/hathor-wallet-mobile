@@ -10,19 +10,36 @@ import {
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
+  NETWORK_MAINNET,
 } from '../constants';
 import { FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, STORE } from '../store';
 import { getSideChainConfig } from './chains';
 import { NEXT_STATUS } from './state';
 
 /**
+ * Whether the wallet's saved network settings are mainnet's. Hathor Next stays off there whatever
+ * Unleash answers: the flags in the state may still be another network's, after a refresh that
+ * failed. Mainnet also has no side chain (getSideChainConfig), so neither the settings nor the
+ * fullnode's answer alone decides.
+ *
+ * @param {Object} state Redux state
+ * @returns {boolean}
+ */
+export function isMainnetSettings(state) {
+  return state.networkSettings?.network === NETWORK_MAINNET;
+}
+
+/**
  * Whether the flag that shows the side chain setting is on. It is off when Unleash doesn't
- * return it.
+ * return it, and always off on mainnet.
  *
  * @param {Object} state Redux state
  * @returns {boolean}
  */
 export function getMultichainFeatureToggle(state) {
+  if (isMainnetSettings(state)) {
+    return false;
+  }
   return Boolean(
     state.featureToggles?.[MULTICHAIN_FEATURE_TOGGLE]
       ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_FEATURE_TOGGLE]
@@ -125,15 +142,30 @@ export function isSideChainAvailable(state) {
 }
 
 /**
+ * What "Connect to side chain" is saved under: the network, by the name the fullnode reports.
+ * Null until the wallet knows its network.
+ *
+ * @param {Object} state Redux state
+ * @returns {string|null}
+ */
+export function selectSideChainKey(state) {
+  return selectMultichainNetwork(state);
+}
+
+/**
  * Whether the user turned "Connect to side chain" on for this network, so both chains show.
  *
  * @param {Object} state Redux state
  * @returns {boolean}
  */
 export function isSideChainConnected(state) {
-  const network = selectMultichainNetwork(state);
+  const key = selectSideChainKey(state);
+  const connected = state.multichain?.connectedNetworks ?? {};
+  // Own keys only, and only `true`: a name such as `constructor` is never connected.
   return isSideChainAvailable(state)
-    && Boolean(network && state.multichain?.connectedNetworks?.[network]);
+    && key !== null
+    && Object.prototype.hasOwnProperty.call(connected, key)
+    && connected[key] === true;
 }
 
 /**

@@ -55,10 +55,15 @@ class SendScanQRCode extends React.Component {
     }
 
     // With the side chain connected, a Hathor Next address goes to the address input as it is: the
-    // address says the send is on Hathor Next.
-    const nextAddress = this.props.sideChainConnected ? parseNextQrCode(e.data) : null;
-    if (nextAddress) {
-      this.props.navigation.navigate('SendAddressInput', { address: nextAddress });
+    // address says the send is on Hathor Next. A payment request is refused, as Hathor Network's
+    // is.
+    const next = this.props.sideChainConnected ? parseNextQrCode(e.data) : null;
+    if (next?.error) {
+      this.showAlertError(next.error);
+      return;
+    }
+    if (next) {
+      this.props.navigation.navigate('SendAddressInput', { address: next.address });
       return;
     }
 

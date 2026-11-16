@@ -42,6 +42,7 @@ import {
   multichainNextKeysDerived,
   multichainNextKeysUnlockRequested,
   multichainNextSendRequested,
+  multichainNextSendReset,
   multichainNextUpdate,
   multichainTransferRequested,
   networkChanged,
@@ -59,10 +60,17 @@ import {
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   multichainKeyMap,
+  PRE_SETTINGS_MAINNET,
   PRE_SETTINGS_NEXT_DEVNET,
+  PRE_SETTINGS_TESTNET,
 } from '../../src/constants';
 import { STORE } from '../../src/store';
-import { nextClientChannel, resolveUncertainTransfer, saga } from '../../src/sagas/multichain';
+import {
+  nextClientChannel,
+  resolveUncertainTransfer,
+  saga,
+  SEND_SETTLE_MS,
+} from '../../src/sagas/multichain';
 import { prepareNextKeysAtUnlock } from '../../src/multichain/keys';
 import { ensureNextClient, getNextClient, setNextClient } from '../../src/multichain/nextClient';
 import { deriveFakeNextAddress, fakePeerAddress } from '../multichain/fakes/fakeAddress';
@@ -103,7 +111,8 @@ function setup(options = {}) {
     start = true,
     toggles = true,
     network = NETWORK,
-    networkSettings = null,
+    // The wallet's saved network settings: Hathor Next never shows on mainnet's.
+    networkSettings = PRE_SETTINGS_TESTNET,
   } = options;
   resetLedger(NETWORK, scenario);
   let state = reducer(undefined, { type: '@@INIT' });
@@ -115,9 +124,7 @@ function setup(options = {}) {
     channel.put(action);
   };
   task = runSaga({ channel, dispatch, getState: () => state }, saga);
-  if (networkSettings) {
-    dispatch(networkSettingsUpdateState(networkSettings));
-  }
+  dispatch(networkSettingsUpdateState(networkSettings));
   if (toggles) {
     dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: flag }));
     dispatch(featureToggleInitialized());
@@ -887,5 +894,160 @@ describe('locking the app', () => {
     env.dispatch(lockScreen());
     expect(getNextClient().hasKeys()).toBe(true);
     expect(env.getState().multichain.next.keysReady).toBe(true);
+  });
+});
+
+describe('mainnet', () => {
+  test('never connects, signs or burns, whatever the flag and the network name say', async () => {
+    const env = setup({ networkSettings: PRE_SETTINGS_MAINNET });
+    env.dispatch(multichainConnectSettingChanged(true, { pinCode: PIN }));
+    await wait(2000);
+    expect(STORE.getWalletWords).not.toHaveBeenCalled();
+    expect(env.getState().multichain.connectedNetworks).toEqual({});
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
+  });
+
+  test('ignores a payment or a transfer asked for anyway', async () => {
+    const env = setup();
+    await connect(env);
+    const client = getNextClient();
+    const sendSpy = jest.spyOn(client, 'send');
+    // The settings now say mainnet: the flags are off for it, and nothing is signed.
+    env.dispatch(networkSettingsUpdateState(PRE_SETTINGS_MAINNET));
+    env.dispatch(multichainNextSendRequested({
+      tokenId: HTR, to: deriveFakeNextAddress('someone'), amount: 1n, draftId: 'mainnet-draft',
+    }));
+    env.dispatch(multichainTransferRequested({ amount: 10000n, toAddress: ADDRESS, pinCode: PIN }));
+    await wait(2000);
+    expect(sendSpy).not.toHaveBeenCalled();
+    expect(loadLedger(NETWORK).transfers).toHaveLength(0);
+    expect(env.getState().multichain.send.status).toBe(OPERATION_STATUS.IDLE);
+    expect(env.getState().multichain.transfer.status).toBe(OPERATION_STATUS.IDLE);
+  });
+});
+
+describe('a wallet reload', () => {
+  test('keeps a Hathor Next already loaded on this network, with no new connect', async () => {
+    const env = setup();
+    await connect(env);
+    const connectSpy = jest.spyOn(getNextClient(), 'connect');
+    // wallet-lib reloads the wallet at every reconnect, and the reload ends with a wallet start.
+    env.dispatch(startWalletSuccess());
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+    await wait(2000);
+    expect(connectSpy).not.toHaveBeenCalled();
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+  });
+
+  test('stops a Hathor Next still running when the side chain is off at the start', async () => {
+    const env = setup();
+    await connect(env);
+    // The start's own read of the flags turns them off: no "flags updated" action comes.
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: false }));
+    env.dispatch(startWalletSuccess());
+    await wait(10);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
+    expect(getNextClient().getNetwork()).toBeNull();
+  });
+});
+
+describe('a load of Hathor Next', () => {
+  test('is not cancelled by the next action of the handler that started it', async () => {
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
+    const env = setup({ flag: false, start: false });
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+    env.dispatch(startWalletSuccess());
+    await wait(10);
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
+    env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+    await wait(100);
+    // The flags update again while the load runs: the handler is takeLatest.
+    env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+    await wait(3000);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+  });
+});
+
+describe('a Hathor Next payment, without an outcome', () => {
+  const draft = (draftId) => multichainNextSendRequested({
+    tokenId: HTR, to: deriveFakeNextAddress('someone'), amount: 100000000n, draftId,
+  });
+
+  test('is shown as not settled yet after a while, so the user can leave', async () => {
+    const env = setup();
+    await connect(env);
+    // Signed and handed over, and then nothing: Hathor Next lost track of it.
+    jest.spyOn(getNextClient(), 'send').mockResolvedValue({ sendId: 'lost' });
+    env.dispatch(draft('draft-lost'));
+    await wait(SEND_SETTLE_MS - 1000);
+    expect(env.getState().multichain.send.status).toBe(OPERATION_STATUS.SENDING);
+    await wait(2000);
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.UNCONFIRMED,
+      sendId: 'lost',
+    });
+  });
+
+  test('is never sent twice, even once its state was cleared', async () => {
+    const env = setup();
+    await connect(env);
+    const sendSpy = jest.spyOn(getNextClient(), 'send');
+    env.dispatch(draft('draft-once'));
+    await wait(1000);
+    // The confirm screen closed and cleared the payment, but stayed mounted.
+    env.dispatch(multichainNextSendReset());
+    env.dispatch(draft('draft-once'));
+    await wait(1000);
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('refused for a reason without words of its own shows translated words', async () => {
+    const env = setup();
+    await connect(env);
+    jest.spyOn(getNextClient(), 'send').mockRejectedValue(new TypeError('Cannot read properties of null'));
+    env.dispatch(draft('draft-bug'));
+    await wait(1000);
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      error: 'Something went wrong on Hathor Next.',
+    });
+  });
+});
+
+// Every bridge the saga makes from now on is the fake one, changed by `change`.
+function withBridge(change) {
+  const bridgeModule = jest.requireMock('../../src/multichain/bridge');
+  const original = bridgeModule.createBridge;
+  jest.spyOn(bridgeModule, 'createBridge')
+    .mockImplementation((config, options) => change(original(config, options)));
+}
+
+describe('a transfer that went through', () => {
+  test('stays done when reading the list of transfers again fails', async () => {
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    withBridge((bridge) => ({ ...bridge, getTransfers: () => Promise.reject(new Error('timeout')) }));
+    env.dispatch(multichainTransferRequested({ amount: 10000n, toAddress: ADDRESS, pinCode: PIN }));
+    await wait(1000);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.DONE,
+      error: null,
+    });
+  });
+
+  test('refused for a reason without words of its own shows translated words', async () => {
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    withBridge((bridge) => ({
+      ...bridge,
+      transfer: () => Promise.reject(new Error('Network request failed')),
+    }));
+    env.dispatch(multichainTransferRequested({ amount: 10000n, toAddress: ADDRESS, pinCode: PIN }));
+    await wait(1000);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      error: 'The transfer failed.',
+    });
   });
 });

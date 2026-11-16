@@ -20,26 +20,22 @@ export const shortTokenId = (id) => id.trim().toLowerCase().slice(0, 6);
 
 /**
  * Hathor Next's tokens as the token list shows them: the native token first, then by most recent
- * activity (there is no price feed to rank by value). Token symbols aren't unique on Hathor Next,
- * so a token whose symbol another token shares carries its short id in its name; screens still
- * find every token by its id.
+ * activity (there is no price feed to rank by value). Anyone can create a token on Hathor Next
+ * under any name and symbol, "Hathor" and "HTR" included, and send it to any wallet, where it
+ * lists itself: every token but the native one carries its short id in its name, so a look-alike
+ * can always be told apart. Screens still find every token by its id.
  *
  * @param {{ [id: string]: { id, name, symbol, lastActivityAt } }} tokens
  * @param {string} nativeTokenId
  * @returns {{ uid: string, name: string, symbol: string, lastActivityAt: number|null }[]}
  */
 export function nextTokenList(tokens, nativeTokenId) {
-  const all = Object.values(tokens);
-  const symbolCount = {};
-  for (const token of all) {
-    symbolCount[token.symbol] = (symbolCount[token.symbol] ?? 0) + 1;
-  }
-  return all
+  return Object.values(tokens)
     .map((token) => ({
       uid: token.id,
-      name: symbolCount[token.symbol] > 1
-        ? `${token.name} · ${shortTokenId(token.id)}`
-        : token.name,
+      name: token.id === nativeTokenId
+        ? token.name
+        : `${token.name} · ${shortTokenId(token.id)}`,
       symbol: token.symbol,
       lastActivityAt: token.lastActivityAt ?? null,
     }))

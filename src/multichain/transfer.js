@@ -94,8 +94,10 @@ export function shortBalanceAdvice({
   const overpays = Boolean(transfers) && quote.min > needed + quote.bridgeFee;
   if (!overpays && transferCost(needed) <= otherAvailable) {
     if (!transfers) {
+      // Each placeholder has a name of its own: ttag can't translate a message that repeats one.
+      const toName = chainName;
       return {
-        message: t`You have ${have} ${symbol} on ${chainName}. Transfers from ${otherName} to ${chainName} aren't available yet.`,
+        message: t`You have ${have} ${symbol} on ${chainName}. Transfers from ${otherName} to ${toName} aren't available yet.`,
         transfer: null,
       };
     }
@@ -111,7 +113,8 @@ export function shortBalanceAdvice({
   if (transferCost(shortfall) > otherAvailable) {
     return null;
   }
-  const both = t`You have ${have} ${symbol} on ${chainName} and ${otherHave} ${symbol} on ${otherName}.`;
+  const otherSymbol = symbol;
+  const both = t`You have ${have} ${symbol} on ${chainName} and ${otherHave} ${otherSymbol} on ${otherName}.`;
   if (!transfers || !ownAddress) {
     return { message: both, transfer: null };
   }

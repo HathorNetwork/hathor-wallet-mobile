@@ -227,7 +227,7 @@ export function nodeSideChain(nodeUrl) {
  * (state.fullNodeNetworkName): a custom network pointed at a side chain's nodes has it too. Pass
  * the node too (the network settings' nodeUrl): a network whose name others share, such as
  * devnet-alpha's privatenet, is known by its node. A backend set up for local testing gives every
- * network but mainnet a side chain, in place of its own.
+ * network but mainnet a side chain, in place of its own. Mainnet has none.
  *
  * @param {string|null|undefined} networkName
  * @param {{ url: string, pins: Object }|null} [devBackend] The backend for local testing in force
@@ -245,11 +245,15 @@ export function getSideChainConfig(networkName, devBackend = null, nodeUrl = nul
     return lastConfig.value;
   }
   let value = null;
-  if (networkName) {
-    if (devBackend && networkName !== FULL_NETWORK_MAINNET) {
+  // Mainnet never has a side chain, whatever names one: this is the one place that decides.
+  if (networkName && networkName !== FULL_NETWORK_MAINNET) {
+    if (devBackend) {
       value = devBackendSideChain(devBackend);
     } else {
-      value = SIDE_CHAINS[networkName] ?? nodeSideChain(nodeUrl);
+      // Own keys only: a name such as `constructor` is no side chain.
+      value = (Object.prototype.hasOwnProperty.call(SIDE_CHAINS, networkName)
+        ? SIDE_CHAINS[networkName]
+        : null) ?? nodeSideChain(nodeUrl);
     }
   }
   lastConfig = { networkName, devBackend, nodeUrl, value };

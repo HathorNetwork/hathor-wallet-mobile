@@ -107,3 +107,16 @@ export class NextClientError extends Error {
     Object.assign(this, details);
   }
 }
+
+/**
+ * The words a failure is shown with: the client's own, translated, for one of its errors; for
+ * anything else (a bug, a network library's message, a server's words) the fallback, so the user
+ * never reads an untranslated exception.
+ *
+ * @param {Error} e
+ * @param {Function} [fallback] The words for any other failure
+ * @returns {string}
+ */
+export function userErrorText(e, fallback = () => nextClientErrorMessage()) {
+  return e instanceof NextClientError ? e.message : fallback();
+}

@@ -74,12 +74,24 @@ describe('normalizeNextAddress and sameNextAddress', () => {
 });
 
 describe('parseNextQrCode', () => {
-  test('reads an address, alone or in a payment request', () => {
-    expect(parseNextQrCode(NEXT_ADDRESS)).toBe(NEXT_ADDRESS);
-    expect(parseNextQrCode(`${NEXT_ADDRESS}?amount=100`)).toBe(NEXT_ADDRESS);
-    expect(parseNextQrCode(`samba:${NEXT_ADDRESS}?amount=1.5&token=00`)).toBe(NEXT_ADDRESS);
-    expect(parseNextQrCode(UPPERCASE.address)).toBe(UPPERCASE.address.toLowerCase());
-    expect(parseNextQrCode(LEGACY.address)).toBe(normalizeNextAddress(LEGACY.address));
+  test('reads an address alone, in its canonical form', () => {
+    expect(parseNextQrCode(NEXT_ADDRESS)).toEqual({ address: NEXT_ADDRESS });
+    expect(parseNextQrCode(` ${NEXT_ADDRESS}? `)).toEqual({ address: NEXT_ADDRESS });
+    expect(parseNextQrCode(`samba:${NEXT_ADDRESS}`)).toEqual({ address: NEXT_ADDRESS });
+    expect(parseNextQrCode(UPPERCASE.address)).toEqual({ address: UPPERCASE.address.toLowerCase() });
+    expect(parseNextQrCode(LEGACY.address)).toEqual({ address: normalizeNextAddress(LEGACY.address) });
+  });
+
+  test('refuses a payment request, rather than drop its amount and token', () => {
+    for (const request of [
+      `${NEXT_ADDRESS}?amount=100`,
+      `samba:${NEXT_ADDRESS}?amount=1.5&token=00`,
+      `${NEXT_ADDRESS}?token=00`,
+    ]) {
+      expect(parseNextQrCode(request)).toEqual({
+        error: 'Payment request QR codes are not supported. Please use a simple address QR code.',
+      });
+    }
   });
 
   test('reads nothing from other QR codes', () => {
