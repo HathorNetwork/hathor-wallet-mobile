@@ -56,10 +56,15 @@ jest.mock('thoth-id-sdk', () => ({
 }));
 
 const mockStorage = {};
+/** Set to make every storage write throw, like a full or disabled storage. */
+const mockStorageState = { writeFails: false };
 jest.mock('../../src/store', () => ({
   STORE: {
     getItem: (key) => (key in mockStorage ? mockStorage[key] : null),
-    setItem: (key, value) => { mockStorage[key] = value; },
+    setItem: (key, value) => {
+      if (mockStorageState.writeFails) throw new Error('QuotaExceededError');
+      mockStorage[key] = value;
+    },
     removeItem: (key) => { delete mockStorage[key]; },
   },
 }));
@@ -117,6 +122,7 @@ const loadModule = () => {
 
 beforeEach(() => {
   Object.keys(mockStorage).forEach((key) => { delete mockStorage[key]; });
+  mockStorageState.writeFails = false;
   mockSdkState.contractIds = { htr: HTR_CONTRACT, tst: 'tst-contract' };
   mockSdkState.resolution = ADDRESS;
   mockSdkState.discoveryError = null;
@@ -256,6 +262,12 @@ describe('resolveThothName', () => {
       .toEqual({ htr: HTR_CONTRACT, tst: 'tst-contract' });
     expect(cache['testnet|http://localhost:8080'].contractIds)
       .toEqual({ htr: 'other-chain-contract' });
+  });
+
+  it('still resolves when the contract map cannot be cached', async () => {
+    mockStorageState.writeFails = true;
+    await expect(thothId.resolveThothName('alice.htr', TESTNET))
+      .resolves.toEqual({ name: 'alice.htr', address: ADDRESS });
   });
 
   it('lets a failed collection be retried', async () => {
