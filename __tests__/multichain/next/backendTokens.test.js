@@ -5,10 +5,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { afterEach, describe, it, expect } from '@jest/globals';
+import {
+  afterEach,
+  describe,
+  it,
+  expect,
+  jest,
+} from '@jest/globals';
 import derivation from './fixtures/derivation.json';
 import vectors from './fixtures/remote-issuance.json';
 import { createBackendNextClient } from '../../../src/multichain/next/backendClient';
+import * as signerModule from '../../../src/multichain/next/signer';
 import { NEXT_CLIENT_ERROR, NEXT_CLIENT_EVENT } from '../../../src/multichain/nextClientErrors';
 import {
   deriveAccount,
@@ -486,6 +493,78 @@ describe('a token created on Hathor Next through the backend', () => {
     expect(builds).toBe(2);
     expect(backend.signatures()).toBeNull();
     expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
+  });
+
+  it('signs nothing when the app leaves Hathor Next just before signing, and gives the nonce back', async () => {
+    // The build's answer is checked as it comes, and signing follows a step later: the app may
+    // leave in between. Each run leaves one step later than the one before, from the answer
+    // until after signing, so one run leaves in that step.
+    const realSign = signerModule.verifyAndSign;
+    const order = [];
+    jest.spyOn(signerModule, 'verifyAndSign').mockImplementation((...args) => {
+      order.push('sign');
+      return realSign(...args);
+    });
+    const runs = [];
+    try {
+      for (let steps = 0; steps < 8; steps += 1) {
+        order.length = 0;
+        const storage = memoryStorage();
+        const backend = fakeBackend();
+        let run = null;
+        const leave = () => {
+          let later = Promise.resolve();
+          for (let i = 0; i < steps; i += 1) {
+            later = later.then(() => {});
+          }
+          later.then(() => {
+            run.disconnect();
+            order.push('left');
+          });
+        };
+        const fetchImpl = async (url, init) => {
+          const answer = await backend.fetchImpl(url, init);
+          if (init.method !== 'POST' || !url.endsWith('/tokens')) {
+            return answer;
+          }
+          const body = await answer.text();
+          return {
+            ...answer,
+            text: () => new Promise((resolve) => {
+              resolve(body);
+              leave();
+            }),
+          };
+        };
+        // eslint-disable-next-line no-await-in-loop
+        run = await connected({ ...backend, fetchImpl }, storage);
+        client = run;
+        let outcome = 'created';
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await run.createToken({ words: derivation.mnemonic, ...CREATION });
+        } catch (e) {
+          outcome = e.code;
+        }
+        runs.push({
+          order: order.join(' '),
+          outcome,
+          sent: backend.signatures() !== null,
+          reserved: nonceRecord(storage)?.reserved ?? [],
+        });
+      }
+    } finally {
+      signerModule.verifyAndSign.mockRestore();
+    }
+    // The runs went from leaving before signing to leaving after it.
+    const leftFirst = runs.filter((r) => r.order.startsWith('left'));
+    expect(leftFirst.length).toBeGreaterThan(0);
+    expect(runs.some((r) => r.order.startsWith('sign left'))).toBe(true);
+    for (const r of leftFirst) {
+      expect(r).toEqual({
+        order: 'left', outcome: NEXT_CLIENT_ERROR.NOT_CONNECTED, sent: false, reserved: [],
+      });
+    }
   });
 
   it('names the token the registry lists with this wallet\'s keys, once recorded', async () => {
