@@ -468,7 +468,7 @@ msgstr ""
 
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
-#: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:299
+#: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:328
 #: src/screens/SendAmountInput.js:254
 msgid "Next"
 msgstr "Næste"
@@ -1199,56 +1199,56 @@ msgstr "Skift pinkode"
 msgid "Lock wallet"
 msgstr "Lås wallet"
 
-#: src/screens/SendAddressInput.js:63
+#: src/screens/SendAddressInput.js:68
 #, javascript-format
 msgid "${ name } is not registered."
 msgstr ""
 
-#: src/screens/SendAddressInput.js:65
+#: src/screens/SendAddressInput.js:70
 msgid "There is no thoth.id registry for this domain on the connected network."
 msgstr ""
 
-#: src/screens/SendAddressInput.js:67
+#: src/screens/SendAddressInput.js:72
 msgid "thoth.id names can only be used on testnet."
 msgstr ""
 
-#: src/screens/SendAddressInput.js:69
+#: src/screens/SendAddressInput.js:74
 #, javascript-format
 msgid "${ name } resolved to an invalid address."
 msgstr ""
 
-#: src/screens/SendAddressInput.js:71
+#: src/screens/SendAddressInput.js:76
 #, javascript-format
 msgid ""
 "Could not resolve ${ name }. Please check your connection and try again."
 msgstr ""
 
-#: src/screens/SendAddressInput.js:199
+#: src/screens/SendAddressInput.js:227
 msgid "Resolving the name, please wait."
 msgstr ""
 
-#: src/screens/SendAddressInput.js:218
+#: src/screens/SendAddressInput.js:246
 msgid "Scan QR code"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:226
+#: src/screens/SendAddressInput.js:255
 #, javascript-format
-msgid "Resolving ${ resolution.name }..."
+msgid "Resolving ${ name }..."
 msgstr ""
 
-#: src/screens/SendAddressInput.js:249
+#: src/screens/SendAddressInput.js:278
 msgid "SEND TOKENS"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:262
+#: src/screens/SendAddressInput.js:291
 msgid "Address or name to send"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:262
+#: src/screens/SendAddressInput.js:291
 msgid "Address to send"
 msgstr "Adresse, der skal sendes til"
 
-#: src/screens/SendAddressInput.js:277
+#: src/screens/SendAddressInput.js:306
 msgid "Paste or type address"
 msgstr ""
 

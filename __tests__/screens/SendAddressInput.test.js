@@ -80,6 +80,7 @@ async function render() {
     .map((node) => [].concat(node.props.children).join(''));
   return {
     renderer,
+    store,
     input,
     type,
     nextButton,
@@ -144,7 +145,11 @@ describe('SendAddressInput', () => {
   });
 
   describe('thoth.id names', () => {
-    beforeEach(() => { jest.useFakeTimers(); });
+    beforeEach(() => {
+      jest.useFakeTimers();
+      // Answers a test queued but did not use must not reach the next one
+      resolveThothName.mockReset();
+    });
     afterEach(() => { jest.useRealTimers(); });
 
     // Lets the debounce run out and the resolution settle.
@@ -168,6 +173,35 @@ describe('SendAddressInput', () => {
       expect(mockNavigation.navigate).toHaveBeenCalledWith(
         'SendAmountInput',
         { address: P2PKH, name: 'alice.htr' },
+      );
+    });
+
+    test('resolves the name again when the wallet switches node', async () => {
+      const OTHER_ADDRESS = P2SH;
+      resolveThothName.mockResolvedValueOnce({ address: P2PKH });
+      resolveThothName.mockResolvedValueOnce({ address: OTHER_ADDRESS });
+      const { store, type, nextButton } = await render();
+
+      await type('alice.htr');
+      await settle();
+      expect(nextButton().props.disabled).toBe(false);
+
+      // Another node may serve another chain, where the name points elsewhere
+      const otherNode = 'https://node.other.example/v1a/';
+      await act(async () => {
+        store.dispatch(networkSettingsUpdateState({ ...PRE_SETTINGS_TESTNET, nodeUrl: otherNode }));
+      });
+      expect(nextButton().props.disabled).toBe(true);
+
+      await settle();
+      expect(resolveThothName).toHaveBeenLastCalledWith(
+        'alice.htr',
+        expect.objectContaining({ nodeUrl: otherNode }),
+      );
+      await act(async () => { nextButton().props.onPress(); });
+      expect(mockNavigation.navigate).toHaveBeenCalledWith(
+        'SendAmountInput',
+        { address: OTHER_ADDRESS, name: 'alice.htr' },
       );
     });
 

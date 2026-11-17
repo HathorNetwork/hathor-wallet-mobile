@@ -48,7 +48,12 @@ export const NAME_RESOLUTION_STATUS = {
 };
 
 const NO_RESOLUTION = {
-  status: NAME_RESOLUTION_STATUS.NONE, name: '', address: null, error: null,
+  status: NAME_RESOLUTION_STATUS.NONE,
+  name: '',
+  address: null,
+  error: null,
+  networkName: null,
+  nodeUrl: null,
 };
 
 /**
@@ -115,6 +120,8 @@ export const SendAddressInput = () => {
    * name {string} The name the current status refers to
    * address {string|null} Address the name resolved to
    * error {string|null} Message to show when the resolution failed
+   * networkName {string|null} Network the name was resolved on
+   * nodeUrl {string|null} Node the name was resolved against
    */
   const [resolution, setResolution] = useState(NO_RESOLUTION);
 
@@ -135,12 +142,17 @@ export const SendAddressInput = () => {
     }
 
     const name = normalizeThothName(typedAddress);
+    const context = { networkName, nodeUrl };
     setResolution((prev) => (
-      // An address already found for this exact name stays on screen, so
-      // retyping the same text does not flash the spinner over it
+      // An address already found for this exact name, on this same network and
+      // node, stays on screen, so retyping the same text does not flash the
+      // spinner over it
       prev.status === NAME_RESOLUTION_STATUS.RESOLVED && prev.name === name
+        && prev.networkName === networkName && prev.nodeUrl === nodeUrl
         ? prev
-        : { status: NAME_RESOLUTION_STATUS.LOADING, name, address: null, error: null }
+        : {
+          status: NAME_RESOLUTION_STATUS.LOADING, name, address: null, error: null, ...context,
+        }
     ));
 
     let cancelled = false;
@@ -149,7 +161,7 @@ export const SendAddressInput = () => {
         const { address } = await resolveThothName(name, { network: networkName, nodeUrl });
         if (!cancelled) {
           setResolution({
-            status: NAME_RESOLUTION_STATUS.RESOLVED, name, address, error: null,
+            status: NAME_RESOLUTION_STATUS.RESOLVED, name, address, error: null, ...context,
           });
         }
       } catch (e) {
@@ -159,6 +171,7 @@ export const SendAddressInput = () => {
             name,
             address: null,
             error: getResolutionErrorMessage(e, name),
+            ...context,
           });
         }
       }
@@ -170,6 +183,21 @@ export const SendAddressInput = () => {
     };
   }, [typedAddress, isName, networkName, nodeUrl]);
 
+  // The resolution counts only for the name in the field and the network and
+  // node the wallet is on now. Until the effect catches up with a change, the
+  // name is treated as still being resolved, so Next never sends to an address
+  // found for another name, or on another chain.
+  const currentName = isName ? normalizeThothName(typedAddress) : '';
+  const isCurrentResolution = resolution.name === currentName
+    && resolution.networkName === networkName
+    && resolution.nodeUrl === nodeUrl;
+  let activeResolution = NO_RESOLUTION;
+  if (isName) {
+    activeResolution = isCurrentResolution
+      ? resolution
+      : { ...NO_RESOLUTION, status: NAME_RESOLUTION_STATUS.LOADING, name: currentName };
+  }
+
   const onAddressChange = (text) => {
     setFormModel({ address: text, error: null });
   };
@@ -179,25 +207,25 @@ export const SendAddressInput = () => {
   const isAddressValid = () => {
     if (!typedAddress) return false;
     // A name can be sent to once it resolved; its address was validated by the resolution
-    if (isName) return resolution.status === NAME_RESOLUTION_STATUS.RESOLVED;
+    if (isName) return activeResolution.status === NAME_RESOLUTION_STATUS.RESOLVED;
     return validate().isValid;
   };
 
   const onButtonPress = () => {
     if (isName) {
-      if (resolution.status === NAME_RESOLUTION_STATUS.RESOLVED) {
+      if (activeResolution.status === NAME_RESOLUTION_STATUS.RESOLVED) {
         navigation.navigate('SendAmountInput', {
-          address: resolution.address,
-          name: resolution.name,
+          address: activeResolution.address,
+          name: activeResolution.name,
         });
         return;
       }
       // Nothing to send to yet: the name is still being resolved, or it failed
       setFormModel((prev) => ({
         ...prev,
-        error: resolution.status === NAME_RESOLUTION_STATUS.LOADING
+        error: activeResolution.status === NAME_RESOLUTION_STATUS.LOADING
           ? t`Resolving the name, please wait.`
-          : resolution.error,
+          : activeResolution.error,
       }));
       return;
     }
@@ -222,17 +250,18 @@ export const SendAddressInput = () => {
 
   /** Feedback shown under the field while a thoth.id name is typed there. */
   const getNameSubtitle = () => {
-    if (resolution.status === NAME_RESOLUTION_STATUS.LOADING) {
-      return t`Resolving ${resolution.name}...`;
+    const { status, name, address } = activeResolution;
+    if (status === NAME_RESOLUTION_STATUS.LOADING) {
+      return t`Resolving ${name}...`;
     }
-    if (resolution.status === NAME_RESOLUTION_STATUS.RESOLVED) {
-      return `${resolution.name} → ${resolution.address}`;
+    if (status === NAME_RESOLUTION_STATUS.RESOLVED) {
+      return `${name} → ${address}`;
     }
     return null;
   };
 
   const errorMessage = formModel.error
-    || (resolution.status === NAME_RESOLUTION_STATUS.ERROR ? resolution.error : null);
+    || (activeResolution.status === NAME_RESOLUTION_STATUS.ERROR ? activeResolution.error : null);
   const nameSubtitle = getNameSubtitle();
 
   return (
