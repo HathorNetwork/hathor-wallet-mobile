@@ -585,8 +585,8 @@ msgstr "Depósito"
 #: src/components/Multichain/TransferDetailsModal.js:129
 #: src/components/Shielded/FeeBreakdown.js:70
 #: src/screens/CreateTokenConfirm.js:293
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:236
-#: src/screens/Multichain/ChainTransferScreen.js:256
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:245
+#: src/screens/Multichain/ChainTransferScreen.js:271
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:230
 #: src/screens/Multichain/NextSendConfirmScreen.js:277
 #: src/screens/SendConfirmScreen.js:688
@@ -869,7 +869,7 @@ msgid "Tokens found"
 msgstr "Tokens encontrados"
 
 #: src/screens/ImportTokensScreen.js:209
-#: src/screens/Multichain/ChainTransferScreen.js:265
+#: src/screens/Multichain/ChainTransferScreen.js:280
 msgid "Continue"
 msgstr "Continuar"
 
@@ -1031,7 +1031,7 @@ msgstr "Saldo Disponível"
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/NanoContractRegisterQrCodeScreen.js:26
-#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:118
+#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:129
 msgid "Manual"
 msgstr "Digitar"
 
@@ -1154,23 +1154,24 @@ msgid "You can register Tokens, Nano Contracts or Reown manually."
 msgstr "Você pode registrar Tokens, Nano Contracts ou o Reown manualmente."
 
 #: src/screens/RegisterOptionsScreen.js:43
-#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:82
-#: src/screens/UnifiedQRScanner.js:99
+#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:93
+#: src/screens/UnifiedQRScanner.js:110
 msgid "Feature Not Available"
 msgstr "Funcionalidade não disponível."
 
-#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:99
+#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:110
 msgid "The nano contract feature is not enabled."
 msgstr "Nano Contracts não estão habilitados."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:139
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:148
+#: src/screens/Multichain/ChainTransferScreen.js:295
 #: src/screens/RegisterOptionsScreen.js:45
 #: src/screens/RegisterOptionsScreen.js:57 src/screens/SendScanQRCode.js:40
-#: src/screens/UnifiedQRScanner.js:43
+#: src/screens/UnifiedQRScanner.js:48
 msgid "OK"
 msgstr "OK"
 
-#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:82
+#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:93
 msgid "The reown feature is not enabled."
 msgstr "Reown não está habilitado."
 
@@ -1324,7 +1325,7 @@ msgid "Transfer between chains"
 msgstr "Transferir entre cadeias"
 
 #: src/multichain/nextClientErrors.js:87
-#: src/screens/Multichain/ChainTransferScreen.js:154
+#: src/screens/Multichain/ChainTransferScreen.js:169
 #: src/screens/Multichain/NextSendAmountInput.js:160
 #: src/screens/SendAmountInput.js:170
 msgid "Insufficient funds"
@@ -1480,8 +1481,8 @@ msgid "Transaction summary"
 msgstr "Resumo da transação"
 
 #: src/components/Multichain/TransferDetailsModal.js:124
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:231
-#: src/screens/Multichain/ChainTransferScreen.js:197
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:240
+#: src/screens/Multichain/ChainTransferScreen.js:212
 #: src/screens/SendConfirmScreen.js:647
 msgid "To"
 msgstr "Para"
@@ -1524,7 +1525,7 @@ msgid "SEND"
 msgstr "ENVIAR"
 
 #: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:92
-#: src/screens/UnifiedQRScanner.js:126
+#: src/screens/UnifiedQRScanner.js:137
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
@@ -1652,16 +1653,26 @@ msgstr "TROCAR"
 msgid "TOKENS"
 msgstr "TOKENS"
 
-#: src/screens/UnifiedQRScanner.js:60 src/screens/UnifiedQRScanner.js:107
+#: src/screens/UnifiedQRScanner.js:65 src/screens/UnifiedQRScanner.js:118
 msgid "Invalid QR Code"
 msgstr "QR code inválido"
 
+#: src/screens/UnifiedQRScanner.js:72
+msgid "Payment on its way"
+msgstr "Pagamento a caminho"
+
+#: src/screens/UnifiedQRScanner.js:72
+msgid "A Hathor Next payment is still on its way. Scan again once it settles."
+msgstr ""
+"Um pagamento na Hathor Next ainda está a caminho. Leia o QR code de novo "
+"depois que ele for concluído."
+
 #.  If none of the patterns match, show an error or handle accordingly
-#: src/screens/UnifiedQRScanner.js:107
+#: src/screens/UnifiedQRScanner.js:118
 msgid "The scanned QR code is not in a recognized format."
 msgstr "O QR code escaneado não está em um formato reconhecível."
 
-#: src/screens/UnifiedQRScanner.js:113
+#: src/screens/UnifiedQRScanner.js:124
 msgid "Scan QR Code"
 msgstr "Leia o QR code"
 
@@ -2027,12 +2038,12 @@ msgstr "Transação do Nano Contract"
 msgid "Contract successfully registered."
 msgstr "Nano Contract registrado com sucesso."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:44
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:47
 #, javascript-format
 msgid "Your ${ symbol } will arrive on Hathor Next in ${ eta }."
 msgstr "Seu ${ symbol } chegará na Hathor Next em ${ eta }."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:52
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:55
 msgid ""
 "Your earlier transfer went through. This one wasn't sent: check your "
 "balance, then confirm it if you still want it."
@@ -2040,7 +2051,7 @@ msgstr ""
 "Sua transferência anterior foi concluída. Esta não foi enviada: confira seu "
 "saldo e confirme-a se ainda quiser."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:53
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:56
 msgid ""
 "Hathor Next no longer knows your earlier transfer, and its HTR may have left "
 "your wallet. This one wasn't sent: check your Hathor Network history, then "
@@ -2050,7 +2061,7 @@ msgstr ""
 "ter saído da sua carteira. Esta não foi enviada: confira seu histórico na "
 "Hathor Network e confirme-a se ainda quiser."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:54
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:57
 #, javascript-format
 msgid ""
 "Your earlier transfer is settled: ${ outcome } This one wasn't sent yet, and "
@@ -2059,7 +2070,7 @@ msgstr ""
 "Sua transferência anterior foi resolvida: ${ outcome } Esta ainda não foi "
 "enviada, e você pode confirmá-la agora."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:55
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:58
 msgid ""
 "An earlier transfer hasn't been confirmed yet. You can make another one once "
 "it settles."
@@ -2067,11 +2078,11 @@ msgstr ""
 "Uma transferência anterior ainda não foi confirmada. Você poderá fazer outra "
 "depois que ela for concluída."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:114
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize the transfer"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a transferência"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:115
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:118
 msgid "Authorize the transfer"
 msgstr "Autorizar a transferência"
 
@@ -2080,24 +2091,24 @@ msgstr "Autorizar a transferência"
 #: src/components/Reown/InsufficientFundsModal.js:43
 #: src/components/Reown/NetworkMismatchModal.js:54
 #: src/components/Reown/TokenInfoModal.js:114
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:148
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:189
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:157
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:198
 msgid "Close"
 msgstr "Fechar"
 
-#: src/sagas/multichain.js:159
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:157
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:196
+#: src/sagas/multichain.js:160
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:166
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:205
 msgid "The transfer failed."
 msgstr "A transferência falhou."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:172
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:181
 msgid "Transferring to Hathor Next…"
 msgstr "Transferindo para a Hathor Next…"
 
 #: src/components/AmountInputAccessory.js:105
 #: src/components/Multichain/TransferDetailsModal.js:105
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:179
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:188
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:151
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:168
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:177
@@ -2113,101 +2124,110 @@ msgid "Done"
 msgstr "Ok"
 
 #.  Signed, with no answer yet: the app keeps asking, and no other transfer starts.
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:187
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:196
 msgid "We couldn't confirm the transfer yet."
 msgstr "Ainda não conseguimos confirmar a transferência."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:209
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:218
 msgid "CONFIRM TRANSFER"
 msgstr "CONFIRMAR TRANSFERÊNCIA"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:218
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:227
 msgid "You send"
 msgstr "Você envia"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:224
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:233
 msgid "You receive"
 msgstr "Você recebe"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:231
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:240
 msgid "To your address"
 msgstr "Para o seu endereço"
 
 #: src/components/Multichain/TransferDetailsModal.js:127
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:235
-#: src/screens/Multichain/ChainTransferScreen.js:255
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:244
+#: src/screens/Multichain/ChainTransferScreen.js:270
 msgid "Bridge fee"
 msgstr "Taxa da ponte"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:237
-#: src/screens/Multichain/ChainTransferScreen.js:257
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:246
+#: src/screens/Multichain/ChainTransferScreen.js:272
 msgid "Arrives in"
 msgstr "Chega em"
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:241
-#: src/screens/Multichain/ChainTransferScreen.js:260
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:250
+#: src/screens/Multichain/ChainTransferScreen.js:275
 msgid "One-way: you can't move these tokens back to Hathor Network yet."
 msgstr ""
 "Só de ida: você ainda não pode mover esses tokens de volta para a Hathor "
 "Network."
 
-#: src/screens/Multichain/ChainTransferConfirmScreen.js:247
+#: src/screens/Multichain/ChainTransferConfirmScreen.js:256
 msgid "Confirm and send"
 msgstr "Confirmar e enviar"
 
-#: src/screens/Multichain/ChainTransferScreen.js:126
+#: src/screens/Multichain/ChainTransferScreen.js:47
+msgid ""
+"Hathor Next no longer knows your earlier transfer, and its HTR may have left "
+"your wallet. Check your Hathor Network history before you transfer again."
+msgstr ""
+"A Hathor Next não conhece mais sua transferência anterior, e o HTR dela pode "
+"ter saído da sua carteira. Confira seu histórico na Hathor Network antes de "
+"transferir de novo."
+
+#: src/screens/Multichain/ChainTransferScreen.js:141
 #, javascript-format
 msgid "Transfers from ${ source } to ${ destination } aren't available yet."
 msgstr ""
 "Transferências da ${ source } para a ${ destination } ainda não estão "
 "disponíveis."
 
-#: src/screens/Multichain/ChainTransferScreen.js:150
+#: src/screens/Multichain/ChainTransferScreen.js:165
 msgid "The smallest transfer is ${ minimum }."
 msgstr "A menor transferência é de ${ minimum }."
 
-#: src/screens/Multichain/ChainTransferScreen.js:174
+#: src/screens/Multichain/ChainTransferScreen.js:189
 msgid "TRANSFER BETWEEN CHAINS"
 msgstr "TRANSFERIR ENTRE CADEIAS"
 
-#: src/screens/Multichain/ChainTransferScreen.js:184
+#: src/screens/Multichain/ChainTransferScreen.js:199
 msgid "From"
 msgstr "De"
 
-#: src/screens/Multichain/ChainTransferScreen.js:191
+#: src/screens/Multichain/ChainTransferScreen.js:206
 msgid "Swap From and To"
 msgstr "Inverter origem e destino"
 
 #: src/components/Multichain/NextTokenPicker.js:60
-#: src/screens/Multichain/ChainTransferScreen.js:201
+#: src/screens/Multichain/ChainTransferScreen.js:216
 msgid "Token"
 msgstr "Token"
 
-#: src/screens/Multichain/ChainTransferScreen.js:202
+#: src/screens/Multichain/ChainTransferScreen.js:217
 #, javascript-format
 msgid "${ symbol } · ${ availableText } available"
 msgstr "${ symbol } · ${ availableText } disponível"
 
-#: src/screens/Multichain/ChainTransferScreen.js:205
+#: src/screens/Multichain/ChainTransferScreen.js:220
 msgid "Hathor Next address"
 msgstr "Endereço da Hathor Next"
 
-#: src/screens/Multichain/ChainTransferScreen.js:218
+#: src/screens/Multichain/ChainTransferScreen.js:233
 msgid "Paste or type a Hathor Next address"
 msgstr "Cole ou digite um endereço da Hathor Next"
 
-#: src/screens/Multichain/ChainTransferScreen.js:232
+#: src/screens/Multichain/ChainTransferScreen.js:247
 msgid "Use my Hathor Next address"
 msgstr "Usar meu endereço da Hathor Next"
 
 #: src/components/Reown/CreateTokenRequest.js:103
-#: src/screens/Multichain/ChainTransferScreen.js:237
+#: src/screens/Multichain/ChainTransferScreen.js:252
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:227
 #: src/screens/Multichain/NextSendConfirmScreen.js:263
 msgid "Amount"
 msgstr "Quantidade"
 
-#: src/screens/Multichain/ChainTransferScreen.js:251
+#: src/screens/Multichain/ChainTransferScreen.js:266
 msgid "You'll receive"
 msgstr "Você receberá"
 
@@ -2263,7 +2283,7 @@ msgstr ""
 msgid "The token wasn't created."
 msgstr "O token não foi criado."
 
-#: src/sagas/multichain.js:162
+#: src/sagas/multichain.js:163
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:205
 msgid "The token couldn't be created."
 msgstr "Não foi possível criar o token."
@@ -2423,7 +2443,7 @@ msgstr ""
 msgid "Private"
 msgstr "Privado"
 
-#: src/multichain/nextClientErrors.js:90 src/sagas/multichain.js:156
+#: src/multichain/nextClientErrors.js:90 src/sagas/multichain.js:157
 msgid "Couldn't connect to Hathor Next."
 msgstr "Não foi possível conectar à Hathor Next."
 

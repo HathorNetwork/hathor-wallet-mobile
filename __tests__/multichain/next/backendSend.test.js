@@ -667,18 +667,25 @@ describe('a payment on its way', () => {
     await expect(recorded).resolves.toMatchObject({ sendId: 'send-1' });
   });
 
-  it('not settled yet is read only as often as it goes out again', async () => {
-    const backend = fakeBackend({ sendStatus: { status: 'failed', reason: 'busy' } });
-    client = await connected(backend, memoryStorage(), { unconfirmedPollMs: 60000 });
-    const unconfirmed = waitFor('unconfirmed');
-    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
-    await unconfirmed;
-    const reads = () => backend.calls
-      .filter((c) => c.method === 'GET' && c.path === '/v1/sends/send-1').length;
-    const before = reads();
-    // A payment on its way is read every 5 ms here: one not settled yet waits a minute.
-    await new Promise((resolve) => { setTimeout(resolve, 100); });
-    expect(reads()).toBe(before);
+  it('not settled yet is read only as often as it goes out again: once a minute', async () => {
+    const timers = jest.spyOn(global, 'setTimeout');
+    try {
+      const backend = fakeBackend({ sendStatus: { status: 'failed', reason: 'busy' } });
+      // The client's own pace for it, not this file's.
+      client = await connected(backend, memoryStorage(), { unconfirmedPollMs: undefined });
+      const unconfirmed = waitFor('unconfirmed');
+      await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+      await unconfirmed;
+      const reads = () => backend.calls
+        .filter((c) => c.method === 'GET' && c.path === '/v1/sends/send-1').length;
+      const before = reads();
+      // A payment on its way is read every 5 ms here: one not settled yet waits a minute.
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(reads()).toBe(before);
+      expect(timers.mock.calls.some(([, ms]) => ms === 60000)).toBe(true);
+    } finally {
+      timers.mockRestore();
+    }
   });
 
   it('the backend calls failed, and no longer keeps, frees its outputs', async () => {
@@ -821,6 +828,40 @@ describe('the sign-once ledger of a wallet and chain', () => {
       const client = await connected(backend);
       await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
       client.disconnect();
+      expect(created).toHaveBeenCalledTimes(1);
+    } finally {
+      created.mockRestore();
+    }
+  });
+
+  it('is the same after a connect to another chain and back', async () => {
+    const created = jest.spyOn(signer, 'createSignLedger');
+    try {
+      const before = fakeBackend();
+      const reset = fakeBackend({ genesisMs: 5000 });
+      let current = before;
+      const backend = { fetchImpl: (...args) => current.fetchImpl(...args) };
+      const client = await connected(backend);
+      current = reset;
+      await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+      current = before;
+      await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+      client.disconnect();
+      // One for each chain: the first chain's again is the one made at its first connect.
+      expect(created.mock.calls.map(([, key]) => key.split(':')[4])).toEqual(['0', '5000']);
+    } finally {
+      created.mockRestore();
+    }
+  });
+
+  it('is the same for every client of the same storage', async () => {
+    const created = jest.spyOn(signer, 'createSignLedger');
+    try {
+      const storage = memoryStorage();
+      const one = await connected(fakeBackend(), storage);
+      const other = await connected(fakeBackend(), storage);
+      one.disconnect();
+      other.disconnect();
       expect(created).toHaveBeenCalledTimes(1);
     } finally {
       created.mockRestore();

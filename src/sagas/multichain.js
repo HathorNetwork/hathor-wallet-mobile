@@ -75,6 +75,7 @@ import {
   OPERATION_STATUS,
   SEND_IN_FLIGHT,
   TRANSFER_STATUS,
+  isForgotten,
 } from '../multichain/state';
 
 const log = logger('multichain');
@@ -182,20 +183,40 @@ function loadFailedText(e) {
 }
 
 /**
- * The transfer signed without an answer on the network and backend the wallet is on now, or null.
- * It is saved with where it was signed: asked about on another backend it could only be unknown,
- * and no transfer could start there.
+ * The transfer saved on the network and backend the wallet is on now, or null: one signed without
+ * an answer, or one that ended forgotten and the user wasn't shown yet. It is saved with where it
+ * was signed: asked about on another backend it could only be unknown, and no transfer could
+ * start there.
  *
- * @returns {{ id: string, inputs: Object[]|null }|null} Its id, and the outputs its burn spends
+ * @returns {{ id: string, inputs: Object[]|null, forgotten: boolean }|null}
  */
-function* uncertainTransferHere() {
+function* savedTransferHere() {
   const saved = STORE.getItem(multichainKeyMap.uncertainTransfer);
   const network = yield select(selectMultichainNetwork);
   const backendUrl = (yield select(selectSideChainConfig))?.backendUrl ?? null;
   return saved?.id && saved.network === network && saved.backendUrl === backendUrl
-    ? { id: saved.id, inputs: saved.inputs ?? null }
+    ? { id: saved.id, inputs: saved.inputs ?? null, forgotten: saved.forgotten === true }
     : null;
 }
+
+/**
+ * The transfer signed without an answer on the network and backend the wallet is on now, or null.
+ *
+ * @returns {{ id: string, inputs: Object[]|null }|null} Its id, and the outputs its burn spends
+ */
+function* uncertainTransferHere() {
+  const saved = yield call(savedTransferHere);
+  return saved && !saved.forgotten ? { id: saved.id, inputs: saved.inputs } : null;
+}
+
+/** The outcome of a transfer Hathor Next no longer knows, until the user dismisses it. */
+const transferForgotten = () => ({
+  status: OPERATION_STATUS.ERROR,
+  record: null,
+  error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN).message,
+  errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+  uncertainId: null,
+});
 
 /**
  * Saves a transfer signed without an answer, with where it was signed and the outputs its burn
@@ -214,13 +235,19 @@ function* rememberUncertainTransfer(transferId, inputs = null) {
 
 /**
  * Shows the transfer signed without an answer where the wallet is now, saved by an earlier run of
- * the app or on this network before: a confirm screen keeps Confirm off until it settles. One left
- * in the state from another network or backend goes.
+ * the app or on this network before: a confirm screen keeps Confirm off until it settles. One
+ * that ended forgotten shows until the user dismisses it. One left in the state from another
+ * network or backend goes.
  */
 export function* showUncertainTransfer() {
-  const saved = yield call(uncertainTransferHere);
+  const saved = yield call(savedTransferHere);
   const { transfer } = yield select((state) => state.multichain);
-  if (saved && transfer.uncertainId !== saved.id) {
+  if (saved?.forgotten) {
+    if (!isForgotten(transfer)) {
+      // No confirm screen asked for it in this run of the app.
+      yield put(multichainTransferUpdate({ ...transferForgotten(), requestId: null }));
+    }
+  } else if (saved && transfer.uncertainId !== saved.id) {
     yield put(multichainTransferUpdate({
       status: OPERATION_STATUS.UNCONFIRMED,
       record: null,
@@ -229,8 +256,19 @@ export function* showUncertainTransfer() {
       // No confirm screen asked for it in this run of the app.
       requestId: null,
     }));
-  } else if (!saved && transfer.uncertainId) {
+  } else if (!saved && (transfer.uncertainId || isForgotten(transfer))) {
     yield put(multichainTransferUpdate(TRANSFER_CLEARED));
+  }
+}
+
+/**
+ * The user dismissed a forgotten transfer's outcome: its record goes, and the state shows it no
+ * more (the reducer).
+ */
+export function* onTransferForgottenSeen() {
+  const saved = yield call(savedTransferHere);
+  if (saved?.forgotten) {
+    STORE.removeItem(multichainKeyMap.uncertainTransfer);
   }
 }
 
@@ -1141,16 +1179,16 @@ export function* resolveUncertainTransfer(bridge, uncertain, tries) {
         return true;
       } catch (e) {
         // The backend no longer knows it, and the wallet's node can't tell that nothing moved:
-        // there is nothing left to ask. Kept, it would stop every transfer here for good.
+        // there is nothing left to ask. Still uncertain, it would stop every transfer here for
+        // good. Its HTR may have left the wallet: it is saved as forgotten, and shows on the
+        // transfer screens, across restarts, until the user dismisses it.
         if (e?.code === NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN) {
           log.error('A transfer signed without an answer is no longer known to the backend.');
-          STORE.removeItem(multichainKeyMap.uncertainTransfer);
-          yield put(multichainTransferUpdate({
-            status: OPERATION_STATUS.ERROR,
-            error: e.message,
-            errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
-            uncertainId: null,
-          }));
+          const saved = STORE.getItem(multichainKeyMap.uncertainTransfer);
+          STORE.setItem(multichainKeyMap.uncertainTransfer, {
+            ...saved, id: uncertain.id, inputs: null, forgotten: true,
+          });
+          yield put(multichainTransferUpdate(transferForgotten()));
           return true;
         }
         log.error('Could not read a transfer signed without an answer.', e);
@@ -1198,13 +1236,11 @@ export function* onTransferRequested({ payload }) {
   if (pending) {
     bridge = yield call(currentBridge);
     const settled = yield call(resolveUncertainTransfer, bridge, pending, 1);
-    const { status, errorCode } = yield select((state) => state.multichain.transfer);
+    const transfer = yield select((state) => state.multichain.transfer);
     // Settled as sent, or forgotten (its HTR may have left the wallet): that transfer is the
     // outcome, shown as the earlier one's (its requestId isn't this request's), and a new one
     // waits for the user. Only one that never went through lets this one go on.
-    const forgotten = status === OPERATION_STATUS.ERROR
-      && errorCode === NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN;
-    if (!settled || status === OPERATION_STATUS.DONE || forgotten) {
+    if (!settled || transfer.status === OPERATION_STATUS.DONE || isForgotten(transfer)) {
       if (!settled) {
         yield put(multichainTransferUpdate({
           status: OPERATION_STATUS.UNCONFIRMED,
@@ -1336,6 +1372,7 @@ export function* saga() {
     takeEvery(types.MULTICHAIN_NEXT_SEND_REQUESTED, onNextSendRequested),
     takeEvery(types.MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED, onNextCreateTokenRequested),
     takeLeading(types.MULTICHAIN_TRANSFER_REQUESTED, onTransferRequested),
+    takeEvery(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN, onTransferForgottenSeen),
     takeLatest(types.FEATURE_TOGGLE_UPDATED, onFeatureToggleUpdated),
     takeLatest(types.NETWORK_CHANGED, onNetworkChanged),
     takeLatest(types.RESET_WALLET, onResetWallet),

@@ -39,7 +39,9 @@ import {
   PRE_SETTINGS_TESTNET,
 } from '../../../src/constants';
 import { STORE } from '../../../src/store';
-import ChainTransferScreen from '../../../src/screens/Multichain/ChainTransferScreen';
+import ChainTransferScreen, {
+  transferForgottenNoticeText,
+} from '../../../src/screens/Multichain/ChainTransferScreen';
 import ChainTransferConfirmScreen, {
   earlierTransferDoneText,
   earlierTransferEndedText,
@@ -363,6 +365,49 @@ describe('the transfer between chains', () => {
     expect(text).toBe(earlierTransferForgottenText());
     expect(text).toContain('may have left your wallet');
     expect(text).not.toContain('settled');
+  });
+
+  // Found forgotten while no confirm screen was open: by the poll, or at a restart.
+  const forgottenEarlier = () => multichainTransferUpdate({
+    status: OPERATION_STATUS.ERROR,
+    error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN).message,
+    errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+    uncertainId: null,
+    requestId: null,
+  });
+
+  test('tells of an earlier transfer Hathor Next forgot when it opens, until it is dismissed', async () => {
+    const { store, actions } = makeStore();
+    store.dispatch(forgottenEarlier());
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={holdableNavigation()}
+          route={{ params: { amount: '500', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    // Its own reset on opening leaves it.
+    const modal = renderer.root.findByType(FeedbackModal);
+    expect(modal.props.text).toBe(earlierTransferForgottenText());
+    await act(async () => { modal.props.onDismiss(); });
+    expect(actions.map((a) => a.type)).toContain(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN);
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+    expect(store.getState().multichain.transfer.status).toBe(OPERATION_STATUS.IDLE);
+  });
+
+  test('the transfer screen tells of an earlier transfer Hathor Next forgot first', async () => {
+    const { store, actions } = makeStore();
+    store.dispatch(forgottenEarlier());
+    const renderer = await mount(
+      store,
+      <ChainTransferScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} route={{}} />,
+    );
+    const modal = renderer.root.findByType(FeedbackModal);
+    expect(modal.props.text).toBe(transferForgottenNoticeText());
+    await act(async () => { modal.props.action.props.onPress(); });
+    expect(actions.map((a) => a.type)).toContain(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN);
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
   });
 
   test("names Hathor Network's native token by the symbol the fullnode reports", async () => {

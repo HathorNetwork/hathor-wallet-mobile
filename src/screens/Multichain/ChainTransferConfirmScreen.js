@@ -15,13 +15,16 @@ import FeedbackModal from '../../components/FeedbackModal';
 import Spinner from '../../components/Spinner';
 import OfflineBar from '../../components/OfflineBar';
 import { ChainTag } from '../../components/Multichain/ChainTag';
-import { multichainTransferRequested, multichainTransferReset } from '../../actions';
+import {
+  multichainTransferForgottenSeen,
+  multichainTransferRequested,
+  multichainTransferReset,
+} from '../../actions';
 import { authorizeTransaction } from '../../passkey/authorizeTransaction';
 import { CHAIN, transferReceiveSymbol } from '../../multichain/chains';
 import { renderNextValue } from '../../multichain/amount';
 import { selectSideChainConfig } from '../../multichain/gating';
-import { OPERATION_STATUS } from '../../multichain/state';
-import { NEXT_CLIENT_ERROR } from '../../multichain/nextClientErrors';
+import { OPERATION_STATUS, isForgotten } from '../../multichain/state';
 import NavigationService from '../../NavigationService';
 import { renderValue } from '../../utils';
 import { COLORS } from '../../styles/themes';
@@ -126,6 +129,12 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
     NavigationService.resetToMain();
   };
 
+  // An error's outcome goes when the user dismisses it. A forgotten transfer's stays until then,
+  // through this screen's own reset: its HTR may have left the wallet.
+  const dismissError = () => dispatch(isForgotten(transfer)
+    ? multichainTransferForgottenSeen()
+    : multichainTransferReset());
+
   // An earlier transfer's outcome: this one was never made, and can be confirmed once it's read.
   const renderEarlier = () => {
     const again = () => dispatch(multichainTransferReset());
@@ -152,10 +161,10 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
         return (
           <FeedbackModal
             icon={<Image source={errorIcon} style={styles.feedbackIcon} resizeMode='contain' />}
-            text={transfer.errorCode === NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN
+            text={isForgotten(transfer)
               ? earlierTransferForgottenText()
               : earlierTransferEndedText(transfer.error ?? t`The transfer failed.`)}
-            onDismiss={again}
+            onDismiss={dismissError}
           />
         );
       default:
@@ -194,7 +203,7 @@ export default function ChainTransferConfirmScreen({ navigation, route }) {
           <FeedbackModal
             icon={<Image source={errorIcon} style={styles.feedbackIcon} resizeMode='contain' />}
             text={transfer.error ?? t`The transfer failed.`}
-            onDismiss={() => dispatch(multichainTransferReset())}
+            onDismiss={dismissError}
           />
         );
       default:

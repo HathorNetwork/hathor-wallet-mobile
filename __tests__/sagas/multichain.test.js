@@ -47,7 +47,9 @@ import {
   multichainNextSendReset,
   multichainNextSendUpdate,
   multichainNextUpdate,
+  multichainTransferForgottenSeen,
   multichainTransferRequested,
+  multichainTransferReset,
   multichainTransferUpdate,
   networkChanged,
   networkSettingsUpdateState,
@@ -982,7 +984,8 @@ describe('a transfer signed without an answer, as the screens see it', () => {
     expect(bridge.resolveTransfer).toHaveBeenCalledWith('transfer-1', {
       inputs: [{ txId: '01'.repeat(32), index: 1 }],
     });
-    expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toBeNull();
+    // No longer asked about: kept as forgotten, until the user dismisses it.
+    expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toMatchObject({ forgotten: true });
     // Its HTR may have left the wallet: nothing else burns before the user hears so, as the
     // earlier transfer's outcome.
     expect(bridge.transfer).not.toHaveBeenCalled();
@@ -992,10 +995,50 @@ describe('a transfer signed without an answer, as the screens see it', () => {
       uncertainId: null,
     });
     expect(env.getState().multichain.transfer.requestId).not.toBe('screen-2');
-    // Confirmed again, with nothing left to ask: it goes ahead.
+    // Dismissed, and confirmed again, with nothing left to ask: it goes ahead.
+    env.dispatch(multichainTransferForgottenSeen());
     env.dispatch(request);
     await wait(1000);
     expect(bridge.transfer).toHaveBeenCalledTimes(1);
+  });
+
+  test('found forgotten by the poll shows until the user dismisses it, across a restart', async () => {
+    saved({ inputs: [{ txId: '01'.repeat(32), index: 1 }] });
+    let env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue({
+      resolveTransfer: async () => {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN);
+      },
+      getTransfers: async () => [],
+    });
+    // No confirm screen is open: the "not confirmed" one's only way out was Close.
+    await wait(16000);
+    const forgotten = {
+      status: OPERATION_STATUS.ERROR,
+      errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+      uncertainId: null,
+    };
+    expect(env.getState().multichain.transfer).toMatchObject(forgotten);
+    // A confirm screen opening clears its state: this outcome stays, for it to show.
+    env.dispatch(multichainTransferReset());
+    expect(env.getState().multichain.transfer).toMatchObject(forgotten);
+    // Saved as forgotten: no longer asked about, and the next transfer isn't held by it.
+    expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toMatchObject({
+      id: 'transfer-1', forgotten: true,
+    });
+
+    task.cancel();
+    env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await wait(0);
+    expect(env.getState().multichain.transfer).toMatchObject({ ...forgotten, requestId: null });
+
+    env.dispatch(multichainTransferForgottenSeen());
+    await wait(0);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.IDLE, errorCode: null,
+    });
+    expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toBeNull();
   });
 
   test('one that never went through lets the next transfer go ahead at once', async () => {

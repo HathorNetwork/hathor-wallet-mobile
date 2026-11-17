@@ -101,7 +101,23 @@ const SEND_SETTLED = ['recorded', 'failed', 'expired'];
 const FAILED_RESUBMIT_MS = 60000;
 // How often a payment that isn't settled yet (the backend calls it failed) is read: no sooner
 // than it is submitted again. It can stay so for the whole session.
-const UNCONFIRMED_POLL_MS = FAILED_RESUBMIT_MS;
+export const UNCONFIRMED_POLL_MS = FAILED_RESUBMIT_MS;
+
+// The sign-once ledgers, one per storage and key (a Hathor Next wallet and chain), whatever
+// client or connect asks: a payment from before a connect may still be writing to its ledger,
+// and a second ledger of the same key wouldn't see that write.
+const ledgers = new WeakMap();
+
+function ledgerOf(storage, key) {
+  if (!ledgers.has(storage)) {
+    ledgers.set(storage, new Map());
+  }
+  const byKey = ledgers.get(storage);
+  if (!byKey.has(key)) {
+    byKey.set(key, createSignLedger(storage, key));
+  }
+  return byKey.get(key);
+}
 
 const sendStatusOf = (status) => (
   typeof status === 'string' && Object.prototype.hasOwnProperty.call(SEND_STATUS, status)
@@ -320,9 +336,6 @@ export function createBackendNextClient({
   let amountWidth = null;
   let feedSession = null;
   let ledger = null;
-  // The key the ledger is kept under: a connect to the same wallet and chain keeps the same
-  // ledger, whose writes a payment from before the connect may still be making.
-  let ledgerKey = null;
   // Whether the backend creates tokens, from GET /v1/config; and the creation nonces this device
   // handed out.
   let issuance = false;
@@ -908,12 +921,11 @@ export function createBackendNextClient({
         // genesis tells a chain apart from the one before a reset, which keeps the network id and
         // the view key and starts the global indexes over (pinned, so a backend can't change it).
         // Under the `wallet:` keys, so a wallet reset clears it with the rest of the wallet.
-        const key = `wallet:multichain:nextSigned:${config.nextNetworkId}:`
-          + `${remote.next.genesis_ms}:${bytesToHex(walletId)}`;
-        if (key !== ledgerKey) {
-          ledger = createSignLedger(storage, key);
-          ledgerKey = key;
-        }
+        ledger = ledgerOf(
+          storage,
+          `wallet:multichain:nextSigned:${config.nextNetworkId}:`
+            + `${remote.next.genesis_ms}:${bytesToHex(walletId)}`,
+        );
         // The ledger kept before under another key: its payments still on their way move to this
         // one, so they keep holding their outputs and go out again below; then it goes. It named
         // no chain: only what was signed since this chain's genesis is this chain's. Anything
