@@ -1377,6 +1377,13 @@ export function createBackendNextClient({
       }
       const cancel = () => withSession((token) => api.cancelSend(request.id, token))
         .catch((e) => log.error('Could not cancel an unsigned Hathor Next token creation.', e));
+      // Once more right before signing, as signing and its fee can't be undone: nothing is signed
+      // for a Hathor Next the app left. Not cancelled, which would log in again where it left:
+      // the unsigned creation expires.
+      if (mine !== generation) {
+        await nonces.release(nonce);
+        throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+      }
       if (!keys) {
         await cancel();
         await nonces.release(nonce);

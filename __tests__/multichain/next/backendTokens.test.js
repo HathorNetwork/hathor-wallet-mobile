@@ -461,6 +461,33 @@ describe('a token created on Hathor Next through the backend', () => {
     expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
   });
 
+  it('signs nothing when the app leaves Hathor Next while a build asked again after a 401 runs', async () => {
+    const storage = memoryStorage();
+    const backend = fakeBackend();
+    let builds = 0;
+    let leave = null;
+    const fetchImpl = async (url, init) => {
+      if (init.method !== 'POST' || !url.endsWith('/tokens')) {
+        return backend.fetchImpl(url, init);
+      }
+      builds += 1;
+      // The backend restarted: the session it gave is gone, and the client logs in again.
+      if (builds === 1) {
+        return { ok: false, status: 401, text: async () => JSON.stringify({ error: 'expired' }) };
+      }
+      const answer = await backend.fetchImpl(url, init);
+      leave?.();
+      return answer;
+    };
+    client = await connected({ ...backend, fetchImpl }, storage);
+    leave = () => client.disconnect();
+    await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
+    expect(builds).toBe(2);
+    expect(backend.signatures()).toBeNull();
+    expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
+  });
+
   it('names the token the registry lists with this wallet\'s keys, once recorded', async () => {
     const recordedId = 'cd'.repeat(32);
     const backend = fakeBackend({
