@@ -1312,6 +1312,47 @@ describe('a transfer signed without an answer, as the screens see it', () => {
     }
   });
 
+  test('one not confirmed yet whose screen closed holds no transfer on another backend', async () => {
+    STORE.setItem(multichainKeyMap.devBackend, LOCAL_BACKEND);
+    try {
+      const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+      await connect(env);
+      devBackendFlag(env, true);
+      await wait(2000);
+      const bridge = {
+        transfer: jest.fn(async () => {
+          throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, { transferId: 'transfer-2' });
+        }),
+        resolveTransfer: jest.fn(async () => { throw new Error('unreachable'); }),
+        getTransfers: async () => [],
+      };
+      jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+      env.dispatch(multichainTransferRequested({
+        amount: 500n, toAddress: ADDRESS, pinCode: PIN, requestId: 'screen-1',
+      }));
+      await wait(1000);
+      const unconfirmed = { status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-2' };
+      // Its screen closes, and the transfer stays: it is still being decided.
+      env.dispatch(multichainTransferReset());
+      expect(env.getState().multichain.transfer).toMatchObject({
+        ...unconfirmed, requestId: 'screen-1',
+      });
+      // The flag turns the local backend off: that transfer isn't this backend's, and holds
+      // nothing here.
+      devBackendFlag(env, false);
+      await wait(2000);
+      expect(env.getState().multichain.transfer).toMatchObject({
+        status: OPERATION_STATUS.IDLE, uncertainId: null, requestId: null,
+      });
+      // Back on the local backend, it shows again.
+      devBackendFlag(env, true);
+      await wait(2000);
+      expect(env.getState().multichain.transfer).toMatchObject({ ...unconfirmed, requestId: null });
+    } finally {
+      STORE.removeItem(multichainKeyMap.devBackend);
+    }
+  });
+
   test('one that never went through lets the next transfer go ahead at once', async () => {
     saved({ inputs: [{ txId: '01'.repeat(32), index: 1 }] });
     const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
