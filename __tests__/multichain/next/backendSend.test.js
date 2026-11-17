@@ -12,7 +12,7 @@ import derivation from './fixtures/derivation.json';
 import vectors from './fixtures/remote-signing.json';
 import { createBackendNextClient, prepareError } from '../../../src/multichain/next/backendClient';
 import { BackendError } from '../../../src/multichain/next/backendApi';
-import { NEXT_CLIENT_EVENT } from '../../../src/multichain/nextClientErrors';
+import { NEXT_CLIENT_ERROR, NEXT_CLIENT_EVENT } from '../../../src/multichain/nextClientErrors';
 import { deriveAccount, mnemonicToSeed, walletIdOf } from '../../../src/multichain/next/kit/keys';
 import { authSecret, readSecret } from '../../../src/multichain/next/kit/walletAuth';
 import { encodeAddress } from '../../../src/multichain/next/kit/address';
@@ -317,6 +317,34 @@ describe('a locked app', () => {
       to: PAYMENT.address,
       amount: BigInt(PAYMENT.amount),
     })).resolves.toMatchObject({ sendId: 'send-1' });
+  });
+
+  it('signs nothing when the app leaves Hathor Next while a build asked again after a 401 runs', async () => {
+    const backend = fakeBackend();
+    const { fetchImpl } = backend;
+    let builds = 0;
+    backend.fetchImpl = async (url, options) => {
+      if (options.method !== 'POST' || !url.endsWith('/sends')) {
+        return fetchImpl(url, options);
+      }
+      builds += 1;
+      // The backend restarted: the session it gave is gone, and the client logs in again.
+      if (builds === 1) {
+        return { ok: false, status: 401, text: async () => JSON.stringify({ error: 'expired' }) };
+      }
+      const response = await fetchImpl(url, options);
+      // The flag turned off while the backend built it again.
+      client.disconnect();
+      return response;
+    };
+    client = await connected(backend);
+    await expect(client.send({
+      tokenId: NATIVE,
+      to: PAYMENT.address,
+      amount: BigInt(PAYMENT.amount),
+    })).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
+    expect(builds).toBe(2);
+    expect(backend.signatures()).toBeNull();
   });
 
   it('cancels a payment the backend prepared while the app locked, and signs nothing', async () => {

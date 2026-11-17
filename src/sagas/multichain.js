@@ -260,6 +260,9 @@ function rememberUncertainTransfer(transferId, inputs, { network, backendUrl }) 
   });
 }
 
+/** A confirm screen's own transfer in these states is its own: on its way, or its outcome. */
+const OWN_OUTCOME = [OPERATION_STATUS.SENDING, OPERATION_STATUS.DONE, OPERATION_STATUS.ERROR];
+
 /**
  * Shows the transfer signed without an answer where the wallet is now, saved by an earlier run of
  * the app or on this network before: a confirm screen keeps Confirm off until it settles. One
@@ -269,6 +272,12 @@ function rememberUncertainTransfer(transferId, inputs, { network, backendUrl }) 
 export function* showUncertainTransfer() {
   const saved = yield call(savedTransferHere);
   const { transfer } = yield select((state) => state.multichain);
+  // A confirm screen's own transfer on its way, or its outcome shown, stays as it is: one made
+  // on another backend would read as this one. Closing that screen clears it, and the next
+  // transfer here hears of the saved one first (onTransferRequested).
+  if (transfer.requestId && OWN_OUTCOME.includes(transfer.status)) {
+    return;
+  }
   if (saved?.forgotten) {
     if (!isForgotten(transfer)) {
       // No confirm screen asked for it in this run of the app.
@@ -592,6 +601,10 @@ export function* connectNext() {
     return;
   }
   const config = yield select(selectSideChainConfig);
+  // The backend it connects to, from the start: the backend switching while it connects (the one
+  // for local testing turned off as it still answers) then leaves, and connects again on the
+  // backend the state names, rather than finish on the one turned off.
+  connectedConfig = config;
   yield put(multichainNextUpdate({ status: NEXT_STATUS.CONNECTING, error: null }));
   // The client's events from before the connect on: the connect itself says what it learns (a
   // payment the statement now records), and the follower takes those once it runs.
@@ -625,7 +638,6 @@ export function* connectNext() {
     }
   }
   const address = client.getAddress();
-  connectedConfig = config;
   yield put(multichainNextUpdate({
     status: NEXT_STATUS.READY,
     online: client.isOnline(),

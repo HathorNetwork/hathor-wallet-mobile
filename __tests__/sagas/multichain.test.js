@@ -1254,6 +1254,64 @@ describe('a transfer signed without an answer, as the screens see it', () => {
     }
   });
 
+  // The tester transfers on the backend for local testing, and the flag turns it off while the
+  // confirm screen still shows that transfer: done, refused, or still on its way.
+  const PENDING = { id: 'transfer-2', status: TRANSFER_STATUS.PENDING };
+  const REFUSED = { id: 'transfer-2', status: TRANSFER_STATUS.FAILED, reason: 'spent' };
+  test.each([
+    ['done', false, PENDING, { status: OPERATION_STATUS.DONE, errorCode: null }],
+    ['refused', false, REFUSED, {
+      status: OPERATION_STATUS.ERROR, errorCode: NEXT_CLIENT_ERROR.TRANSFER_NOT_SENT,
+    }],
+    ['on its way', true, PENDING, { status: OPERATION_STATUS.DONE, errorCode: null }],
+  ])('ended forgotten never covers a transfer %s on another backend', async (_label, during, record, outcome) => {
+    STORE.setItem(multichainKeyMap.devBackend, LOCAL_BACKEND);
+    saved({ inputs: null, forgotten: true });
+    try {
+      const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+      await connect(env);
+      devBackendFlag(env, true);
+      await wait(2000);
+      // The local backend never had it: no notice there, and a transfer goes.
+      expect(env.getState().multichain.transfer).toMatchObject({
+        status: OPERATION_STATUS.IDLE, errorCode: null,
+      });
+      const bridge = {
+        transfer: jest.fn(async () => {
+          if (during) {
+            devBackendFlag(env, false);
+            await new Promise((resolve) => { setTimeout(resolve, 3000); });
+          }
+          return record;
+        }),
+        resolveTransfer: jest.fn(),
+        getTransfers: async () => [],
+      };
+      jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+      const request = (requestId) => multichainTransferRequested({
+        amount: 500n, toAddress: ADDRESS, pinCode: PIN, requestId,
+      });
+      env.dispatch(request('screen-1'));
+      await wait(1000);
+      if (!during) {
+        devBackendFlag(env, false);
+      }
+      await wait(4000);
+      // Its screen still shows it as its own, and nothing else.
+      expect(env.getState().multichain.transfer).toMatchObject({
+        ...outcome, requestId: 'screen-1',
+      });
+      // Closed, the next transfer here hears of the forgotten one first.
+      env.dispatch(multichainTransferReset());
+      env.dispatch(request('screen-2'));
+      await wait(1000);
+      expect(bridge.transfer).toHaveBeenCalledTimes(1);
+      expect(env.getState().multichain.transfer).toMatchObject({ ...FORGOTTEN, requestId: null });
+    } finally {
+      STORE.removeItem(multichainKeyMap.devBackend);
+    }
+  });
+
   test('one that never went through lets the next transfer go ahead at once', async () => {
     saved({ inputs: [{ txId: '01'.repeat(32), index: 1 }] });
     const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
@@ -1530,6 +1588,49 @@ describe('the flag of the backend for local testing', () => {
     } finally {
       STORE.removeItem(multichainKeyMap.devBackend);
       STORE.removeItem(multichainKeyMap.uncertainTransfer);
+    }
+  });
+
+  test('connects again on the right backend when it turns off while the local one connects', async () => {
+    STORE.setItem(multichainKeyMap.devBackend, LOCAL);
+    try {
+      const env = setup();
+      await connect(env);
+      const client = getNextClient();
+      // As the app's client: a disconnect while it connects stops that connect.
+      let disconnects = 0;
+      const disconnect = client.disconnect.bind(client);
+      jest.spyOn(client, 'disconnect').mockImplementation(() => {
+        disconnects += 1;
+        disconnect();
+      });
+      const original = client.connect.bind(client);
+      let answer = null;
+      const connectSpy = jest.spyOn(client, 'connect').mockImplementationOnce(async (params) => {
+        const before = disconnects;
+        // The local backend answers slowly.
+        await new Promise((resolve) => { answer = resolve; });
+        if (disconnects !== before) {
+          throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+        }
+        return original(params);
+      });
+      devBackendFlag(env, true);
+      await wait(10);
+      expect(connectSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+        config: expect.objectContaining({ backendUrl: LOCAL.url }),
+      }));
+      // Turned off before it answered.
+      devBackendFlag(env, false);
+      await wait(10);
+      answer();
+      await wait(2000);
+      expect(connectSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+        config: FAKE_SIDE_CHAIN,
+      }));
+      expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+    } finally {
+      STORE.removeItem(multichainKeyMap.devBackend);
     }
   });
 

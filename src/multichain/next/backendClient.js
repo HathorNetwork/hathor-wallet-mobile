@@ -442,9 +442,13 @@ export function createBackendNextClient({
       if (!e.unauthorized) {
         throw e;
       }
+      // Asked again with a new session (the backend restarted, say): its answer is checked as the
+      // first one's is, or a payment built meanwhile for a backend the app left would be signed.
       await login();
       current();
-      return call(session.token);
+      const result = await call(session.token);
+      current();
+      return result;
     }
   }
 
