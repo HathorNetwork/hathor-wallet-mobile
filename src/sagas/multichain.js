@@ -249,7 +249,11 @@ function rememberUncertainTransfer(transferId, inputs, { network, backendUrl }) 
   });
 }
 
-/** A confirm screen's own transfer in these states is its own: on its way, or its outcome. */
+/**
+ * A confirm screen's own transfer in these states is its own: on its way, or its outcome. Not one
+ * still not confirmed: closing its screen keeps it, still named as that screen's, and nothing
+ * would clear it on another backend, where it would hold every transfer.
+ */
 const OWN_OUTCOME = [OPERATION_STATUS.SENDING, OPERATION_STATUS.DONE, OPERATION_STATUS.ERROR];
 
 /**
@@ -262,8 +266,11 @@ export function* showUncertainTransfer() {
   const saved = yield call(savedTransferHere);
   const { transfer } = yield select((state) => state.multichain);
   // A confirm screen's own transfer on its way, or its outcome shown, stays as it is: one made
-  // on another backend would read as this one. Closing that screen clears it, and the next
-  // transfer here hears of the saved one first (onTransferRequested).
+  // on another backend would read as this one. Closing that screen clears a done or refused
+  // outcome, and the next transfer here hears of the saved one first (onTransferRequested). A
+  // forgotten one stays, still named as that screen's, until the user dismisses it: through a
+  // switch too, so it shows on the new backend until then, and from its record again back where
+  // it was signed.
   if (transfer.requestId && OWN_OUTCOME.includes(transfer.status)) {
     return;
   }

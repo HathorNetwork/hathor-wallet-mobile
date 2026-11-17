@@ -319,6 +319,30 @@ describe('a locked app', () => {
     })).resolves.toMatchObject({ sendId: 'send-1' });
   });
 
+  it('signs nothing when the app leaves Hathor Next while the backend builds the payment', async () => {
+    const backend = fakeBackend();
+    const { fetchImpl } = backend;
+    let builds = 0;
+    backend.fetchImpl = async (url, options) => {
+      if (options.method !== 'POST' || !url.endsWith('/sends')) {
+        return fetchImpl(url, options);
+      }
+      builds += 1;
+      const response = await fetchImpl(url, options);
+      // The flag turned off while the backend built it.
+      client.disconnect();
+      return response;
+    };
+    client = await connected(backend);
+    await expect(client.send({
+      tokenId: NATIVE,
+      to: PAYMENT.address,
+      amount: BigInt(PAYMENT.amount),
+    })).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
+    expect(builds).toBe(1);
+    expect(backend.signatures()).toBeNull();
+  });
+
   it('signs nothing when the app leaves Hathor Next while a build asked again after a 401 runs', async () => {
     const backend = fakeBackend();
     const { fetchImpl } = backend;
