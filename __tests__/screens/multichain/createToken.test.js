@@ -339,6 +339,9 @@ describe('the token confirmation', () => {
     expect(button(screen.renderer, 'Create token').props.disabled).toBe(true);
     const modal = screen.renderer.root.findByType(FeedbackModal);
     expect(modal.props.text).toBe(creationLostText());
+    // Nothing more comes about it: the screen holds nothing.
+    expect(screen.renderer.root.findByType(HathorHeader).props.onBackPress)
+      .toEqual(expect.any(Function));
     await act(async () => { modal.props.action.props.onPress(); });
     expect(NavigationService.resetToMain).toHaveBeenCalled();
   });
@@ -349,7 +352,14 @@ describe('the token confirmation', () => {
   });
   const modals = (screen) => screen.renderer.root.findAllByType(FeedbackModal);
 
-  test('never says a creation was sent that wasn\'t signed: the passkey was still open', async () => {
+  // The saga's next update about this draft: the passkey dismissed (nothing was sent), or the
+  // creation stopped before anything was signed.
+  test.each([
+    ['its passkey dismissed', { status: OPERATION_STATUS.IDLE }, []],
+    ['stopped unsigned', {
+      status: OPERATION_STATUS.ERROR, error: 'Nothing was signed or created.',
+    }, ['Nothing was signed or created.']],
+  ])('waits for the saga when the app leaves Hathor Next before signing, then shows it: %s', async (_label, update, shown) => {
     STORE.isPasskeyWallet.mockReturnValue(true);
     const screen = await confirm();
     await act(async () => { button(screen.renderer, 'Create token').props.onPress(); });
@@ -361,11 +371,44 @@ describe('the token confirmation', () => {
       }));
     });
     await leaveHathorNext(screen);
-    expect(modals(screen)).toHaveLength(0);
+    // Nothing says yet whether it was created: never "sent", and the screen stays until it knows.
+    expect(modals(screen).map((m) => m.props.text)).toEqual(['Creating ATT on Hathor Next…']);
+    const header = () => screen.renderer.root.findByType(HathorHeader);
+    expect(header().props.onBackPress).toBeNull();
     expect(button(screen.renderer, 'Create token').props.disabled).toBe(true);
-    // Nothing holds the screen: the user can leave it.
-    const header = screen.renderer.root.findByType(HathorHeader);
-    expect(header.props.onBackPress).toEqual(expect.any(Function));
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({ ...update, draftId }));
+    });
+    expect(modals(screen).map((m) => m.props.text)).toEqual(shown);
+    if (!shown.length) {
+      // Nothing was sent: the user can create it, or leave.
+      expect(button(screen.renderer, 'Create token').props.disabled).toBe(false);
+      expect(header().props.onBackPress).toEqual(expect.any(Function));
+    }
+  });
+
+  test.each([OPERATION_STATUS.SENDING, 'pending'])('shows a signed creation on its way (%s) as being created, never as lost', async (status) => {
+    const screen = await confirm();
+    const draftId = await authorize(screen);
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status, draftId, sendId: 'create-1', tokenId: 'ab'.repeat(32),
+      }));
+    });
+    expect(modals(screen).map((m) => m.props.text)).toEqual(['Creating ATT on Hathor Next…']);
+  });
+
+  test('says it lost track of a creation not settled yet when the app leaves Hathor Next', async () => {
+    const screen = await confirm();
+    const draftId = await authorize(screen);
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.UNCONFIRMED, draftId, sendId: 'create-1', tokenId: 'ab'.repeat(32),
+      }));
+    });
+    // No update reaches the screen any more: it can't say "the wallet keeps checking".
+    await leaveHathorNext(screen);
+    expect(modals(screen).map((m) => m.props.text)).toEqual([creationLostText()]);
   });
 
   test('keeps showing a refusal it showed when the app leaves Hathor Next', async () => {

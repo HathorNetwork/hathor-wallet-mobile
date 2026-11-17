@@ -101,10 +101,11 @@ function fakeBackend({
     text: async () => JSON.stringify(body),
   });
   const walletId = bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), hexToBytes(CASE.pub_b)));
+  // Two backends answer alike: the one the client connects to, and another it may switch to.
   const fetchImpl = async (url, { method, body }) => {
-    const path = url.replace('http://backend.test', '');
+    const [, host, path] = /^http:\/\/(backend|other)\.test(.*)$/.exec(url);
     const data = body ? JSON.parse(body) : null;
-    calls.push({ method, path, data });
+    calls.push({ method, host, path, data });
     if (path === '/v1/config') {
       return json(200, {
         next: {
@@ -401,6 +402,62 @@ describe('a token created on Hathor Next through the backend', () => {
     await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NO_KEYS });
     expect(createCalls(backend)).toHaveLength(0);
+    expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
+  });
+
+  it('asks no backend and signs nothing when the app leaves Hathor Next as the keys derive', async () => {
+    const storage = memoryStorage();
+    let leave = null;
+    const backend = fakeBackend({ onRegistry: () => leave?.() });
+    client = await connected(backend, storage);
+    leave = () => client.disconnect();
+    await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
+    expect(createCalls(backend)).toHaveLength(0);
+    expect(backend.signatures()).toBeNull();
+    expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
+  });
+
+  it('asks neither backend when the app goes to another one as the keys derive', async () => {
+    const storage = memoryStorage();
+    let reconnecting = null;
+    let leave = null;
+    const backend = fakeBackend({ onRegistry: () => leave?.() });
+    client = await connected(backend, storage);
+    leave = () => {
+      leave = null;
+      reconnecting = client.connect({
+        network: 'privatenet',
+        config: { ...CONFIG, backendUrl: 'http://other.test' },
+        birthday: 'genesis',
+      });
+    };
+    await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
+    await reconnecting;
+    expect(createCalls(backend)).toHaveLength(0);
+    expect(backend.signatures()).toBeNull();
+    expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
+  });
+
+  it('signs nothing when the app leaves Hathor Next while the backend builds the token', async () => {
+    const storage = memoryStorage();
+    const backend = fakeBackend();
+    let leave = null;
+    // The backend answers, and the app has left Hathor Next by the time its answer is read.
+    const fetchImpl = async (url, init) => {
+      const answer = await backend.fetchImpl(url, init);
+      if (init.method === 'POST' && url.endsWith('/tokens')) {
+        leave?.();
+      }
+      return answer;
+    };
+    client = await connected({ ...backend, fetchImpl }, storage);
+    leave = () => client.disconnect();
+    await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
+    expect(createCalls(backend)).toHaveLength(1);
+    expect(backend.signatures()).toBeNull();
     expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
   });
 

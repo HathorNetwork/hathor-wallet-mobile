@@ -162,6 +162,12 @@ export const transferFailedText = () => t`The transfer failed.`;
 /** What the user is told when a creation fails for a reason that has no words of its own. */
 export const creationFailedText = () => t`The token couldn't be created.`;
 
+/**
+ * What the user is told of a creation stopped before it was signed because the app left Hathor
+ * Next (its flag turned off, or its backend changed).
+ */
+export const creationStoppedText = () => t`Hathor Next was disconnected before the token was signed, so it wasn't created. Nothing left your wallet.`;
+
 // The failures of a load that say what to do: a network that changed under the app (update it),
 // and a clock the wallet service refused (set it).
 const LOAD_FAILURES_TOLD = [NEXT_CLIENT_ERROR.NETWORK_CHANGED, NEXT_CLIENT_ERROR.CLOCK];
@@ -1057,6 +1063,17 @@ function* awaitSendOutcome(sendId, {
   }
 }
 
+// A creation that ended unsigned keeps nothing of another's. After the app left Hathor Next and
+// came back, another draft may have signed meanwhile: its id left in the state, its events would
+// turn this draft into that creation ("ATT was created", with the other token's id).
+const CREATION_CLEARED = {
+  status: OPERATION_STATUS.IDLE,
+  sendId: null,
+  tokenId: null,
+  reason: null,
+  error: null,
+};
+
 /**
  * Creates a token on Hathor Next. The token's keys come from the words, so they are needed once
  * more: decrypted with the PIN, or from a passkey ceremony run here. Sign-once, as a payment: a
@@ -1123,17 +1140,24 @@ export function* onNextCreateTokenRequested({ payload }) {
       // Nothing happened: the form is as it was, and Create sends this draft when tapped again.
       // The draft stays named, idle: that, and nothing else, turns its screen's Create on again.
       sentDrafts.delete(draftId);
-      yield put(multichainNextCreateTokenUpdate({ status: OPERATION_STATUS.IDLE, draftId }));
+      yield put(multichainNextCreateTokenUpdate({ ...CREATION_CLEARED, draftId }));
       return;
     }
     if (!isExpectedPasskeyError(e)) {
       log.error('The Hathor Next token creation was refused before it was signed.', e);
     }
     // Named with its draft, as above: its screen shows why, even after the app left Hathor Next.
+    let error = userErrorText(e, creationFailedText);
+    if (isExpectedPasskeyError(e)) {
+      error = e.message;
+    } else if (e?.code === NEXT_CLIENT_ERROR.NOT_CONNECTED) {
+      error = creationStoppedText();
+    }
     yield put(multichainNextCreateTokenUpdate({
+      ...CREATION_CLEARED,
       status: OPERATION_STATUS.ERROR,
       draftId,
-      error: isExpectedPasskeyError(e) ? e.message : userErrorText(e, creationFailedText),
+      error,
     }));
     return;
   }

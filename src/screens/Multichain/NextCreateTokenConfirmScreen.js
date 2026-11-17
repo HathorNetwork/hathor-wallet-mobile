@@ -78,12 +78,16 @@ export default function NextCreateTokenConfirmScreen() {
   const [authorized, setAuthorized] = useState(false);
   const own = current.draftId === draftId;
   // This draft's state as last seen here. The app leaving Hathor Next (its flag turned off, or its
-  // backend changed) clears the creation: an outcome already shown stays shown, and one signed
-  // (it has its id) and still on its way is one the screen lost track of. It is never sent again.
+  // backend changed) clears the creation: an outcome already shown stays shown. One signed (it has
+  // its id) and not settled is one the screen lost track of: no update reaches it any more. One
+  // not signed yet still has the saga's answer coming, named with this draft: the screen waits
+  // for it, as nothing says yet whether it was created. It is never sent again.
   const [last, setLast] = useState(null);
   const leaving = useRef(false);
   const kept = !own && !leaving.current ? last : null;
-  const lost = Boolean(kept?.sendId) && SEND_IN_FLIGHT.includes(kept.status);
+  const lost = Boolean(kept?.sendId) && (SEND_IN_FLIGHT.includes(kept.status)
+    || kept.status === OPERATION_STATUS.UNCONFIRMED);
+  const answerComing = Boolean(kept) && !kept.sendId && SEND_IN_FLIGHT.includes(kept.status);
   const keptOutcome = kept && kept.status !== OPERATION_STATUS.IDLE
     && !SEND_IN_FLIGHT.includes(kept.status) ? kept : null;
   // What the screen shows of its draft.
@@ -92,7 +96,8 @@ export default function NextCreateTokenConfirmScreen() {
   const canCreate = !authorized && online && !sweeping && !earlierOnItsWay;
   const nativeSymbol = config?.nativeTokenSymbol ?? 'HTR';
   const render = (value, unit) => `${renderNextValue(value, hathorDecimalPlaces)} ${unit}`;
-  const outcome = creation?.status ?? OPERATION_STATUS.IDLE;
+  const outcome = answerComing ? OPERATION_STATUS.SENDING
+    : creation?.status ?? OPERATION_STATUS.IDLE;
   useHoldScreen(navigation, SEND_IN_FLIGHT.includes(outcome));
 
   useEffect(() => () => {
@@ -221,7 +226,7 @@ export default function NextCreateTokenConfirmScreen() {
       <HathorHeader
         withBorder
         title={t`CREATE TOKEN`}
-        onBackPress={authorized && own ? null : () => navigation.goBack()}
+        onBackPress={authorized && (own || answerComing) ? null : () => navigation.goBack()}
       />
       <ScrollView contentContainerStyle={styles.body}>
         <Text style={styles.label}>{t`Token name`}</Text>

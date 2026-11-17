@@ -1347,6 +1347,13 @@ export function createBackendNextClient({
         await nonces.release(nonce);
         throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
       }
+      // The app left Hathor Next (its flag turned off), or went to another backend, while the
+      // keys were derived: no backend is asked for the token, and nothing is signed. The session
+      // stops one that comes while the backend builds it, and signing follows with no wait.
+      if (mine !== generation) {
+        await nonces.release(nonce);
+        throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+      }
 
       let request;
       try {

@@ -43,6 +43,7 @@ import {
   multichainNextKeysUnlockRequested,
   multichainNextCreateTokenRequested,
   multichainNextCreateTokenReset,
+  multichainNextCreateTokenUpdate,
   multichainNextReset,
   multichainNextSendRequested,
   multichainNextSendReset,
@@ -74,6 +75,7 @@ import {
 } from '../../src/constants';
 import { STORE } from '../../src/store';
 import {
+  creationStoppedText,
   nextClientChannel,
   resolveUncertainTransfer,
   saga,
@@ -1836,7 +1838,7 @@ describe('a Hathor Next token creation, after review', () => {
 
   // The passkey ceremony, held open until the test ends it: the app leaves Hathor Next meanwhile
   // (its flag turned off, or its backend changed), which clears the creation.
-  const leftDuringCeremony = async (createToken) => {
+  const leftDuringCeremony = async (createToken, meanwhile = () => {}) => {
     STORE.isPasskeyWallet.mockReturnValue(true);
     withPasskeyWords.mockImplementation(async (fn) => fn(WORDS));
     const env = setup();
@@ -1850,24 +1852,50 @@ describe('a Hathor Next token creation, after review', () => {
     await wait(10);
     expect(finish).not.toBeNull();
     env.dispatch(multichainNextReset());
+    meanwhile(env);
     finish();
     await wait(10);
     return env;
   };
 
+  // Back on Hathor Next, another draft was signed while this one's ceremony was open.
+  const otherSigned = (env) => env.dispatch(multichainNextCreateTokenUpdate({
+    status: OPERATION_STATUS.SENDING,
+    draftId: 'token-other',
+    sendId: 'create-2',
+    tokenId: 'cd'.repeat(32),
+  }));
+
+  test.each([
+    ['refused', NEXT_CLIENT_ERROR.TOKEN_REFUSED, OPERATION_STATUS.ERROR],
+    ['its passkey dismissed', null, OPERATION_STATUS.IDLE],
+  ])('%s keeps nothing of another draft signed meanwhile', async (_label, code, status) => {
+    const env = await leftDuringCeremony(async () => {
+      throw code ? new NextClientError(code) : new PasskeyCancelledError();
+    }, otherSigned);
+    // The other's events no longer reach it: its screen never shows that token as its own.
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status, draftId: 'token-left', sendId: null, tokenId: null, reason: null,
+    });
+  });
+
   test('refused after the app left Hathor Next still names its draft: its screen says why', async () => {
     const env = await leftDuringCeremony(async () => {
       throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
     });
+    // The client stops before any backend is asked: nothing was created, and the screen says so.
     expect(env.getState().multichain.createToken).toMatchObject({
-      status: OPERATION_STATUS.ERROR, draftId: 'token-left',
+      status: OPERATION_STATUS.ERROR, draftId: 'token-left', error: creationStoppedText(),
     });
   });
 
   test('signed after the app left Hathor Next still names its draft, and its id', async () => {
     const env = await leftDuringCeremony(async () => ({ sendId: 'create-1', tokenId: 'ab'.repeat(32) }));
     expect(env.getState().multichain.createToken).toMatchObject({
-      draftId: 'token-left', sendId: 'create-1',
+      status: OPERATION_STATUS.SENDING,
+      draftId: 'token-left',
+      sendId: 'create-1',
+      tokenId: 'ab'.repeat(32),
     });
   });
 
