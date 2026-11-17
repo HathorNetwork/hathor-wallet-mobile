@@ -49,6 +49,7 @@ import NextCreateTokenConfirmScreen, {
   creationLostText,
 } from '../../../src/screens/Multichain/NextCreateTokenConfirmScreen';
 import NavigationService from '../../../src/NavigationService';
+import HathorHeader from '../../../src/components/HathorHeader';
 import SimpleInput from '../../../src/components/SimpleInput';
 import AmountTextInput from '../../../src/components/AmountTextInput';
 import FeedbackModal from '../../../src/components/FeedbackModal';
@@ -323,11 +324,14 @@ describe('the token confirmation', () => {
     expect(screen.renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
   });
 
-  test('keeps Create off for a draft sent before the app left Hathor Next, and says so', async () => {
+  test('keeps Create off for a draft signed before the app left Hathor Next, and says so', async () => {
     const screen = await confirm();
     const draftId = await authorize(screen);
+    // Signed: it has its id.
     await act(async () => {
-      screen.store.dispatch(multichainNextCreateTokenUpdate({ status: 'pending', draftId }));
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: 'pending', draftId, sendId: 'create-1',
+      }));
     });
     // The flag turned off, or the backend changed: Hathor Next's state is gone, creation and all.
     await act(async () => { screen.store.dispatch(multichainNextReset()); });
@@ -337,6 +341,89 @@ describe('the token confirmation', () => {
     expect(modal.props.text).toBe(creationLostText());
     await act(async () => { modal.props.action.props.onPress(); });
     expect(NavigationService.resetToMain).toHaveBeenCalled();
+  });
+
+  // The app leaves Hathor Next (its flag turned off, its backend changed): its state goes.
+  const leaveHathorNext = (screen) => act(async () => {
+    screen.store.dispatch(multichainNextReset());
+  });
+  const modals = (screen) => screen.renderer.root.findAllByType(FeedbackModal);
+
+  test('never says a creation was sent that wasn\'t signed: the passkey was still open', async () => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    const screen = await confirm();
+    await act(async () => { button(screen.renderer, 'Create token').props.onPress(); });
+    const { draftId } = screen.actions
+      .find((a) => a.type === types.MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED).payload;
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.SENDING, draftId,
+      }));
+    });
+    await leaveHathorNext(screen);
+    expect(modals(screen)).toHaveLength(0);
+    expect(button(screen.renderer, 'Create token').props.disabled).toBe(true);
+    // Nothing holds the screen: the user can leave it.
+    const header = screen.renderer.root.findByType(HathorHeader);
+    expect(header.props.onBackPress).toEqual(expect.any(Function));
+  });
+
+  test('keeps showing a refusal it showed when the app leaves Hathor Next', async () => {
+    const screen = await confirm();
+    const draftId = await authorize(screen);
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.ERROR, draftId, error: 'Nothing was signed or created.',
+      }));
+    });
+    await leaveHathorNext(screen);
+    expect(modals(screen).map((m) => m.props.text)).toEqual(['Nothing was signed or created.']);
+  });
+
+  test('keeps showing the token created when the app leaves Hathor Next', async () => {
+    const screen = await confirm();
+    const draftId = await authorize(screen);
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.RECORDED, draftId, sendId: 'create-1', tokenId: 'ab'.repeat(32),
+      }));
+    });
+    await leaveHathorNext(screen);
+    const [modal] = modals(screen);
+    expect(modal.props.text).toContain('ATT was created on Hathor Next');
+    expect(modal.props.text).toContain('ab'.repeat(32));
+  });
+
+  test('shows nothing more once Done leaves, though the creation is cleared on the way', async () => {
+    const screen = await confirm();
+    const draftId = await authorize(screen);
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.RECORDED, draftId, sendId: 'create-1', tokenId: 'ab'.repeat(32),
+      }));
+    });
+    await act(async () => { modals(screen)[0].props.action.props.onPress(); });
+    expect(NavigationService.resetToMain).toHaveBeenCalled();
+    // Still drawn here while the navigation leaves: no outcome comes back over it.
+    expect(modals(screen)).toHaveLength(0);
+  });
+
+  test('a dismissed passkey, then the app leaving Hathor Next: nothing was sent, Create stays on', async () => {
+    const screen = await confirm();
+    const draftId = await authorize(screen);
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.SENDING, draftId,
+      }));
+    });
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.IDLE, draftId,
+      }));
+    });
+    await leaveHathorNext(screen);
+    expect(modals(screen)).toHaveLength(0);
+    expect(button(screen.renderer, 'Create token').props.disabled).toBe(false);
   });
 
   test('waits while an earlier creation is on its way', async () => {

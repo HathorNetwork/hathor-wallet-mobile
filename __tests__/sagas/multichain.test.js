@@ -43,6 +43,7 @@ import {
   multichainNextKeysUnlockRequested,
   multichainNextCreateTokenRequested,
   multichainNextCreateTokenReset,
+  multichainNextReset,
   multichainNextSendRequested,
   multichainNextSendReset,
   multichainNextSendUpdate,
@@ -1621,6 +1622,43 @@ describe('a transfer that went through', () => {
 describe('a Hathor Next token creation, after review', () => {
   const draft = (draftId) => multichainNextCreateTokenRequested({
     symbol: 'ATT', name: 'App Test Token', amount: 100000000n, draftId, pinCode: PIN,
+  });
+
+  // The passkey ceremony, held open until the test ends it: the app leaves Hathor Next meanwhile
+  // (its flag turned off, or its backend changed), which clears the creation.
+  const leftDuringCeremony = async (createToken) => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    withPasskeyWords.mockImplementation(async (fn) => fn(WORDS));
+    const env = setup();
+    await connect(env);
+    let finish = null;
+    withPasskeyWords.mockImplementation((fn) => new Promise((resolve, reject) => {
+      finish = () => Promise.resolve(fn(WORDS)).then(resolve, reject);
+    }));
+    jest.spyOn(getNextClient(), 'createToken').mockImplementation(createToken);
+    env.dispatch(draft('token-left'));
+    await wait(10);
+    expect(finish).not.toBeNull();
+    env.dispatch(multichainNextReset());
+    finish();
+    await wait(10);
+    return env;
+  };
+
+  test('refused after the app left Hathor Next still names its draft: its screen says why', async () => {
+    const env = await leftDuringCeremony(async () => {
+      throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+    });
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.ERROR, draftId: 'token-left',
+    });
+  });
+
+  test('signed after the app left Hathor Next still names its draft, and its id', async () => {
+    const env = await leftDuringCeremony(async () => ({ sendId: 'create-1', tokenId: 'ab'.repeat(32) }));
+    expect(env.getState().multichain.createToken).toMatchObject({
+      draftId: 'token-left', sendId: 'create-1',
+    });
   });
 
   test('creates nothing while its own flag is off', async () => {

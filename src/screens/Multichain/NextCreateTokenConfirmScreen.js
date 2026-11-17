@@ -69,24 +69,30 @@ export default function NextCreateTokenConfirmScreen() {
   const amount = BigInt(params.amount);
   const { name, symbol } = params;
   const config = useSelector(selectSideChainConfig);
-  const creation = useSelector((state) => state.multichain.createToken);
+  const current = useSelector((state) => state.multichain.createToken);
   const online = useSelector((state) => state.multichain.next.online);
   const sweeping = useSelector((state) => state.multichain.next.sweeping);
   const fee = useSelector(selectNextSendFee);
   const hathorDecimalPlaces = useSelector((state) => state.serverInfo?.decimal_places ?? 2);
   const draftId = useRef(newDraftId()).current;
   const [authorized, setAuthorized] = useState(false);
-  // Whether this draft was seen on its way. Gone from the state after that, it was sent and its
-  // outcome is no longer followed here: the app left Hathor Next (its flag turned off, or its
-  // backend changed). It is never sent again.
-  const [sent, setSent] = useState(false);
+  const own = current.draftId === draftId;
+  // This draft's state as last seen here. The app leaving Hathor Next (its flag turned off, or its
+  // backend changed) clears the creation: an outcome already shown stays shown, and one signed
+  // (it has its id) and still on its way is one the screen lost track of. It is never sent again.
+  const [last, setLast] = useState(null);
   const leaving = useRef(false);
-  const earlierOnItsWay = creation.draftId !== draftId && SEND_IN_FLIGHT.includes(creation.status);
+  const kept = !own && !leaving.current ? last : null;
+  const lost = Boolean(kept?.sendId) && SEND_IN_FLIGHT.includes(kept.status);
+  const keptOutcome = kept && kept.status !== OPERATION_STATUS.IDLE
+    && !SEND_IN_FLIGHT.includes(kept.status) ? kept : null;
+  // What the screen shows of its draft.
+  const creation = own ? current : keptOutcome;
+  const earlierOnItsWay = !own && SEND_IN_FLIGHT.includes(current.status);
   const canCreate = !authorized && online && !sweeping && !earlierOnItsWay;
   const nativeSymbol = config?.nativeTokenSymbol ?? 'HTR';
   const render = (value, unit) => `${renderNextValue(value, hathorDecimalPlaces)} ${unit}`;
-  const outcome = creation.draftId === draftId ? creation.status : OPERATION_STATUS.IDLE;
-  const lost = sent && !leaving.current && creation.draftId !== draftId;
+  const outcome = creation?.status ?? OPERATION_STATUS.IDLE;
   useHoldScreen(navigation, SEND_IN_FLIGHT.includes(outcome));
 
   useEffect(() => () => {
@@ -95,16 +101,14 @@ export default function NextCreateTokenConfirmScreen() {
 
   // A passkey dismissed in the saga leaves this draft idle: Create is on again.
   useEffect(() => {
-    if (creation.draftId !== draftId) {
+    if (!own) {
       return;
     }
-    if (SEND_IN_FLIGHT.includes(creation.status)) {
-      setSent(true);
-    } else if (authorized && creation.status === OPERATION_STATUS.IDLE) {
-      setSent(false);
+    setLast(current);
+    if (authorized && current.status === OPERATION_STATUS.IDLE) {
       setAuthorized(false);
     }
-  }, [creation.draftId, creation.status]);
+  }, [own, current]);
 
   const submit = (pinCode) => {
     setAuthorized(true);
@@ -217,7 +221,7 @@ export default function NextCreateTokenConfirmScreen() {
       <HathorHeader
         withBorder
         title={t`CREATE TOKEN`}
-        onBackPress={authorized ? null : () => navigation.goBack()}
+        onBackPress={authorized && own ? null : () => navigation.goBack()}
       />
       <ScrollView contentContainerStyle={styles.body}>
         <Text style={styles.label}>{t`Token name`}</Text>

@@ -1081,7 +1081,14 @@ export function* onNextCreateTokenRequested({ payload }) {
     const { sendId, tokenId } = STORE.isPasskeyWallet()
       ? yield call(withPasskeyWords, create)
       : yield call(create, yield call([STORE, STORE.getWalletWords], pinCode));
-    yield put(multichainNextCreateTokenUpdate({ sendId, tokenId }));
+    // Signed: its id says so. Named with its draft, so its screen still shows it if the app left
+    // Hathor Next while it was signed, which clears the creation.
+    yield put(multichainNextCreateTokenUpdate({
+      status: OPERATION_STATUS.SENDING,
+      draftId,
+      sendId,
+      tokenId,
+    }));
     // It may have settled while createToken ran: its event came before the saga knew the id.
     const now = client.getCreation(sendId);
     if (now && now.status !== 'pending') {
@@ -1101,8 +1108,10 @@ export function* onNextCreateTokenRequested({ payload }) {
     if (!isExpectedPasskeyError(e)) {
       log.error('The Hathor Next token creation was refused before it was signed.', e);
     }
+    // Named with its draft, as above: its screen shows why, even after the app left Hathor Next.
     yield put(multichainNextCreateTokenUpdate({
       status: OPERATION_STATUS.ERROR,
+      draftId,
       error: isExpectedPasskeyError(e) ? e.message : userErrorText(e, creationFailedText),
     }));
     return;
