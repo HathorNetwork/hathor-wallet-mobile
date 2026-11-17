@@ -289,7 +289,8 @@ describe('a Hathor Next address scanned from the Dashboard', () => {
     expect(field().props.value).toBe(OWN_ADDRESS);
   });
 
-  test('waits while a payment is on its way, rather than close the screen that holds it', async () => {
+  // Sent to the backend (sending), or signed and sent to the network (pending).
+  test.each([OPERATION_STATUS.SENDING, 'pending'])('waits while a payment is on its way (%s), not closing its screen', async (status) => {
     const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     const { store } = makeStore();
     const renderer = await mountApp(store);
@@ -306,7 +307,7 @@ describe('a Hathor Next address scanned from the Dashboard', () => {
       });
     });
     await act(async () => {
-      store.dispatch(multichainNextSendUpdate({ status: 'pending', draftId: 'payment-1' }));
+      store.dispatch(multichainNextSendUpdate({ status, draftId: 'payment-1' }));
     });
     await act(async () => { navigationRef.current.navigate('App', { screen: 'UnifiedQRScanner' }); });
     const reader = renderer.root.findByType(QRCodeReader);

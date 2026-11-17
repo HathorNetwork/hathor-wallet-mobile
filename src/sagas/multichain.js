@@ -178,6 +178,18 @@ function loadFailedText(e) {
 }
 
 /**
+ * Where the wallet is now: its network, and its side chain's backend. A transfer's record names
+ * where it was signed.
+ *
+ * @returns {{ network: string, backendUrl: string|null }}
+ */
+function* currentPlace() {
+  const network = yield select(selectMultichainNetwork);
+  const backendUrl = (yield select(selectSideChainConfig))?.backendUrl ?? null;
+  return { network, backendUrl };
+}
+
+/**
  * The transfer saved on the network and backend the wallet is on now, or null: one signed without
  * an answer, or one that ended forgotten and the user wasn't shown yet. It is saved with where it
  * was signed: asked about on another backend it could only be unknown, and no transfer could
@@ -187,8 +199,7 @@ function loadFailedText(e) {
  */
 function* savedTransferHere() {
   const saved = STORE.getItem(multichainKeyMap.uncertainTransfer);
-  const network = yield select(selectMultichainNetwork);
-  const backendUrl = (yield select(selectSideChainConfig))?.backendUrl ?? null;
+  const { network, backendUrl } = yield call(currentPlace);
   return saved?.id && saved.network === network && saved.backendUrl === backendUrl
     ? { id: saved.id, inputs: saved.inputs ?? null, forgotten: saved.forgotten === true }
     : null;
@@ -202,6 +213,17 @@ function* savedTransferHere() {
 function* uncertainTransferHere() {
   const saved = yield call(savedTransferHere);
   return saved && !saved.forgotten ? { id: saved.id, inputs: saved.inputs } : null;
+}
+
+/**
+ * Whether the transfer saved here is still this one, signed without an answer. The backend can
+ * change while it is asked about (the backend for local testing): the client then asks the new
+ * one, which never knew it, and its answer would settle a record that isn't its own.
+ *
+ * @param {string} id
+ */
+function* stillUncertainHere(id) {
+  return (yield call(uncertainTransferHere))?.id === id;
 }
 
 /** The outcome of a transfer Hathor Next no longer knows, until the user dismisses it. */
@@ -218,11 +240,10 @@ const transferForgotten = () => ({
  * spends: with those, the wallet's own node can settle it if the backend no longer knows it.
  *
  * @param {string} transferId
- * @param {{ txId: string, index: number }[]} [inputs]
+ * @param {{ txId: string, index: number }[]|null} inputs
+ * @param {{ network: string, backendUrl: string|null }} place Where it was signed
  */
-function* rememberUncertainTransfer(transferId, inputs = null) {
-  const network = yield select(selectMultichainNetwork);
-  const backendUrl = (yield select(selectSideChainConfig))?.backendUrl ?? null;
+function rememberUncertainTransfer(transferId, inputs, { network, backendUrl }) {
   STORE.setItem(multichainKeyMap.uncertainTransfer, {
     id: transferId, network, backendUrl, inputs,
   });
@@ -1043,12 +1064,21 @@ export function* resolveUncertainTransfer(bridge, uncertain, tries) {
   resolving = true;
   try {
     for (let i = 0; i < tries; i += 1) {
+      // Asked about, and settled, only while its record is saved where the wallet is: after a
+      // switch of backend, the client asks the new one, which never knew it. The background
+      // check asks again once the wallet is back where it was signed.
+      if (!(yield call(stillUncertainHere, uncertain.id))) {
+        return false;
+      }
       try {
         const record = yield call(
           [bridge, bridge.resolveTransfer],
           uncertain.id,
           { inputs: uncertain.inputs ?? undefined },
         );
+        if (!(yield call(stillUncertainHere, uncertain.id))) {
+          return false;
+        }
         STORE.removeItem(multichainKeyMap.uncertainTransfer);
         // Reached the network and was refused there (its inputs spent, for one): nothing moved.
         if (!record || record.status === TRANSFER_STATUS.FAILED) {
@@ -1082,6 +1112,9 @@ export function* resolveUncertainTransfer(bridge, uncertain, tries) {
         // good. Its HTR may have left the wallet: it is saved as forgotten, and shows on the
         // transfer screens, across restarts, until the user dismisses it.
         if (e?.code === NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN) {
+          if (!(yield call(stillUncertainHere, uncertain.id))) {
+            return false;
+          }
           log.error('A transfer signed without an answer is no longer known to the backend.');
           const saved = STORE.getItem(multichainKeyMap.uncertainTransfer);
           STORE.setItem(multichainKeyMap.uncertainTransfer, {
@@ -1130,6 +1163,15 @@ export function* onTransferRequested({ payload }) {
     }));
     return;
   }
+  // One that ended forgotten holds every transfer here until the user dismisses it: its HTR may
+  // have left the wallet. The screens keep Confirm off while it shows; this holds a request that
+  // came before it showed (biometrics, with the PIN screen open).
+  if ((yield call(savedTransferHere))?.forgotten) {
+    yield call(showUncertainTransfer);
+    return;
+  }
+  // Where the transfer is signed: its record names it, whatever the backend is by its answer.
+  const place = yield call(currentPlace);
   const pending = yield call(uncertainTransferHere);
   let bridge = null;
   if (pending) {
@@ -1140,7 +1182,9 @@ export function* onTransferRequested({ payload }) {
     // outcome, shown as the earlier one's (its requestId isn't this request's), and a new one
     // waits for the user. Only one that never went through lets this one go on.
     if (!settled || transfer.status === OPERATION_STATUS.DONE || isForgotten(transfer)) {
-      if (!settled) {
+      // Unsettled, and still saved here: not confirmed. Gone from here (another backend now),
+      // it shows again only back there.
+      if (!settled && (yield call(stillUncertainHere, pending.id))) {
         yield put(multichainTransferUpdate({
           status: OPERATION_STATUS.UNCONFIRMED,
           error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN).message,
@@ -1186,7 +1230,7 @@ export function* onTransferRequested({ payload }) {
     }
     if (e?.code === NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN && e.transferId) {
       // Signed, with no answer: never shown as a failure, never retried blindly.
-      yield call(rememberUncertainTransfer, e.transferId, e.inputs ?? null);
+      rememberUncertainTransfer(e.transferId, e.inputs ?? null, place);
       yield put(multichainTransferUpdate({
         status: OPERATION_STATUS.UNCONFIRMED,
         error: e.message,
