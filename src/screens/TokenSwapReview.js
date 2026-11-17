@@ -29,6 +29,7 @@ import {
   selectTokenSwapContractId,
 } from '../utils/tokenSwap';
 import { renderValue } from '../utils';
+import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
@@ -39,9 +40,15 @@ import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 import {
+  onExceptionCaptured,
   tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
 } from '../actions';
+import {
+  isExpectedPasskeyError,
+  PasskeyCancelledError,
+  PasskeyBusyError,
+} from '../passkey/passkeySigner';
 import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 import Spinner from '../components/Spinner';
@@ -68,6 +75,10 @@ const TokenSwapReview = () => {
   const [buildError, setBuildError] = useState(null);
   const [sendTx, setSendTx] = useState(null);
   const [modal, setModal] = useState(null);
+  // Disables the SWAP button from the moment it is tapped. On the passkey path executeSend runs
+  // the signing ceremony inline (no PinScreen to cover the button), so without this a second tap
+  // during the multi-second ceremony would fire a concurrent signTx.
+  const [isSending, setIsSending] = useState(false);
 
   const registrationPromiseRef = useRef(null);
   const sentSuccessfullyRef = useRef(false);
@@ -164,6 +175,7 @@ const TokenSwapReview = () => {
       await registrationPromiseRef.current;
     }
     setModal(null);
+    setIsSending(false);
     dispatch(tokenSwapResetSwapData());
     NavigationService.resetToMain();
   };
@@ -183,12 +195,13 @@ const TokenSwapReview = () => {
   // listener releases reserved UTXOs along the way.
   const exitOnError = () => {
     setModal(null);
+    setIsSending(false);
     refreshQuote();
     navigation.goBack();
   };
 
-  // Build error: the lib already released UTXOs in its own catch, so there
-  // is no sendTx to release here — just go back.
+  // Dismisses the error sheet and goes back. A build error has no sendTx (the lib released its
+  // UTXOs in its own catch); after a passkey error, beforeRemove releases the reserved UTXOs.
   const dismissBuildError = () => {
     refreshQuote();
     navigation.goBack();
@@ -196,7 +209,9 @@ const TokenSwapReview = () => {
 
   const executeSend = async (pin) => {
     try {
-      if (useWalletService) {
+      // Re-mint a full token with the PIN. A passkey wallet has no PIN: its signing ceremony mints
+      // the full token itself (see makePasskeyTxSigner onRootKey), so skip this without one.
+      if (useWalletService && pin) {
         await wallet.validateAndRenewAuthToken(pin);
       }
       await wallet.signTx(sendTx.transaction, { pinCode: pin });
@@ -207,20 +222,49 @@ const TokenSwapReview = () => {
         promise,
       });
     } catch (err) {
+      // A cancelled or busy passkey ceremony is NOT a failure: keep the reviewed swap intact and
+      // let the user retry. Do NOT release the reserved UTXOs, refetch the quote, or navigate away.
+      if (err instanceof PasskeyCancelledError || err instanceof PasskeyBusyError) {
+        setIsSending(false);
+        return;
+      }
+      // An expected passkey outcome (wrong passkey, a build that can't sign from a passkey yet, a
+      // deleted or unsynced passkey...) is not a bug: show its message in the error sheet instead
+      // of reporting it. Dismissing the sheet navigates back, releasing the reserved UTXOs via
+      // beforeRemove.
+      if (isExpectedPasskeyError(err)) {
+        setBuildError({ message: err.message });
+        setPhase(PHASE.ERROR);
+        setIsSending(false);
+        return;
+      }
+      // Any other failure (incl. PasskeyMetadataMissingError, i.e. corrupted storage, and
+      // seed-wallet auth-token / signTx errors) is unexpected: report it through the global error
+      // handler and go back, releasing the reserved UTXOs via beforeRemove.
       console.error(err);
+      dispatch(onExceptionCaptured(err, false));
       exitOnError();
     }
   };
 
   const onSwapButtonPress = () => {
-    const pinParams = {
-      cb: executeSend,
-      canCancel: true,
-      screenText: t`Enter your 6-digit pin to authorize operation`,
-      biometryText: t`Authorize operation`,
-      biometryLoadingText: t`Building transaction`,
-    };
-    navigation.navigate('PinScreen', pinParams);
+    authorizeTransaction({
+      navigation,
+      // The passkey path differs from the PIN path here, so onPasskey is explicit: disable the
+      // button before the inline (async) ceremony starts. The PIN path doesn't set this — the
+      // PinScreen navigation covers the button.
+      onPasskey: () => {
+        setIsSending(true);
+        executeSend();
+      },
+      pinParams: {
+        cb: executeSend,
+        canCancel: true,
+        screenText: t`Enter your 6-digit pin to authorize operation`,
+        biometryText: t`Authorize operation`,
+        biometryLoadingText: t`Building transaction`,
+      },
+    });
   };
 
   return (
@@ -327,7 +371,7 @@ const TokenSwapReview = () => {
               <NewHathorButton
                 title={t`SWAP`}
                 onPress={onSwapButtonPress}
-                disabled={modal !== null}
+                disabled={modal !== null || isSending}
               />
             </View>
           </View>

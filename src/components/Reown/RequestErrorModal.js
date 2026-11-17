@@ -5,19 +5,23 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, Image, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import FeedbackModal from '../FeedbackModal';
 import NewHathorButton from '../NewHathorButton';
 import AdvancedErrorOptions from './AdvancedErrorOptions';
-import { hideReownModal, reownReject, setForceNavigateToDashboard } from '../../actions';
+import { hideReownModal, setForceNavigateToDashboard } from '../../actions';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
 /**
  * Generic modal displayed when a Reown request fails before user confirmation
- * Shows error details and allows the user to dismiss (rejecting the dApp request)
+ * Shows error details and allows the user to dismiss it
+ *
+ * The saga that shows this modal has already answered or rejected the request, so dismissing or
+ * replacing the modal rejects nothing: a rejection from here would reach the race of the next
+ * queued request or connection proposal instead.
  *
  * If `navigateOnDismiss` is true in modal data, navigates to Dashboard on dismiss.
  * This is used for timeout errors where the user may be on a detail screen.
@@ -30,13 +34,7 @@ export const RequestErrorModal = () => {
   const errorMessage = reownModal.data?.errorMessage || t`An error occurred while processing the request.`;
   const navigateOnDismiss = reownModal.data?.navigateOnDismiss || false;
 
-  // Reject the dApp request when component unmounts
-  useEffect(() => () => {
-    dispatch(reownReject());
-  }, []);
-
   const handleDismiss = () => {
-    dispatch(reownReject());
     dispatch(hideReownModal());
 
     // Signal the Reown screen to navigate to Main if requested

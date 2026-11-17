@@ -50,6 +50,7 @@ import {
 import ChoosePinScreen from './screens/ChoosePinScreen';
 import BackupWords from './screens/BackupWords';
 import PinScreen from './screens/PinScreen';
+import PasskeyLockScreen from './screens/PasskeyLockScreen';
 import ResetWallet from './screens/ResetWallet';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
@@ -75,6 +76,8 @@ import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import About from './screens/About';
 import AddressMode from './screens/AddressMode';
 import AmountFormat from './screens/AmountFormat';
+import PrivacySettings from './screens/PrivacySettings';
+import ExportPrivacyKeys from './screens/ExportPrivacyKeys';
 import Security from './screens/Security';
 import PushNotification from './screens/PushNotification';
 import ChangePin from './screens/ChangePin';
@@ -178,48 +181,29 @@ const CameraPermissionScreen = () => null;
 /**
  * Stack of screens dedicated to the token sending process
  */
-const SendStack = ({ navigation }) => {
+const SendStack = () => {
   const Stack = createStackNavigator();
-  const [initialRoute, setInitialRoute] = useState('CameraPermissionScreen');
   const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
   const dispatch = useDispatch();
 
-  /*
-   * Request camera permission on initialization, if permission is not already set
-   */
+  // Request camera permission on initialization, so the QR code scanner the address input
+  // opens works without a prompt on the first scan. The address input is the first screen
+  // whatever the permission.
   useEffect(() => {
     if (isCameraAvailable === null) {
       dispatch(requestCameraPermission());
     }
   }, []);
 
-  // Listen to camera permission changes from user input and navigate to the relevant screen
-  useEffect(() => {
-    let initScreenName;
-    switch (isCameraAvailable) {
-      case true:
-        initScreenName = 'SendScanQRCode';
-        break;
-      case false:
-        initScreenName = 'SendAddressInput';
-        break;
-      default:
-        initScreenName = 'CameraPermissionScreen';
-    }
-    setInitialRoute(initScreenName);
-    navigation.replace(initScreenName);
-  }, [isCameraAvailable]);
-
   return (
     <Stack.Navigator
-      initialRouteName={initialRoute}
+      initialRouteName='SendAddressInput'
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Stack.Screen name='CameraPermissionScreen' component={CameraPermissionScreen} />
-      <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
       <Stack.Screen name='SendAddressInput' component={SendAddressInput} />
+      <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
       <Stack.Screen name='SendAmountInput' component={SendAmountInput} />
       <Stack.Screen name='SendConfirmScreen' component={SendConfirmScreen} />
     </Stack.Navigator>
@@ -502,6 +486,8 @@ const AppStack = () => {
         <Stack.Screen name='About' component={About} />
         <Stack.Screen name='AddressMode' component={AddressMode} />
         <Stack.Screen name='AmountFormat' component={AmountFormat} />
+        <Stack.Screen name='PrivacySettings' component={PrivacySettings} />
+        <Stack.Screen name='ExportPrivacyKeys' component={ExportPrivacyKeys} />
         <Stack.Screen name='Security' component={Security} />
         <Stack.Screen name='ReownList' component={ReownList} />
         <Stack.Screen name='ReownManual' component={ReownManual} />
@@ -724,6 +710,11 @@ class _AppStackWrapper extends React.Component {
         // this means app was in background for more than LOCK_TIMEOUT seconds,
         // so display lock screen
         this.props.lockScreen();
+        // Start a fresh timer for the lock screen itself. On Android the passkey unlock ceremony
+        // opens the Credential Manager as another activity, so the app goes background -> active
+        // DURING the unlock; with the stale timestamp kept here that return would re-lock the
+        // screen right after (or before) a successful passkey unlock.
+        this.backgroundTime = null;
       } else {
         this.backgroundTime = null;
       }
@@ -753,6 +744,9 @@ class _AppStackWrapper extends React.Component {
          */
         if (this.props.isResetOnScreenLocked) {
           screen = <ResetWallet navigation={this.props.navigation} />;
+        } else if (STORE.isPasskeyWallet()) {
+          // Passkey wallets have no PIN: unlocking is a passkey ceremony instead.
+          screen = <PasskeyLockScreen />;
         } else {
           screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
         }

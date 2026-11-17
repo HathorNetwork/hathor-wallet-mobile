@@ -25,6 +25,9 @@ export class HathorList extends Component {
       alignSelf: 'stretch',
       backgroundColor: COLORS.backgroundColor,
       borderRadius: defaultRadius,
+      // A hairline ring around the whole card, so its edges show where the list ends.
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: COLORS.borderColor,
       margin: 16,
       shadowOffset: { height: 2, width: 0 },
       shadowRadius: 4,
@@ -33,7 +36,10 @@ export class HathorList extends Component {
     },
     title: {
       alignSelf: 'flex-start',
-      paddingHorizontal: 32,
+      // Flush with the card's left edge, its 16 margin, rather than with the rows' content.
+      paddingHorizontal: 16,
+      // Room above each section title, so the sections read as separate groups.
+      marginTop: 8,
       fontSize: 14,
       // HSL is preferable than RGB because it allows an
       // easier manipulation in arithmetic fashion.
@@ -57,11 +63,21 @@ export class HathorList extends Component {
       style.push(this.style.infinityView);
     }
 
+    // The last child that renders is marked `isLast`, so the last row has no bottom line and its
+    // bottom corners are round. The children a flag hides (`flag && <ListMenu />`) are skipped.
+    const validChildren = React.Children.toArray(this.props.children).filter(Boolean);
+    const lastIdx = validChildren.length - 1;
+    const decoratedChildren = validChildren.map((child, idx) => (
+      idx === lastIdx && React.isValidElement(child)
+        ? React.cloneElement(child, { isLast: true })
+        : child
+    ));
+
     return (
       <>
         {this.props.title && <Text style={[this.style.title]}>{this.props.title}</Text>}
         <View style={style}>
-          {this.props.children}
+          {decoratedChildren}
         </View>
       </>
     );

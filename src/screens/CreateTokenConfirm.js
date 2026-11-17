@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
 } from 'react-native';
@@ -23,9 +23,12 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import TextFmt from '../components/TextFmt';
 import { updateSelectedToken } from '../actions';
 import { registerToken } from '../utils/tokens';
+import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { getCreateTokenTitle } from '../utils';
+import { isShieldedEnvironment } from '../shielded/gating';
+import { newAddressErrorText } from '../shielded/newAddress';
 
 const TokenTypeInfoBox = ({ tokenVersion }) => {
   let infoText = t`You chose to create a **Deposit-Based Token**, which requires a 1% HTR deposit.`;
@@ -63,6 +66,9 @@ const CreateTokenConfirm = () => {
   const useWalletService = useSelector((state) => state.useWalletService);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+  // In the shielded environment the wallet's address, which the token is minted to, is its new
+  // address.
+  const shieldedEnvironment = useSelector(isShieldedEnvironment);
 
   const dispatch = useDispatch();
   const dispatchUpdateSelectedToken = (token) => dispatch(updateSelectedToken(token));
@@ -84,6 +90,8 @@ const CreateTokenConfirm = () => {
   // is interactive again, closing the window between the PinScreen dismissal and
   // the feedback modal render where the button would otherwise be tappable.
   const [isSending, setIsSending] = useState(false);
+  // Address the token is minted to; kept across retries (see executeCreate).
+  const tokenAddressRef = useRef(null);
   const [title, setTitle] = useState(t`CREATE TOKEN`);
   const [deposit, setDeposit] = useState(null);
   const [networkFee, setNetworkFee] = useState(null);
@@ -125,11 +133,31 @@ const CreateTokenConfirm = () => {
    */
   const executeCreate = (pin) => {
     const promise = (async () => {
-      if (useWalletService) {
+      // Re-mint a full token with the PIN. A passkey wallet has no PIN: its signing ceremony mints
+      // the full token itself (see makePasskeyTxSigner onRootKey), so skip this without one.
+      if (useWalletService && pin) {
         await wallet.validateAndRenewAuthToken(pin);
       }
 
-      const { address } = await wallet.getCurrentAddress({ markAsUsed: true });
+      // Reuse the address across retries: on the passkey path signing (and so a cancelled
+      // ceremony) happens inside prepareCreateNewToken, AFTER the address was marked as used, so
+      // fetching a fresh one per attempt would burn an address on every cancel.
+      if (!tokenAddressRef.current) {
+        let current;
+        try {
+          current = await wallet.getCurrentAddress(
+            { markAsUsed: true },
+            { legacy: !shieldedEnvironment },
+          );
+        } catch (e) {
+          // wallet-lib gives out no new address while the scan key is locked, nor without a
+          // shielded chain. No legacy address stands in for it: the user is told why.
+          const message = newAddressErrorText(e);
+          throw message ? new Error(message) : e;
+        }
+        tokenAddressRef.current = current.address;
+      }
+      const address = tokenAddressRef.current;
       const tx = await wallet.prepareCreateNewToken(
         name,
         symbol,
@@ -161,14 +189,17 @@ const CreateTokenConfirm = () => {
     // Disable the button before opening the PinScreen so it can't be tapped
     // again while we return from it and build the feedback modal.
     setIsSending(true);
-    const pinParams = {
-      cb: executeCreate,
-      screenText: t`Enter your 6-digit pin to create your token`,
-      biometryText: t`Authorize token creation`,
-      canCancel: true,
-      biometryLoadingText: t`Building transaction`,
-    };
-    navigation.navigate('PinScreen', pinParams);
+    authorizeTransaction({
+      navigation,
+      // onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
+      pinParams: {
+        cb: executeCreate,
+        screenText: t`Enter your 6-digit pin to create your token`,
+        biometryText: t`Authorize token creation`,
+        canCancel: true,
+        biometryLoadingText: t`Building transaction`,
+      },
+    });
   };
 
   /**
@@ -210,7 +241,12 @@ const CreateTokenConfirm = () => {
           successText={<TextFmt>{t`**${name}** created successfully`}</TextFmt>}
           onTxSuccess={onTxSuccess}
           onDismissSuccess={exitScreen}
-          onDismissError={() => setSendTransactionModal(null)}
+          onDismissError={() => {
+            setSendTransactionModal(null);
+            // Re-enable Create: the passkey flow never leaves this screen, so the
+            // focus listener that resets it after PinScreen won't fire.
+            setIsSending(false);
+          }}
           hide={isShowingPinScreen}
         />
       )}

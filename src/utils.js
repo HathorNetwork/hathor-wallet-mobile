@@ -252,17 +252,51 @@ export const str2jsx = (text, fnMap) => {
 };
 
 /**
+ * Message shown when a shielded address reaches a flow of this wallet.
+ */
+export const shieldedAddressNotSupportedText = t`This wallet does not support shielded addresses.`;
+
+/**
+ * Checks if an address is a shielded address of the given network: the 71-byte format that
+ * carries a scan and a spend public key.
+ *
+ * @param {string} address Address in base58
+ * @param {Object} network Instance of Network object from the wallet-lib
+ *
+ * @return {boolean} false for legacy addresses and for anything that is not a valid address
+ * @throws When the check fails for any other reason, so that no caller takes the failure for a
+ *   legacy address
+ */
+export const isShieldedAddress = (address, network) => (
+  typeof address === 'string' && new hathorLib.Address(address, { network }).isShielded()
+);
+
+/**
    * Validates an address
+   *
+   * Shielded addresses are valid for wallet-lib, but this wallet can only pay them in the
+   * shielded environment, so elsewhere they are reported as invalid. Where it can, both public
+   * keys a shielded address carries must be points of the curve: no output paid to it could be
+   * built or spent otherwise.
    *
    * @param {string} address Address in base58
    * @param {Object} network Instance of Network object from the wallet-lib
+   * @param {Object} [options]
+   * @param {boolean} [options.allowShielded=false] Whether a shielded address of the network is
+   *   valid
    *
    * @return {Object} boolean indicating if address is valid and possibly an error message
    */
-export const validateAddress = (address, network) => {
+export const validateAddress = (address, network, { allowShielded = false } = {}) => {
   try {
     const addressObj = new hathorLib.Address(address, { network });
     addressObj.validateAddress();
+    if (addressObj.isShielded()) {
+      if (!allowShielded) {
+        return { isValid: false, message: shieldedAddressNotSupportedText };
+      }
+      addressObj.parseShielded();
+    }
     return { isValid: true };
   } catch (e) {
     if (e instanceof TypeError) {

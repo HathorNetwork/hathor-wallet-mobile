@@ -100,6 +100,17 @@ target 'HathorMobile' do
       end
     end
 
+    # Xcode 27 refuses deployment targets below iOS 15.0. Some pods still declare older ones
+    # (9.0 to 13.4), so raise every pod target to the app's own minimum.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if current && Gem::Version.new(current) < Gem::Version.new(min_ios_version_supported)
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = min_ios_version_supported
+        end
+      end
+    end
+
     # Fix fmt 11.x consteval build error on Xcode 26+.
     # Apple clang claims consteval support but fmt's usage is incompatible.
     # We disable consteval for ALL Apple clang versions as a safe fallback.

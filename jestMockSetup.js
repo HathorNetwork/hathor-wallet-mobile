@@ -105,7 +105,3 @@ jest.mock('react-native-permissions', () => ({
     })
   }
 }));
-
-// `react-native-modal` and `react-native-animatable` used to be mocked here.
-// Neither is a dependency of the app any more, and mocking a package that is
-// not installed fails the whole run before any test starts.

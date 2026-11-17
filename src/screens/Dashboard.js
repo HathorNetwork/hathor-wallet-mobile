@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.lowContrastDetail,
     paddingHorizontal: 16,
-    height: 48,
+    minHeight: 48,
     paddingTop: 8,
   },
   toggleContainer: {

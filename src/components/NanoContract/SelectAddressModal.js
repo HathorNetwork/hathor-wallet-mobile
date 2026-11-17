@@ -177,7 +177,7 @@ const AddressItem = ({ currentAddress, item, onSelectItem }) => {
           currentAddress === item.address && addressItemStyle.selected
         ]}
       >
-        <View>
+        <View style={addressItemStyle.content}>
           <TextValue>{item.address}</TextValue>
           <TextLabel>{t`index`} {item.index}</TextLabel>
         </View>
@@ -233,6 +233,11 @@ const addressItemStyle = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  // The row lays its content out in a line: shrinking to the row, the address wraps instead of
+  // running past it.
+  content: {
+    flexShrink: 1,
   },
   selected: {
     backgroundColor: COLORS.freeze100,

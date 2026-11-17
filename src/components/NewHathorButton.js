@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 import { COLORS } from '../styles/themes';
+import { SHRINK_TEXT_TO_FIT } from '../constants';
 
 const NewHathorButton = (props) => {
   const wrapperViewStyle = [style.wrapper];
@@ -56,7 +57,7 @@ const NewHathorButton = (props) => {
     >
       <Text
         numberOfLines={1}
-        adjustsFontSizeToFit
+        adjustsFontSizeToFit={SHRINK_TEXT_TO_FIT}
         style={[...textStyle, props.textStyle]}
       >
         {props.title}

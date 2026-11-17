@@ -29,12 +29,25 @@ import { NanoContractIcon } from '../Icons/NanoContract.icon';
 import { DeclineModal } from './NanoContract/DeclineModal';
 import CopyClipboard from '../CopyClipboard';
 
-export const SignOracleDataRequestData = ({ oracle, data }) => (
+export const SignOracleDataRequestData = ({ ncId, oracle, data }) => (
   <View style={[commonStyles.card, commonStyles.cardSplit]}>
     <View style={commonStyles.cardSplitIcon}>
       <NanoContractIcon type='fill' color={COLORS.white} />
     </View>
     <View style={styles.oracleSection}>
+      {/* Nano Contract Section */}
+      <View>
+        <Text style={styles.property}>{t`Nano Contract ID`}</Text>
+        <View style={[styles.dataContainer, styles.oracleDataContainer]}>
+          <CopyClipboard
+            text={ncId}
+            textStyle={styles.dataText}
+          />
+        </View>
+      </View>
+
+      <View style={commonStyles.cardSeparator} />
+
       {/* Oracle Section */}
       <View>
         <Text style={styles.property}>{t`Oracle`}</Text>
@@ -139,7 +152,11 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
           <View style={styles.wrapper}>
             <View style={styles.content}>
               <DappContainer dapp={dapp} />
-              <SignOracleDataRequestData oracle={parsedOracleInfo} data={data.data} />
+              <SignOracleDataRequestData
+                ncId={data.ncId}
+                oracle={parsedOracleInfo}
+                data={data.data}
+              />
               {/* User actions */}
               <View style={styles.actionContainer}>
                 <NewHathorButton

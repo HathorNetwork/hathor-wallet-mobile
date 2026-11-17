@@ -112,7 +112,7 @@ const CentralComponent = ({ title, withLogo }) => {
       />
     );
   }
-  return <Text>{title}</Text>;
+  return <Text style={styles.title} numberOfLines={1}>{title}</Text>;
 };
 
 const RightComponent = ({ rightElement, onCancel }) => {
@@ -156,6 +156,11 @@ const styles = StyleSheet.create({
   centralComponentLogo: {
     height: 22,
     width: 100,
+  },
+  // A long title shrinks to the space between the side components and ends in an ellipsis.
+  title: {
+    flexShrink: 1,
+    textAlign: 'center',
   },
 });
 

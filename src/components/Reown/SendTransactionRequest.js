@@ -345,7 +345,9 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
                     style={styles.addressContainer}
                     onPress={() => copyToClipboard(output.address)}
                   >
-                    <Text style={styles.monospace} numberOfLines={1}>
+                    {/* One line: an address longer than it, as a new address of 95 characters,
+                        shows its start and its end. A tap copies it whole. */}
+                    <Text style={styles.monospace} numberOfLines={1} ellipsizeMode='middle'>
                       {output.address}
                     </Text>
                   </TouchableOpacity>
@@ -381,7 +383,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
             style={styles.addressContainer}
             onPress={() => copyToClipboard(changeAddress)}
           >
-            <Text style={styles.monospace} numberOfLines={1}>
+            <Text style={styles.monospace} numberOfLines={1} ellipsizeMode='middle'>
               {changeAddress}
             </Text>
           </TouchableOpacity>

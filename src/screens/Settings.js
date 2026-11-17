@@ -24,12 +24,14 @@ import {
   REOWN_FEATURE_TOGGLE,
   SINGLE_ADDRESS_FEATURE_TOGGLE,
   AMOUNT_FORMAT_FEATURE_TOGGLE,
+  SHRINK_TEXT_TO_FIT,
 } from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
 import { NetworkSettingsFlowNav } from './NetworkSettings';
 import { isNanoContractsEnabled, isPushNotificationAvailableForUser } from '../utils';
 import { getNetworkSettings } from '../sagas/helpers';
+import { isShieldedAvailable } from '../shielded/gating';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -57,6 +59,8 @@ const mapStateToProps = (state) => {
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
     singleAddressEnabled: state.featureToggles[SINGLE_ADDRESS_FEATURE_TOGGLE],
     amountFormatEnabled: state.featureToggles[AMOUNT_FORMAT_FEATURE_TOGGLE],
+    // Where the shielded UI is available, also while the private balance is locked.
+    privacySettingsEnabled: isShieldedAvailable(state),
     addressMode: state.addressMode,
   };
 };
@@ -95,7 +99,30 @@ export class Settings extends React.Component {
     },
   });
 
+  /**
+   * The route of the first row Advanced Settings shows, whose top corners are round: the first one
+   * whose flag holds, or Reset wallet, which always shows.
+   *
+   * @returns {string}
+   */
+  firstAdvancedRoute() {
+    if (this.props.networkSettingsEnabled) {
+      return NetworkSettingsFlowNav;
+    }
+    if (this.props.singleAddressEnabled) {
+      return 'AddressMode';
+    }
+    if (this.props.amountFormatEnabled) {
+      return 'AmountFormat';
+    }
+    if (this.props.privacySettingsEnabled) {
+      return 'PrivacySettings';
+    }
+    return 'ResetWallet';
+  }
+
   render() {
+    const firstAdvancedRoute = this.firstAdvancedRoute();
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <ScrollView contentContainerStyle={this.style.scrollView}>
@@ -143,18 +170,18 @@ export class Settings extends React.Component {
               title={t`Security`}
               onPress={() => this.props.navigation.navigate('Security')}
             />
-            {this.props.isPushNotificationAvailable
-              && (
-                <ListMenu
-                  title={t`Push Notification`}
-                  onPress={() => this.props.navigation.navigate('PushNotification')}
-                />
-              )}
             {this.props.reownEnabled
               && (
                 <ListMenu
                   title={t`Reown`}
                   onPress={() => this.props.navigation.navigate('ReownList')}
+                />
+              )}
+            {this.props.isPushNotificationAvailable
+              && (
+                <ListMenu
+                  title={t`Push Notification`}
+                  onPress={() => this.props.navigation.navigate('PushNotification')}
                 />
               )}
           </HathorList>
@@ -166,6 +193,7 @@ export class Settings extends React.Component {
                 <ListMenu
                   title={t`Network Settings`}
                   onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
+                  isFirst={firstAdvancedRoute === NetworkSettingsFlowNav}
                 />
               )}
             {this.props.singleAddressEnabled
@@ -173,6 +201,7 @@ export class Settings extends React.Component {
                 <ListMenu
                   title={t`Address Mode`}
                   onPress={() => this.props.navigation.navigate('AddressMode')}
+                  isFirst={firstAdvancedRoute === 'AddressMode'}
                 />
               )}
             {this.props.amountFormatEnabled
@@ -180,11 +209,21 @@ export class Settings extends React.Component {
                 <ListMenu
                   title={t`Amount format`}
                   onPress={() => this.props.navigation.navigate('AmountFormat')}
+                  isFirst={firstAdvancedRoute === 'AmountFormat'}
+                />
+              )}
+            {this.props.privacySettingsEnabled
+              && (
+                <ListMenu
+                  title={t`Privacy`}
+                  onPress={() => this.props.navigation.navigate('PrivacySettings')}
+                  isFirst={firstAdvancedRoute === 'PrivacySettings'}
                 />
               )}
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}
+              isFirst={firstAdvancedRoute === 'ResetWallet'}
             />
           </HathorList>
 
@@ -215,7 +254,9 @@ export class Settings extends React.Component {
                   <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>{t`Connected to`}</Text>
                   <Text
                     style={{ fontSize: 12 }}
-                    adjustsFontSizeToFit
+                    numberOfLines={1}
+                    ellipsizeMode='middle'
+                    adjustsFontSizeToFit={SHRINK_TEXT_TO_FIT}
                     minimumFontScale={0.5}
                   >
                     {this.props.server}

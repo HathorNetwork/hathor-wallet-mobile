@@ -5,18 +5,30 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { KeyboardAvoidingView, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { t } from 'ttag';
 import { Network } from '@hathor/wallet-lib';
 import { useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import NewHathorButton from '../components/NewHathorButton';
-import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
+import QRCodeIcon from '../components/Icons/QRCodeIcon';
 import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
+import { COLORS } from '../styles/themes';
+import { isShieldedEnvironment } from '../shielded/gating';
 import { THOTH_ID_RESOLUTION_DEBOUNCE } from '../constants';
 import {
   THOTH_ID_ERROR,
@@ -61,26 +73,43 @@ const getResolutionErrorMessage = (e, name) => {
 };
 
 /**
- * Screen where the user types who to send to.
+ * First screen of the Send flow. The address is typed or pasted here; the QR code scanner, which
+ * the icon at the top right opens, fills it in.
  *
- * The field also accepts a thoth.id name (`alice.htr`), which is resolved to an
- * address against the naming service's nano contracts. Only the resolved
- * address moves on to the next screen: the name travels beside it purely so the
- * confirmation screen can show what was typed.
+ * The field also accepts a thoth.id name (`alice.htr`), which is resolved to an address against
+ * the naming service's nano contracts. Only the resolved address moves on to the next screen:
+ * the name travels beside it purely so the confirmation screen can show what was typed.
  */
 export const SendAddressInput = () => {
   const route = useRoute();
   const navigation = useNavigation();
   /**
-   * address {string} send tokens to this address
-   * error {string} address validation error
+   * address {string} send tokens to this address; the QR code scanner passes it in the route
+   *   params
+   * error {string} address validation error, cleared on edit
    */
   const [formModel, setFormModel] = useState({
-    // we can optionally receive a string to fill out the address
-    // input (for eg, user scanned QR code)
     address: route.params?.address ?? null,
     error: null,
   });
+  const networkName = useSelector((state) => state.networkSettings.network);
+  const nodeUrl = useSelector((state) => state.networkSettings.nodeUrl);
+  const network = useMemo(() => new Network(networkName), [networkName]);
+  // A private address, typed or scanned, can be paid in the shielded environment: privately
+  // where the wallet sends privately, and in public, to the address of its spend key, anywhere
+  // there.
+  const allowShielded = useSelector(isShieldedEnvironment);
+  // A tap anywhere on the card around the input focuses it: an empty multiline input is one
+  // line tall, so the card's padding wouldn't take the tap otherwise.
+  const inputRef = useRef(null);
+
+  // The QR code scanner comes back to this screen with the address it read.
+  useEffect(() => {
+    if (route.params?.address) {
+      setFormModel((prev) => ({ ...prev, address: route.params.address, error: null }));
+    }
+  }, [route.params?.address]);
+
   /**
    * status {string} One of NAME_RESOLUTION_STATUS
    * name {string} The name the current status refers to
@@ -88,10 +117,6 @@ export const SendAddressInput = () => {
    * error {string|null} Message to show when the resolution failed
    */
   const [resolution, setResolution] = useState(NO_RESOLUTION);
-
-  const networkName = useSelector((state) => state.networkSettings.network);
-  const nodeUrl = useSelector((state) => state.networkSettings.nodeUrl);
-  const network = useMemo(() => new Network(networkName), [networkName]);
 
   const typedAddress = (formModel.address || '').trim();
   // Off the supported networks nothing is a name, so the text goes through as
@@ -147,7 +172,16 @@ export const SendAddressInput = () => {
 
   const onAddressChange = (text) => {
     setFormModel({ address: text, error: null });
-  }
+  };
+
+  const validate = () => validateAddress(typedAddress, network, { allowShielded });
+
+  const isAddressValid = () => {
+    if (!typedAddress) return false;
+    // A name can be sent to once it resolved; its address was validated by the resolution
+    if (isName) return resolution.status === NAME_RESOLUTION_STATUS.RESOLVED;
+    return validate().isValid;
+  };
 
   const onButtonPress = () => {
     if (isName) {
@@ -168,14 +202,23 @@ export const SendAddressInput = () => {
       return;
     }
 
-    const validation = validateAddress(typedAddress, network);
-    if (validation.isValid) {
-      navigation.navigate('SendAmountInput', { address: typedAddress });
-    } else {
-      // Keeps what was typed so the user can correct it instead of retyping
+    const validation = validate();
+    if (!validation.isValid) {
       setFormModel((prev) => ({ ...prev, error: validation.message }));
+      return;
     }
-  }
+    navigation.navigate('SendAmountInput', { address: typedAddress });
+  };
+
+  const onScanPress = () => {
+    navigation.navigate('SendScanQRCode');
+  };
+
+  const QRButton = (
+    <TouchableOpacity onPress={onScanPress} accessibilityLabel={t`Scan QR code`}>
+      <QRCodeIcon size={24} color={COLORS.primary} />
+    </TouchableOpacity>
+  );
 
   /** Feedback shown under the field while a thoth.id name is typed there. */
   const getNameSubtitle = () => {
@@ -188,36 +231,136 @@ export const SendAddressInput = () => {
     return null;
   };
 
+  const errorMessage = formModel.error
+    || (resolution.status === NAME_RESOLUTION_STATUS.ERROR ? resolution.error : null);
+  const nameSubtitle = getNameSubtitle();
+
   return (
     <View style={{ flex: 1 }}>
-      <HathorHeader
-        withBorder
-        title={t`SEND`}
-        onBackPress={() => navigation.goBack()}
-      />
-      <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
-        <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-          <SimpleInput
-            label={isThothIdEnabled(networkName) ? t`Address or name to send` : t`Address to send`}
-            autoFocus
-            autoCapitalize='none'
-            onChangeText={onAddressChange}
-            error={formModel.error
-              || (resolution.status === NAME_RESOLUTION_STATUS.ERROR ? resolution.error : null)}
-            subtitle={getNameSubtitle()}
-            value={formModel.address}
-          />
-          <NewHathorButton
-            title={t`Next`}
-            disabled={!formModel.address
-              || (isName && resolution.status === NAME_RESOLUTION_STATUS.LOADING)}
-            onPress={onButtonPress}
-          />
-        </View>
-        <OfflineBar style={{ position: 'relative' }} />
-      </KeyboardAvoidingView>
+      {/* It dismisses the keyboard, and wraps the header and the KeyboardAvoidingView, as on
+          SendAmountInput. */}
+      <Pressable
+        style={{ flex: 1 }}
+        onPress={Keyboard.dismiss}
+        accessible={false}
+      >
+        <HathorHeader
+          withBorder
+          title={t`SEND TOKENS`}
+          rightElement={QRButton}
+        />
+        <KeyboardAvoidingView
+          behavior='padding'
+          style={{ flex: 1 }}
+          // The distance from the top of the screen to the top of the KeyboardAvoidingView,
+          // which is under the header.
+          keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}
+        >
+          <View style={styles.body}>
+            <View>
+              <Text style={styles.label}>
+                {isThothIdEnabled(networkName) ? t`Address or name to send` : t`Address to send`}
+              </Text>
+              <Pressable
+                onPress={() => inputRef.current?.focus()}
+                style={[
+                  styles.inputCard,
+                  errorMessage ? styles.inputCardError : null,
+                ]}
+              >
+                <TextInput
+                  ref={inputRef}
+                  style={styles.input}
+                  autoFocus
+                  value={formModel.address ?? ''}
+                  onChangeText={onAddressChange}
+                  placeholder={t`Paste or type address`}
+                  placeholderTextColor='#9CA3AF'
+                  autoCorrect={false}
+                  spellCheck={false}
+                  autoCapitalize='none'
+                  autoCompleteType='off'
+                  underlineColorAndroid='transparent'
+                  // An address wraps, so the whole of it shows: a private address is about 95
+                  // characters long. The cursor starts at the top of an empty field.
+                  multiline
+                  textAlignVertical='top'
+                  scrollEnabled={false}
+                />
+              </Pressable>
+              {errorMessage ? (
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              ) : null}
+              {!errorMessage && nameSubtitle ? (
+                <Text style={styles.subtitleText}>{nameSubtitle}</Text>
+              ) : null}
+            </View>
+            <NewHathorButton
+              title={t`Next`}
+              disabled={!isAddressValid()}
+              onPress={onButtonPress}
+            />
+          </View>
+          <OfflineBar style={{ position: 'relative' }} />
+        </KeyboardAvoidingView>
+      </Pressable>
     </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  body: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'space-between',
+  },
+  label: {
+    fontSize: 14,
+    color: COLORS.textColorShadow,
+    marginBottom: 10,
+    paddingHorizontal: 4,
+  },
+  // The card grows with the address, from about two lines.
+  inputCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingTop: 12,
+    paddingRight: 14,
+    paddingBottom: 12,
+    paddingLeft: 14,
+    minHeight: 80,
+    justifyContent: 'flex-start',
+  },
+  // The same size as the card without an error, so the layout doesn't shift.
+  inputCardError: {
+    borderColor: '#E55B5B',
+  },
+  // A monospace face for the address and the placeholder alike.
+  input: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 14,
+    lineHeight: 16,
+    color: COLORS.textColor,
+    padding: 0,
+    margin: 0,
+    alignSelf: 'stretch',
+    // Android adds room around the glyphs; without it, the text lines up with the placeholder.
+    includeFontPadding: false,
+  },
+  subtitleText: {
+    color: COLORS.textColorShadow,
+    fontSize: 12,
+    marginTop: 6,
+    paddingHorizontal: 4,
+  },
+  errorText: {
+    color: '#E55B5B',
+    fontSize: 12,
+    marginTop: 6,
+    paddingHorizontal: 4,
+  },
+});
 
 export default SendAddressInput;
