@@ -25,14 +25,14 @@ jest.mock('../../../src/components/QRCodeReader', () => {
 
 /* eslint-disable import/first */
 import React from 'react';
-import { Text, TextInput } from 'react-native';
+import { Alert, Text, TextInput } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { reducer } from '../../../src/reducers/reducer';
-import { multichainTransferUpdate, types } from '../../../src/actions';
+import { multichainNextSendUpdate, multichainTransferUpdate, types } from '../../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_FEATURE_TOGGLE,
@@ -287,5 +287,32 @@ describe('a Hathor Next address scanned from the Dashboard', () => {
     expect(sendRoutes()).toEqual(['SendAddressInput']);
     // The address scanned, not the one typed before: Next would pay that one.
     expect(field().props.value).toBe(OWN_ADDRESS);
+  });
+
+  test('waits while a payment is on its way, rather than close the screen that holds it', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const { store } = makeStore();
+    const renderer = await mountApp(store);
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'Main',
+        params: { screen: 'Send', params: { screen: 'SendAddressInput', params: { address: 'x' } } },
+      });
+    });
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'Main',
+        params: { screen: 'Send', params: { screen: 'NextSendAmountInput' } },
+      });
+    });
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: 'pending', draftId: 'payment-1' }));
+    });
+    await act(async () => { navigationRef.current.navigate('App', { screen: 'UnifiedQRScanner' }); });
+    const reader = renderer.root.findByType(QRCodeReader);
+    await act(async () => { reader.props.onSuccess({ data: OWN_ADDRESS }); });
+    expect(alert).toHaveBeenCalledWith('Payment on its way', expect.any(String), expect.anything());
+    // Send keeps its screens, the one that shows the payment's outcome among them.
+    expect(sendRoutes()).toEqual(['SendAddressInput', 'NextSendAmountInput']);
   });
 });

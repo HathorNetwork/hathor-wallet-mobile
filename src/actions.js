@@ -312,6 +312,8 @@ export const types = {
   MULTICHAIN_TRANSFER_REQUESTED: 'MULTICHAIN_TRANSFER_REQUESTED',
   MULTICHAIN_TRANSFER_UPDATE: 'MULTICHAIN_TRANSFER_UPDATE',
   MULTICHAIN_TRANSFER_RESET: 'MULTICHAIN_TRANSFER_RESET',
+  // Multichain: the user dismissed a forgotten transfer's outcome
+  MULTICHAIN_TRANSFER_FORGOTTEN_SEEN: 'MULTICHAIN_TRANSFER_FORGOTTEN_SEEN',
   // Multichain: a Hathor Next backend for local testing
   MULTICHAIN_DEV_BACKEND_SET: 'MULTICHAIN_DEV_BACKEND_SET',
 };
@@ -2208,6 +2210,13 @@ export const multichainTransferUpdate = (payload) => ({
 
 export const multichainTransferReset = () => ({
   type: types.MULTICHAIN_TRANSFER_RESET,
+});
+
+/**
+ * The user dismissed the outcome of a transfer Hathor Next no longer knows: it shows no more.
+ */
+export const multichainTransferForgottenSeen = () => ({
+  type: types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN,
 });
 
 /**

@@ -7,6 +7,7 @@
 
 import React, { useMemo, useRef, useState } from 'react';
 import {
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -17,13 +18,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Network } from '@hathor/wallet-lib';
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
 import AmountTextInput from '../../components/AmountTextInput';
 import OfflineBar from '../../components/OfflineBar';
+import FeedbackModal from '../../components/FeedbackModal';
 import { ChainTag } from '../../components/Multichain/ChainTag';
 import { validateTransferAddress } from '../../multichain/address';
 import { arrivalText } from '../../multichain/transfer';
@@ -31,9 +33,18 @@ import { createBridge } from '../../multichain/bridge';
 import { CHAIN, CHAIN_NAME, canTransfer, transferReceiveSymbol } from '../../multichain/chains';
 import { amountTextError, renderNextValue } from '../../multichain/amount';
 import { selectMultichainNetwork, selectSideChainConfig } from '../../multichain/gating';
+import { isForgotten } from '../../multichain/state';
+import { multichainTransferForgottenSeen } from '../../actions';
 import { getKeyboardAvoidingViewTopDistance, renderValue } from '../../utils';
 import { DEFAULT_TOKEN } from '../../constants';
 import { COLORS } from '../../styles/themes';
+import errorIcon from '../../assets/images/icErrorBig.png';
+
+/**
+ * What the transfer screen says of an earlier transfer Hathor Next no longer knows, until the
+ * user dismisses it.
+ */
+export const transferForgottenNoticeText = () => t`Hathor Next no longer knows your earlier transfer, and its HTR may have left your wallet. Check your Hathor Network history before you transfer again.`;
 
 const HTR_UID = '00';
 
@@ -88,7 +99,11 @@ export function useTransferContext() {
  * in their own) and the amount; Send's short-balance message opens it with both filled in.
  */
 export default function ChainTransferScreen({ navigation, route }) {
+  const dispatch = useDispatch();
   const { bridge, config, decimalPlaces, available, symbol } = useTransferContext();
+  // An earlier transfer Hathor Next forgot, found while no confirm screen was open: the user
+  // hears of it here, before another transfer.
+  const forgotten = useSelector((state) => isForgotten(state.multichain.transfer));
   const networkName = useSelector((state) => state.networkSettings.network);
   const ownAddress = useSelector((state) => state.multichain.next.address);
   const prefill = route?.params ?? {};
@@ -270,6 +285,19 @@ export default function ChainTransferScreen({ navigation, route }) {
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
       </Pressable>
+      {forgotten && (
+        <FeedbackModal
+          icon={<Image source={errorIcon} style={styles.feedbackIcon} resizeMode='contain' />}
+          text={transferForgottenNoticeText()}
+          onDismiss={() => dispatch(multichainTransferForgottenSeen())}
+          action={(
+            <NewHathorButton
+              title={t`OK`}
+              onPress={() => dispatch(multichainTransferForgottenSeen())}
+            />
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -288,6 +316,10 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     backgroundColor: COLORS.backgroundColor,
+  },
+  feedbackIcon: {
+    height: 105,
+    width: 105,
   },
   body: {
     padding: 16,
