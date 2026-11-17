@@ -19,6 +19,7 @@ import {
   View,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useIsFocused } from '@react-navigation/native';
 import { Network } from '@hathor/wallet-lib';
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
@@ -102,8 +103,10 @@ export default function ChainTransferScreen({ navigation, route }) {
   const dispatch = useDispatch();
   const { bridge, config, decimalPlaces, available, symbol } = useTransferContext();
   // An earlier transfer Hathor Next forgot, found while no confirm screen was open: the user
-  // hears of it here, before another transfer.
-  const forgotten = useSelector((state) => isForgotten(state.multichain.transfer));
+  // hears of it here, before another transfer. Only while this screen is in front: a confirm
+  // screen over it tells of it itself.
+  const focused = useIsFocused();
+  const forgotten = useSelector((state) => isForgotten(state.multichain.transfer)) && focused;
   const networkName = useSelector((state) => state.networkSettings.network);
   const ownAddress = useSelector((state) => state.multichain.next.address);
   const prefill = route?.params ?? {};

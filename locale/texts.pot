@@ -49,7 +49,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:116
-#: src/utils.js:900
+#: src/utils.js:901
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
@@ -64,11 +64,11 @@ msgstr ""
 msgid "Invalid address"
 msgstr ""
 
-#: src/utils.js:885
+#: src/utils.js:886
 msgid "CREATE DEPOSIT TOKEN"
 msgstr ""
 
-#: src/utils.js:887
+#: src/utils.js:888
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
@@ -78,7 +78,7 @@ msgstr ""
 #: src/screens/CreateTokenTypeNotice.js:94
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:223
 #: src/screens/Multichain/NextCreateTokenScreen.js:148
-#: src/utils.js:889
+#: src/utils.js:890
 msgid "CREATE TOKEN"
 msgstr ""
 
@@ -555,7 +555,7 @@ msgstr ""
 #: src/components/Shielded/FeeBreakdown.js:70
 #: src/screens/CreateTokenConfirm.js:293
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:245
-#: src/screens/Multichain/ChainTransferScreen.js:271
+#: src/screens/Multichain/ChainTransferScreen.js:274
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:234
 #: src/screens/Multichain/NextSendConfirmScreen.js:277
 #: src/screens/SendConfirmScreen.js:688
@@ -816,7 +816,7 @@ msgid "Tokens found"
 msgstr ""
 
 #: src/screens/ImportTokensScreen.js:209
-#: src/screens/Multichain/ChainTransferScreen.js:280
+#: src/screens/Multichain/ChainTransferScreen.js:283
 msgid "Continue"
 msgstr ""
 
@@ -1105,7 +1105,7 @@ msgid "The nano contract feature is not enabled."
 msgstr ""
 
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:148
-#: src/screens/Multichain/ChainTransferScreen.js:295
+#: src/screens/Multichain/ChainTransferScreen.js:298
 #: src/screens/RegisterOptionsScreen.js:45
 #: src/screens/RegisterOptionsScreen.js:57
 #: src/screens/SendScanQRCode.js:40
@@ -1262,7 +1262,7 @@ msgid "Transfer between chains"
 msgstr ""
 
 #: src/multichain/nextClientErrors.js:87
-#: src/screens/Multichain/ChainTransferScreen.js:169
+#: src/screens/Multichain/ChainTransferScreen.js:172
 #: src/screens/Multichain/NextSendAmountInput.js:160
 #: src/screens/SendAmountInput.js:170
 msgid "Insufficient funds"
@@ -1420,7 +1420,7 @@ msgstr ""
 
 #: src/components/Multichain/TransferDetailsModal.js:124
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:240
-#: src/screens/Multichain/ChainTransferScreen.js:212
+#: src/screens/Multichain/ChainTransferScreen.js:215
 #: src/screens/SendConfirmScreen.js:647
 msgid "To"
 msgstr ""
@@ -2064,17 +2064,17 @@ msgstr ""
 
 #: src/components/Multichain/TransferDetailsModal.js:127
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:244
-#: src/screens/Multichain/ChainTransferScreen.js:270
+#: src/screens/Multichain/ChainTransferScreen.js:273
 msgid "Bridge fee"
 msgstr ""
 
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:246
-#: src/screens/Multichain/ChainTransferScreen.js:272
+#: src/screens/Multichain/ChainTransferScreen.js:275
 msgid "Arrives in"
 msgstr ""
 
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:250
-#: src/screens/Multichain/ChainTransferScreen.js:275
+#: src/screens/Multichain/ChainTransferScreen.js:278
 msgid "One-way: you can't move these tokens back to Hathor Network yet."
 msgstr ""
 
@@ -2082,64 +2082,64 @@ msgstr ""
 msgid "Confirm and send"
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:47
+#: src/screens/Multichain/ChainTransferScreen.js:48
 msgid ""
 "Hathor Next no longer knows your earlier transfer, and its HTR may have "
 "left your wallet. Check your Hathor Network history before you transfer "
 "again."
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:141
+#: src/screens/Multichain/ChainTransferScreen.js:144
 #, javascript-format
 msgid "Transfers from ${ source } to ${ destination } aren't available yet."
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:165
+#: src/screens/Multichain/ChainTransferScreen.js:168
 msgid "The smallest transfer is ${ minimum }."
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:189
+#: src/screens/Multichain/ChainTransferScreen.js:192
 msgid "TRANSFER BETWEEN CHAINS"
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:199
+#: src/screens/Multichain/ChainTransferScreen.js:202
 msgid "From"
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:206
+#: src/screens/Multichain/ChainTransferScreen.js:209
 msgid "Swap From and To"
 msgstr ""
 
 #: src/components/Multichain/NextTokenPicker.js:60
-#: src/screens/Multichain/ChainTransferScreen.js:216
+#: src/screens/Multichain/ChainTransferScreen.js:219
 msgid "Token"
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:217
+#: src/screens/Multichain/ChainTransferScreen.js:220
 #, javascript-format
 msgid "${ symbol } · ${ availableText } available"
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:220
+#: src/screens/Multichain/ChainTransferScreen.js:223
 msgid "Hathor Next address"
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:233
+#: src/screens/Multichain/ChainTransferScreen.js:236
 msgid "Paste or type a Hathor Next address"
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:247
+#: src/screens/Multichain/ChainTransferScreen.js:250
 msgid "Use my Hathor Next address"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:103
-#: src/screens/Multichain/ChainTransferScreen.js:252
+#: src/screens/Multichain/ChainTransferScreen.js:255
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:231
 #: src/screens/Multichain/NextSendConfirmScreen.js:263
 msgid "Amount"
 msgstr ""
 
-#: src/screens/Multichain/ChainTransferScreen.js:266
+#: src/screens/Multichain/ChainTransferScreen.js:269
 msgid "You'll receive"
 msgstr ""
 

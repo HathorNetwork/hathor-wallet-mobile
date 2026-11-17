@@ -11,6 +11,7 @@ jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: jest.fn(),
   useRoute: jest.fn(),
+  useIsFocused: jest.fn(),
 }));
 
 jest.mock('../../../src/NavigationService', () => ({
@@ -30,7 +31,7 @@ import { Pressable, Text, TextInput } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { reducer } from '../../../src/reducers/reducer';
 import { multichainTransfersSet, multichainTransferUpdate, types } from '../../../src/actions';
 import {
@@ -69,6 +70,7 @@ let mounted = null;
 
 beforeEach(() => {
   jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(false);
+  useIsFocused.mockReturnValue(true);
 });
 
 afterEach(async () => {
@@ -408,6 +410,79 @@ describe('the transfer between chains', () => {
     await act(async () => { modal.props.action.props.onPress(); });
     expect(actions.map((a) => a.type)).toContain(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN);
     expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+  });
+
+  test("the transfer screen's notice goes with a tap outside it too", async () => {
+    const { store, actions } = makeStore();
+    store.dispatch(forgottenEarlier());
+    const renderer = await mount(
+      store,
+      <ChainTransferScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} route={{}} />,
+    );
+    await act(async () => { renderer.root.findByType(FeedbackModal).props.onDismiss(); });
+    expect(actions.map((a) => a.type)).toContain(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN);
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+  });
+
+  test('the transfer screen leaves the notice to a confirm screen in front of it', async () => {
+    const { store } = makeStore();
+    const navigation = { navigate: jest.fn(), goBack: jest.fn() };
+    useIsFocused.mockReturnValue(false);
+    store.dispatch(forgottenEarlier());
+    const renderer = await mount(
+      store,
+      <ChainTransferScreen navigation={navigation} route={{}} />,
+    );
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+    // Back in front, with the notice still not dismissed: it shows here.
+    useIsFocused.mockReturnValue(true);
+    await act(async () => {
+      renderer.update(
+        <Provider store={store}>
+          <PortalProvider>
+            <ChainTransferScreen navigation={navigation} route={{}} />
+          </PortalProvider>
+        </Provider>,
+      );
+    });
+    expect(renderer.root.findByType(FeedbackModal).props.text).toBe(transferForgottenNoticeText());
+  });
+
+  test('its own transfer found forgotten closes when dismissed, and stays closed', async () => {
+    const navigation = holdableNavigation();
+    const { store, actions } = makeStore();
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={navigation}
+          route={{ params: { amount: '500', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    await act(async () => { button(renderer, 'Confirm and send').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([route]) => route === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    const { requestId } = actions
+      .find((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED).payload;
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.SENDING, requestId }));
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1',
+      }));
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.ERROR,
+        error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN).message,
+        errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+        uncertainId: null,
+      }));
+    });
+    const modal = renderer.root.findByType(FeedbackModal);
+    expect(modal.props.text)
+      .toBe(new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN).message);
+    await act(async () => { modal.props.onDismiss(); });
+    expect(actions.map((a) => a.type)).toContain(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN);
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+    expect(store.getState().multichain.transfer.status).toBe(OPERATION_STATUS.IDLE);
   });
 
   test("names Hathor Network's native token by the symbol the fullnode reports", async () => {

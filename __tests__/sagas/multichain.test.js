@@ -166,6 +166,43 @@ async function connect(env) {
   await wait(2000);
 }
 
+// A backend for local testing, saved: its flag turns it on.
+const LOCAL_BACKEND = {
+  url: 'http://192.168.0.10:8930',
+  pins: {
+    next: {
+      network_id: 1777, native_token: '00', service_view_pub: 'ab', wire_format: 'v3',
+    },
+    transfer: null,
+  },
+};
+
+// Turns the backend for local testing on, or off, as an Unleash update does.
+function devBackendFlag(env, on) {
+  env.dispatch(setFeatureToggles({
+    [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: on,
+  }));
+  env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+}
+
+// The state of a wallet on NETWORK, on its side chain's own backend or on the one for local
+// testing: where a transfer's record says it was signed.
+function placeState({ devBackend = null } = {}) {
+  const state = [
+    networkSettingsUpdateState(PRE_SETTINGS_TESTNET),
+    setFeatureToggles({
+      [MULTICHAIN_FEATURE_TOGGLE]: true,
+      [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: Boolean(devBackend),
+    }),
+    setServerInfo({ decimal_places: 2 }),
+    setFullNodeNetworkName(NETWORK),
+  ].reduce(reducer, reducer(undefined, { type: '@@INIT' }));
+  return devBackend ? { ...state, multichain: { ...state.multichain, devBackend } } : state;
+}
+
+// The record of 'transfer-1', signed without an answer on NETWORK's own backend.
+const SAVED_HERE = { id: 'transfer-1', network: NETWORK, backendUrl: null };
+
 beforeEach(() => {
   jest.useFakeTimers();
   jest.clearAllMocks();
@@ -762,10 +799,14 @@ describe('a transfer between chains', () => {
 });
 
 describe('a transfer signed without an answer', () => {
+  let state = null;
+  afterEach(() => STORE.removeItem(multichainKeyMap.uncertainTransfer));
   const run = (bridge, tries) => {
+    state = placeState();
+    STORE.setItem(multichainKeyMap.uncertainTransfer, SAVED_HERE);
     const dispatched = [];
     const done = runSaga(
-      { dispatch: (action) => dispatched.push(action), getState: () => ({}) },
+      { dispatch: (action) => dispatched.push(action), getState: () => state },
       resolveUncertainTransfer,
       bridge,
       { id: 'transfer-1', inputs: null },
@@ -808,6 +849,71 @@ describe('a transfer signed without an answer', () => {
     expect(bridge.resolveTransfer).toHaveBeenCalledTimes(2);
   });
 
+  test('is no longer asked about once the wallet is on another backend', async () => {
+    const bridge = {
+      // Asked there, the backend for local testing would never have known it.
+      resolveTransfer: jest.fn(async () => {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN);
+      }).mockRejectedValueOnce(new Error('unreachable')),
+    };
+    const { dispatched, done } = run(bridge, 3);
+    await jest.advanceTimersByTimeAsync(0);
+    state = placeState({ devBackend: LOCAL_BACKEND });
+    await jest.advanceTimersByTimeAsync(6000);
+    await expect(done).resolves.toBe(false);
+    expect(bridge.resolveTransfer).toHaveBeenCalledTimes(1);
+    expect(dispatched).toEqual([]);
+    // Left as it was: the background check asks again back on its backend.
+    expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toEqual(SAVED_HERE);
+  });
+
+  test.each([
+    ['no longer knows it', async () => {
+      throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN);
+    }],
+    ['has it', async () => ({ id: 'transfer-1', status: TRANSFER_STATUS.PENDING })],
+    ['says it never left', async () => null],
+  ])('settles nothing when the backend changed while it was asked, whose answer %s', async (_label, answer) => {
+    const bridge = {
+      resolveTransfer: jest.fn(async () => {
+        state = placeState({ devBackend: LOCAL_BACKEND });
+        return answer();
+      }),
+    };
+    const { dispatched, done } = run(bridge, 1);
+    await expect(done).resolves.toBe(false);
+    expect(dispatched).toEqual([]);
+    expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toEqual(SAVED_HERE);
+  });
+
+  test('is saved with the backend it was signed on, though another took over meanwhile', async () => {
+    STORE.setItem(multichainKeyMap.devBackend, LOCAL_BACKEND);
+    try {
+      const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+      await connect(env);
+      const bridge = {
+        transfer: jest.fn(async () => {
+          devBackendFlag(env, true);
+          throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN, { transferId: 'transfer-1' });
+        }),
+        resolveTransfer: jest.fn(async () => {
+          throw new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN);
+        }),
+        getTransfers: async () => [],
+      };
+      jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+      env.dispatch(multichainTransferRequested({
+        amount: 10000n, toAddress: ADDRESS, pinCode: PIN,
+      }));
+      await wait(31000);
+      expect(STORE.getItem(multichainKeyMap.uncertainTransfer))
+        .toEqual({ ...SAVED_HERE, inputs: null });
+      expect(bridge.resolveTransfer).not.toHaveBeenCalled();
+    } finally {
+      STORE.removeItem(multichainKeyMap.devBackend);
+    }
+  });
+
   test('is asked about again while the transfers are read, after its first tries ran out', async () => {
     const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
     await connect(env);
@@ -842,10 +948,13 @@ describe('a transfer signed without an answer', () => {
 });
 
 describe('a transfer that settles', () => {
+  afterEach(() => STORE.removeItem(multichainKeyMap.uncertainTransfer));
   const run = (bridge) => {
+    const state = placeState();
+    STORE.setItem(multichainKeyMap.uncertainTransfer, SAVED_HERE);
     const dispatched = [];
     const done = runSaga(
-      { dispatch: (action) => dispatched.push(action), getState: () => ({}) },
+      { dispatch: (action) => dispatched.push(action), getState: () => state },
       resolveUncertainTransfer,
       bridge,
       { id: 'transfer-1', inputs: null },
@@ -856,8 +965,11 @@ describe('a transfer that settles', () => {
   const record = (status) => ({ id: 'transfer-1', status, reason: 'inputs spent' });
 
   test('as sent stays done when reading the transfers again fails', async () => {
-    // The state can't give a bridge here: reading the transfers again throws.
-    const bridge = { resolveTransfer: async () => record(TRANSFER_STATUS.PENDING) };
+    const bridge = {
+      resolveTransfer: async () => record(TRANSFER_STATUS.PENDING),
+      getTransfers: async () => { throw new Error('unreachable'); },
+    };
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
     const { dispatched, done } = run(bridge);
     await expect(done).resolves.toBe(true);
     const statuses = dispatched.map((a) => a.payload?.status).filter(Boolean);
@@ -1040,6 +1152,104 @@ describe('a transfer signed without an answer, as the screens see it', () => {
       status: OPERATION_STATUS.IDLE, errorCode: null,
     });
     expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toBeNull();
+  });
+
+  const FORGOTTEN = {
+    status: OPERATION_STATUS.ERROR,
+    errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+    uncertainId: null,
+  };
+
+  test('ended forgotten holds a transfer asked for before its notice showed', async () => {
+    saved({ inputs: null, forgotten: true });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    const bridge = {
+      transfer: jest.fn(async () => ({ id: 'transfer-2', status: TRANSFER_STATUS.PENDING })),
+      resolveTransfer: jest.fn(),
+      getTransfers: async () => [],
+    };
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+    // Its notice isn't shown (a flag update was still on its way while the PIN screen was open),
+    // and biometrics confirm with no tap.
+    env.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.IDLE, errorCode: null }));
+    env.dispatch(multichainTransferRequested({
+      amount: 500n, toAddress: ADDRESS, pinCode: PIN, requestId: 'screen-2',
+    }));
+    await wait(1000);
+    expect(bridge.transfer).not.toHaveBeenCalled();
+    expect(bridge.resolveTransfer).not.toHaveBeenCalled();
+    // The notice shows now, as an earlier transfer's.
+    expect(env.getState().multichain.transfer).toMatchObject({ ...FORGOTTEN, requestId: null });
+  });
+
+  test('ended forgotten is never asked about by the background check', async () => {
+    saved({ inputs: null, forgotten: true });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await connect(env);
+    const bridge = { resolveTransfer: jest.fn(async () => null), getTransfers: async () => [] };
+    jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+    await wait(31000);
+    expect(bridge.resolveTransfer).not.toHaveBeenCalled();
+    expect(env.getState().multichain.transfer).toMatchObject(FORGOTTEN);
+  });
+
+  test('ended forgotten shows on its own network only, and again back there', async () => {
+    saved({ inputs: null, forgotten: true });
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await wait(0);
+    expect(env.getState().multichain.transfer).toMatchObject(FORGOTTEN);
+    env.dispatch(setFullNodeNetworkName('testnet-other'));
+    env.dispatch(startWalletSuccess());
+    await wait(0);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.IDLE, errorCode: null,
+    });
+    env.dispatch(setFullNodeNetworkName(NETWORK));
+    env.dispatch(startWalletSuccess());
+    await wait(0);
+    expect(env.getState().multichain.transfer).toMatchObject(FORGOTTEN);
+  });
+
+  test('a dismissal of a forgotten one leaves one still not confirmed as it is', async () => {
+    saved();
+    const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+    await wait(0);
+    env.dispatch(multichainTransferForgottenSeen());
+    await wait(0);
+    expect(env.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1',
+    });
+    expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toMatchObject({ id: 'transfer-1' });
+  });
+
+  test('is not shown on the backend that took over while it was asked about', async () => {
+    STORE.setItem(multichainKeyMap.devBackend, LOCAL_BACKEND);
+    saved();
+    try {
+      const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+      await connect(env);
+      const bridge = {
+        transfer: jest.fn(),
+        resolveTransfer: jest.fn(async () => {
+          devBackendFlag(env, true);
+          await new Promise((resolve) => { setTimeout(resolve, 5000); });
+          throw new Error('unreachable');
+        }),
+        getTransfers: async () => [],
+      };
+      jest.spyOn(bridgeModule, 'createBridge').mockReturnValue(bridge);
+      env.dispatch(multichainTransferRequested({ amount: 500n, toAddress: ADDRESS, pinCode: PIN }));
+      await wait(6000);
+      expect(bridge.transfer).not.toHaveBeenCalled();
+      // The local backend never had it: no confirm screen there is held by it.
+      expect(env.getState().multichain.transfer).toMatchObject({
+        status: OPERATION_STATUS.IDLE, uncertainId: null,
+      });
+      expect(STORE.getItem(multichainKeyMap.uncertainTransfer)).toEqual(SAVED_HERE);
+    } finally {
+      STORE.removeItem(multichainKeyMap.devBackend);
+    }
   });
 
   test('one that never went through lets the next transfer go ahead at once', async () => {

@@ -13,6 +13,7 @@ jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: jest.fn(),
   useRoute: jest.fn(),
+  useIsFocused: jest.fn(),
 }));
 
 jest.mock('../../../src/NavigationService', () => ({
@@ -26,7 +27,7 @@ import { Text } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { reducer } from '../../../src/reducers/reducer';
 import {
   FEATURE_TOGGLE_DEFAULTS,
@@ -59,6 +60,7 @@ beforeEach(() => {
   jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(false);
   useNavigation.mockReturnValue(navigation());
   useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS } });
+  useIsFocused.mockReturnValue(true);
 });
 
 afterEach(async () => {

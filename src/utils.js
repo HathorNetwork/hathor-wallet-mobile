@@ -628,8 +628,9 @@ export const setKeychainPin = (pin) => {
 /**
  * Moves the Hathor Next spend secret this device keeps, encrypted with the PIN as the words are
  * (src/multichain/keys.js), to the new PIN or password, as the words just moved. One the old PIN
- * doesn't open is dropped: the next unlock derives it again. Nothing is kept without the side
- * chain, so nothing happens then.
+ * doesn't open is dropped: the next unlock derives it again. A device that never had the side
+ * chain's flag on keeps none, and nothing happens. One that had it keeps the secret after the
+ * flag goes off, and it moves then too.
  *
  * @param {string} oldPin
  * @param {string} newPin
