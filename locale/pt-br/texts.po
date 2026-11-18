@@ -1573,7 +1573,7 @@ msgstr "Configurações de Rede"
 
 #: src/screens/Settings.js:268
 msgid "Connect to side chain"
-msgstr "Conectar à cadeia lateral"
+msgstr "Conectar à side chain"
 
 #: src/screens/Settings.js:283
 msgid "Hathor Next (local backend)"
@@ -2675,7 +2675,7 @@ msgstr "Enviando"
 
 #: src/multichain/content.js:30
 msgid "Settled"
-msgstr "Liquidado"
+msgstr "Confirmado"
 
 #: src/multichain/content.js:32
 msgid "Failed"
@@ -2683,7 +2683,7 @@ msgstr "Falhou"
 
 #: src/multichain/content.js:34
 msgid "Not settled yet"
-msgstr "Ainda não liquidado"
+msgstr "Ainda não confirmado"
 
 #: src/multichain/content.js:36
 msgid "Expired"
@@ -2698,12 +2698,12 @@ msgid ""
 "Settled means final. The payment is on the ledger for good — there is no "
 "waiting for confirmations and no chance of it being reversed."
 msgstr ""
-"Liquidado significa final. O pagamento está no ledger para sempre — não há "
+"Confirmado significa final. O pagamento está no ledger para sempre — não há "
 "espera por confirmações e nenhuma chance de ser revertido."
 
 #: src/multichain/content.js:48
 msgid "Settled and irreversible."
-msgstr "Liquidado e irreversível."
+msgstr "Confirmado e irreversível."
 
 #: src/multichain/content.js:51
 msgid "Waiting for the network to record it."
@@ -2737,7 +2737,7 @@ msgid ""
 "settle. Nothing left your wallet, no fee was paid, and the coins that were "
 "set aside for it are already back. There is nothing to wait for."
 msgstr ""
-"A rede analisou este pagamento e o recusou, então ele nunca será liquidado. "
+"A rede analisou este pagamento e o recusou, então ele nunca será confirmado. "
 "Nada saiu da sua carteira, nenhuma taxa foi paga, e as moedas que foram "
 "reservadas para ele já voltaram. Não há nada a esperar."
 
@@ -2748,7 +2748,7 @@ msgid ""
 "again."
 msgstr ""
 "Este pagamento expirou antes de a rede receber as assinaturas, então ele "
-"nunca será liquidado. Nada saiu da sua carteira, nenhuma taxa foi paga e as "
+"nunca será confirmado. Nada saiu da sua carteira, nenhuma taxa foi paga e as "
 "moedas dele estão livres de novo."
 
 #: src/multichain/content.js:66
@@ -2902,7 +2902,7 @@ msgid ""
 "it. Update the app, or disconnect the side chain for now."
 msgstr ""
 "A rede da Hathor Next mudou, e esta versão do app não consegue se conectar a "
-"ela. Atualize o app ou desconecte a cadeia lateral por enquanto."
+"ela. Atualize o app ou desconecte a side chain por enquanto."
 
 #: src/multichain/nextClientErrors.js:126
 msgid ""
@@ -4264,7 +4264,7 @@ msgstr "Usar este backend"
 
 #: src/components/Multichain/MultichainLoadScreen.js:75
 msgid "Disconnect side chain"
-msgstr "Desconectar a cadeia lateral"
+msgstr "Desconectar a side chain"
 
 #: src/components/Multichain/MultichainLoadScreen.js:91
 msgid "Loading Hathor Next…"
