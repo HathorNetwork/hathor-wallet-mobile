@@ -4,6 +4,8 @@ appId: network.hathor.wallet
 - extendedWaitUntil:
     visible: "Import tokens"
     timeout: 60000
+# The link is a Text inside the banner's Text: Android renders it as a span of its parent, with
+# no view of its own to carry a testID, so it's found by its text.
 - tapOn: "Import tokens"
 - extendedWaitUntil:
     visible: "Tokens found \\(3\\)"
@@ -11,18 +13,18 @@ appId: network.hathor.wallet
 - tapOn: "E2E Deposit"
 - tapOn: "E2E Large"
 - tapOn: "E2E Fee"
-- tapOn: "CONTINUE"
+- tapOn:
+    id: import-tokens-continue
 - extendedWaitUntil:
     visible: "Confirm Import"
     timeout: 15000
-# The header reads IMPORT TOKENS too; the button is the second match.
 - tapOn:
-    text: "IMPORT TOKENS"
-    index: 1
+    id: confirm-import-tokens
 - extendedWaitUntil:
     visible: "New tokens added!"
     timeout: 30000
-- tapOn: "SEE ALL TOKENS"
+- tapOn:
+    id: import-tokens-see-all
 - extendedWaitUntil:
     visible: "E2E Fee"
     timeout: 15000

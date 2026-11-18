@@ -45,6 +45,21 @@ describe('timeline entries', () => {
     expect(describeCommand({ assertConditionCommand: { condition: { visible: { textRegex: 'NEXT', enabled: false } } } }))
       .toBe('Check that "NEXT" is visible and disabled');
     expect(describeCommand({ backPressCommand: {} })).toBe('Press back');
+  });
+
+  it('names an element found by id with a #, and by text in quotes', () => {
+    expect(describeCommand({ copyTextCommand: { selector: { idRegex: 'new-words-word-3' } } }))
+      .toBe('Copy the text of #new-words-word-3');
+    expect(describeCommand({ copyTextCommand: { selector: { textRegex: '\\d{1,2}' } } }))
+      .toBe('Copy the text of "\\d{1,2}"');
+    expect(describeCommand({ tapOnElement: { selector: { idRegex: 'send-amount-next' } } }))
+      .toBe('Tap on #send-amount-next');
+    expect(describeCommand({ assertConditionCommand: { condition: { visible: { idRegex: 'send-amount-available' } }, timeout: '15000' } }))
+      .toBe('Wait until #send-amount-available is visible');
+    expect(describeCommand({ assertConditionCommand: { condition: { visible: { idRegex: 'welcome-terms-switch', checked: true } } } }))
+      .toBe('Check that #welcome-terms-switch is checked');
+    expect(describeCommand({ assertConditionCommand: { condition: { notVisible: { idRegex: 'tab-home' } } } }))
+      .toBe('Check that #tab-home is gone');
     expect(describeCommand({ someNewCommand: {} })).toBe('some new');
   });
 });
