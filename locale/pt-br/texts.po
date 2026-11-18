@@ -2039,7 +2039,7 @@ msgstr "Para o seu endereço"
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:155
 #: src/screens/Multichain/ChainTransferScreen.js:240
 msgid "Bridge fee"
-msgstr "Taxa da ponte"
+msgstr "Taxa da bridge"
 
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:157
 #: src/screens/Multichain/ChainTransferScreen.js:242
@@ -3717,16 +3717,16 @@ msgstr "${ tokenSymbol } Obter Authority"
 
 #: src/components/Multichain/ChainFilter.js:25
 msgid "All chains"
-msgstr "Todas as cadeias"
+msgstr "Todas as chains"
 
 #: src/components/Multichain/ChainFilter.js:53
 #, javascript-format
 msgid "Chain: ${ viewName }"
-msgstr "Cadeia: ${ viewName }"
+msgstr "Chain: ${ viewName }"
 
 #: src/components/Multichain/ChainFilter.js:68
 msgid "Chain"
-msgstr "Cadeia"
+msgstr "Chain"
 
 #: src/components/Multichain/ConnectFeedback.js:28
 msgid "Connecting to Hathor Next…"
@@ -3783,8 +3783,8 @@ msgstr "Enviado para ${ peer }"
 #: src/components/Multichain/TokenChains.js:36
 msgid "${ count } chain"
 msgid_plural "${ count } chains"
-msgstr[0] "${ count } cadeia"
-msgstr[1] "${ count } cadeias"
+msgstr[0] "${ count } chain"
+msgstr[1] "${ count } chains"
 
 #: src/components/Multichain/TokenChains.js:40
 msgid "${ arrivingText } arriving"
