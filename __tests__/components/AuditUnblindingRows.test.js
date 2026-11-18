@@ -15,7 +15,9 @@ jest.mock('../../src/utils/privacy', () => ({
 
 /* eslint-disable import/first */
 import React from 'react';
-import { Alert, Clipboard, Linking } from 'react-native';
+import {
+  ActivityIndicator, Alert, Clipboard, Linking, TouchableHighlight,
+} from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
@@ -152,23 +154,52 @@ function makeStore({
   return store;
 }
 
-async function render({ wallet = fakeWallet(), ...options } = {}) {
+async function render({ wallet = fakeWallet(), hasShieldedActivity, ...options } = {}) {
   const store = makeStore({ wallet, ...options });
   let renderer;
   await act(async () => {
     renderer = create(
-      <Provider store={store}><AuditUnblindingRows txId={TX_ID} /></Provider>,
+      <Provider store={store}>
+        <AuditUnblindingRows txId={TX_ID} hasShieldedActivity={hasShieldedActivity} />
+      </Provider>,
     );
   });
   mounted = renderer;
 
-  const titles = () => renderer.root.findAllByType(ListButton).map((node) => node.props.title);
+  const rows = () => renderer.root.findAllByType(ListButton);
+  const titles = () => rows().map((node) => node.props.title);
+  const row = (title) => rows().find((node) => node.props.title === title);
   const press = (title) => act(async () => {
-    renderer.root.findAllByType(ListButton)
-      .find((node) => node.props.title === title)
-      .props.onPress();
+    row(title).props.onPress();
   });
-  return { wallet, titles, press };
+  // A tap, through the row's touchable: a row that isn't pressable ignores it.
+  const tap = (title) => act(async () => {
+    row(title).findByType(TouchableHighlight).props.onPress();
+  });
+  const loadingRows = () => rows()
+    .filter((node) => node.findAllByType(ActivityIndicator).length > 0)
+    .map((node) => node.props.title);
+  return {
+    wallet, titles, press, tap, row, loadingRows,
+  };
+}
+
+/**
+ * A wallet whose read of the values waits until the test gives them, or fails it.
+ */
+function slowWallet() {
+  const wallet = fakeWallet();
+  let give;
+  let fail;
+  wallet.getShieldedUnblindingForTx.mockImplementation(() => new Promise((resolve, reject) => {
+    give = resolve;
+    fail = reject;
+  }));
+  return {
+    wallet,
+    give: (openings) => act(async () => { give(openings); }),
+    fail: (error) => act(async () => { fail(error); }),
+  };
 }
 
 describe('AuditUnblindingRows', () => {
@@ -317,7 +348,172 @@ describe('AuditUnblindingRows', () => {
   });
 });
 
+describe('while the values load', () => {
+  test('a tx with private activity shows the rows loading, and they take no tap', async () => {
+    const { wallet } = slowWallet();
+    const { titles, tap, row, loadingRows, } = await render({ wallet, hasShieldedActivity: true });
+
+    expect(titles()).toEqual([VIEW, COPY]);
+    expect(loadingRows()).toEqual([VIEW, COPY]);
+    expect(row(VIEW).props.disabled).toBe(true);
+    expect(row(COPY).props.disabled).toBe(true);
+
+    await tap(VIEW);
+    await tap(COPY);
+    expect(encoder).not.toHaveBeenCalled();
+    expect(Linking.openURL).not.toHaveBeenCalled();
+    expect(Clipboard.setString).not.toHaveBeenCalled();
+  });
+
+  test('the rows become pressable once the values load', async () => {
+    const { wallet, give } = slowWallet();
+    const { titles, tap, row, loadingRows, } = await render({ wallet, hasShieldedActivity: true });
+
+    await give({ outputs: [OPENING], inputs: [] });
+
+    expect(titles()).toEqual([VIEW, COPY]);
+    expect(loadingRows()).toEqual([]);
+    expect(row(VIEW).props.disabled).toBe(false);
+    await tap(COPY);
+    expect(encoder).toHaveBeenCalledWith(TX_ID, [OPENING], []);
+    expect(Clipboard.setString.mock.calls).toEqual([[PAYLOAD]]);
+    await tap(VIEW);
+    expect(Linking.openURL).toHaveBeenCalledWith(
+      `${EXPLORER_SHIELDED_TESTNET_URL}transaction/${TX_ID}#unblind=${PAYLOAD}`,
+    );
+  });
+
+  test('the loading rows go away when the tx has no values of the wallet', async () => {
+    const { wallet, give } = slowWallet();
+    const { titles } = await render({ wallet, hasShieldedActivity: true });
+
+    await give({ outputs: [], inputs: [] });
+
+    expect(titles()).toEqual([]);
+  });
+
+  test('the loading rows go away when the values cannot be read', async () => {
+    const { wallet, fail } = slowWallet();
+    const { titles } = await render({ wallet, hasShieldedActivity: true });
+
+    await fail(new Error('no values'));
+
+    expect(titles()).toEqual([]);
+  });
+
+  test('only the explorer row needs the explorer that reads the values', async () => {
+    const { wallet } = slowWallet();
+    const { titles, loadingRows } = await render({
+      wallet, hasShieldedActivity: true, networkSettings: PRE_SETTINGS_TESTNET,
+    });
+
+    expect(titles()).toEqual([COPY]);
+    expect(loadingRows()).toEqual([COPY]);
+  });
+
+  test('a tx without private activity shows no row until the values come', async () => {
+    const { wallet, give } = slowWallet();
+    const { titles, loadingRows } = await render({ wallet });
+
+    expect(titles()).toEqual([]);
+
+    await give({ outputs: [OPENING], inputs: [] });
+    expect(titles()).toEqual([VIEW, COPY]);
+    expect(loadingRows()).toEqual([]);
+  });
+
+  test.each([
+    ['while the shielded UI is off', { flag: false }],
+    ['while the private balance is locked', { level: 'watch' }],
+  ])('a tx with private activity shows no row %s', async (_label, options) => {
+    const { wallet } = slowWallet();
+    const { titles } = await render({ wallet, hasShieldedActivity: true, ...options });
+
+    expect(titles()).toEqual([]);
+    expect(wallet.getShieldedUnblindingForTx).not.toHaveBeenCalled();
+  });
+});
+
+describe('TxHistory.hasShieldedActivity', () => {
+  const raw = (extra) => ({
+    txId: TX_ID, timestamp: 1700000000, balance: 500n, voided: false, version: 1, ...extra,
+  });
+
+  test.each([
+    ['private outputs on the fullnode facade', { shielded_outputs: [{ mode: 2 }] }, true],
+    ['no private outputs on the fullnode facade', { shielded_outputs: [] }, false],
+    ['a private balance move on the wallet-service facade', { txKind: 'shielded' }, true],
+    ['a private and public balance move on the wallet-service facade', { txKind: 'mixed' }, true],
+    ['a public balance move on the wallet-service facade', { txKind: 'transparent' }, false],
+    ['a tx the history says nothing private about', {}, false],
+  ])('for %s', (_label, extra, expected) => {
+    expect(TxHistory.from(raw(extra), HTR).hasShieldedActivity).toBe(expected);
+  });
+});
+
+/**
+ * Opens the tx details of a history entry, and waits for BackdropModal to show its content.
+ */
+async function openTxDetails(wallet, rawTx) {
+  const store = makeStore({ wallet });
+  const tx = TxHistory.from({
+    txId: TX_ID,
+    timestamp: 1700000000,
+    balance: 500n,
+    voided: false,
+    version: 1,
+    ...rawTx,
+  }, HTR);
+  let renderer;
+  await act(async () => {
+    renderer = create(
+      <Provider store={store}>
+        <PortalProvider>
+          <TxDetailsModal
+            tx={tx}
+            token={{
+              uid: HTR, name: 'Hathor', symbol: 'HTR', version: TokenVersion.NATIVE,
+            }}
+            onRequestClose={jest.fn()}
+            isNFT={false}
+            amountFormat={AMOUNT_FORMAT.EXPANDED}
+            decimalPlaces={2}
+          />
+        </PortalProvider>
+      </Provider>,
+    );
+  });
+  mounted = renderer;
+  // BackdropModal shows its content 100 ms after it opens.
+  await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 150); }); });
+  const buttons = () => renderer.root.findAllByType(ListButton);
+  return {
+    titles: () => buttons().map((node) => node.props.title),
+    disabled: () => buttons().filter((node) => node.props.disabled).map((node) => node.props.title),
+  };
+}
+
 describe('the tx details', () => {
+  test('of a private tx on the wallet-service facade show the rows loading at once', async () => {
+    const { wallet, give } = slowWallet();
+    // The wallet-service history says the tx moves the wallet's private balance.
+    const { titles, disabled } = await openTxDetails(wallet, { txKind: 'shielded' });
+
+    expect(titles()).toEqual(['Public Explorer', VIEW, COPY]);
+    expect(disabled()).toEqual([VIEW, COPY]);
+
+    await give({ outputs: [OPENING], inputs: [] });
+    expect(titles()).toEqual(['Public Explorer', VIEW, COPY]);
+    expect(disabled()).toEqual([]);
+  });
+
+  test('of a public tx on the wallet-service facade show only the public explorer', async () => {
+    const { wallet } = slowWallet();
+    const { titles } = await openTxDetails(wallet, { txKind: 'transparent' });
+
+    expect(titles()).toEqual(['Public Explorer']);
+  });
+
   test('show the rows under the public explorer', async () => {
     const store = makeStore({ wallet: fakeWallet() });
     const tx = TxHistory.from({

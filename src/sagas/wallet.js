@@ -100,7 +100,8 @@ import {
   startWalletRequested,
   shieldedCapabilityUpdate,
 } from '../actions';
-import { fetchTokenData } from './tokens';
+import { fetchTokenData, restoreNetworkTokens } from './tokens';
+import { detectUnregisteredWalletTokens } from './tokenImport';
 import {
   specificTypeAndPayload,
   errorHandler,
@@ -849,6 +850,8 @@ export function* loadTokens() {
 
   const wallet = yield select((state) => state.wallet);
 
+  // Register the tokens saved for this network first, so they are read as registered below.
+  yield call(restoreNetworkTokens);
   const tokens = yield getRegisteredTokens(wallet);
 
   yield put(setTokens(tokens));
@@ -1126,6 +1129,13 @@ export function* handleTx(action) {
       // screen
       yield put(tokenInvalidateHistory(tokenUid));
     }
+  }
+
+  if (paysShieldedToWallet) {
+    // The tx's balance can't name the token of a shielded output the service decoded, so a token
+    // first received that way is only found in the wallet's token list. Read after the balance
+    // requests: on the wallet-service facade it's a request of its own.
+    yield call(detectUnregisteredWalletTokens, wallet, newUnknownUids);
   }
 
   // We should sync the last shared address on our redux store with the facade's internal state

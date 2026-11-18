@@ -35,6 +35,7 @@ import {
   walletRefreshSharedAddress,
 } from '../actions';
 import { getRegisteredTokenUids } from './helpers';
+import { detectUnregisteredWalletTokens } from './tokenImport';
 import { WALLET_STATUS } from './wallet';
 import {
   isShieldedEnvironment,
@@ -123,6 +124,9 @@ export function* refreshShieldedBalances(wallet) {
     }
   }
   yield put(walletRefreshSharedAddress());
+  // Outputs decoded now (after an unlock, a resync or a provider change) emit no new tx, so a
+  // token they first pay the wallet is only found in the wallet's token list.
+  yield call(detectUnregisteredWalletTokens, wallet);
   return true;
 }
 

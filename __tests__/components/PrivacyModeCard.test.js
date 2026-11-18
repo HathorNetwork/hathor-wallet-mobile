@@ -19,6 +19,7 @@ import TextFmt from '../../src/components/TextFmt';
 import PrivacyModeCard, { PRIVACY_MODE_CARD_VARIANT } from '../../src/components/PrivacyModeCard';
 import PrivacyModeSelector from '../../src/components/PrivacyModeSelector';
 import TransactionPrivacyModal from '../../src/components/TransactionPrivacyModal';
+import BackdropModal from '../../src/components/BackdropModal';
 
 let mounted = null;
 
@@ -114,7 +115,6 @@ describe('TransactionPrivacyModal', () => {
     const { renderer, texts } = await render(
       <TransactionPrivacyModal
         visible
-        onDismiss={jest.fn()}
         selectedMode={PRIVACY_MODE.PUBLIC}
         onConfirm={jest.fn()}
       />,
@@ -131,12 +131,16 @@ describe('TransactionPrivacyModal', () => {
       .toHaveLength(1);
   });
 
-  test('applies the mode chosen in the sheet only on DONE', async () => {
+  test.each([
+    ['DONE', (renderer) => renderer.root
+      .find((node) => node.props.title === 'DONE' && node.props.onPress).props.onPress()],
+    ['a tap outside it or a swipe down', (renderer) => renderer.root
+      .findByType(BackdropModal).props.onDismiss()],
+  ])('applies the mode chosen in the sheet when it closes with %s', async (_label, close) => {
     const onConfirm = jest.fn();
     const { renderer } = await render(
       <TransactionPrivacyModal
         visible
-        onDismiss={jest.fn()}
         selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
         onConfirm={onConfirm}
       />,
@@ -148,17 +152,30 @@ describe('TransactionPrivacyModal', () => {
     });
     expect(onConfirm).not.toHaveBeenCalled();
 
-    await act(async () => {
-      renderer.root.find((node) => node.props.title === 'DONE' && node.props.onPress).props.onPress();
-    });
+    await act(async () => { close(renderer); });
+    expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(onConfirm).toHaveBeenCalledWith(PRIVACY_MODE.PRIVATE);
+  });
+
+  test('keeps the send\'s mode when the sheet closes with no change', async () => {
+    const onConfirm = jest.fn();
+    const { renderer } = await render(
+      <TransactionPrivacyModal
+        visible
+        selectedMode={PRIVACY_MODE.HIDE_AMOUNT}
+        onConfirm={onConfirm}
+      />,
+    );
+    await waitForSheetContent();
+
+    await act(async () => { renderer.root.findByType(BackdropModal).props.onDismiss(); });
+    expect(onConfirm).toHaveBeenCalledWith(PRIVACY_MODE.HIDE_AMOUNT);
   });
 
   test('offers the three modes, whatever the recipient', async () => {
     const { renderer, texts } = await render(
       <TransactionPrivacyModal
         visible
-        onDismiss={jest.fn()}
         selectedMode={PRIVACY_MODE.PUBLIC}
         onConfirm={jest.fn()}
       />,
