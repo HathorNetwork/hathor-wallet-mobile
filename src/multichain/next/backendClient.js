@@ -243,10 +243,10 @@ export function prepareError(e, payment = null) {
   if (e.status === 409 && /sweep/i.test(e.message)) {
     return new NextClientError(NEXT_CLIENT_ERROR.SWEEPING);
   }
-  // The wallet service's `amount-leak: token=<id>` refusal: funds that arrived in public (a
-  // transfer's mint) paying exactly one hidden output of that token. Its text speaks of funding,
-  // so it goes first. In a payment of another token, the native token's one hidden output is the
-  // fee's change: no amount of the token sent changes that.
+  // The wallet service's `amount-leak: token=<id>` refusal: public funds (a transfer's mint, or a
+  // level-1 payment from another wallet) paying exactly one hidden output of that token. Its text
+  // speaks of funding, so it goes first. In a payment of another token, the native token's one
+  // hidden output is the fee's change: no amount of the token sent changes that.
   if (e.status === 422 && /amount-leak:/.test(e.message)) {
     const leaked = /amount-leak: token=([0-9a-f]+)/i.exec(e.message)?.[1]?.toLowerCase();
     const feeChange = payment && payment.tokenId !== payment.nativeTokenId

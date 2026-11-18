@@ -2639,13 +2639,13 @@ msgstr ""
 
 #: src/multichain/nextClientErrors.js:87
 msgid ""
-"The network fee would come from HTR that arrived in public, from a transfer "
-"between chains, and would make its amount public on Hathor Next. Send some "
-"HTR to your own Hathor Next address first, then try again."
+"The network fee would come from HTR whose amount is already public, so the "
+"HTR you'd get back would be public on Hathor Next too. Send some HTR to your "
+"own Hathor Next address first, then try again."
 msgstr ""
-"A taxa de rede sairia de HTR que chegou em público, de uma transferência "
-"entre chains, e tornaria esse valor público na Hathor Next. Envie um pouco "
-"de HTR para o seu próprio endereço da Hathor Next primeiro e tente de novo."
+"A taxa de rede sairia de HTR cujo valor já é público, então o HTR que você "
+"receberia de volta também seria público na Hathor Next. Envie um pouco de "
+"HTR para o seu próprio endereço da Hathor Next primeiro e tente de novo."
 
 #: src/multichain/nextClientErrors.js:89
 msgid ""
