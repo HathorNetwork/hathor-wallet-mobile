@@ -3582,7 +3582,7 @@ msgstr "Carregando a Hathor Next…"
 msgid "Available Balance (so far)"
 msgstr "Saldo Disponível (até agora)"
 
-#: src/components/Multichain/MultichainTokenBody.js:221
+#: src/components/Multichain/MultichainTokenBody.js:227
 #, javascript-format
 msgid "${ arrivingText } ${ token.symbol } arriving"
 msgstr "${ arrivingText } ${ token.symbol } a caminho"

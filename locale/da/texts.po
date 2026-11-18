@@ -3403,7 +3403,7 @@ msgstr ""
 msgid "Available Balance (so far)"
 msgstr ""
 
-#: src/components/Multichain/MultichainTokenBody.js:221
+#: src/components/Multichain/MultichainTokenBody.js:227
 #, javascript-format
 msgid "${ arrivingText } ${ token.symbol } arriving"
 msgstr ""
