@@ -31,6 +31,7 @@ import {
   startWalletSuccess,
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
+  tokenImportNewTxTokens,
   tokenInvalidateHistory,
   types,
   walletRefreshSharedAddress,
@@ -77,11 +78,12 @@ const REFRESH = [
  * registered. deliver() updates the state as the reducer does, then hands the action to the saga.
  */
 function setup({ startCapability = LOCKED } = {}) {
-  const wallet = { isReady: jest.fn(() => true) };
+  const wallet = { isReady: jest.fn(() => true), getTokens: jest.fn(async () => [HTR, TOKEN]) };
   const state = {
     wallet,
     walletStartState: WALLET_STATUS.READY,
     tokens: { [HTR]: { uid: HTR }, [TOKEN]: { uid: TOKEN } },
+    tokenImport: { unregisteredTokens: {} },
     shielded: {
       providerStatus: SHIELDED_PROVIDER_STATUS.READY,
       providerError: null,
@@ -151,21 +153,34 @@ describe('refreshShieldedBalances', () => {
     wallet,
     walletStartState: WALLET_STATUS.READY,
     tokens: { [HTR]: { uid: HTR }, [TOKEN]: { uid: TOKEN } },
+    tokenImport: { unregisteredTokens: {} },
+  });
+  // A running wallet that holds the tokens.
+  const holding = (tokens = [HTR, TOKEN]) => ({
+    isReady: () => true,
+    getTokens: jest.fn(async () => tokens),
   });
 
   test('fetches every registered balance again, and the history of HTR', async () => {
-    const wallet = { isReady: () => true };
+    const wallet = holding();
     expect(await refresh(readyState(wallet), wallet))
       .toEqual({ result: true, dispatched: REFRESH });
   });
 
+  test('lists a token the outputs decoded now first pay the wallet', async () => {
+    const NEW_TOKEN = '00000000111122223333444455556666777788889999aaaabbbbccccddddeeee';
+    const wallet = holding([HTR, TOKEN, NEW_TOKEN]);
+    expect(await refresh(readyState(wallet), wallet))
+      .toEqual({ result: true, dispatched: [...REFRESH, tokenImportNewTxTokens([NEW_TOKEN])] });
+  });
+
   test.each([
-    ['the wallet is not ready', { isReady: () => false }, (state) => state],
-    ['the wallet is still loading', { isReady: () => true }, (state) => ({
+    ['the wallet is not ready', { ...holding(), isReady: () => false }, (state) => state],
+    ['the wallet is still loading', holding(), (state) => ({
       ...state, walletStartState: WALLET_STATUS.LOADING,
     })],
-    ['another wallet runs', { isReady: () => true }, (state) => ({
-      ...state, wallet: { isReady: () => true },
+    ['another wallet runs', holding(), (state) => ({
+      ...state, wallet: holding(),
     })],
   ])('does nothing when %s', async (_label, wallet, change) => {
     expect(await refresh(change(readyState(wallet)), wallet))
