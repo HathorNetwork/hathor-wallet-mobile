@@ -25,8 +25,9 @@ import { COLORS } from '../styles/themes';
  * @param {Object} props
  * @param {string} props.mode The send's mode, one of PRIVACY_MODE
  * @param {function(): void} props.onPress Opens the privacy sheet
+ * @param {string} [props.testID] The id e2e tests find the card by
  */
-const PrivacyModeSelector = ({ mode, onPress }) => {
+const PrivacyModeSelector = ({ mode, onPress, testID }) => {
   const detail = getPrivacyModeDetail(mode);
   if (!detail) {
     return null;
@@ -41,6 +42,7 @@ const PrivacyModeSelector = ({ mode, onPress }) => {
 
   return (
     <Pressable
+      testID={testID}
       style={styles.card}
       onPress={open}
       accessibilityRole='button'

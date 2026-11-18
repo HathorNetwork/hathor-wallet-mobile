@@ -206,6 +206,7 @@ const ImportTokensScreen = () => {
       {hasTokens && !loading && (
         <View style={styles.footer}>
           <NewHathorButton
+            testID='import-tokens-continue'
             title={t`Continue`}
             onPress={handleContinue}
             disabled={!hasSelection}

@@ -185,7 +185,7 @@ const BackupWords = ({ navigation, route }) => {
           <Text style={styles.text}>
             {t`Please select the word that corresponds to the number below:`}
           </Text>
-          <Text style={[styles.title, { textAlign: 'center', fontSize: 24 }]}>
+          <Text testID='backup-words-position' style={[styles.title, { textAlign: 'center', fontSize: 24 }]}>
             {indexes[step]}
           </Text>
         </View>

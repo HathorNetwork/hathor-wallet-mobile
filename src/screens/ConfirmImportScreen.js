@@ -118,6 +118,7 @@ const ConfirmImportScreen = () => {
 
         <View style={styles.bottomSection}>
           <NewHathorButton
+            testID='confirm-import-tokens'
             title={t`Import tokens`}
             onPress={handleImportPress}
             disabled={showModal}

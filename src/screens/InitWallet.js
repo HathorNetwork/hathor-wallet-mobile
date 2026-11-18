@@ -80,6 +80,7 @@ class WelcomeScreen extends React.Component {
           </View>
           <View style={this.style.switchView}>
             <Switch
+              testID='welcome-terms-switch'
               onValueChange={this.toggleSwitch}
               trackColor={{ true: COLORS.primary }}
               value={this.state.switchValue}
@@ -96,6 +97,7 @@ class WelcomeScreen extends React.Component {
           </View>
           <View style={this.style.buttonView}>
             <NewHathorButton
+              testID='welcome-start'
               disabled={!this.state.switchValue}
               onPress={() => this.props.navigation.navigate('InitialScreen')}
               title={t`Start`}
@@ -119,6 +121,7 @@ const OnboardingButtons = ({ navigation, buttonViewStyle }) => {
 
   const newWalletButton = (marginBottom) => (
     <NewHathorButton
+      testID='onboarding-new-wallet'
       onPress={() => navigation.navigate('NewWordsScreen')}
       title={t`New Wallet`}
       style={marginBottom ? { marginBottom: 16 } : undefined}
@@ -126,6 +129,7 @@ const OnboardingButtons = ({ navigation, buttonViewStyle }) => {
   );
   const importWalletButton = (
     <NewHathorButton
+      testID='onboarding-import-wallet'
       onPress={() => navigation.navigate('LoadWordsScreen')}
       title={t`Import Wallet`}
       style={{ marginBottom: 16 }}
@@ -231,7 +235,8 @@ class NewWordsScreen extends React.Component {
         const realIndex = startIndex + idx + 1;
         return (
           <View key={`word-${realIndex}`} style={this.style.item}>
-            <Text>
+            {/* By position: its text is "<position>. <word>". */}
+            <Text testID={`new-words-word-${realIndex}`}>
               <Text style={this.style.itemNumber}>
                 {realIndex}.
               </Text>
@@ -264,6 +269,7 @@ class NewWordsScreen extends React.Component {
           {renderWords()}
           <View style={this.style.buttonView}>
             <NewHathorButton
+              testID='new-words-next'
               onPress={navigateToNextStep}
               title={t`Next`}
             />

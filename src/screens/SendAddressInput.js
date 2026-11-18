@@ -124,6 +124,7 @@ export const SendAddressInput = () => {
                 ]}
               >
                 <TextInput
+                  testID='send-address-input'
                   ref={inputRef}
                   style={styles.input}
                   autoFocus
@@ -148,6 +149,7 @@ export const SendAddressInput = () => {
               ) : null}
             </View>
             <NewHathorButton
+              testID='send-address-next'
               title={t`Next`}
               disabled={!isAddressValid()}
               onPress={onButtonPress}

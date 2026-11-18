@@ -397,10 +397,16 @@ const TabNavigator = () => {
           const { name } = route;
           const iconName = tabBarIconMap[name];
           const colorName = focused ? COLORS.primary : COLORS.textColorShadow;
-          if (name === 'Swap') {
-            return (<SwapIcon size={24} color={colorName} />)
-          }
-          return (<IconTabBar name={iconName} size={24} color={colorName} />);
+          // The id is on the icon, not the button: the button reaches under the system navigation
+          // bar, so a tap at its centre can land on the bar. tab-home, tab-send...: where a tab
+          // sits depends on which tabs show (Swap is optional). Not flattened away, to keep it.
+          return (
+            <View testID={`tab-${name.toLowerCase()}`} collapsable={false}>
+              {name === 'Swap'
+                ? <SwapIcon size={24} color={colorName} />
+                : <IconTabBar name={iconName} size={24} color={colorName} />}
+            </View>
+          );
         },
         tabBarStyle: {
           paddingTop: 12,

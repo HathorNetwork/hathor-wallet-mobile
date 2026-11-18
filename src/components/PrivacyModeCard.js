@@ -131,6 +131,7 @@ const PrivacyModeCard = ({
             </View>
           </View>
           <Switch
+            testID={`privacy-mode-switch-${row.mode}`}
             value={row.mode === selectedMode}
             onValueChange={() => onSelect(row.mode)}
             // One tone darker than the card, so the off track shows without splitting the thumb.
