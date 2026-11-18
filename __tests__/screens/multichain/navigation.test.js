@@ -1,0 +1,170 @@
+/**
+ * Copyright (c) Hathor Labs and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { jest, describe, test, expect, afterEach, beforeEach } from '@jest/globals';
+
+// The real stack navigator: the screens' own tests mock navigation, so they can't see where a
+// screen leaves the stack.
+jest.unmock('@react-navigation/stack');
+
+// A network the tests give a side chain, and the fake bridge for its quotes.
+// eslint-disable-next-line global-require
+jest.mock('../../../src/multichain/chains', () => require('../../multichain/fakes/chainsModule'));
+// eslint-disable-next-line global-require
+jest.mock('../../../src/multichain/bridge', () => require('../../multichain/fakes/bridgeModule'));
+
+/* eslint-disable import/first */
+import React from 'react';
+import { Text } from 'react-native';
+import { act, create } from 'react-test-renderer';
+import { Provider } from 'react-redux';
+import { legacy_createStore as createStore, applyMiddleware } from 'redux';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { reducer } from '../../../src/reducers/reducer';
+import { multichainTransferUpdate, types } from '../../../src/actions';
+import {
+  FEATURE_TOGGLE_DEFAULTS,
+  MULTICHAIN_FEATURE_TOGGLE,
+  PRE_SETTINGS_TESTNET,
+} from '../../../src/constants';
+import { STORE } from '../../../src/store';
+import NavigationService from '../../../src/NavigationService';
+import ChainTransferConfirmScreen from '../../../src/screens/Multichain/ChainTransferConfirmScreen';
+import FeedbackModal from '../../../src/components/FeedbackModal';
+import NewHathorButton from '../../../src/components/NewHathorButton';
+import { PortalProvider } from '../../../src/components/Portal';
+import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
+/* eslint-enable import/first */
+
+const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
+
+let mounted = null;
+let pinCallback = null;
+
+beforeEach(() => {
+  jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(false);
+  pinCallback = null;
+});
+
+afterEach(async () => {
+  if (mounted) {
+    await act(async () => { mounted.unmount(); });
+    mounted = null;
+  }
+  jest.restoreAllMocks();
+});
+
+function makeStore() {
+  const initial = reducer(undefined, { type: '@@INIT' });
+  const actions = [];
+  const record = () => (nextFn) => (action) => {
+    actions.push(action);
+    return nextFn(action);
+  };
+  const store = createStore(reducer, {
+    ...initial,
+    networkSettings: PRE_SETTINGS_TESTNET,
+    featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [MULTICHAIN_FEATURE_TOGGLE]: true },
+    serverInfo: { decimal_places: 2 },
+    fullNodeNetworkName: FAKE_NETWORK,
+    tokensBalance: { '00': { status: 'ready', data: { available: 125000n } } },
+    multichain: {
+      ...initial.multichain,
+      connectedNetworks: { [FAKE_NETWORK]: true },
+      next: { ...initial.multichain.next, status: NEXT_STATUS.READY, address: OWN_ADDRESS },
+    },
+  }, applyMiddleware(record));
+  return { store, actions };
+}
+
+// The PIN screen as the app's: it leaves first, then hands the PIN over.
+const PinScreenStub = ({ navigation, route }) => {
+  pinCallback = (pin) => {
+    navigation.goBack();
+    route.params.cb(pin);
+  };
+  return <Text>PIN</Text>;
+};
+const Home = () => <Text>HOME</Text>;
+
+// The app's shape: a root stack whose 'App' holds Main (a navigator of its own) and the screens
+// opened above it. NavigationService.resetToMain resets to App > Main > Home.
+const MainStack = createStackNavigator();
+const Main = () => (
+  <MainStack.Navigator screenOptions={{ headerShown: false }}>
+    <MainStack.Screen name='Home' component={Home} />
+  </MainStack.Navigator>
+);
+const AppStack = createStackNavigator();
+const AppScreens = () => (
+  <AppStack.Navigator screenOptions={{ headerShown: false }}>
+    <AppStack.Screen name='Main' component={Main} />
+    <AppStack.Screen name='ChainTransferConfirm' component={ChainTransferConfirmScreen} />
+    <AppStack.Screen name='PinScreen' component={PinScreenStub} />
+  </AppStack.Navigator>
+);
+const Root = createStackNavigator();
+const navigationRef = React.createRef();
+
+async function mountApp(store) {
+  NavigationService.setTopLevelNavigator(navigationRef);
+  let renderer;
+  await act(async () => {
+    renderer = create(
+      <Provider store={store}>
+        <PortalProvider>
+          <NavigationContainer ref={navigationRef}>
+            <Root.Navigator screenOptions={{ headerShown: false }}>
+              <Root.Screen name='App' component={AppScreens} />
+            </Root.Navigator>
+          </NavigationContainer>
+        </PortalProvider>
+      </Provider>,
+    );
+  });
+  mounted = renderer;
+  return renderer;
+}
+
+// The screens App holds, bottom to top.
+const appRoutes = () => {
+  const root = navigationRef.current.getRootState();
+  return root.routes[root.index].state.routes.map((route) => route.name);
+};
+const buttons = (renderer, title) => renderer.root.findAllByType(NewHathorButton)
+  .filter((node) => node.props.title === title);
+
+describe('leaving a transfer', () => {
+  test('Done goes back to the Dashboard and closes the confirm screen', async () => {
+    const { store, actions } = makeStore();
+    const renderer = await mountApp(store);
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'ChainTransferConfirm',
+        params: {
+          from: 'hathor', to: 'hathor-next', tokenId: '00', amount: '10000', toAddress: OWN_ADDRESS,
+        },
+      });
+    });
+    expect(appRoutes()).toEqual(['Main', 'ChainTransferConfirm']);
+    await act(async () => { buttons(renderer, 'Confirm and send')[0].props.onPress(); });
+    await act(async () => { pinCallback('123456'); });
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE }));
+    });
+    const [done] = renderer.root.findAllByType(FeedbackModal);
+    await act(async () => { done.props.action.props.onPress(); });
+
+    // One Main, and no confirm screen left under it to come back to with its Confirm on (in the
+    // test the leaving screen's card stays drawn: its closing transition never ends here).
+    expect(appRoutes()).toEqual(['Main']);
+    const requests = actions.filter((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED);
+    expect(requests).toHaveLength(1);
+  });
+});

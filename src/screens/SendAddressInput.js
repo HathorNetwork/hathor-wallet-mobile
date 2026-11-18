@@ -29,10 +29,13 @@ import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
 import { COLORS } from '../styles/themes';
 import { isShieldedEnvironment } from '../shielded/gating';
+import { isSideChainConnected } from '../multichain/gating';
 
 /**
  * First screen of the Send flow. The address is typed or pasted here; the QR code scanner, which
  * the icon at the top right opens, fills it in.
+ *
+ * With the side chain connected, "Transfer between chains" at the bottom opens the transfer.
  */
 export const SendAddressInput = () => {
   const route = useRoute();
@@ -51,6 +54,7 @@ export const SendAddressInput = () => {
   // where the wallet sends privately, and in public, to the address of its spend key, anywhere
   // there.
   const allowShielded = useSelector(isShieldedEnvironment);
+  const sideChainConnected = useSelector(isSideChainConnected);
   // A tap anywhere on the card around the input focuses it: an empty multiline input is one
   // line tall, so the card's padding wouldn't take the tap otherwise.
   const inputRef = useRef(null);
@@ -147,11 +151,21 @@ export const SendAddressInput = () => {
                 <Text style={styles.errorText}>{formModel.error}</Text>
               ) : null}
             </View>
-            <NewHathorButton
-              title={t`Next`}
-              disabled={!isAddressValid()}
-              onPress={onButtonPress}
-            />
+            <View>
+              <NewHathorButton
+                title={t`Next`}
+                disabled={!isAddressValid()}
+                onPress={onButtonPress}
+              />
+              {sideChainConnected && (
+                <NewHathorButton
+                  secondary
+                  title={t`Transfer between chains`}
+                  onPress={() => navigation.navigate('ChainTransfer')}
+                  style={styles.transfer}
+                />
+              )}
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
@@ -161,6 +175,9 @@ export const SendAddressInput = () => {
 };
 
 const styles = StyleSheet.create({
+  transfer: {
+    marginTop: 8,
+  },
   body: {
     flex: 1,
     padding: 16,
