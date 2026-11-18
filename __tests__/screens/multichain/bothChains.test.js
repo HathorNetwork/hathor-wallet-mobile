@@ -26,11 +26,17 @@ jest.mock('../../../src/multichain/chains', () => require('../../multichain/fake
 import React from 'react';
 import { Text } from 'react-native';
 import { act, create } from 'react-test-renderer';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { useNavigation } from '@react-navigation/native';
 import { reducer } from '../../../src/reducers/reducer';
-import { multichainConnectedNetworksSet, types } from '../../../src/actions';
+import {
+  multichainConnectedNetworksSet,
+  tokenFetchHistoryRequested,
+  tokenFetchHistorySuccess,
+  types,
+  updateTokenHistory,
+} from '../../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_FEATURE_TOGGLE,
@@ -43,6 +49,7 @@ import TokenSelect from '../../../src/components/TokenSelect';
 import { PortalProvider } from '../../../src/components/Portal';
 import { ChainFilter } from '../../../src/components/Multichain/ChainFilter';
 import { MultichainTokenBody } from '../../../src/components/Multichain/MultichainTokenBody';
+import { TokenHistoryList } from '../../../src/components/Multichain/TokenHistoryList';
 import { TransferRow } from '../../../src/components/Multichain/TransferRow';
 import { CHAIN } from '../../../src/multichain/chains';
 import { HISTORY_ROW, HISTORY_VIEW } from '../../../src/multichain/history';
@@ -89,7 +96,12 @@ afterEach(async () => {
  * A wallet with 95.00 HTR and My Token on Hathor Network and, on Hathor Next, 25 HTR and a Test
  * Token.
  */
-function makeStore({ connected = true, transfers = [] } = {}) {
+function makeStore({
+  connected = true,
+  transfers = [],
+  hathorHistory = { status: 'ready', data: [] },
+  nextHistory = { status: 'ready', data: [], cursor: null },
+} = {}) {
   const initial = reducer(undefined, { type: '@@INIT' });
   const actions = [];
   const record = () => (nextFn) => (action) => {
@@ -104,7 +116,7 @@ function makeStore({ connected = true, transfers = [] } = {}) {
     fullNodeNetworkName: NETWORK,
     tokens: { '00': HTR, a1: MY_TOKEN },
     tokensBalance: { '00': ready(9500n), a1: ready(1000n) },
-    tokensHistory: { '00': { status: 'ready', data: [] } },
+    tokensHistory: { '00': hathorHistory },
     selectedToken: HTR,
     multichain: {
       ...initial.multichain,
@@ -120,7 +132,7 @@ function makeStore({ connected = true, transfers = [] } = {}) {
         },
         balances: { '00': ready(2500000000n), b1: ready(500000000n) },
         history: {
-          '00': { status: 'ready', data: [], cursor: null },
+          '00': nextHistory,
           b1: { status: 'ready', data: [], cursor: null },
         },
       },
@@ -264,6 +276,132 @@ describe('the token screen of a token on both chains', () => {
       type: types.MULTICHAIN_NEXT_HISTORY_REQUESTED,
       payload: { tokenId: '00', more: false },
     });
+  });
+});
+
+// Hathor Network's history, as the wallet's getTxHistory serves it: newest first, by `skip`.
+const hathorTx = (n) => ({
+  txId: `h${n}`, timestamp: n * 100, balance: 100n, voided: false, tokenUid: '00',
+});
+const nextRow = (n) => ({
+  id: `n${n}`, at: n * 100 * 1000, amount: '100000000', direction: 'in', status: 'recorded',
+});
+const PAGE = 2;
+
+describe("the token screen when Hathor Network's history is fetched again", () => {
+  // The server's history: h7 joins it only when it arrives.
+  let server = [];
+
+  // The user scrolled to the end: all of h6..h3 are loaded, under the first page's `updatedAt`.
+  // Hathor Next's two rows sit between them, and it has no more.
+  function storeAtTheEnd() {
+    server = [6, 5, 4, 3].map(hathorTx);
+    return makeStore({
+      transfers: [],
+      hathorHistory: { status: 'ready', updatedAt: 1, data: [6, 5, 4, 3].map(hathorTx) },
+      nextHistory: { status: 'ready', data: [nextRow(4.5), nextRow(3.5)], cursor: null },
+    }).store;
+  }
+
+  // As MainScreen's fetchMoreHathorHistory: the page after the rows loaded, appended.
+  const pageAfter = (store) => {
+    const loaded = store.getState().tokensHistory['00'].data;
+    const page = server.slice(loaded.length, loaded.length + PAGE);
+    if (page.length) {
+      store.dispatch(updateTokenHistory('00', page));
+    }
+    return page.length;
+  };
+
+  // The body fed as MainScreen feeds it, from the store.
+  function Screen({ fetchMore }) {
+    const hathorHistory = useSelector((state) => state.tokensHistory['00']);
+    return (
+      <MultichainTokenBody
+        token={HTR}
+        nextTokenId='00'
+        hathorHistory={hathorHistory}
+        fetchMoreHathor={fetchMore}
+        retryHathor={jest.fn()}
+        renderHathorBalance={() => <Text>Hathor Network balance</Text>}
+        renderHathorTx={() => null}
+      />
+    );
+  }
+
+  async function render(store, fetchMore) {
+    const renderer = await mount(store, <Screen fetchMore={fetchMore} />);
+    const list = () => renderer.root.findByType(TokenHistoryList);
+    return {
+      keys: () => list().props.rows.map((row) => row.key),
+      rows: () => list().props.rows,
+      reachEnd: async () => { await act(async () => { await list().props.onEndReached(); }); },
+    };
+  }
+
+  // h7 arrives: wallet.js fetches HTR's history again, which brings its first page alone.
+  async function h7Arrives(store) {
+    server = [7, 6, 5, 4, 3].map(hathorTx);
+    await act(async () => { store.dispatch(tokenFetchHistoryRequested('00', true)); });
+    await act(async () => {
+      store.dispatch(tokenFetchHistorySuccess('00', server.slice(0, PAGE)));
+    });
+  }
+
+  const ALL_IN_ORDER = [
+    'hathor:h7', 'hathor:h6', 'hathor:h5', 'next:n4.5', 'hathor:h4', 'next:n3.5', 'hathor:h3',
+  ];
+
+  test("loads the older pages again, with Hathor Next's rows in their place", async () => {
+    const store = storeAtTheEnd();
+    const fetchMore = jest.fn(async () => pageAfter(store));
+    const screen = await render(store, fetchMore);
+    await screen.reachEnd();
+    expect(fetchMore).toHaveBeenCalledTimes(1);
+    expect(screen.keys()).toEqual([
+      'hathor:h6', 'hathor:h5', 'next:n4.5', 'hathor:h4', 'next:n3.5', 'hathor:h3',
+    ]);
+
+    await h7Arrives(store);
+    // No Hathor Next row older than Hathor Network's oldest shows while it has more pages.
+    expect(screen.keys().slice(0, 2)).toEqual(['hathor:h7', 'hathor:h6']);
+    const oldestHathor = Math.min(...screen.rows()
+      .filter((row) => row.kind === HISTORY_ROW.HATHOR).map((row) => row.time));
+    expect(screen.rows().filter((row) => row.kind === HISTORY_ROW.NEXT && row.time < oldestHathor))
+      .toEqual([]);
+
+    for (let i = 0; i < 3; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await screen.reachEnd();
+    }
+    expect(fetchMore.mock.calls.length).toBeGreaterThan(1);
+    expect(screen.keys()).toEqual(ALL_IN_ORDER);
+  });
+
+  test("a load that ended before the refetch doesn't end the new history", async () => {
+    const store = storeAtTheEnd();
+    // The first load asks the server before h7 arrives, past its end, and its answer (nothing)
+    // comes only once h7 has arrived.
+    let answerFirst;
+    const fetchMore = jest.fn()
+      .mockImplementationOnce(() => new Promise((resolve) => {
+        const loaded = store.getState().tokensHistory['00'].data.length;
+        const added = server.slice(loaded, loaded + PAGE).length;
+        answerFirst = () => resolve(added);
+      }))
+      .mockImplementation(async () => pageAfter(store));
+    const screen = await render(store, fetchMore);
+    let first;
+    await act(async () => { first = screen.reachEnd(); });
+    await h7Arrives(store);
+    await act(async () => { answerFirst(); await first; });
+    expect(await fetchMore.mock.results[0].value).toBe(0);
+
+    for (let i = 0; i < 3; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await screen.reachEnd();
+    }
+    expect(screen.keys()).toEqual(ALL_IN_ORDER);
   });
 });
 
