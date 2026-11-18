@@ -23,7 +23,7 @@ import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { reducer } from '../../../src/reducers/reducer';
-import { multichainConnectSettingChanged, types } from '../../../src/actions';
+import { multichainConnectSettingChanged, multichainNextUpdate, types } from '../../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_FEATURE_TOGGLE,
@@ -37,7 +37,10 @@ import FeedbackModal from '../../../src/components/FeedbackModal';
 import { ListItem, ListMenu } from '../../../src/components/HathorList';
 import { PortalProvider } from '../../../src/components/Portal';
 import { ConnectFeedback } from '../../../src/components/Multichain/ConnectFeedback';
-import { MultichainLoadScreen } from '../../../src/components/Multichain/MultichainLoadScreen';
+import {
+  LOAD_EXIT_AFTER_MS,
+  MultichainLoadScreen,
+} from '../../../src/components/Multichain/MultichainLoadScreen';
 import SimpleButton from '../../../src/components/SimpleButton';
 import { CONNECT_STATUS, NEXT_STATUS } from '../../../src/multichain/state';
 import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
@@ -205,6 +208,56 @@ describe('the app waiting for Hathor Next', () => {
     const { store } = makeStore({ connected: true, next: { status: NEXT_STATUS.CONNECTING } });
     const renderer = await mount(store, <MultichainLoadScreen />);
     expect(textOf(renderer)).toContain('Loading Hathor Next…');
+  });
+
+  // The screen covers the whole wallet: a spinner that runs long still leaves a way on.
+  describe('when the spinner runs long', () => {
+    beforeEach(() => { jest.useFakeTimers(); });
+    afterEach(() => { jest.useRealTimers(); });
+
+    const titles = (renderer) => renderer.root.findAllByType(SimpleButton)
+      .map((node) => node.props.title);
+    const advance = async (ms) => {
+      await act(async () => { jest.advanceTimersByTime(ms); });
+    };
+
+    test('offers Disconnect side chain once it has shown for a while', async () => {
+      const { store, actions } = makeStore({
+        connected: true, next: { status: NEXT_STATUS.CONNECTING },
+      });
+      const renderer = await mount(store, <MultichainLoadScreen />);
+      expect(titles(renderer)).toEqual([]);
+      await advance(LOAD_EXIT_AFTER_MS - 1);
+      expect(titles(renderer)).toEqual([]);
+      await advance(1);
+      expect(textOf(renderer)).toContain('Loading Hathor Next…');
+      expect(titles(renderer)).toEqual(['Disconnect side chain']);
+      const [disconnect] = renderer.root.findAllByType(SimpleButton);
+      await act(async () => { disconnect.props.onPress(); });
+      expect(actions).toContainEqual(multichainConnectSettingChanged(false));
+    });
+
+    test('waits again when the status changes', async () => {
+      const { store } = makeStore({ connected: true, next: { status: NEXT_STATUS.STOPPED } });
+      const setStatus = async (status) => {
+        await act(async () => { store.dispatch(multichainNextUpdate({ status })); });
+      };
+      const renderer = await mount(store, <MultichainLoadScreen />);
+      // Before the wait is over.
+      await advance(LOAD_EXIT_AFTER_MS - 1000);
+      await setStatus(NEXT_STATUS.CONNECTING);
+      await advance(1000);
+      expect(titles(renderer)).toEqual([]);
+      await advance(LOAD_EXIT_AFTER_MS - 1000);
+      expect(titles(renderer)).toEqual(['Disconnect side chain']);
+      // After it.
+      await setStatus(NEXT_STATUS.STOPPED);
+      expect(titles(renderer)).toEqual([]);
+      await advance(LOAD_EXIT_AFTER_MS - 1);
+      expect(titles(renderer)).toEqual([]);
+      await advance(1);
+      expect(titles(renderer)).toEqual(['Disconnect side chain']);
+    });
   });
 
   const failedStore = (keysReady = true) => makeStore({
