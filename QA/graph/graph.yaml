@@ -846,7 +846,7 @@ axes:
       - { id: htr, name: HTR }
       - { id: deposit, name: Deposit-based custom token }
       - { id: fee, name: Fee-based custom token }
-    how: Pick the token on the send amount screen (Change token), or open it from the home list. The wallet must already hold each kind (QA.md "Create a new token Tests").
+    how: Pick the token on the send amount screen (Change token), or open it from the home list. The wallet must already hold each kind (QA.md "Create a new token Tests"; on the local privnet, `QA/e2e/tools/wallet.js mint`, then import them from the dashboard banner).
     switch:
       cost: cheap # QA: confirm
       transitions: []
@@ -884,7 +884,7 @@ axes:
     values:
       - { id: enough-htr, name: Holds the token and enough HTR for fees }
       - { id: zero-htr, name: Holds the token but no HTR }
-    how: Send HTR or the token to the wallet beforehand from another wallet (on the local privnet, `sender/sender.js send`), or send all HTR away to reach zero HTR.
+    how: Send HTR or the token to the wallet beforehand from another wallet (on the local privnet, `QA/e2e/bin/fund.js` for HTR, `QA/e2e/tools/wallet.js mint` for a new token), or send all HTR away to reach zero HTR.
     switch:
       cost: medium # QA: confirm
       transitions: []

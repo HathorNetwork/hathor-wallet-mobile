@@ -24,7 +24,12 @@ const POINTS = {
   privacyToggle: { private: '84%,53%', 'hide-amount': '84%,65%', public: '85%,77%' },
 };
 
-const AMOUNTS = { normal: '1.50', decimals: '1.234' };
+// private-over-limit is 2^40 units, the first amount a private output can't hold.
+const AMOUNTS = { normal: '1.50', decimals: '1.234', 'private-over-limit': '10995116277.76' };
+
+// The balance line under the amount; the screen's accessibility group ("SEND X, ... available")
+// also ends in "available", so the pattern starts at the number.
+const AVAILABLE = '[0-9][0-9,.]* \\S+ available';
 
 /** A Maestro regex for an outcome message: placeholders match anything, the rest literally. */
 function messagePattern(message) {
@@ -37,14 +42,8 @@ function messagePattern(message) {
 
 /** Why the kit can't run this scenario yet, or null when it can. */
 function unrunnableReason({ values }) {
-  if (values.token !== 'htr') {
-    return 'custom tokens are not minted for the app wallet yet';
-  }
   if (values['private-balance'] !== 'unlocked') {
     return `the private balance state '${values['private-balance']}' can't be set up yet`;
-  }
-  if (values.amount === 'private-over-limit') {
-    return 'amounts of 2^40 units need a minted token';
   }
   return null;
 }
@@ -56,7 +55,7 @@ function amountSteps(amount) {
   if (amount === 'max' || amount === 'over-balance') {
     const extra = amount === 'max' ? '' : ' + 1';
     return [
-      { copyTextFrom: { text: '.* available' } },
+      { copyTextFrom: { text: AVAILABLE } },
       { evalScript: `\${output.amount = (parseFloat(maestro.copiedText.split(' ')[0].replace(/,/g, ''))${extra}).toFixed(2)}` },
       // A Maestro expression, not a JS template.
       // eslint-disable-next-line no-template-curly-in-string
@@ -78,18 +77,22 @@ function outcomeCheck(outcome) {
  *
  * @param {{ id: string, values: object }} scenario from the graph
  * @param {{ at: string, message: string }} outcome the expected outcome
- * @param {{ address: string }} target the destination address for the scenario's dest
+ * @param {object} target
+ * @param {string} target.address the destination address for the scenario's dest
+ * @param {{ name: string, symbol: string }} target.token the token to send
+ * @param {string[]} target.symbols every token symbol the wallet holds
  */
-function buildSendFlow(scenario, outcome, { address }) {
+function buildSendFlow(scenario, outcome, { address, token, symbols }) {
   const { values } = scenario;
   const stopAt = STEP_ORDER.indexOf(outcome.at);
   const steps = [
     { tapOn: { point: POINTS.sendTab } },
     { extendedWaitUntil: { visible: 'Address to send', timeout: 15000 } },
-    // The Send tab keeps the last address typed; clear it (a shielded address is ~100 chars).
+    // The runner has emptied the field the Send tab keeps (clearSendAddress in run.js).
     { tapOn: { point: POINTS.addressField } },
-    { eraseText: 200 },
     { inputText: address },
+    // The field must hold exactly this address: leftovers from the last scenario fail here.
+    { assertVisible: address },
   ];
   const done = () => [...steps, outcomeCheck(outcome)];
   if (stopAt === 0) {
@@ -97,7 +100,11 @@ function buildSendFlow(scenario, outcome, { address }) {
   }
   steps.push(
     { tapOn: 'NEXT' },
-    { extendedWaitUntil: { visible: '.* available', timeout: 15000 } },
+    { extendedWaitUntil: { visible: AVAILABLE, timeout: 15000 } },
+    // The screen opens on the last token picked, so always pick: its symbol box, then its name.
+    { tapOn: { text: symbols.join('|') } },
+    { tapOn: token.name },
+    { extendedWaitUntil: { visible: `[0-9][0-9,.]* ${token.symbol} available`, timeout: 15000 } },
     ...amountSteps(values.amount),
     { tapOn: { point: POINTS.blank } },
     { tapOn: { point: POINTS.privacyCard } },
@@ -111,14 +118,13 @@ function buildSendFlow(scenario, outcome, { address }) {
     }
     return render(scenario, done());
   }
-  steps.push(
-    { tapOn: 'NEXT' },
-    { extendedWaitUntil: { visible: 'Transaction summary', timeout: 30000 } },
-  );
+  steps.push({ tapOn: 'NEXT' });
   if (stopAt === 2) {
+    // A confirm screen that can't build the transaction shows only the error, no summary.
     return render(scenario, done());
   }
   steps.push(
+    { extendedWaitUntil: { visible: 'Transaction summary', timeout: 30000 } },
     { tapOn: 'SEND' },
     { runFlow: '../enter_pin.yaml' },
   );

@@ -24,6 +24,7 @@ const { loadGraph } = require('../graph/tools/load');
 const { allScenarios } = require('../graph/tools/scenarios');
 const { assertEmulator } = require('./lib/device');
 const { buildSendFlow, unrunnableReason } = require('./lib/sendFlow');
+const { runOrder } = require('./lib/runOrder');
 
 const E2E = __dirname;
 const REPO = path.resolve(E2E, '..', '..');
@@ -33,6 +34,19 @@ const NODE_URL = 'http://localhost:18083/v1a/';
 const FUNDING_URL = 'http://localhost:13020';
 const UNLEASH_URL = 'http://localhost:18042';
 const TOP_UP_HTR = '20';
+// The custom tokens minted for the app wallet, by the graph's token value. Deposit sends of 2^40
+// units use their own token holding exactly that, so other deposit sends see an ordinary balance
+// (a balance above 2^40 makes a private "max" send fail the 2^40 limit before the fee check).
+const TOKENS = {
+  htr: { name: 'Hathor', symbol: 'HTR', uid: '00' },
+  deposit: { kind: 'deposit', name: 'E2E Deposit', symbol: 'E2ED', units: '100000' },
+  depositLarge: { kind: 'deposit', name: 'E2E Large', symbol: 'E2EL', units: String(2 ** 40) },
+  fee: { kind: 'fee', name: 'E2E Fee', symbol: 'E2EF', units: '100000' },
+};
+
+/** The key in TOKENS of the token a scenario sends. */
+const tokenFor = ({ token, amount }) => (
+  token === 'deposit' && amount === 'private-over-limit' ? 'depositLarge' : token);
 
 const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 const log = (msg) => console.log(`${new Date().toISOString().slice(11, 19)} ${msg}`);
@@ -69,12 +83,16 @@ const walletTool = (...args) => execFileSync('node', [path.join(E2E, 'tools', 'w
   .trim().split('\n').pop();
 const git = (...args) => execFileSync('git', args, { cwd: REPO, encoding: 'utf8' }).trim();
 
-function maestro(flow, outDir) {
+function maestro(flow, outDir, retries = 1) {
   const result = spawnSync(MAESTRO, ['test', `--test-output-dir=${outDir}`, `--debug-output=${outDir}`, flow], {
     encoding: 'utf8',
     env: { ...process.env, MAESTRO_CLI_NO_ANALYTICS: '1', JAVA_HOME: process.env.JAVA_HOME || '/usr/lib/jvm/java-17-openjdk-amd64' },
   });
   fs.writeFileSync(path.join(outDir, 'maestro.out'), `${result.stdout}\n${result.stderr}`);
+  // Maestro's on-device driver sometimes fails to start; that's not the flow's doing.
+  if (retries > 0 && `${result.stdout}${result.stderr}`.includes('MaestroDriverStartupException')) {
+    return maestro(flow, outDir, retries - 1);
+  }
   const failed = (result.stdout.match(/^.*FAILED.*$/m) || [])[0];
   return { ok: result.status === 0, failed: failed && failed.trim() };
 }
@@ -106,9 +124,9 @@ async function preflight() {
   }
 }
 
-async function receivedBy(address) {
+async function receivedBy(address, uid = '00') {
   const body = await getJson(`${NODE_URL}thin_wallet/address_balance?address=${address}`);
-  return BigInt((body.tokens_data && body.tokens_data['00'] && body.tokens_data['00'].received) || 0);
+  return BigInt((body.tokens_data && body.tokens_data[uid] && body.tokens_data[uid].received) || 0);
 }
 
 async function fund(address, htr) {
@@ -148,6 +166,17 @@ async function prepareSetup(setup, runDir) {
   const appAddress = walletTool('address', seedFile);
   log(`app: wallet ${appAddress}`);
 
+  const tokens = { htr: TOKENS.htr };
+  for (const key of ['deposit', 'depositLarge', 'fee']) {
+    const { kind, name, symbol, units } = TOKENS[key];
+    tokens[key] = { name, symbol, uid: walletTool('mint', appAddress, kind, name, symbol, units) };
+    log(`app: minted ${symbol} ${tokens[key].uid}`);
+  }
+  const importDir = path.join(runDir, 'import-tokens');
+  fs.mkdirSync(importDir, { recursive: true });
+  const imported = maestro(path.join(E2E, 'flows', 'import_tokens.yaml'), importDir);
+  if (!imported.ok) throw new Error(`importing the minted tokens failed: ${imported.failed}`);
+
   const peerSeed = path.join(runDir, 'peer.seed');
   fs.writeFileSync(peerSeed, `${walletTool('new-seed')}\n`, { mode: 0o600 });
   const destinations = {
@@ -156,7 +185,22 @@ async function prepareSetup(setup, runDir) {
     shielded: walletTool('shielded-address', peerSeed),
   };
   log(`destinations: ${JSON.stringify(destinations)}`);
-  return { appAddress, destinations };
+  return { appAddress, destinations, tokens };
+}
+
+/**
+ * Empties the address the Send tab keeps from the last scenario. A flow can't do it reliably:
+ * eraseText deletes only what's before the cursor, and a tap can land mid-way through a 3-line
+ * shielded address. Ctrl+A then Delete clears it wherever the cursor is.
+ */
+async function clearSendAddress() {
+  const input = (...args) => execFileSync(ADB, ['shell', 'input', ...args]);
+  input('tap', '540', '2232'); // the Send tab
+  await sleep(2000);
+  input('tap', '540', '576'); // the address field
+  await sleep(1000); // Ctrl+A goes nowhere until the field has focus
+  input('keycombination', '113', '29'); // Ctrl+A
+  input('keyevent', '67'); // Delete
 }
 
 async function runScenario(scenario, outcome, ctx, dir) {
@@ -166,16 +210,19 @@ async function runScenario(scenario, outcome, ctx, dir) {
     await sleep(6000); // the app picks the payment up over its websocket
   }
   const address = ctx.destinations[values.dest];
-  const before = values.dest !== 'shielded' ? await receivedBy(address) : null;
+  const token = ctx.tokens[tokenFor(values)];
+  const before = values.dest !== 'shielded' ? await receivedBy(address, token.uid) : null;
   const flowFile = path.join(dir, 'flow.yaml');
-  fs.writeFileSync(flowFile, buildSendFlow(scenario, outcome, { address }));
+  const symbols = Object.values(ctx.tokens).map((t) => t.symbol);
+  fs.writeFileSync(flowFile, buildSendFlow(scenario, outcome, { address, token, symbols }));
   // The generated flow refers to ../enter_pin.yaml; keep a copy of the sub-flows beside it.
   fs.copyFileSync(path.join(E2E, 'flows', 'enter_pin.yaml'), path.join(dir, '..', 'enter_pin.yaml'));
+  await clearSendAddress();
   const result = maestro(flowFile, dir);
   let notes = result.ok ? `reached: ${outcome.id}` : `${result.failed || 'flow failed'}`;
   let { ok } = result;
   if (ok && outcome.kind === 'success' && before !== null) {
-    const landed = (await receivedBy(address)) > before;
+    const landed = (await receivedBy(address, token.uid)) > before;
     ok = landed;
     notes += landed ? '; the destination received it' : '; but the destination received nothing';
   }
@@ -220,9 +267,9 @@ async function main() {
     .filter((s) => s.setup === setup.id && s.action === action.id)
     .filter((s) => !args.scenarios || args.scenarios.includes(s.id));
 
-  const plan = scenarios.map((s) => ({
+  const plan = runOrder(scenarios.map((s) => ({
     scenario: s, skip: unrunnableReason(s), outcome: outcomes[s.expected[0]],
-  }));
+  })));
   log(`${plan.length} scenarios, ${plan.filter((p) => !p.skip).length} runnable`);
   if (args.dryRun) {
     plan.forEach((p) => {
