@@ -95,7 +95,7 @@ export function nextClientErrorMessage(code) {
     case NEXT_CLIENT_ERROR.AMOUNT_VISIBLE:
       return t`Sending all of these funds would make the amount public on Hathor Next. Send a little less, so some comes back to you as change.`;
     case NEXT_CLIENT_ERROR.FEE_AMOUNT_VISIBLE:
-      return t`The network fee would come from HTR that arrived in public, from a transfer between chains, and would make its amount public on Hathor Next. Send some HTR to your own Hathor Next address first, then try again.`;
+      return t`The network fee would come from HTR whose amount is already public, so the HTR you'd get back would be public on Hathor Next too. Send some HTR to your own Hathor Next address first, then try again.`;
     case NEXT_CLIENT_ERROR.EARLIER_PENDING:
       return t`An earlier payment from these funds hasn't settled yet, so it was sent again. Try this payment once it settles.`;
     case NEXT_CLIENT_ERROR.TRANSFER_BAD_ADDRESS:

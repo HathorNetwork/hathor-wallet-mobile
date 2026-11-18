@@ -2646,9 +2646,9 @@ msgstr ""
 
 #: src/multichain/nextClientErrors.js:98
 msgid ""
-"The network fee would come from HTR that arrived in public, from a transfer "
-"between chains, and would make its amount public on Hathor Next. Send some "
-"HTR to your own Hathor Next address first, then try again."
+"The network fee would come from HTR whose amount is already public, so the "
+"HTR you'd get back would be public on Hathor Next too. Send some HTR to "
+"your own Hathor Next address first, then try again."
 msgstr ""
 
 #: src/multichain/nextClientErrors.js:100
