@@ -958,7 +958,7 @@ msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
 #: src/components/ImportTokensModal.js:72
-#: src/components/Multichain/MultichainLoadScreen.js:69
+#: src/components/Multichain/MultichainLoadScreen.js:85
 #: src/components/Multichain/TokenHistoryList.js:54
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
@@ -988,7 +988,7 @@ msgstr "**${ loadedData.addresses } endereços** encontrados"
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
-#: src/components/Multichain/MultichainLoadScreen.js:81
+#: src/components/Multichain/MultichainLoadScreen.js:97
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:227
 #: src/screens/PinScreen.js:350 src/screens/Settings.js:312
 msgid "Reset wallet"
@@ -4262,11 +4262,12 @@ msgstr ""
 msgid "Use this backend"
 msgstr "Usar este backend"
 
-#: src/components/Multichain/MultichainLoadScreen.js:75
+#: src/components/Multichain/MultichainLoadScreen.js:91
+#: src/components/Multichain/MultichainLoadScreen.js:113
 msgid "Disconnect side chain"
 msgstr "Desconectar a side chain"
 
-#: src/components/Multichain/MultichainLoadScreen.js:91
+#: src/components/Multichain/MultichainLoadScreen.js:107
 msgid "Loading Hathor Next…"
 msgstr "Carregando a Hathor Next…"
 
@@ -4274,7 +4275,7 @@ msgstr "Carregando a Hathor Next…"
 msgid "Available Balance (so far)"
 msgstr "Saldo Disponível (até agora)"
 
-#: src/components/Multichain/MultichainTokenBody.js:247
+#: src/components/Multichain/MultichainTokenBody.js:253
 #, javascript-format
 msgid "${ arrivingText } ${ token.symbol } arriving"
 msgstr "${ arrivingText } ${ token.symbol } a caminho"

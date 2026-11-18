@@ -88,10 +88,14 @@ export function MultichainTokenBody({
 }) {
   const dispatch = useDispatch();
   const [view, setView] = useState(HISTORY_VIEW.ALL);
-  const [hathorHasMore, setHathorHasMore] = useState(true);
+  // Where Hathor Network's history ended: the `updatedAt` of the first page that end was found
+  // after. A refetch, which a new transaction forces, brings the first page again with a new
+  // `updatedAt`, so the older pages load again.
+  const [hathorEnd, setHathorEnd] = useState(null);
   const [selectedNextRow, setSelectedNextRow] = useState(null);
   const [selectedTransfer, setSelectedTransfer] = useState(null);
   const loadingMore = useRef(false);
+  const hathorHasMore = hathorEnd === null || hathorEnd.at !== hathorHistory?.updatedAt;
 
   const hathorAvailable = useSelector(
     (state) => state.tokensBalance[token.uid]?.data?.available ?? 0n,
@@ -113,7 +117,7 @@ export function MultichainTokenBody({
 
   // Another token starts with its own Hathor Network history, which may have more pages.
   useEffect(() => {
-    setHathorHasMore(true);
+    setHathorEnd(null);
   }, [token.uid]);
 
   const ids = { hathor: token.uid, next: nextTokenId };
@@ -181,10 +185,12 @@ export function MultichainTokenBody({
     }
     if (showsHathor && hathorHasMore && !loadingMore.current) {
       loadingMore.current = true;
+      // Read before the fetch: a refetch while it runs brings a first page it says nothing about.
+      const at = hathorHistory?.updatedAt;
       try {
         const added = await fetchMoreHathor();
         if (!added) {
-          setHathorHasMore(false);
+          setHathorEnd({ at });
         }
       } finally {
         loadingMore.current = false;
