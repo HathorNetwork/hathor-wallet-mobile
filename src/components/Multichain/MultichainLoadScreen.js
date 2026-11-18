@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
@@ -22,6 +22,11 @@ import SimpleButton from '../SimpleButton';
 import Spinner from '../Spinner';
 
 /**
+ * How long the spinner shows, with the same status, before Disconnect side chain shows under it.
+ */
+export const LOAD_EXIT_AFTER_MS = 30000;
+
+/**
  * What the app shows while it waits for Hathor Next, with the side chain connected: the app opens
  * only once both chains have loaded. If Hathor Next fails, there is no opening the app on one
  * chain while the side chain stays connected. The ways on are Try again, Disconnect side chain
@@ -32,12 +37,23 @@ import Spinner from '../Spinner';
  * Try again needs the Hathor Next keys. They are derived at unlock, so they are missing only when
  * that failed: a passkey wallet's Try again runs the passkey ceremony, and a seed wallet's locks
  * the app, whose PIN derives them and loads Hathor Next again.
+ *
+ * While it loads, the spinner shows alone. A load ends, in Hathor Next or in its failure; should
+ * the spinner still show after LOAD_EXIT_AFTER_MS, Disconnect side chain shows under it too, so
+ * this screen never keeps the wallet shut with no way on.
  */
 export function MultichainLoadScreen() {
   const dispatch = useDispatch();
   const status = useSelector((state) => state.multichain.next.status);
   const error = useSelector((state) => state.multichain.next.error);
   const keysReady = useSelector((state) => state.multichain.next.keysReady);
+  // The status shown for LOAD_EXIT_AFTER_MS: another status starts the wait again.
+  const [waitedOn, setWaitedOn] = useState(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setWaitedOn(status), LOAD_EXIT_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, [status]);
 
   const tryAgain = () => {
     if (!keysReady && !STORE.isPasskeyWallet()) {
@@ -89,6 +105,14 @@ export function MultichainLoadScreen() {
     <View style={styles.wrapper}>
       <Spinner size={48} animating />
       <Text style={styles.loading}>{t`Loading Hathor Next…`}</Text>
+      {waitedOn === status && (
+        <SimpleButton
+          containerStyle={styles.exit}
+          textStyle={styles.buttonText}
+          onPress={disconnect}
+          title={t`Disconnect side chain`}
+        />
+      )}
     </View>
   );
 }
@@ -114,6 +138,9 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 12,
+  },
+  exit: {
+    marginTop: 32,
   },
   reset: {
     position: 'absolute',
