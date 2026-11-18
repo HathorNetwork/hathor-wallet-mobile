@@ -276,6 +276,25 @@ describe('loading Hathor Next when the wallet starts', () => {
     expect(env.dispatched.map((action) => action.type)).not.toContain(types.FEATURE_TOGGLE_UPDATED);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
   });
+
+  // The flags are set at every wallet start, Unleash retry and poll that finds a change.
+  test('loads nothing when the flags are set where the side chain is not connected', async () => {
+    // The wallet used Hathor Next before, so the unlock derives its keys; "Connect to side chain"
+    // is off on this network.
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    const env = setup({ start: false });
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+    await wait(10);
+    env.dispatch(startWalletSuccess());
+    await wait(2000);
+    expect(getNextClient().hasKeys()).toBe(true);
+    const connectSpy = jest.spyOn(getNextClient(), 'connect');
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
+    env.dispatch(featureToggleInitialized());
+    await wait(2000);
+    expect(connectSpy).not.toHaveBeenCalled();
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
+  });
 });
 
 describe('the keys at unlock', () => {
