@@ -13,51 +13,51 @@ msgstr ""
 "X-Generator: Poedit 3.4.4\n"
 
 #.  This should never happen!
-#: src/components/Reown/CreateTokenRequest.js:89 src/models.js:94
+#: src/components/Reown/CreateTokenRequest.js:89 src/models.js:103
 msgid "Unknown"
 msgstr "Desconhecido"
 
-#: src/models.js:97
+#: src/models.js:106
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr "Recebido ${ symbol }"
 
-#: src/models.js:99
+#: src/models.js:108
 msgid "Sent ${ symbol }"
 msgstr "Enviado ${ symbol }"
 
-#: src/models.js:101
+#: src/models.js:110
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr "Você enviou ${ symbol } para você mesmo"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:111
+#: src/models.js:120
 msgid "[Today •] HH:mm"
 msgstr "[Hoje •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:112
+#: src/models.js:121
 msgid "[Tomorrow •] HH:mm"
 msgstr "[Amanhã •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:113
+#: src/models.js:122
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:114
+#: src/models.js:123
 msgid "[Yesterday •] HH:mm"
 msgstr "[Ontem •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:115
+#: src/models.js:124
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Última] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:116 src/utils.js:868
+#: src/models.js:125 src/utils.js:868
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -803,8 +803,8 @@ msgstr ""
 "que você recebe."
 
 #: src/screens/ExportPrivacyKeys.js:410
-msgid "Scan private key (xpriv)"
-msgstr "Chave privada de varredura (xpriv)"
+msgid "Scan private key (htpr)"
+msgstr "Chave privada de scan (htpr)"
 
 #: src/screens/ExportPrivacyKeys.js:412
 msgid ""
@@ -2056,21 +2056,21 @@ msgstr "Transação"
 msgid "Open"
 msgstr "Abrir"
 
-#: src/sagas/wallet.js:1346
+#: src/sagas/wallet.js:1356
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1360
+#: src/sagas/wallet.js:1370
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:1370
+#: src/sagas/wallet.js:1380
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:1386
+#: src/sagas/wallet.js:1396
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
@@ -2309,15 +2309,15 @@ msgstr ""
 "Para continuar recebendo notificações, é necessário atualizar sua "
 "configuração de notificação. Deseja atualizar agora?"
 
-#: src/components/AuditUnblindingRows.js:107
+#: src/components/AuditUnblindingRows.js:124
 msgid "View in Explorer unblinded"
 msgstr "Ver no Explorer com os dados revelados"
 
-#: src/components/AuditUnblindingRows.js:114 src/components/CopyClipboard.js:55
+#: src/components/AuditUnblindingRows.js:132 src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
 msgstr "Copiado!"
 
-#: src/components/AuditUnblindingRows.js:114
+#: src/components/AuditUnblindingRows.js:132
 msgid "Copy unblinding values"
 msgstr "Copiar os dados de revelação"
 
