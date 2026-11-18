@@ -2577,7 +2577,7 @@ msgid ""
 "again."
 msgstr ""
 "Este pagamento expirou antes de a rede receber as assinaturas, então ele "
-"nunca será liquidado. Nada saiu da sua carteira, nenhuma taxa foi paga e as "
+"nunca será confirmado. Nada saiu da sua carteira, nenhuma taxa foi paga e as "
 "moedas dele estão livres de novo."
 
 #: src/multichain/content.js:66
@@ -2697,7 +2697,7 @@ msgid ""
 "it. Update the app, or disconnect the side chain for now."
 msgstr ""
 "A rede da Hathor Next mudou, e esta versão do app não consegue se conectar a "
-"ela. Atualize o app ou desconecte a cadeia lateral por enquanto."
+"ela. Atualize o app ou desconecte a side chain por enquanto."
 
 #: src/multichain/nextClientErrors.js:105
 msgid ""
