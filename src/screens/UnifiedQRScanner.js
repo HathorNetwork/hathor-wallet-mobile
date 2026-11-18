@@ -18,6 +18,12 @@ import OfflineBar from '../components/OfflineBar';
 import { reownUriInputted } from '../actions';
 import { COLORS } from '../styles/themes';
 import { NANO_CONTRACT_FEATURE_TOGGLE, REOWN_FEATURE_TOGGLE } from '../constants';
+import { parseNextQrCode } from '../multichain/address';
+import { isSideChainConnected } from '../multichain/gating';
+
+// Each scan of a Hathor Next address, numbered: Send's address step takes the scanned address
+// again even when it is the one it was given before, after the user edited the field.
+let scanCount = 0;
 
 const UnifiedQRScanner = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -26,6 +32,7 @@ const UnifiedQRScanner = ({ navigation }) => {
   const serverInfo = useSelector((state) => state.serverInfo);
   const isReownEnabled = featureToggles[REOWN_FEATURE_TOGGLE] && get(serverInfo, 'nano_contracts_enabled', false);
   const isNanoContractEnabled = featureToggles[NANO_CONTRACT_FEATURE_TOGGLE] && get(serverInfo, 'nano_contracts_enabled', false);
+  const sideChainConnected = useSelector(isSideChainConnected);
 
   const showAlert = (title, message) => {
     if (isProcessing) return;
@@ -45,6 +52,29 @@ const UnifiedQRScanner = ({ navigation }) => {
     const reownPattern = /^wc:[a-f0-9]+@\d+\?.*$/;
     const tokenPattern = /^\[.*:.*:.*:.*\]$/;
     const nanoContractPattern = /^[a-f0-9]{64}$/;
+
+    // With the side chain connected, a Hathor Next address opens Send with it: the address says
+    // the send is on Hathor Next. A payment request is refused, as Hathor Network's is.
+    const next = sideChainConnected ? parseNextQrCode(qrData) : null;
+    if (next?.error) {
+      showAlert(t`Invalid QR Code`, next.error);
+      return;
+    }
+    if (next) {
+      // Back to the Main already on the stack: navigate would put a second Main above this
+      // scanner (React Navigation 7), and leave the scanner mounted under it. Within Send, back
+      // to its address step too: a Send left half way already has one, under the later steps.
+      scanCount += 1;
+      navigation.popTo('Main', {
+        screen: 'Send',
+        params: {
+          screen: 'SendAddressInput',
+          params: { address: next.address, scan: scanCount },
+          pop: true,
+        },
+      });
+      return;
+    }
 
     // Check if it's a reown URI
     if (reownPattern.test(qrData)) {

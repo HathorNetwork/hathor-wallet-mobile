@@ -42,6 +42,9 @@ import { useNavigation, useParams } from '../hooks/navigation';
 import { canSendPrivately, selectShieldedCapability } from '../shielded/gating';
 import { isShieldedUnlockInProgress, selectShieldedUnlock } from '../shielded/unlockState';
 import { MAX_PRIVATE_AMOUNT, isPrivateAmountAllowed } from '../utils/shieldedSend';
+import { CHAIN } from '../multichain/chains';
+import { selectSideChainConfig, selectTokenMap } from '../multichain/gating';
+import { shortBalanceAdvice } from '../multichain/transfer';
 
 const SendAmountInput = () => {
   const selectedToken = useSelector((state) => state.selectedToken);
@@ -56,6 +59,11 @@ const SendAmountInput = () => {
   const networkName = useSelector((state) => state.networkSettings.network);
   // The default the user saved on the device, which a send starts in.
   const privacyDefaultMode = useSelector((state) => state.privacyDefaultMode);
+  // With the side chain connected, a token the bridge carries may have what this send lacks on
+  // Hathor Next.
+  const tokenMap = useSelector(selectTokenMap);
+  const sideChainConfig = useSelector(selectSideChainConfig);
+  const nextBalances = useSelector((state) => state.multichain.next.balances);
 
   const navigation = useNavigation();
   const params = useParams();
@@ -115,6 +123,34 @@ const SendAmountInput = () => {
     navigation.navigate('ChangeToken', { token });
   };
 
+  /**
+   * What the user is told when Hathor Network doesn't have the amount and Hathor Next does, for a
+   * token the bridge carries: the transfer from Hathor Next isn't there yet, so it says so.
+   *
+   * @param {bigint} available
+   * @returns {string|null}
+   */
+  const shortOnHathorMessage = (available) => {
+    const nextId = tokenMap.find((pair) => pair.hathor === token.uid)?.next;
+    if (!nextId) {
+      return null;
+    }
+    const advice = shortBalanceAdvice({
+      chain: CHAIN.HATHOR,
+      amount: amountValue,
+      fee: 0n,
+      available,
+      otherAvailable: nextBalances[nextId]?.data?.available ?? 0n,
+      config: sideChainConfig,
+      quote: null,
+      symbol: token.symbol,
+      hathorDecimalPlaces: decimalPlaces ?? 2,
+      toAddress: params.address,
+      ownAddress: null,
+    });
+    return advice?.message ?? null;
+  };
+
   const onButtonPress = () => {
     const balance = get(tokensBalance, token.uid, {
       data: {
@@ -131,7 +167,7 @@ const SendAmountInput = () => {
     }
 
     if (available < amountValue) {
-      setError(t`Insufficient funds`);
+      setError(shortOnHathorMessage(available) ?? t`Insufficient funds`);
       return;
     }
 
