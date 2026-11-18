@@ -4,51 +4,51 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
 #: src/components/Reown/CreateTokenRequest.js:89
-#: src/models.js:94
+#: src/models.js:103
 #.  This should never happen!
 msgid "Unknown"
 msgstr ""
 
-#: src/models.js:97
+#: src/models.js:106
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr ""
 
-#: src/models.js:99
+#: src/models.js:108
 msgid "Sent ${ symbol }"
 msgstr ""
 
-#: src/models.js:101
+#: src/models.js:110
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr ""
 
-#: src/models.js:111
+#: src/models.js:120
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Today •] HH:mm"
 msgstr ""
 
-#: src/models.js:112
+#: src/models.js:121
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Tomorrow •] HH:mm"
 msgstr ""
 
-#: src/models.js:113
+#: src/models.js:122
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "dddd [•] HH:mm"
 msgstr ""
 
-#: src/models.js:114
+#: src/models.js:123
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Yesterday •] HH:mm"
 msgstr ""
 
-#: src/models.js:115
+#: src/models.js:124
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
-#: src/models.js:116
+#: src/models.js:125
 #: src/utils.js:868
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
@@ -762,7 +762,7 @@ msgid ""
 msgstr ""
 
 #: src/screens/ExportPrivacyKeys.js:410
-msgid "Scan private key (xpriv)"
+msgid "Scan private key (htpr)"
 msgstr ""
 
 #: src/screens/ExportPrivacyKeys.js:412
@@ -2176,20 +2176,20 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/sagas/wallet.js:1346
+#: src/sagas/wallet.js:1356
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:1360
+#: src/sagas/wallet.js:1370
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1370
+#: src/sagas/wallet.js:1380
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:1386
+#: src/sagas/wallet.js:1396
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
@@ -2424,16 +2424,16 @@ msgid ""
 "registration. Do you want to do it now?"
 msgstr ""
 
-#: src/components/AuditUnblindingRows.js:107
+#: src/components/AuditUnblindingRows.js:124
 msgid "View in Explorer unblinded"
 msgstr ""
 
-#: src/components/AuditUnblindingRows.js:114
+#: src/components/AuditUnblindingRows.js:132
 #: src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
 msgstr ""
 
-#: src/components/AuditUnblindingRows.js:114
+#: src/components/AuditUnblindingRows.js:132
 msgid "Copy unblinding values"
 msgstr ""
 

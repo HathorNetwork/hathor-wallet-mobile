@@ -56,6 +56,7 @@ import { PortalProvider } from '../../src/components/Portal';
 import AmountTextInput from '../../src/components/AmountTextInput';
 import PrivacyModeSelector from '../../src/components/PrivacyModeSelector';
 import TransactionPrivacyModal from '../../src/components/TransactionPrivacyModal';
+import BackdropModal from '../../src/components/BackdropModal';
 import SendAmountInput from '../../src/screens/SendAmountInput';
 /* eslint-enable import/first */
 
@@ -157,13 +158,24 @@ async function render(address, {
       (node) => node.props.title === title && typeof node.props.onPress === 'function',
     ).props.onPress();
   });
-  // Picks the mode of a row of the sheet: Private, Hide amount and Public, in that order.
-  const pickMode = async (row) => {
+  // Closes the sheet the way BackdropModal does on a tap outside it or a swipe down.
+  const dismissSheet = () => act(async () => {
+    renderer.root.findByType(TransactionPrivacyModal).findByType(BackdropModal).props.onDismiss();
+  });
+  /**
+   * Picks the mode of a row of the sheet: Private, Hide amount and Public, in that order. The sheet
+   * closes on DONE, or, with `dismiss`, with a tap outside it or a swipe down.
+   */
+  const pickMode = async (row, { dismiss = false } = {}) => {
     await openSheet();
     await act(async () => {
       renderer.root.findAllByType(Switch)[row].props.onValueChange(true);
     });
-    await press('DONE');
+    if (dismiss) {
+      await dismissSheet();
+    } else {
+      await press('DONE');
+    }
   };
   return {
     renderer,
@@ -317,6 +329,23 @@ describe('SendAmountInput with private sends', () => {
     await next();
     expect(mockNavigation.navigate).toHaveBeenCalledWith(
       ...confirmParams(P2PKH, 100n, PRIVACY_MODE.PUBLIC),
+    );
+  });
+
+  test.each([
+    [PRIVACY_MODE.PRIVATE, 0],
+    [PRIVACY_MODE.HIDE_AMOUNT, 1],
+  ])('keeps %s picked in the sheet when it closes without DONE', async (mode, row) => {
+    const { renderer, selector, pickMode, enterAmount, next } = await render(SHIELDED);
+
+    await pickMode(row, { dismiss: true });
+    expect(renderer.root.findByType(TransactionPrivacyModal).props.visible).toBe(false);
+    expect(selector()[0].props.mode).toBe(mode);
+
+    await enterAmount('1.00', 100n);
+    await next();
+    expect(mockNavigation.navigate).toHaveBeenCalledWith(
+      ...confirmParams(SHIELDED, 100n, mode),
     );
   });
 
