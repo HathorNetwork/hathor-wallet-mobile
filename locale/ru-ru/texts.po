@@ -14,51 +14,51 @@ msgstr ""
 "X-Generator: Poedit 3.3.1\n"
 
 #.  This should never happen!
-#: src/components/Reown/CreateTokenRequest.js:89 src/models.js:94
+#: src/components/Reown/CreateTokenRequest.js:89 src/models.js:103
 msgid "Unknown"
 msgstr "Неизвестно"
 
-#: src/models.js:97
+#: src/models.js:106
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr "Получено ${ symbol }"
 
-#: src/models.js:99
+#: src/models.js:108
 msgid "Sent ${ symbol }"
 msgstr "Отправлено ${ symbol }"
 
-#: src/models.js:101
+#: src/models.js:110
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr "Вы отправили себе ${ symbol }"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:111
+#: src/models.js:120
 msgid "[Today •] HH:mm"
 msgstr "[Сегодня •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:112
+#: src/models.js:121
 msgid "[Tomorrow •] HH:mm"
 msgstr "[Завтра •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:113
+#: src/models.js:122
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:114
+#: src/models.js:123
 msgid "[Yesterday •] HH:mm"
 msgstr "[Вчера •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:115
+#: src/models.js:124
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:116 src/utils.js:901
+#: src/models.js:125 src/utils.js:901
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -768,7 +768,7 @@ msgid ""
 msgstr ""
 
 #: src/screens/ExportPrivacyKeys.js:410
-msgid "Scan private key (xpriv)"
+msgid "Scan private key (htpr)"
 msgstr ""
 
 #: src/screens/ExportPrivacyKeys.js:412
@@ -2406,21 +2406,21 @@ msgid ""
 "Anything sent to it directly is lost, so the request was refused."
 msgstr ""
 
-#: src/sagas/wallet.js:1346
+#: src/sagas/wallet.js:1356
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1360
+#: src/sagas/wallet.js:1370
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1370
+#: src/sagas/wallet.js:1380
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:1386
+#: src/sagas/wallet.js:1396
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -2769,15 +2769,15 @@ msgid ""
 "registration. Do you want to do it now?"
 msgstr ""
 
-#: src/components/AuditUnblindingRows.js:107
+#: src/components/AuditUnblindingRows.js:124
 msgid "View in Explorer unblinded"
 msgstr ""
 
-#: src/components/AuditUnblindingRows.js:114 src/components/CopyClipboard.js:55
+#: src/components/AuditUnblindingRows.js:132 src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
 msgstr "Скопировано в буфер обмена!"
 
-#: src/components/AuditUnblindingRows.js:114
+#: src/components/AuditUnblindingRows.js:132
 msgid "Copy unblinding values"
 msgstr ""
 

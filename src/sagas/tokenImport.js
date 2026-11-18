@@ -21,13 +21,14 @@ import {
   tokenImportFetchSuccess,
   tokenImportFetchFailed,
   tokenImportNewDetected,
+  tokenImportNewTxTokens,
   tokenImportSuccess,
   tokenImportFailed,
   tokenImportRemoveFromList,
   tokenFetchBalanceRequested,
   newToken,
 } from '../actions';
-import { getRegisteredTokens } from './helpers';
+import { getRegisteredTokens, getRegisteredTokenUids } from './helpers';
 import { logger } from '../logger';
 
 const log = logger('tokenImport');
@@ -142,7 +143,54 @@ export function* handleNewTokenDetection(action) {
     yield put(tokenFetchBalanceRequested(uid, true));
   }
 
-  yield put(tokenImportNewDetected(newTokens));
+  // A token can be registered while its details load (an import, the register screen or the
+  // network restore): listing it then would offer it for import again.
+  const unregisteredTokens = {};
+  for (const [uid, token] of Object.entries(newTokens)) {
+    const isRegistered = yield call([wallet.storage, wallet.storage.isTokenRegistered], uid);
+    if (!isRegistered) {
+      unregisteredTokens[uid] = token;
+    }
+  }
+  if (Object.keys(unregisteredTokens).length === 0) {
+    return;
+  }
+
+  yield put(tokenImportNewDetected(unregisteredTokens));
+}
+
+/**
+ * Raises the import banner for the tokens the wallet holds and hasn't registered or listed yet,
+ * read from the wallet's own token list. Use it when a tx's fields can't name the token: a fully
+ * shielded output hides it, so the tx's balance doesn't show it, while the wallet's token list
+ * does once the output is decoded.
+ *
+ * Detected tokens go through TOKEN_IMPORT_NEW_TX_TOKENS, like the ones a tx names, so the banner
+ * shows again even if the user dismissed it earlier.
+ *
+ * @param {Object} wallet The running wallet
+ * @param {string[]} [knownUids] Uids the caller already reported
+ */
+export function* detectUnregisteredWalletTokens(wallet, knownUids = []) {
+  let allTokenUids;
+  try {
+    allTokenUids = yield call([wallet, wallet.getTokens]);
+  } catch (e) {
+    log.error('Failed to read the wallet tokens to find unregistered ones:', e);
+    return;
+  }
+  const registeredUids = yield select(getRegisteredTokenUids);
+  const listedUids = yield select((state) => state.tokenImport.unregisteredTokens);
+  const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
+  const newUids = (allTokenUids ?? []).filter(
+    (uid) => uid !== htrUid
+      && !registeredUids.includes(uid)
+      && !listedUids[uid]
+      && !knownUids.includes(uid),
+  );
+  if (newUids.length > 0) {
+    yield put(tokenImportNewTxTokens(newUids));
+  }
 }
 
 /**
