@@ -1291,7 +1291,7 @@ msgid ""
 "directly is lost. Use Transfer between chains instead."
 msgstr ""
 "Este endereço é só para transferências para a Hathor Next, e tudo o que for "
-"enviado diretamente a ele é perdido. Use Transferir entre cadeias."
+"enviado diretamente a ele é perdido. Use Transferir entre chains."
 
 #: src/screens/SendAddressInput.js:159
 msgid "Scan QR code"
@@ -2644,7 +2644,7 @@ msgid ""
 "HTR to your own Hathor Next address first, then try again."
 msgstr ""
 "A taxa de rede sairia de HTR que chegou em público, de uma transferência "
-"entre cadeias, e tornaria esse valor público na Hathor Next. Envie um pouco "
+"entre chains, e tornaria esse valor público na Hathor Next. Envie um pouco "
 "de HTR para o seu próprio endereço da Hathor Next primeiro e tente de novo."
 
 #: src/multichain/nextClientErrors.js:89
@@ -4190,7 +4190,7 @@ msgstr "${ moved } ${ symbol } movidos"
 
 #: src/components/Multichain/TransfersOnTheirWay.js:46
 msgid "Transfers between chains"
-msgstr "Transferências entre cadeias"
+msgstr "Transferências entre chains"
 
 #, javascript-format
 #~ msgid "${ count } private output"
