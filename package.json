@@ -15,6 +15,8 @@
     "test": "jest",
     "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && npx patch-package",
     "setup:release": "npm ci && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && npx patch-package",
+    "qa:graph": "node QA/graph/tools/cli.js render",
+    "qa:graph:check": "node QA/graph/tools/cli.js check",
     "i18n": "make i18n",
     "checki18n": "make check_i18n"
   },
@@ -128,7 +130,8 @@
     "react-test-renderer": "18.3.1",
     "rn-nodeify": "10.3.0",
     "ttag-cli": "1.10.5",
-    "typescript": "4.8.4"
+    "typescript": "4.8.4",
+    "yaml": "2.8.0"
   },
   "react-native": {
     "path": "path-browserify",
