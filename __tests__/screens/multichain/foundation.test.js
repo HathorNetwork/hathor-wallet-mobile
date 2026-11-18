@@ -258,6 +258,27 @@ describe('the app waiting for Hathor Next', () => {
       await advance(1);
       expect(titles(renderer)).toEqual(['Disconnect side chain']);
     });
+
+    test('waits the whole time again when a load comes back to a status it waited on', async () => {
+      const { store } = makeStore({ connected: true, next: { status: NEXT_STATUS.CONNECTING } });
+      const setStatus = async (status) => {
+        await act(async () => { store.dispatch(multichainNextUpdate({ status })); });
+      };
+      const renderer = await mount(store, <MultichainLoadScreen />);
+      // A slow load.
+      await advance(LOAD_EXIT_AFTER_MS);
+      expect(titles(renderer)).toEqual(['Disconnect side chain']);
+      // It fails, and Try again starts it again a few seconds later.
+      await setStatus(NEXT_STATUS.FAILED);
+      expect(titles(renderer)).toEqual(['Try again', 'Disconnect side chain', 'Reset wallet']);
+      await advance(5000);
+      await setStatus(NEXT_STATUS.CONNECTING);
+      expect(titles(renderer)).toEqual([]);
+      await advance(LOAD_EXIT_AFTER_MS - 1);
+      expect(titles(renderer)).toEqual([]);
+      await advance(1);
+      expect(titles(renderer)).toEqual(['Disconnect side chain']);
+    });
   });
 
   const failedStore = (keysReady = true) => makeStore({
