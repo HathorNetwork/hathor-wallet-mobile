@@ -1297,7 +1297,7 @@ msgstr "Cole ou digite o endereço"
 
 #: src/screens/SendAddressInput.js:163
 msgid "Transfer between chains"
-msgstr "Transferir entre cadeias"
+msgstr "Transferir entre chains"
 
 #: src/multichain/nextClientErrors.js:48
 #: src/screens/Multichain/ChainTransferScreen.js:143
@@ -2070,7 +2070,7 @@ msgstr "A menor transferência é de ${ minimum }."
 
 #: src/screens/Multichain/ChainTransferScreen.js:163
 msgid "TRANSFER BETWEEN CHAINS"
-msgstr "TRANSFERIR ENTRE CADEIAS"
+msgstr "TRANSFERIR ENTRE CHAINS"
 
 #: src/screens/Multichain/ChainTransferScreen.js:173
 msgid "From"
