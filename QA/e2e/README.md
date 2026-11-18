@@ -13,9 +13,10 @@ The host setup (KVM, JDK 17, NDK, Maestro, the AVD) and the Android and Maestro 
 | `bin/flags.js` | Lists and sets the flags: `flags.js set fee-based-tokens.rollout=off --wait`. |
 | `bin/fund.js` | Sends HTR from the genesis wallet to a public address: `fund.js W... 10.50`. Uses the helper's `POST /fund`; shielded addresses are refused. |
 | `tools/` | A small Node package of its own (wallet-lib 4.3.0, ct-crypto-node 0.5.0; `npm install` there once). `wallet.js` derives the app wallet's addresses from its seed, gives a peer wallet's shielded address, mints custom tokens (`mint <address> <deposit\|fee> <name> <symbol> <units> <treasury-seed-file>`), gives a run's funds back to genesis (`cleanup <evidence dir>`), and sends private outputs (temporary, see below). |
-| `run.js` | The runner: `node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,...] [--dry-run] [--no-cleanup] [--video]`. Runs that setup's send scenarios and writes a results file to `QA/graph/runs/`; evidence goes to `evidence/` (git-ignored). |
+| `run.js` | The runner: `node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,...] [--dry-run] [--no-cleanup] [--no-record]`. Runs that setup's send scenarios and writes a results file to `QA/graph/runs/`; evidence goes to `evidence/` (git-ignored). |
 | `bin/app-on-privnet.sh` | Points the debug app at the privnet before it starts. `--fresh` wipes it first. Refuses anything but an emulator: store builds share the app id, so a wipe on a phone would erase its wallet. |
-| `lib/` | `sendFlow.js` turns a send scenario into a Maestro flow; `runOrder.js` orders a setup's scenarios. |
+| `lib/` | `sendFlow.js` turns a send scenario into a Maestro flow; `runOrder.js` orders a setup's scenarios; `recorder.js` records the screen; `timeline.js` turns Maestro's logs into the viewer's timeline. |
+| `viewer/` | `viewer.html`, the run viewer; `bin/serve-viewer.js` serves the runs' viewers. |
 | `flows/` | Maestro flows. `onboard.yaml`: new wallet on the privnet, ending on the dashboard. `import_tokens.yaml`: registers the minted tokens through the dashboard's "New tokens" banner. |
 
 ## How the flags work
@@ -38,13 +39,29 @@ After the scenarios, even when the run stopped half-way, the runner gives back w
 
 Both single-key destinations, `simple` and `shielded`, belong to the peer, a seed the runner holds (`peer.seed`), so what they receive comes back too.
 
-## Videos for a person to check
+## Watching a run
 
-`--video` records each scenario it runs as `evidence/<run>/scenarios/<NN>/video.mp4`, for someone to watch what the run did and judge it. Each video shows the emulator's screen beside the scenario's steps: the scenario id on top, then the steps of the graph's send path (`1/4 address: type the simple address`, `2/4 amount: pick E2ED, type the normal amount, pick Hide amount`, and so on) and last the expected outcome with its message (`expect ok-sent: Your transfer of <amountAndToken> has been confirmed`). Done steps get a tick, the running one an hourglass, a failed one a cross; each step's Maestro commands are listed under it.
+Every run records the emulator's screen through each flow but onboarding, whose screen shows the seed, with Android's own `screenrecord`: the device encodes, so a recording costs no time and is ready when the run ends (about 10 MB a minute). The run then writes `evidence/<run>/viewer.html`, the recordings as a playlist: the token import, then each scenario, in the order they ran, with the skipped ones listed and their reasons. Each recording plays beside its steps, the graph's (`1/4 address: type the simple address`, `2/4 amount: ...`, the expected outcome last) with their Maestro commands under them and the runner's own steps (a top-up, the adb taps that empty the address field) in italics. The running step is highlighted and captioned over the video; done ones get a tick or a cross; a click on a step seeks to it, and the strip under the video shows the steps and the long waits.
 
-It runs the flow with `maestro record --local`, which renders the video on this machine: nothing is uploaded. Rendering takes 10 to 20 minutes a scenario on this machine (a 30 to 50 s video) and keeps a CPU busy, so record only the scenarios to show: `--video --scenarios <id>,<id>`. A failing scenario still gets its video. Onboarding, the token import and the return to the dashboard between scenarios aren't recorded.
+| Key | |
+|---|---|
+| `Q`, `S`, `W` | 1×, 1.5×, 2× |
+| `←`, `→` | back, forward 5 s |
+| `Space` | play, pause |
+| `N`, `P` | next, previous recording |
+| `L` | skip long waits, on or off |
+| `V` | mark the scenario validated, or undo |
 
-The labels come from `lib/sendFlow.js`, which puts each step's commands in a labelled `runFlow`; they show in `maestro.out` too, without `--video`.
+"Skip long waits" jumps over any stretch of more than 3 s where no command starts or ends (a wait for the app, the runner's sleeps), keeping a second at each end; seeking into one on purpose plays it. "Mark validated" keeps, in the browser, the version of the scenario's flow you watched: a hash of the generated flow, the same from run to run until the flow changes. The playlist marks scenarios validated or "changed since validated", and "Show: not validated, or changed since" plays only those, for a sample after a change.
+
+The viewer is one HTML file with the run's data in it, and the recordings are files beside it, so it also works from a copy of them. To watch from another machine on the tailnet:
+
+```bash
+node QA/e2e/bin/serve-viewer.js &      # localhost:18090; serves only the viewers and the recordings
+tailscale serve --bg 18090             # https://<this machine>.<tailnet>.ts.net/, tailnet only
+```
+
+The index there lists the runs. An evidence dir also holds the run's seeds and Maestro's logs, which `serve-viewer.js` doesn't serve, so copy only the viewer and the recordings when sharing a run. Runs from before onboarding stopped being recorded still show the seed: the server withholds their `onboard/screen.mp4`, but their `viewer.html` lists five of its words. `tailscale serve --https=443 off` stops it. Timing: the recording's first frame is taken from screenrecord's "Configuring recorder" line on the host clock, and Maestro times its commands on the host clock too; the steps match the screen to about 0.2 s. `--no-record` skips the recordings and the viewer.
 
 ## Between scenarios
 
