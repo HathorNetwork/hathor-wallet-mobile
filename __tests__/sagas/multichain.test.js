@@ -32,6 +32,7 @@ jest.mock('../../src/multichain/bridge', () => require('../multichain/fakes/brid
 
 /* eslint-disable import/first */
 import { runSaga, stdChannel } from 'redux-saga';
+import { put } from 'redux-saga/effects';
 import { reducer } from '../../src/reducers/reducer';
 import {
   lockScreen,
@@ -133,7 +134,9 @@ function setup(options = {}) {
     dispatched.push(action);
     channel.put(action);
   };
-  task = runSaga({ channel, dispatch, getState: () => state }, saga);
+  // A test's own saga runs on the same store.
+  const io = { channel, dispatch, getState: () => state };
+  task = runSaga(io, saga);
   dispatch(networkSettingsUpdateState(networkSettings));
   if (toggles) {
     dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: flag }));
@@ -144,7 +147,7 @@ function setup(options = {}) {
   if (start) {
     dispatch(startWalletSuccess());
   }
-  return { getState: () => state, dispatch, dispatched };
+  return { getState: () => state, dispatch, dispatched, io };
 }
 
 // Advances the clock, then lets the saga finish what the last timer started.
@@ -1472,6 +1475,13 @@ describe('the flag of the backend for local testing', () => {
     },
   };
 
+  // A poll of Unleash that finds a change, as the feature-toggle saga makes it: the flags, and
+  // "flags updated" right after.
+  function* poll(toggles) {
+    yield put(setFeatureToggles(toggles));
+    yield put({ type: types.FEATURE_TOGGLE_UPDATED });
+  }
+
   // The keys are the same on every backend: only the backend and the address change.
   test('loads Hathor Next again on the local backend when it turns on, with the same keys', async () => {
     STORE.setItem(multichainKeyMap.devBackend, LOCAL);
@@ -1592,11 +1602,53 @@ describe('the flag of the backend for local testing', () => {
     }
   });
 
+  test('loads Hathor Next again after a poll switches backends, the transfer of each shown first', async () => {
+    STORE.setItem(multichainKeyMap.devBackend, LOCAL);
+    try {
+      const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
+      await connect(env);
+      const connectSpy = jest.spyOn(getNextClient(), 'connect');
+      // A transfer signed without an answer on the local backend: the switch shows it first.
+      STORE.setItem(multichainKeyMap.uncertainTransfer, {
+        id: 'transfer-2', network: NETWORK, backendUrl: LOCAL.url,
+      });
+      runSaga(env.io, poll, {
+        [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: true,
+      });
+      await wait(2000);
+      expect(env.getState().multichain.transfer).toMatchObject({
+        status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-2',
+      });
+      expect(connectSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+        config: expect.objectContaining({ backendUrl: LOCAL.url }),
+      }));
+      expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+
+      // And back, with one signed without an answer on the network's own backend.
+      STORE.setItem(multichainKeyMap.uncertainTransfer, {
+        id: 'transfer-3', network: NETWORK, backendUrl: null,
+      });
+      runSaga(env.io, poll, { [MULTICHAIN_FEATURE_TOGGLE]: true });
+      await wait(2000);
+      expect(env.getState().multichain.transfer).toMatchObject({
+        status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-3',
+      });
+      expect(connectSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({ config: FAKE_SIDE_CHAIN }),
+      );
+      expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+    } finally {
+      STORE.removeItem(multichainKeyMap.devBackend);
+      STORE.removeItem(multichainKeyMap.uncertainTransfer);
+    }
+  });
+
   test('leaves Hathor Next alone when nothing about the backend changed', async () => {
     const env = setup();
     await connect(env);
     const connectSpy = jest.spyOn(getNextClient(), 'connect');
-    env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+    // A poll that found another flag changed.
+    runSaga(env.io, poll, { ...env.getState().featureToggles, 'another.rollout': true });
     await wait(2000);
     expect(connectSpy).not.toHaveBeenCalled();
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
@@ -1815,15 +1867,18 @@ describe('a load of Hathor Next', () => {
   test('is not cancelled by the next action of the handler that started it', async () => {
     STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
     STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
-    const env = setup({ flag: false, start: false });
-    env.dispatch(startWalletSuccess());
-    await wait(10);
-    // The flag comes on: the unlock derives the keys, and the flags' handler loads Hathor Next.
-    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
+    // The unlock derives the keys with the flag on; it is off by the time the wallet starts.
+    const env = setup({ start: false });
     env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
     await wait(10);
-    env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: false }));
+    env.dispatch(startWalletSuccess());
+    await wait(10);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
+    // The flag comes on: the flags' handler loads Hathor Next.
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
     await wait(100);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.CONNECTING);
     // The flags are set again while the load runs: the handler is takeLatest.
     env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
     await wait(3000);
