@@ -24,6 +24,7 @@ export class TxHistory {
    *   ncCaller?: Address;
    *   firstBlock?: string;
    *   privacyFee?: bigint;
+   *   hasShieldedActivity?: boolean;
    * }}
    */
   constructor({
@@ -38,6 +39,7 @@ export class TxHistory {
     ncCaller,
     firstBlock,
     privacyFee = 0n,
+    hasShieldedActivity = false,
   }) {
     /**
      * @type {string}
@@ -85,6 +87,13 @@ export class TxHistory {
      * @type {bigint}
      */
     this.privacyFee = privacyFee;
+    /**
+     * Whether the history says the tx has private outputs (fullnode facade) or moves the wallet's
+     * private balance (wallet-service facade): the tx details then show that its unblinding
+     * values are loading.
+     * @type {boolean}
+     */
+    this.hasShieldedActivity = hasShieldedActivity;
   }
 
   getDescription(token) {
@@ -144,8 +153,11 @@ export class TxHistory {
    *   ncCaller?: Address;
    *   firstBlock?: string;
    *   shielded_outputs?: Object[];
-   * }} rawTxHistory - The raw transaction history data. Its shielded outputs only give the
-   *   privacy fee: they hold blinding factors, which the TxHistory doesn't keep.
+   *   txKind?: 'transparent'|'shielded'|'mixed';
+   * }} rawTxHistory - The raw transaction history data. Its shielded outputs (fullnode facade)
+   *   only give the privacy fee and hasShieldedActivity: they hold blinding factors, which the
+   *   TxHistory doesn't keep. txKind (wallet-service facade) says whether the tx moves the
+   *   wallet's private balance.
    * @param {string} tokenUid - The UID of the token associated with the transaction.
    *
    * @returns {TxHistory} A TxHistory instance representing the transaction.
@@ -174,6 +186,9 @@ export class TxHistory {
       isVoided: Boolean(rawTxHistory.voided),
       firstBlock,
       privacyFee: shieldedOutputsFee(rawTxHistory.shielded_outputs),
+      hasShieldedActivity: (rawTxHistory.shielded_outputs?.length ?? 0) > 0
+        || rawTxHistory.txKind === 'shielded'
+        || rawTxHistory.txKind === 'mixed',
     });
   }
 }

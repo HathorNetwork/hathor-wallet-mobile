@@ -142,7 +142,10 @@ class TxDetailsModal extends Component {
             )}
             <ListItem title={t`Transaction ID`} text={txIdComponent} />
             <PublicExplorerListButton txId={tx.txId} />
-            <AuditUnblindingRows txId={tx.txId} />
+            <AuditUnblindingRows
+              txId={tx.txId}
+              hasShieldedActivity={tx.hasShieldedActivity}
+            />
           </View>
         </ScrollView>
       </BackdropModal>

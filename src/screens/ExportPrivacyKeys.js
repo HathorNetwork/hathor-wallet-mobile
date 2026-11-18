@@ -407,7 +407,7 @@ export default function ExportPrivacyKeys({ navigation, route }) {
             />
             {Boolean(keys.scanXpriv) && (
               <KeyCard
-                label={t`Scan private key (xpriv)`}
+                label={t`Scan private key (htpr)`}
                 description={
                   t`Path m/44'/280'/1'/0. Lets the auditor decrypt the value and token of every shielded output your wallet receives. Used only for ECDH; never for signing.`
                 }
