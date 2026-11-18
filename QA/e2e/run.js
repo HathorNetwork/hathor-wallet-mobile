@@ -9,7 +9,11 @@
 // Runs the QA graph's send scenarios of one setup on the emulator, against the local privnet,
 // and writes one results file in QA/graph/runs/.
 //
-//   node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,<id>] [--dry-run]
+//   node QA/e2e/run.js --setup pn-fn-seed-multi [--scenarios <id>,<id>] [--dry-run] [--no-cleanup]
+//
+// After the scenarios, the run's HTR and token deposits go back to the genesis wallet (cleanup in
+// tools/wallet.js), so a privnet lasts hundreds of runs. --no-cleanup keeps them, to look at the
+// wallets afterwards; `node QA/e2e/tools/wallet.js cleanup <evidence dir>` gives them back later.
 //
 // Needs the privnet up (QA/e2e/privnet), the emulator running the debug app, and Metro serving
 // it. Scenarios the kit can't set up yet are recorded as skipped, with the reason.
@@ -57,9 +61,12 @@ function parseArgs(argv) {
     if (argv[i] === '--setup') args.setup = argv[i += 1];
     else if (argv[i] === '--scenarios') args.scenarios = argv[i += 1].split(',');
     else if (argv[i] === '--dry-run') args.dryRun = true;
+    else if (argv[i] === '--no-cleanup') args.noCleanup = true;
     else throw new Error(`unknown argument ${argv[i]}`);
   }
-  if (!args.setup) throw new Error('usage: run.js --setup <setup id> [--scenarios <id>,<id>] [--dry-run]');
+  if (!args.setup) {
+    throw new Error('usage: run.js --setup <setup id> [--scenarios <id>,<id>] [--dry-run] [--no-cleanup]');
+  }
   return args;
 }
 
@@ -166,10 +173,17 @@ async function prepareSetup(setup, runDir) {
   const appAddress = walletTool('address', seedFile);
   log(`app: wallet ${appAddress}`);
 
+  // The treasury keeps the tokens' authorities, so the cleanup can melt them; tokens.json tells
+  // the cleanup what was minted, even when the run stops half-way.
+  const treasurySeed = path.join(runDir, 'treasury.seed');
+  fs.writeFileSync(treasurySeed, `${walletTool('new-seed')}\n`, { mode: 0o600 });
   const tokens = { htr: TOKENS.htr };
+  const minted = [];
   for (const key of ['deposit', 'depositLarge', 'fee']) {
     const { kind, name, symbol, units } = TOKENS[key];
-    tokens[key] = { name, symbol, uid: walletTool('mint', appAddress, kind, name, symbol, units) };
+    tokens[key] = { name, symbol, uid: walletTool('mint', appAddress, kind, name, symbol, units, treasurySeed) };
+    minted.push({ uid: tokens[key].uid, kind, symbol });
+    fs.writeFileSync(path.join(runDir, 'tokens.json'), JSON.stringify(minted, null, 2));
     log(`app: minted ${symbol} ${tokens[key].uid}`);
   }
   const importDir = path.join(runDir, 'import-tokens');
@@ -179,8 +193,10 @@ async function prepareSetup(setup, runDir) {
 
   const peerSeed = path.join(runDir, 'peer.seed');
   fs.writeFileSync(peerSeed, `${walletTool('new-seed')}\n`, { mode: 0o600 });
+  // Both single-key destinations are the peer's, a seed the runner holds, so the cleanup can give
+  // back what they received; the multisig's keys stay with the helper.
   const destinations = {
-    simple: (await getJson(`${FUNDING_URL}/simpleWallet`)).addresses[0],
+    simple: walletTool('address', peerSeed),
     multisig: (await getJson(`${FUNDING_URL}/multisigWallet?participants=3&numSignatures=2`)).wallets[0].addresses[0],
     shielded: walletTool('shielded-address', peerSeed),
   };
@@ -281,6 +297,26 @@ async function main() {
   await preflight();
   const runDir = path.join(E2E, 'evidence', startedAt.slice(0, 19).replace(/[:T]/g, '-'));
   fs.mkdirSync(runDir, { recursive: true });
+  try {
+    await runPlan(setup, plan, runDir, startedAt);
+  } finally {
+    if (args.noCleanup) {
+      log(`cleanup skipped; later: node QA/e2e/tools/wallet.js cleanup ${path.relative(REPO, runDir)}`);
+    } else if (fs.existsSync(path.join(runDir, 'treasury.seed'))) {
+      log('cleanup: giving the run\'s HTR and deposits back to genesis');
+      try {
+        execFileSync('node', [path.join(E2E, 'tools', 'wallet.js'), 'cleanup', runDir], { encoding: 'utf8' })
+          .split('\n').filter((line) => line.startsWith('cleanup: '))
+          .forEach((line) => log(line));
+      } catch (e) {
+        log(`cleanup failed (${e.message.split('\n')[0]}); retry: node QA/e2e/tools/wallet.js cleanup ${path.relative(REPO, runDir)}`);
+      }
+    }
+  }
+  log('when done: tear down the emulator, Metro and the privnet (QA/e2e/README.md)');
+}
+
+async function runPlan(setup, plan, runDir, startedAt) {
   const ctx = await prepareSetup(setup, runDir);
   const results = [];
   for (const [i, p] of plan.entries()) {
@@ -306,7 +342,6 @@ async function main() {
   const count = (status) => results.filter((r) => r.status === status).length;
   log(`passed ${count('passed')}, failed ${count('failed')}, skipped ${count('skipped')}`);
   log(`results: ${path.relative(REPO, file)}; evidence: ${path.relative(REPO, runDir)}`);
-  log('when done: tear down the emulator, Metro and the privnet (QA/e2e/README.md)');
 }
 
 main().catch((e) => {
