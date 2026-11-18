@@ -1,0 +1,10 @@
+appId: network.hathor.wallet
+---
+- extendedWaitUntil:
+    visible: "Create a new PIN code,"
+    timeout: 30000
+- runFlow: enter_pin.yaml
+- extendedWaitUntil:
+    visible: "To confirm the PIN,"
+    timeout: 30000
+- runFlow: enter_pin.yaml

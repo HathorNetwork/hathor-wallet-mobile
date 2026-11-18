@@ -1,0 +1,9 @@
+{
+  "name": "mobile-e2e-tools",
+  "private": true,
+  "description": "Node-side helpers for the mobile e2e kit: derive the app wallet's addresses, mint tokens and send from a peer wallet on the privnet.",
+  "dependencies": {
+    "@hathor/ct-crypto-node": "0.5.0",
+    "@hathor/wallet-lib": "4.3.0"
+  }
+}

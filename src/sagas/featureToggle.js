@@ -30,6 +30,7 @@ import {
   networkSettingsKeyMap,
   UNLEASH_URL,
   UNLEASH_CLIENT_KEY,
+  E2E_UNLEASH_PORT,
   UNLEASH_POLLING_INTERVAL,
   FEATURE_TOGGLE_DEFAULTS,
 } from '../constants';
@@ -44,6 +45,25 @@ import { version as appVersion } from '../../package.json';
 const MAX_RETRIES = 5;
 
 const log = logger('featureToggle');
+
+// Hosts a local node is reached through: the emulator's adb reverse and its alias for the host.
+const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]', '10.0.2.2'];
+
+/**
+ * Debug builds on a local network read their flags from the e2e fake Unleash next to the node,
+ * so a test run controls every flag. Public networks and release builds always read the real one:
+ * a public network can misbehave with a flag on that its servers expect off.
+ */
+export function getUnleashUrl(nodeUrl) {
+  if (!__DEV__) {
+    return UNLEASH_URL;
+  }
+  const match = /^(https?):\/\/(\[[^\]]+\]|[^/:]+)/.exec(nodeUrl || '');
+  if (!match || !LOCAL_HOSTS.includes(match[2])) {
+    return UNLEASH_URL;
+  }
+  return `${match[1]}://${match[2]}:${E2E_UNLEASH_PORT}/proxy`;
+}
 
 export function* handleInitFailed(currentRetry) {
   if (currentRetry >= MAX_RETRIES) {
@@ -100,14 +120,15 @@ export function* handleToggleUpdate() {
 export function* monitorFeatureFlags(currentRetry = 0, createRoutine = true) {
   let stage;
   let fullNetwork;
+  let nodeUrl;
   // We try to get the network settings from the storage (which is updated as soon
   // as we persist the networkSettings update) and if it's empty, we get the default state
   const networkSettingsStorage = STORE.getItem(networkSettingsKeyMap.networkSettings);
   if (networkSettingsStorage) {
-    ({ stage, fullNetwork } = networkSettingsStorage);
+    ({ stage, fullNetwork, nodeUrl } = networkSettingsStorage);
   } else {
     const networkSettingsState = yield select((state) => state.networkSettings);
-    ({ stage, fullNetwork } = networkSettingsState);
+    ({ stage, fullNetwork, nodeUrl } = networkSettingsState);
   }
   const options = {
     userId: getUniqueId(),
@@ -120,7 +141,7 @@ export function* monitorFeatureFlags(currentRetry = 0, createRoutine = true) {
   };
 
   const unleashClient = new UnleashClient({
-    url: UNLEASH_URL,
+    url: getUnleashUrl(nodeUrl),
     clientKey: UNLEASH_CLIENT_KEY,
     refreshInterval: -1,
     disableRefresh: true, // Disable it, we will handle it ourselves
