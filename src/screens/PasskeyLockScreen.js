@@ -37,6 +37,7 @@ import {
 } from '../passkey/passkeySigner';
 import { sanitizePasskeyLabel } from '../passkey/passkeyService';
 import { rememberPasskeyShieldedKeys } from '../passkey/shieldedKeys';
+import { prepareNextKeysAtUnlock } from '../multichain/keys';
 import {
   finishWalletServiceRegistration,
   walletServiceRegistrationForUnlock,
@@ -89,6 +90,9 @@ const PasskeyLockScreen = () => {
       const registration = await verifyPasskeyForUnlock({
         onWords: (words) => {
           rememberPasskeyShieldedKeys(words);
+          // A wallet that used Hathor Next derives its keys in the same ceremony, so switching to
+          // it needs no second passkey prompt. It never throws.
+          prepareNextKeysAtUnlock(words);
           return register ? register(words) : undefined;
         },
       });

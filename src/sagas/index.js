@@ -19,6 +19,7 @@ import { saga as networkSettingsSagas } from './networkSettings';
 import { saga as sesSagas } from './ses';
 import { saga as tokenImportSagas } from './tokenImport';
 import { saga as shieldedSagas } from './shielded';
+import { saga as multichainSagas } from './multichain';
 
 import { saga as nanoContractSagas } from './nanoContract';
 import { onExceptionCaptured } from '../actions';
@@ -43,6 +44,7 @@ const sagas = {
   sesSagas: { saga: sesSagas, retryCount: 0, critical: true },
   tokenImportSagas: { saga: tokenImportSagas, retryCount: 0, critical: false },
   shieldedSagas: { saga: shieldedSagas, retryCount: 0, critical: false },
+  multichainSagas: { saga: multichainSagas, retryCount: 0, critical: false },
 };
 
 function* rootSaga() {

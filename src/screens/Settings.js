@@ -11,6 +11,7 @@ import { t } from 'ttag';
 import {
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   View,
 } from 'react-native';
@@ -32,6 +33,14 @@ import { NetworkSettingsFlowNav } from './NetworkSettings';
 import { isNanoContractsEnabled, isPushNotificationAvailableForUser } from '../utils';
 import { getNetworkSettings } from '../sagas/helpers';
 import { isShieldedAvailable } from '../shielded/gating';
+import {
+  isSideChainAvailable,
+  isSideChainConnected,
+} from '../multichain/gating';
+import { CONNECT_STATUS } from '../multichain/state';
+import { multichainConnectSettingChanged } from '../actions';
+import { ConnectFeedback } from '../components/Multichain/ConnectFeedback';
+import { STORE } from '../store';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -62,8 +71,22 @@ const mapStateToProps = (state) => {
     // Where the shielded UI is available, also while the private balance is locked.
     privacySettingsEnabled: isShieldedAvailable(state),
     addressMode: state.addressMode,
+    sideChainAvailable: isSideChainAvailable(state),
+    sideChainConnected: isSideChainConnected(state),
+    sideChainConnecting: state.multichain.connect.status !== CONNECT_STATUS.IDLE
+      && state.multichain.connect.status !== CONNECT_STATUS.FAILED,
+    nextKeysReady: state.multichain.next.keysReady,
   };
 };
+
+const mapDispatchToProps = (dispatch) => ({
+  setSideChainConnected: (connected, options) => dispatch(
+    multichainConnectSettingChanged(connected, options),
+  ),
+});
+
+// The "Connect to side chain" row, which is a switch rather than a route.
+const SIDE_CHAIN_ROW = 'SideChain';
 
 export class Settings extends React.Component {
   style = StyleSheet.create({
@@ -109,6 +132,9 @@ export class Settings extends React.Component {
     if (this.props.networkSettingsEnabled) {
       return NetworkSettingsFlowNav;
     }
+    if (this.props.sideChainAvailable) {
+      return SIDE_CHAIN_ROW;
+    }
     if (this.props.singleAddressEnabled) {
       return 'AddressMode';
     }
@@ -121,10 +147,34 @@ export class Settings extends React.Component {
     return 'ResetWallet';
   }
 
+  /**
+   * "Connect to side chain" turned on derives the Hathor Next keys: with the PIN when they aren't
+   * in memory, or a passkey ceremony, which the saga runs. Off disconnects.
+   *
+   * @param {boolean} connected
+   */
+  onSideChainChange = (connected) => {
+    if (!connected) {
+      this.props.setSideChainConnected(false);
+      return;
+    }
+    if (this.props.nextKeysReady || STORE.isPasskeyWallet()) {
+      this.props.setSideChainConnected(true);
+      return;
+    }
+    this.props.navigation.navigate('PinScreen', {
+      cb: (pinCode) => this.props.setSideChainConnected(true, { pinCode }),
+      canCancel: true,
+      screenText: t`Enter your 6-digit pin to connect to Hathor Next`,
+      biometryText: t`Connect to Hathor Next`,
+    });
+  };
+
   render() {
     const firstAdvancedRoute = this.firstAdvancedRoute();
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
+        <ConnectFeedback />
         <ScrollView contentContainerStyle={this.style.scrollView}>
           <View style={this.style.logoView}>
             <Logo
@@ -194,6 +244,21 @@ export class Settings extends React.Component {
                   title={t`Network Settings`}
                   onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
                   isFirst={firstAdvancedRoute === NetworkSettingsFlowNav}
+                />
+              )}
+            {this.props.sideChainAvailable
+              && (
+                <ListItem
+                  title={t`Connect to side chain`}
+                  titleStyle={{ color: COLORS.textColor }}
+                  text={(
+                    <Switch
+                      onValueChange={this.onSideChainChange}
+                      value={this.props.sideChainConnected || this.props.sideChainConnecting}
+                      disabled={this.props.sideChainConnecting}
+                    />
+                  )}
+                  isFirst={firstAdvancedRoute === SIDE_CHAIN_ROW}
                 />
               )}
             {this.props.singleAddressEnabled
@@ -274,4 +339,4 @@ export class Settings extends React.Component {
   }
 }
 
-export default connect(mapStateToProps)(Settings);
+export default connect(mapStateToProps, mapDispatchToProps)(Settings);
