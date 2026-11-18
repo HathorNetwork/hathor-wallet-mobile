@@ -886,7 +886,7 @@ msgid "Enter your seed words separated by space"
 msgstr ""
 
 #: src/components/ImportTokensModal.js:72
-#: src/components/Multichain/MultichainLoadScreen.js:69
+#: src/components/Multichain/MultichainLoadScreen.js:85
 #: src/components/Multichain/TokenHistoryList.js:54
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
@@ -918,7 +918,7 @@ msgstr ""
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/components/Multichain/MultichainLoadScreen.js:81
+#: src/components/Multichain/MultichainLoadScreen.js:97
 #: src/screens/LoadWalletErrorScreen.js:28
 #: src/screens/PasskeyLockScreen.js:227
 #: src/screens/PinScreen.js:350
@@ -3825,11 +3825,12 @@ msgstr ""
 msgid "Use this backend"
 msgstr ""
 
-#: src/components/Multichain/MultichainLoadScreen.js:75
+#: src/components/Multichain/MultichainLoadScreen.js:91
+#: src/components/Multichain/MultichainLoadScreen.js:113
 msgid "Disconnect side chain"
 msgstr ""
 
-#: src/components/Multichain/MultichainLoadScreen.js:91
+#: src/components/Multichain/MultichainLoadScreen.js:107
 msgid "Loading Hathor Next…"
 msgstr ""
 
@@ -3837,7 +3838,7 @@ msgstr ""
 msgid "Available Balance (so far)"
 msgstr ""
 
-#: src/components/Multichain/MultichainTokenBody.js:247
+#: src/components/Multichain/MultichainTokenBody.js:253
 #, javascript-format
 msgid "${ arrivingText } ${ token.symbol } arriving"
 msgstr ""

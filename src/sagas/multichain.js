@@ -862,8 +862,9 @@ export function* onConnectSettingChanged({ payload }) {
 }
 
 /**
- * The flags changed: without the side chain, leave Hathor Next; with it back on a network whose
- * side chain is connected, load it.
+ * Unleash's flags were set: without the side chain, leave Hathor Next; with it back on a network
+ * whose side chain is connected, load it. A wallet start sets them before the wallet is ready,
+ * and loads Hathor Next itself once it is (onWalletStarted).
  */
 export function* onFeatureToggleUpdated() {
   // The backend for local testing has a flag of its own: when it turns on or off, Hathor Next
@@ -1334,7 +1335,10 @@ export function* saga() {
     takeEvery(types.MULTICHAIN_NEXT_SEND_REQUESTED, onNextSendRequested),
     takeLeading(types.MULTICHAIN_TRANSFER_REQUESTED, onTransferRequested),
     takeEvery(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN, onTransferForgottenSeen),
-    takeLatest(types.FEATURE_TOGGLE_UPDATED, onFeatureToggleUpdated),
+    // Every change of the flags sets them: a retry of Unleash that answers, with nothing after
+    // it, and a poll that finds a change, with "flags updated" right after. That second action
+    // is left alone: it would run this again while the first run still goes, and cut it short.
+    takeLatest(types.SET_FEATURE_TOGGLES, onFeatureToggleUpdated),
     takeLatest(types.NETWORK_CHANGED, onNetworkChanged),
     takeLatest(types.RESET_WALLET, onResetWallet),
     takeLatest(types.MULTICHAIN_DEV_BACKEND_SET, onDevBackendSet),

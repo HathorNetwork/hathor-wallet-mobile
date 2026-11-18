@@ -61,6 +61,7 @@ import {
   unlockScreen,
 } from '../../src/actions';
 import {
+  FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   multichainKeyMap,
@@ -406,6 +407,28 @@ describe('loading Hathor Next when the wallet starts', () => {
     env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
     env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
     await wait(2000);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.FAILED);
+    // The loading screen's Try again locks the app; its PIN derives the keys and loads.
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+    await wait(2000);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+  });
+
+  // A retry of Unleash that answers puts the flags alone: no "flags updated" action comes.
+  test('waits for the flag: it loads when a retry of Unleash brings the flag back on', async () => {
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
+    const env = setup({ flag: false, start: false });
+    env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+    env.dispatch(startWalletSuccess());
+    await wait(2000);
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
+    // Nothing of Hathor Next ran while the flag was off, not even its keys.
+    expect(STORE.getWalletWords).not.toHaveBeenCalled();
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
+    env.dispatch(featureToggleInitialized());
+    await wait(2000);
+    expect(env.dispatched.map((action) => action.type)).not.toContain(types.FEATURE_TOGGLE_UPDATED);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.FAILED);
     // The loading screen's Try again locks the app; its PIN derives the keys and loads.
     env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
@@ -1620,6 +1643,30 @@ describe('mainnet', () => {
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
   });
 
+  test('does nothing when Unleash puts the flags, every multichain one on and then off', async () => {
+    // Even with the side chain saved as connected, and the keys' address saved.
+    STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+    STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
+    const multichainFlags = (on) => Object.fromEntries(Object.keys(FEATURE_TOGGLE_DEFAULTS)
+      .filter((name) => name.startsWith('multichain'))
+      .map((name) => [name, on]));
+    const env = setup({ networkSettings: PRE_SETTINGS_MAINNET });
+    await wait(2000);
+    const before = env.dispatched.length;
+    env.dispatch(setFeatureToggles(multichainFlags(true)));
+    env.dispatch(featureToggleInitialized());
+    await wait(2000);
+    env.dispatch(setFeatureToggles(multichainFlags(false)));
+    await wait(2000);
+    // The test's own actions, and nothing from the saga.
+    expect(env.dispatched.slice(before).map((action) => action.type)).toEqual([
+      types.SET_FEATURE_TOGGLES, types.FEATURE_TOGGLE_INITIALIZED, types.SET_FEATURE_TOGGLES,
+    ]);
+    expect(STORE.getWalletWords).not.toHaveBeenCalled();
+    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.STOPPED);
+    expect(getNextClient()).toBeNull();
+  });
+
   test('ignores a payment or a transfer asked for anyway', async () => {
     const env = setup();
     await connect(env);
@@ -1777,8 +1824,8 @@ describe('a load of Hathor Next', () => {
     await wait(10);
     env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
     await wait(100);
-    // The flags update again while the load runs: the handler is takeLatest.
-    env.dispatch({ type: types.FEATURE_TOGGLE_UPDATED });
+    // The flags are set again while the load runs: the handler is takeLatest.
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: true }));
     await wait(3000);
     expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
   });
