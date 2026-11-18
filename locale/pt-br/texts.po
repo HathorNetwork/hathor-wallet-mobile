@@ -1301,7 +1301,7 @@ msgid ""
 "directly is lost. Use Transfer between chains instead."
 msgstr ""
 "Este endereço é só para transferências para a Hathor Next, e tudo o que for "
-"enviado diretamente a ele é perdido. Use Transferir entre cadeias."
+"enviado diretamente a ele é perdido. Use Transferir entre chains."
 
 #: src/screens/SendAddressInput.js:159
 msgid "Scan QR code"
@@ -1322,7 +1322,7 @@ msgstr "Cole ou digite o endereço"
 #: src/screens/Multichain/NextSendAmountInput.js:221
 #: src/screens/SendAddressInput.js:231
 msgid "Transfer between chains"
-msgstr "Transferir entre cadeias"
+msgstr "Transferir entre chains"
 
 #: src/multichain/nextClientErrors.js:87
 #: src/screens/Multichain/ChainTransferScreen.js:172
@@ -2148,7 +2148,7 @@ msgstr "Para o seu endereço"
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:244
 #: src/screens/Multichain/ChainTransferScreen.js:273
 msgid "Bridge fee"
-msgstr "Taxa da ponte"
+msgstr "Taxa da bridge"
 
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:246
 #: src/screens/Multichain/ChainTransferScreen.js:275
@@ -2188,7 +2188,7 @@ msgstr "A menor transferência é de ${ minimum }."
 
 #: src/screens/Multichain/ChainTransferScreen.js:192
 msgid "TRANSFER BETWEEN CHAINS"
-msgstr "TRANSFERIR ENTRE CADEIAS"
+msgstr "TRANSFERIR ENTRE CHAINS"
 
 #: src/screens/Multichain/ChainTransferScreen.js:202
 msgid "From"
@@ -2815,7 +2815,7 @@ msgid ""
 "HTR to your own Hathor Next address first, then try again."
 msgstr ""
 "A taxa de rede sairia de HTR que chegou em público, de uma transferência "
-"entre cadeias, e tornaria esse valor público na Hathor Next. Envie um pouco "
+"entre chains, e tornaria esse valor público na Hathor Next. Envie um pouco "
 "de HTR para o seu próprio endereço da Hathor Next primeiro e tente de novo."
 
 #: src/multichain/nextClientErrors.js:100
@@ -4192,16 +4192,16 @@ msgstr "${ tokenSymbol } Obter Authority"
 
 #: src/components/Multichain/ChainFilter.js:25
 msgid "All chains"
-msgstr "Todas as cadeias"
+msgstr "Todas as chains"
 
 #: src/components/Multichain/ChainFilter.js:53
 #, javascript-format
 msgid "Chain: ${ viewName }"
-msgstr "Cadeia: ${ viewName }"
+msgstr "Chain: ${ viewName }"
 
 #: src/components/Multichain/ChainFilter.js:68
 msgid "Chain"
-msgstr "Cadeia"
+msgstr "Chain"
 
 #: src/components/Multichain/ConnectFeedback.js:28
 msgid "Connecting to Hathor Next…"
@@ -4313,8 +4313,8 @@ msgstr "Enviado para ${ peer }"
 #: src/components/Multichain/TokenChains.js:36
 msgid "${ count } chain"
 msgid_plural "${ count } chains"
-msgstr[0] "${ count } cadeia"
-msgstr[1] "${ count } cadeias"
+msgstr[0] "${ count } chain"
+msgstr[1] "${ count } chains"
 
 #: src/components/Multichain/TokenChains.js:40
 msgid "${ arrivingText } arriving"
@@ -4391,7 +4391,7 @@ msgstr "${ moved } ${ symbol } movidos"
 
 #: src/components/Multichain/TransfersOnTheirWay.js:46
 msgid "Transfers between chains"
-msgstr "Transferências entre cadeias"
+msgstr "Transferências entre chains"
 
 #, javascript-format
 #~ msgid ""
