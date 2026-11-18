@@ -72,11 +72,15 @@ function outcomeCheck(outcome) {
   return { extendedWaitUntil: { visible: messagePattern(outcome.message), timeout: 60000 } };
 }
 
+const PRIVACY_NAMES = { public: 'Public', 'hide-amount': 'Hide amount', private: 'Private' };
+
 /**
- * The Maestro flow for one send scenario.
+ * The Maestro flow for one send scenario. Each step of the graph's send path is one labelled
+ * group, and the expected outcome another, so the run's log, and its video when recorded, show
+ * which step is running in the graph's terms.
  *
  * @param {{ id: string, values: object }} scenario from the graph
- * @param {{ at: string, message: string }} outcome the expected outcome
+ * @param {{ id: string, at: string, message: string }} outcome the expected outcome
  * @param {object} target
  * @param {string} target.address the destination address for the scenario's dest
  * @param {{ name: string, symbol: string }} target.token the token to send
@@ -85,7 +89,12 @@ function outcomeCheck(outcome) {
 function buildSendFlow(scenario, outcome, { address, token, symbols }) {
   const { values } = scenario;
   const stopAt = STEP_ORDER.indexOf(outcome.at);
-  const steps = [
+  const groups = [];
+  const group = (step, text, commands) => groups.push({
+    runFlow: { label: `${STEP_ORDER.indexOf(step) + 1}/${STEP_ORDER.length} ${step}: ${text}`, commands },
+  });
+
+  group('address', `type the ${values.dest} address`, [
     { tapOn: { point: POINTS.sendTab } },
     { extendedWaitUntil: { visible: 'Address to send', timeout: 15000 } },
     // The runner has emptied the field the Send tab keeps (clearSendAddress in run.js).
@@ -93,46 +102,40 @@ function buildSendFlow(scenario, outcome, { address, token, symbols }) {
     { inputText: address },
     // The field must hold exactly this address: leftovers from the last scenario fail here.
     { assertVisible: address },
-  ];
-  const done = () => [...steps, outcomeCheck(outcome)];
-  if (stopAt === 0) {
-    return render(scenario, done());
-  }
-  steps.push(
-    { tapOn: 'NEXT' },
-    { extendedWaitUntil: { visible: AVAILABLE, timeout: 15000 } },
-    // The screen opens on the last token picked, so always pick: its symbol box, then its name.
-    { tapOn: { text: symbols.join('|') } },
-    { tapOn: token.name },
-    { extendedWaitUntil: { visible: `[0-9][0-9,.]* ${token.symbol} available`, timeout: 15000 } },
-    ...amountSteps(values.amount),
-    { tapOn: { point: POINTS.blank } },
-    { tapOn: { point: POINTS.privacyCard } },
-    { tapOn: { point: POINTS.privacyToggle[values.privacy] } },
-    { tapOn: { point: POINTS.privacyDone } },
-  );
-  if (stopAt === 1) {
+  ]);
+  if (stopAt >= 1) {
+    const amount = [
+      { tapOn: 'NEXT' },
+      { extendedWaitUntil: { visible: AVAILABLE, timeout: 15000 } },
+      // The screen opens on the last token picked, so always pick: its symbol box, then its name.
+      { tapOn: { text: symbols.join('|') } },
+      { tapOn: token.name },
+      { extendedWaitUntil: { visible: `[0-9][0-9,.]* ${token.symbol} available`, timeout: 15000 } },
+      ...amountSteps(values.amount),
+      { tapOn: { point: POINTS.blank } },
+      { tapOn: { point: POINTS.privacyCard } },
+      { tapOn: { point: POINTS.privacyToggle[values.privacy] } },
+      { tapOn: { point: POINTS.privacyDone } },
+    ];
     // The amount screen sets its errors when Next is tapped; a disabled Next is checked as is.
-    if (outcome.message !== 'Next stays disabled') {
-      steps.push({ tapOn: 'NEXT' });
+    if (stopAt > 1 || outcome.message !== 'Next stays disabled') {
+      amount.push({ tapOn: 'NEXT' });
     }
-    return render(scenario, done());
+    group('amount', `pick ${token.symbol}, type the ${values.amount} amount, pick ${PRIVACY_NAMES[values.privacy]}`, amount);
   }
-  steps.push({ tapOn: 'NEXT' });
-  if (stopAt === 2) {
-    // A confirm screen that can't build the transaction shows only the error, no summary.
-    return render(scenario, done());
+  // A confirm screen that can't build the transaction shows only the error, no summary.
+  if (stopAt >= 3) {
+    group('confirm', 'check the summary and tap Send', [
+      { extendedWaitUntil: { visible: 'Transaction summary', timeout: 30000 } },
+      { tapOn: 'SEND' },
+    ]);
+    group('authorize', 'enter the PIN', [{ runFlow: '../enter_pin.yaml' }]);
   }
-  steps.push(
-    { extendedWaitUntil: { visible: 'Transaction summary', timeout: 30000 } },
-    { tapOn: 'SEND' },
-    { runFlow: '../enter_pin.yaml' },
-  );
-  return render(scenario, done());
-}
-
-function render(scenario, steps) {
-  return `appId: network.hathor.wallet\n---\n# ${scenario.id}\n${YAML.stringify(steps)}`;
+  // Maestro evaluates ${...} in a label, so the message's placeholders become <name>.
+  const expected = outcome.message.replace(/\*\*/g, '').replace(/\$\{([^}]+)\}/g, '<$1>');
+  groups.push({ runFlow: { label: `expect ${outcome.id}: ${expected}`, commands: [outcomeCheck(outcome)] } });
+  const yaml = (doc) => YAML.stringify(doc, { lineWidth: 0 });
+  return `${yaml({ appId: 'network.hathor.wallet', name: scenario.id })}---\n${yaml(groups)}`;
 }
 
 module.exports = { buildSendFlow, unrunnableReason, messagePattern };

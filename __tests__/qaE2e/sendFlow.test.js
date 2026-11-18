@@ -21,7 +21,10 @@ const scenario = (values) => ({
 const outcome = (at, message, kind = 'error') => ({ id: 'o', at, message, kind });
 const HTR = { name: 'Hathor', symbol: 'HTR' };
 const target = (token = HTR) => ({ address: 'Wabc', token, symbols: ['HTR', 'E2ED'] });
-const steps = (flow) => YAML.parseAllDocuments(flow)[1].toJS();
+const docs = (flow) => YAML.parseAllDocuments(flow).map((doc) => doc.toJS());
+// The commands of every labelled group, in order.
+const steps = (flow) => docs(flow)[1].flatMap((group) => group.runFlow.commands);
+const labels = (flow) => docs(flow)[1].map((group) => group.runFlow.label);
 const has = (list, predicate) => list.some(predicate);
 
 describe('send flow', () => {
@@ -56,6 +59,26 @@ describe('send flow', () => {
     const privateFlow = steps(buildSendFlow(scenario({ privacy: 'private' }), outcome('amount', 'x'), target()));
     const taps = (flow) => flow.filter((s) => s.tapOn && s.tapOn.point).map((s) => s.tapOn.point);
     expect(taps(publicFlow)).not.toEqual(taps(privateFlow));
+  });
+});
+
+describe('labels', () => {
+  it('names the flow after the scenario and labels each graph step and the outcome', () => {
+    const flow = buildSendFlow(scenario({ token: 'deposit', privacy: 'hide-amount' }), { ...outcome('authorize', 'Your transfer of **${amountAndToken}** has been confirmed', 'success'), id: 'ok-sent' }, target({ name: 'E2E Deposit', symbol: 'E2ED' }));
+    expect(docs(flow)[0].name).toBe('send:pn:x');
+    expect(labels(flow)).toEqual([
+      '1/4 address: type the simple address',
+      '2/4 amount: pick E2ED, type the normal amount, pick Hide amount',
+      '3/4 confirm: check the summary and tap Send',
+      '4/4 authorize: enter the PIN',
+      // Maestro would evaluate ${amountAndToken} in a label.
+      'expect ok-sent: Your transfer of <amountAndToken> has been confirmed',
+    ]);
+  });
+
+  it('labels only the steps up to the outcome', () => {
+    const flow = buildSendFlow(scenario({}), { ...outcome('address', 'Next stays disabled'), id: 'err' }, target());
+    expect(labels(flow)).toEqual(['1/4 address: type the simple address', 'expect err: Next stays disabled']);
   });
 });
 
