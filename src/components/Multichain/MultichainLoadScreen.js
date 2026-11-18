@@ -52,7 +52,11 @@ export function MultichainLoadScreen() {
 
   useEffect(() => {
     const timer = setTimeout(() => setWaitedOn(status), LOAD_EXIT_AFTER_MS);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      // A status left forgets its wait: coming back to it waits the whole time again.
+      setWaitedOn(null);
+    };
   }, [status]);
 
   const tryAgain = () => {

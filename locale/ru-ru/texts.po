@@ -887,7 +887,7 @@ msgid "Enter your seed words separated by space"
 msgstr "Введите seed-фразу"
 
 #: src/components/ImportTokensModal.js:72
-#: src/components/Multichain/MultichainLoadScreen.js:85
+#: src/components/Multichain/MultichainLoadScreen.js:89
 #: src/components/Multichain/TokenHistoryList.js:54
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
@@ -917,7 +917,7 @@ msgstr "**${ loadedData.addresses } адресов** найдено"
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/components/Multichain/MultichainLoadScreen.js:97
+#: src/components/Multichain/MultichainLoadScreen.js:101
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:217
 #: src/screens/PinScreen.js:350 src/screens/Settings.js:289
 msgid "Reset wallet"
@@ -3579,12 +3579,12 @@ msgstr ""
 msgid "Connecting to Hathor Next…"
 msgstr ""
 
-#: src/components/Multichain/MultichainLoadScreen.js:91
-#: src/components/Multichain/MultichainLoadScreen.js:113
+#: src/components/Multichain/MultichainLoadScreen.js:95
+#: src/components/Multichain/MultichainLoadScreen.js:117
 msgid "Disconnect side chain"
 msgstr ""
 
-#: src/components/Multichain/MultichainLoadScreen.js:107
+#: src/components/Multichain/MultichainLoadScreen.js:111
 msgid "Loading Hathor Next…"
 msgstr ""
 
