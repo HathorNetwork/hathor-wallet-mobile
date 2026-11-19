@@ -17,7 +17,6 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { utf8ToBytes } from '@noble/hashes/utils';
 import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
 import SimpleInput from '../../components/SimpleInput';
@@ -42,6 +41,16 @@ export const MAX_SYMBOL = 12;
 export const MAX_NAME = 48;
 const MAX_SYMBOL_BYTES = 16;
 const MAX_NAME_BYTES = 64;
+
+/**
+ * A text's length in UTF-8 bytes, as the creation's body counts it. The app's Buffer (shim.js)
+ * counts it: this screen loads at the app's start, and the Hathor Next kit's crypto library
+ * mustn't run there.
+ *
+ * @param {string} text
+ * @returns {number}
+ */
+export const utf8Length = (text) => Buffer.byteLength(text, 'utf8');
 // The most of a token there can be: a u64, as the network's amounts are.
 const MAX_SUPPLY = 2n ** 64n - 1n;
 // The native tokens' own names: a token named after one could pass for it on a Dashboard.
@@ -79,10 +88,10 @@ export function tokenFormError({ name, symbol, amount }, native = {}) {
   if (symbol && !/^[A-Z0-9]*$/.test(symbol)) {
     return t`Symbols use letters and numbers only.`;
   }
-  if (symbol && (symbol.length < 2 || utf8ToBytes(symbol).length > MAX_SYMBOL_BYTES)) {
+  if (symbol && (symbol.length < 2 || utf8Length(symbol) > MAX_SYMBOL_BYTES)) {
     return t`A symbol has 2 to ${MAX_SYMBOL} letters or numbers.`;
   }
-  if (name && (name.trim() !== name || utf8ToBytes(name).length > MAX_NAME_BYTES)) {
+  if (name && (name.trim() !== name || utf8Length(name) > MAX_NAME_BYTES)) {
     return t`The name can't start or end with a space, nor be this long.`;
   }
   if (amount !== null && amount <= 0n) {

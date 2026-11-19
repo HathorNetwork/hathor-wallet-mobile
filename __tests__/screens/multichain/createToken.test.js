@@ -29,6 +29,7 @@ import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { utf8ToBytes } from '@noble/hashes/utils';
 import { reducer } from '../../../src/reducers/reducer';
 import {
   multichainNextCreateTokenUpdate,
@@ -44,6 +45,7 @@ import {
 import { STORE } from '../../../src/store';
 import NextCreateTokenScreen, {
   tokenFormError,
+  utf8Length,
 } from '../../../src/screens/Multichain/NextCreateTokenScreen';
 import NextCreateTokenConfirmScreen, {
   creationLostText,
@@ -191,6 +193,21 @@ describe('the token form', () => {
     ['no supply', { name: 'Token', symbol: 'ATT', amount: 0n }, 'Invalid amount'],
   ])('refuses %s', (_, form, words) => {
     expect(tokenFormError(form)).toContain(words);
+  });
+
+  // As the creation's body counts them: in UTF-8 bytes. The app counts them with its Buffer, the
+  // polyfill shim.js installs, and Jest's is Node's: both count as Hathor Next does.
+  test('counts a name and a symbol in UTF-8 bytes, as Hathor Next does', () => {
+    const AppBuffer = jest.requireActual('buffer/').Buffer;
+    for (const text of ['App Test Token', 'Açaí', 'Größe', '東京トークン', '🚀 to the moon', 'é', '\ud800']) {
+      expect(utf8Length(text)).toBe(utf8ToBytes(text).length);
+      expect(AppBuffer.byteLength(text, 'utf8')).toBe(utf8ToBytes(text).length);
+    }
+    // The name's limit is 64 bytes, whatever its length in characters: 21 three-byte characters
+    // and one more letter fill it.
+    const form = (name) => ({ name, symbol: 'ATT', amount: 1n });
+    expect(tokenFormError(form(`${'東'.repeat(21)}x`))).toBeNull();
+    expect(tokenFormError(form('東'.repeat(22)))).toContain('nor be this long');
   });
 
   test('takes a well-formed token', () => {

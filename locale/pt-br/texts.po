@@ -82,7 +82,7 @@ msgstr "CRIAR TOKEN DE TAXA"
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:272
-#: src/screens/Multichain/NextCreateTokenScreen.js:148 src/utils.js:890
+#: src/screens/Multichain/NextCreateTokenScreen.js:157 src/utils.js:890
 msgid "CREATE TOKEN"
 msgstr "CRIAR TOKEN"
 
@@ -478,7 +478,7 @@ msgid "Back"
 msgstr "Voltar"
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/Multichain/NextCreateTokenScreen.js:89
+#: src/screens/Multichain/NextCreateTokenScreen.js:98
 #: src/screens/Multichain/NextSendAmountInput.js:154
 #: src/screens/SendAmountInput.js:165
 msgid "Invalid amount"
@@ -509,7 +509,7 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421
-#: src/screens/Multichain/NextCreateTokenScreen.js:214
+#: src/screens/Multichain/NextCreateTokenScreen.js:223
 #: src/screens/Multichain/NextSendAmountInput.js:231
 #: src/screens/SendAddressInput.js:224 src/screens/SendAmountInput.js:287
 msgid "Next"
@@ -566,13 +566,13 @@ msgstr "Quantidade de ${ name }"
 
 #: src/screens/CreateTokenConfirm.js:272
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:276
-#: src/screens/Multichain/NextCreateTokenScreen.js:160
+#: src/screens/Multichain/NextCreateTokenScreen.js:169
 msgid "Token name"
 msgstr "Nome do token"
 
 #: src/screens/CreateTokenConfirm.js:278 src/screens/CreateTokenSymbol.js:71
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:278
-#: src/screens/Multichain/NextCreateTokenScreen.js:172
+#: src/screens/Multichain/NextCreateTokenScreen.js:181
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
@@ -2319,7 +2319,7 @@ msgstr ""
 msgid "Public"
 msgstr "Público"
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:57
+#: src/screens/Multichain/NextCreateTokenScreen.js:66
 msgid ""
 "Creating a token is public. Its name, its symbol, the amount you create and "
 "the HTR that comes back to you as change from the fee go on Hathor Next in "
@@ -2333,7 +2333,7 @@ msgstr ""
 "endereço na Hathor Next pode ver os tokens que você criou. Você verá quanto "
 "HTR é isso antes de o token ser criado."
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:64
+#: src/screens/Multichain/NextCreateTokenScreen.js:73
 msgid ""
 "The keys that let you create more of this token, or destroy some, come from "
 "your recovery words: this wallet holds them on any device you restore it to, "
@@ -2344,7 +2344,7 @@ msgstr ""
 "dispositivo em que você a restaurar, e elas nunca saem dela. Não há mais "
 "nada para guardar."
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:77
+#: src/screens/Multichain/NextCreateTokenScreen.js:86
 msgid ""
 "This is a native token's name or symbol. Choose another, so your token can't "
 "be taken for it."
@@ -2352,38 +2352,38 @@ msgstr ""
 "Este é o nome ou o símbolo de um token nativo. Escolha outro, para que seu "
 "token não seja confundido com ele."
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:80
+#: src/screens/Multichain/NextCreateTokenScreen.js:89
 msgid "Symbols use letters and numbers only."
 msgstr "Símbolos usam apenas letras e números."
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:83
+#: src/screens/Multichain/NextCreateTokenScreen.js:92
 #, javascript-format
 msgid "A symbol has 2 to ${ MAX_SYMBOL } letters or numbers."
 msgstr "Um símbolo tem de 2 a ${ MAX_SYMBOL } letras ou números."
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:86
+#: src/screens/Multichain/NextCreateTokenScreen.js:95
 msgid "The name can't start or end with a space, nor be this long."
 msgstr "O nome não pode começar nem terminar com espaço, nem ser tão longo."
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:92
+#: src/screens/Multichain/NextCreateTokenScreen.js:101
 msgid "That is more than a token can have."
 msgstr "Isso é mais do que um token pode ter."
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:158
+#: src/screens/Multichain/NextCreateTokenScreen.js:167
 msgid "On Hathor Next"
 msgstr "Na Hathor Next"
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:162
+#: src/screens/Multichain/NextCreateTokenScreen.js:171
 #, javascript-format
 msgid "${ nameLength }/${ MAX_NAME } characters"
 msgstr "${ nameLength }/${ MAX_NAME } caracteres"
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:174
+#: src/screens/Multichain/NextCreateTokenScreen.js:183
 #, javascript-format
 msgid "${ symbol.length }/${ MAX_SYMBOL } letters or numbers"
 msgstr "${ symbol.length }/${ MAX_SYMBOL } letras ou números"
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:184
+#: src/screens/Multichain/NextCreateTokenScreen.js:193
 msgid ""
 "Symbols aren't unique: anyone can create a token with the same letters. A "
 "token is told apart by its id."
@@ -2391,11 +2391,11 @@ msgstr ""
 "Símbolos não são únicos: qualquer pessoa pode criar um token com as mesmas "
 "letras. Um token se distingue pelo seu id."
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:187
+#: src/screens/Multichain/NextCreateTokenScreen.js:196
 msgid "Amount to create"
 msgstr "Quantidade a criar"
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:202
+#: src/screens/Multichain/NextCreateTokenScreen.js:211
 #: src/screens/Multichain/NextSendAmountInput.js:214
 #, javascript-format
 msgid "Network fee: ${ feeText } ${ nativeSymbol }"
