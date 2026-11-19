@@ -31,6 +31,7 @@ jest.mock('../../src/multichain/nextClient', () => require('../multichain/fakes/
 jest.mock('../../src/multichain/bridge', () => require('../multichain/fakes/bridgeModule'));
 
 /* eslint-disable import/first */
+import { walletUtils } from '@hathor/wallet-lib';
 import { runSaga, stdChannel } from 'redux-saga';
 import { put } from 'redux-saga/effects';
 import { reducer } from '../../src/reducers/reducer';
@@ -113,7 +114,12 @@ import {
   NEXT_CLIENT_EVENT,
   NextClientError,
 } from '../../src/multichain/nextClientErrors';
-import { PasskeyCancelledError, withPasskeyWords } from '../../src/passkey/passkeySigner';
+import {
+  PasskeyCancelledError,
+  verifyPasskeyForUnlock,
+  withPasskeyWords,
+} from '../../src/passkey/passkeySigner';
+import * as passkeyService from '../../src/passkey/passkeyService';
 /* eslint-enable import/first */
 
 const NETWORK = FAKE_NETWORK;
@@ -883,6 +889,101 @@ describe('a Hathor Next token creation', () => {
       } finally {
         STORE.removeItem(multichainKeyMap.devBackend);
       }
+    });
+  });
+
+  describe('a lock', () => {
+    // The client's question, and what the saga answered it.
+    const answering = () => {
+      const answers = [];
+      const client = getNextClient();
+      const createToken = client.createToken.bind(client);
+      jest.spyOn(client, 'createToken').mockImplementation((params) => createToken({
+        ...params,
+        approveSigning: async (change) => {
+          const answer = await params.approveSigning(change);
+          answers.push({ change, answer });
+          return answer;
+        },
+      }));
+      return answers;
+    };
+
+    // The review is drawn above the lock screen: it could still be answered there.
+    test('during the review closes it, answers no and signs nothing', async () => {
+      const env = setup();
+      await connect(env);
+      withChange();
+      const answers = answering();
+      env.dispatch(draft('token-l1'));
+      await wait(1000);
+      expect(env.getState().multichain.createToken.review).toEqual({ publicChange: CHANGE });
+      env.dispatch(lockScreen());
+      await wait(10);
+      env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-l1', accept: true }));
+      await wait(1000);
+      // No, which the client takes as declined: it cancels the request and gives the nonce back.
+      expect(answers).toEqual([{ change: CHANGE, answer: false }]);
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.IDLE, draftId: 'token-l1', sendId: null, review: null,
+      });
+      expect(created(env)).toBe(false);
+    });
+
+    test('while the backend prepares a creation with no change answers no, and signs nothing', async () => {
+      const env = setup();
+      await connect(env);
+      saveLedger(NETWORK, { ...loadLedger(NETWORK), createBuildMs: 500 });
+      const answers = answering();
+      env.dispatch(draft('token-l2'));
+      await wait(10);
+      // Locked, and unlocked again before the question comes: still a no.
+      env.dispatch(lockScreen());
+      await wait(10);
+      env.dispatch(unlockScreen());
+      await wait(1000);
+      expect(answers).toEqual([{ change: 0n, answer: false }]);
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.IDLE, draftId: 'token-l2', sendId: null,
+      });
+      expect(created(env)).toBe(false);
+    });
+
+    test('is not an unlock: an unlock alone leaves the review open', async () => {
+      const env = setup();
+      await connect(env);
+      withChange();
+      env.dispatch(draft('token-l3'));
+      await wait(1000);
+      env.dispatch(unlockScreen());
+      await wait(10);
+      expect(env.getState().multichain.createToken.review).toEqual({ publicChange: CHANGE });
+      env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-l3', accept: true }));
+      await wait(1000);
+      expect(env.getState().multichain.createToken.status).toBe(OPERATION_STATUS.RECORDED);
+      expect(created(env)).toBe(true);
+    });
+
+    // The ceremony only hands the words over: the unlock's own ceremony goes on.
+    test('of a passkey wallet finds the passkey free while its creation is reviewed', async () => {
+      const passkey = jest.requireActual('../../src/passkey/passkeySigner');
+      const words = walletUtils.generateWalletWords();
+      withPasskeyWords.mockImplementation(passkey.withPasskeyWords);
+      STORE.isPasskeyWallet.mockReturnValue(true);
+      jest.spyOn(STORE, 'getWalletMeta').mockReturnValue({
+        xpub: passkey.derivePasskeyXpub(words), credentialId: 'credential',
+      });
+      jest.spyOn(passkeyService, 'signInWalletWordsFromPasskey')
+        .mockResolvedValue({ words, credentialId: 'credential' });
+      const env = setup();
+      await connect(env);
+      withChange();
+      env.dispatch(draft('token-l4'));
+      await wait(1000);
+      expect(env.getState().multichain.createToken.review).toEqual({ publicChange: CHANGE });
+      const ceremonies = passkeyService.signInWalletWordsFromPasskey.mock.calls.length;
+      await expect(verifyPasskeyForUnlock()).resolves.toBeUndefined();
+      expect(passkeyService.signInWalletWordsFromPasskey).toHaveBeenCalledTimes(ceremonies + 1);
     });
   });
 

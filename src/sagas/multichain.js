@@ -1156,7 +1156,8 @@ function* creationAllowed(connection) {
  * Answers the client's question right before it signs a creation: yes only when the user agreed
  * to the HTR it makes public, asked on the creation's screen when there is any, and the creation
  * is still allowed on the Hathor Next it was authorized on. From the attempt's start, the screen
- * closing or the app leaving Hathor Next is a no, to a question asked then or later.
+ * closing, the app leaving Hathor Next or the app locking is a no, to a question asked then or
+ * later: nothing is signed for a creation reviewed, or prepared, across a lock.
  *
  * @param {Object} reviews The channel the client's questions come through
  * @param {string} draftId
@@ -1164,7 +1165,11 @@ function* creationAllowed(connection) {
  * @param {{ stop: Function }} attempt Told when a no came from the creation no longer allowed
  */
 function* reviewCreation(reviews, draftId, connection, attempt) {
-  const ended = [types.MULTICHAIN_NEXT_CREATE_TOKEN_RESET, types.MULTICHAIN_NEXT_RESET];
+  const ended = (action) => (
+    [types.MULTICHAIN_NEXT_CREATE_TOKEN_RESET, types.MULTICHAIN_NEXT_RESET].includes(action.type)
+    // A lock, not an unlock: the same action, with false.
+    || (action.type === types.SET_LOCK_SCREEN && action.payload === true)
+  );
   let gone = false;
   let pending = null;
   try {
@@ -1263,9 +1268,18 @@ export function* onNextCreateTokenRequested({ payload }) {
     const create = (words) => client.createToken({
       words, symbol, name, amount, approveSigning,
     });
-    const created = STORE.isPasskeyWallet()
-      ? yield call(withPasskeyWords, create)
-      : yield call(create, yield call([STORE, STORE.getWalletWords], pinCode));
+    // The passkey's ceremony only hands the words over, as the PIN does: the creation runs after
+    // it, so the passkey stays free while the backend prepares it and while it is reviewed (an
+    // unlock runs a ceremony of its own).
+    let words = STORE.isPasskeyWallet()
+      ? yield call(withPasskeyWords, async (passkeyWords) => passkeyWords)
+      : yield call([STORE, STORE.getWalletWords], pinCode);
+    let created;
+    try {
+      created = yield call(create, words);
+    } finally {
+      words = null;
+    }
     ({ sendId } = created);
     const { tokenId } = created;
     // Signed: its id says so. Named with its draft, so its screen still shows it if the app left
