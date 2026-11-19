@@ -18,6 +18,7 @@ import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
 import {
   multichainNextCreateTokenRequested,
   multichainNextCreateTokenReset,
+  multichainNextCreateTokenReviewed,
 } from '../../actions';
 import { renderNextValue } from '../../multichain/amount';
 import {
@@ -44,6 +45,14 @@ import errorIcon from '../../assets/images/icErrorBig.png';
  * Next.
  */
 export const creationLostText = () => t`The token creation was sent, but this screen lost track of it when the app left Hathor Next. Check your tokens on Hathor Next before you create this one again.`;
+
+/**
+ * What the user is asked before a creation that pays some of their HTR back in the open is signed.
+ *
+ * @param {string} symbol The token's
+ * @param {string} shown The HTR that goes public, as shown
+ */
+export const publicChangeText = (symbol, shown) => t`Creating ${symbol} makes ${shown} public. The fee is paid from your HTR, and what comes back to you as change is paid openly to your Hathor Next address, where anyone who knows that address can see it.`;
 
 let draftCount = 0;
 
@@ -150,7 +159,33 @@ export default function NextCreateTokenConfirmScreen() {
     <Image source={source} style={styles.feedbackIcon} resizeMode='contain' />
   );
 
+  // The creation is checked and waits for the user to agree to the HTR it makes public.
+  const review = own ? current.review : null;
+  const answer = (accept) => {
+    dispatch(multichainNextCreateTokenReviewed({ draftId, accept }));
+  };
+
   const renderOutcome = () => {
+    if (review) {
+      return (
+        <FeedbackModal
+          icon={icon(errorIcon)}
+          text={publicChangeText(symbol, render(review.publicChange, nativeSymbol))}
+          onDismiss={() => answer(false)}
+          action={(
+            <View style={styles.reviewActions}>
+              <NewHathorButton title={t`Create ${symbol}`} onPress={() => answer(true)} />
+              <NewHathorButton
+                secondary
+                wrapperStyle={styles.reviewCancel}
+                title={t`Cancel`}
+                onPress={() => answer(false)}
+              />
+            </View>
+          )}
+        />
+      );
+    }
     if (lost) {
       return (
         <FeedbackModal
@@ -333,5 +368,11 @@ const styles = StyleSheet.create({
   feedbackIcon: {
     height: 105,
     width: 105,
+  },
+  reviewActions: {
+    width: '100%',
+  },
+  reviewCancel: {
+    marginTop: 12,
   },
 });

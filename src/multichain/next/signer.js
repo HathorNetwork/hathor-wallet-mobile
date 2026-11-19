@@ -45,6 +45,16 @@ export class SignRefusedError extends Error {
 }
 
 /**
+ * A token creation spends a coin its fee doesn't need: that coin would come back as public change.
+ */
+export class CoinsNotNeededError extends SignRefusedError {
+  constructor() {
+    super('The token creation spends coins its fee doesn\'t need.');
+    this.name = 'CoinsNotNeededError';
+  }
+}
+
+/**
  * An input of the request was already signed into another transaction. That transaction may
  * still go through, so nothing new is signed; its saved bytes can be submitted again.
  */
@@ -237,7 +247,16 @@ export const MAX_SETTLED_ENTRIES = 200;
  * The keys in the token's body are this wallet's own, derived from its words, so a restored wallet
  * still holds them; a body naming any other key would give the token's mint and melt powers to
  * whoever holds that one. The supply and the change are public by the protocol (a creation's
- * outputs are transparent): the user is told so before approving.
+ * outputs are transparent): the user is told so before approving, and sees the change's amount
+ * (publicChange) before it is signed.
+ *
+ * So no input may be one the fee doesn't need: each would add its whole amount to that public
+ * change, and a backend spending every coin would publish the whole balance and link the coins.
+ * A creation spends only the native token, so its inputs add up to the change and the fee, and an
+ * input is not needed exactly when it is no larger than the change. The app can't read a hidden
+ * input's amount, but with every input larger than the change, (inputs − 1) × change < fee: a
+ * creation that breaks that has an input it doesn't need. A largest-first choice always meets it,
+ * as it stops at the first coin that covers the fee.
  *
  * @param {Object} request The backend's sign request
  * @param {Object} context
@@ -252,7 +271,8 @@ export const MAX_SETTLED_ENTRIES = 200;
  * @param {string} [context.amountWidth] The network's amount width, 'u64' or 'u128'
  * @param {number} [context.nowS] The time, in unix seconds
  * @returns {{ bytes: Uint8Array, tx: Object, signingHash: Uint8Array, secrets: bigint[],
- *   keys: Uint8Array[] }}
+ *   keys: Uint8Array[], publicChange: bigint }} publicChange: the native token the creation pays
+ *   back to this wallet, in the open
  */
 export function checkCreateRequest(request, {
   b,
@@ -344,6 +364,7 @@ export function checkCreateRequest(request, {
   const own = { view: hexToBytes(serviceViewPub), spend: pubB };
   const created = bytesToHex(CREATED_TOKEN_ID);
   let supply = 0n;
+  let change = 0n;
   for (const o of outputs) {
     let keysOf;
     try {
@@ -358,14 +379,19 @@ export function checkCreateRequest(request, {
       // The created token is held by transparent outputs only: the opening has already matched
       // each claim to its output.
       supply += BigInt(o.amount);
-    } else if (o.token !== nativeTokenId) {
+    } else if (o.token === nativeTokenId) {
+      change += BigInt(o.amount);
+    } else {
       refuse('An output of the token creation is in an unexpected token.');
     }
   }
   if (supply !== intent.amount) {
     refuse('The token\'s supply is not the amount the user approved.');
   }
-  return { bytes, tx, signingHash, secrets, keys };
+  if (tx.nIn > 0 && BigInt(tx.nIn - 1) * change >= tx.feeAmount) {
+    throw new CoinsNotNeededError();
+  }
+  return { bytes, tx, signingHash, secrets, keys, publicChange: change };
 }
 
 /**

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { buffers, eventChannel } from 'redux-saga';
+import { buffers, channel, eventChannel } from 'redux-saga';
 import {
   all,
   call,
@@ -1092,7 +1092,39 @@ const CREATION_CLEARED = {
   tokenId: null,
   reason: null,
   error: null,
+  review: null,
 };
+
+/**
+ * Asks the user about the HTR a token creation would make public, and gives the client their
+ * answer: yes only when they confirm it on the creation's screen. The screen closing, or the app
+ * leaving Hathor Next, is a no.
+ *
+ * @param {Object} reviews The channel the client's questions come through
+ * @param {string} draftId
+ */
+function* reviewCreation(reviews, draftId) {
+  let pending = null;
+  try {
+    while (true) {
+      const { publicChange, resolve } = yield take(reviews);
+      pending = resolve;
+      yield put(multichainNextCreateTokenUpdate({ review: { publicChange } }));
+      const { answer } = yield race({
+        answer: take((action) => action.type === types.MULTICHAIN_NEXT_CREATE_TOKEN_REVIEWED
+          && action.payload.draftId === draftId),
+        closed: take(types.MULTICHAIN_NEXT_CREATE_TOKEN_RESET),
+        left: take(types.MULTICHAIN_NEXT_RESET),
+      });
+      pending = null;
+      yield put(multichainNextCreateTokenUpdate({ review: null }));
+      resolve(answer?.payload.accept === true);
+    }
+  } finally {
+    // Stopped while a question waited: nothing is signed.
+    pending?.(false);
+  }
+}
 
 /**
  * Creates a token on Hathor Next. The token's keys come from the words, so they are needed once
@@ -1132,10 +1164,20 @@ export function* onNextCreateTokenRequested({ payload }) {
     tokenId: null,
     reason: null,
     error: null,
+    review: null,
   }));
+  // The client asks before it signs a creation that makes some HTR public: the screen shows how
+  // much, and the user's answer comes back to it from reviewCreation.
+  const reviews = yield call(channel, buffers.expanding());
+  const confirmPublicChange = (publicChange) => new Promise((resolve) => {
+    reviews.put({ publicChange, resolve });
+  });
+  const reviewer = yield fork(reviewCreation, reviews, draftId);
   try {
     const client = getNextClient();
-    const create = (words) => client.createToken({ words, symbol, name, amount });
+    const create = (words) => client.createToken({
+      words, symbol, name, amount, confirmPublicChange,
+    });
     const { sendId, tokenId } = STORE.isPasskeyWallet()
       ? yield call(withPasskeyWords, create)
       : yield call(create, yield call([STORE, STORE.getWalletWords], pinCode));
@@ -1156,9 +1198,10 @@ export function* onNextCreateTokenRequested({ payload }) {
       }));
     }
   } catch (e) {
-    if (e instanceof PasskeyCancelledError) {
-      // Nothing happened: the form is as it was, and Create sends this draft when tapped again.
-      // The draft stays named, idle: that, and nothing else, turns its screen's Create on again.
+    // Nothing happened, the passkey dismissed or the public change declined: the form is as it
+    // was, and Create sends this draft when tapped again. The draft stays named, idle: that, and
+    // nothing else, turns its screen's Create on again.
+    if (e instanceof PasskeyCancelledError || e?.code === NEXT_CLIENT_ERROR.TOKEN_DECLINED) {
       sentDrafts.delete(draftId);
       yield put(multichainNextCreateTokenUpdate({ ...CREATION_CLEARED, draftId }));
       return;
@@ -1180,6 +1223,8 @@ export function* onNextCreateTokenRequested({ payload }) {
       error,
     }));
     return;
+  } finally {
+    yield cancel(reviewer);
   }
   const { sendId } = yield select((state) => state.multichain.createToken);
   yield call(awaitSendOutcome, sendId, {

@@ -259,7 +259,10 @@ const CLAIMS = PUBLIC.outputs.map((o) => ({
 }));
 
 /** The creation request for these outputs (in the reader's order), each written honestly. */
-function forged(outputs, { table = [], feeToken = 255, excess = false } = {}) {
+function forged(outputs, options = {}) {
+  const { table = [], feeToken = 255, excess = false } = options;
+  const { extraInputs = [], fee = BigInt(PUBLIC.fee) } = options;
+  const inputs = [...PUBLIC.inputs, ...extraInputs];
   const written = outputs.map((o, index) => honest(o.form, {
     ...o,
     index,
@@ -267,14 +270,16 @@ function forged(outputs, { table = [], feeToken = 255, excess = false } = {}) {
   }));
   return requestOf(PUBLIC, {
     unsigned_tx: creationBytes({
-      fee: BigInt(PUBLIC.fee),
+      fee,
       feeToken,
       table,
-      inputs: PUBLIC.inputs.map((i) => BigInt(i.global_index)),
+      inputs: inputs.map((i) => BigInt(i.global_index)),
       outputs: written,
       definition: DEFINITION,
       excess,
     }),
+    inputs,
+    fee: String(fee),
     outputs: outputs.map((o) => ({
       address: o.address, token: o.token, amount: String(o.amount), is_change: o.is_change,
     })),
@@ -410,6 +415,38 @@ describe('each check of a token creation, on its own', () => {
     const less = BigInt(PUBLIC.approved.amount) - 1n;
     expect(refusedFor(requestOf(PUBLIC), contextOf(PUBLIC, { amount: less })))
       .toBe('The token\'s supply is not the amount the user approved.');
+  });
+
+  // Another coin of this wallet's, spent beside the vector's own: its key is this wallet's.
+  const ownInput = (globalIndex, offset) => ({
+    global_index: globalIndex,
+    otk_offset: bytesToHex(bigintToBytesLE(offset)),
+    one_time_key: bytesToHex(publicKeyOf(modOrder(offset + bytesToBigintLE(hexToBytes(PUBLIC.b))))),
+  });
+
+  // Each coin the fee doesn't need adds its whole amount to the change, which is public.
+  it('refuses a creation spending a coin its fee doesn\'t need', () => {
+    const fee = BigInt(PUBLIC.fee);
+    const spends = (extraInputs, amount) => forged(withChange({ amount }), { extraInputs });
+    const refused = 'The token creation spends coins its fee doesn\'t need.';
+    // Three coins and the vector's change: 2 × change ≥ fee, so one was no larger than the change.
+    const change = CLAIMS[CHANGE_AT].amount;
+    expect(refusedFor(spends([ownInput(7, 11n), ownInput(8, 12n)], change))).toBe(refused);
+    // Two coins: refused from a change of the fee itself, accepted just below it.
+    expect(refusedFor(spends([ownInput(7, 11n)], fee))).toBe(refused);
+    const justBelow = spends([ownInput(7, 11n)], fee - 1n);
+    expect(refusal(() => checkCreateRequest(justBelow, contextOf(PUBLIC)))).toBeNull();
+    // One coin is needed for a fee, whatever comes back from it, and none for no fee.
+    expect(refusal(() => checkCreateRequest(spends([], 10n * fee), contextOf(PUBLIC)))).toBeNull();
+    expect(refusedFor(forged(withChange({ amount: change }), { fee: 0n }))).toBe(refused);
+  });
+
+  it('gives the change the creation pays back in the open, so the user sees it', () => {
+    const change = PUBLIC.outputs.find((o) => o.is_change && o.token === NATIVE).amount;
+    expect(checkCreateRequest(requestOf(PUBLIC), contextOf(PUBLIC)).publicChange)
+      .toBe(BigInt(change));
+    expect(checkCreateRequest(forged(withChange({ amount: 0n })), contextOf(PUBLIC)).publicChange)
+      .toBe(0n);
   });
 });
 

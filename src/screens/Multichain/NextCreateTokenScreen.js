@@ -54,7 +54,7 @@ const NATIVE_SYMBOLS = ['HTR'];
  * address, so they also show who created the token.
  */
 export function publicTokenNote() {
-  return t`Creating a token is public. Its name, its symbol, the amount you create and what comes back to you from the fee go on Hathor Next in the clear, paid openly to your address: anyone who knows your Hathor Next address can see the tokens you created.`;
+  return t`Creating a token is public. Its name, its symbol, the amount you create and the HTR that comes back to you as change from the fee go on Hathor Next in the clear, paid openly to your address: anyone who knows your Hathor Next address can see the tokens you created. You'll see how much HTR that is before the token is created.`;
 }
 
 /**

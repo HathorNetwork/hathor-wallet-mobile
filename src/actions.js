@@ -311,6 +311,7 @@ export const types = {
   MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED: 'MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED',
   MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE: 'MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE',
   MULTICHAIN_NEXT_CREATE_TOKEN_RESET: 'MULTICHAIN_NEXT_CREATE_TOKEN_RESET',
+  MULTICHAIN_NEXT_CREATE_TOKEN_REVIEWED: 'MULTICHAIN_NEXT_CREATE_TOKEN_REVIEWED',
   MULTICHAIN_TRANSFERS_SET: 'MULTICHAIN_TRANSFERS_SET',
   MULTICHAIN_TRANSFER_REQUESTED: 'MULTICHAIN_TRANSFER_REQUESTED',
   MULTICHAIN_TRANSFER_UPDATE: 'MULTICHAIN_TRANSFER_UPDATE',
@@ -2200,6 +2201,16 @@ export const multichainNextCreateTokenUpdate = (payload) => ({
 
 export const multichainNextCreateTokenReset = () => ({
   type: types.MULTICHAIN_NEXT_CREATE_TOKEN_RESET,
+});
+
+/**
+ * The user's answer to the HTR a token creation would make public.
+ *
+ * @param {{ draftId: string, accept: boolean }} payload
+ */
+export const multichainNextCreateTokenReviewed = ({ draftId, accept }) => ({
+  type: types.MULTICHAIN_NEXT_CREATE_TOKEN_REVIEWED,
+  payload: { draftId, accept },
 });
 
 /**

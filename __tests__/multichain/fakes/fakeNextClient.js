@@ -344,13 +344,27 @@ export function createFakeNextClient() {
 
     /**
      * Creates a token, its supply paid to the wallet. Sign-once, as a payment: the outcome
-     * arrives as a SEND event, and the token's id is the creation's transaction id.
+     * arrives as a SEND event, and the token's id is the creation's transaction id. As the real
+     * client, it asks `confirmPublicChange` before signing when the creation pays back HTR in the
+     * open: the ledger's `createChange`, none unless a test sets it.
      *
-     * @param {{ words: string, symbol: string, name: string, amount: bigint }} creation
+     * @param {{ words: string, symbol: string, name: string, amount: bigint,
+     *   confirmPublicChange: function(bigint): Promise<boolean> }} creation
      * @returns {Promise<{ sendId: string, tokenId: string }>}
      */
-    async createToken({ words, symbol, name, amount }) {
+    async createToken({ words, symbol, name, amount, confirmPublicChange }) {
+      if (typeof confirmPublicChange !== 'function') {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED);
+      }
       requireConnected();
+      const publicChange = BigInt(ledger().createChange ?? '0');
+      if (publicChange > 0n) {
+        const accepted = await confirmPublicChange(publicChange);
+        requireConnected();
+        if (accepted !== true) {
+          throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_DECLINED);
+        }
+      }
       if (!words) {
         throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
       }

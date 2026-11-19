@@ -47,6 +47,7 @@ import NextCreateTokenScreen, {
 } from '../../../src/screens/Multichain/NextCreateTokenScreen';
 import NextCreateTokenConfirmScreen, {
   creationLostText,
+  publicChangeText,
 } from '../../../src/screens/Multichain/NextCreateTokenConfirmScreen';
 import NavigationService from '../../../src/NavigationService';
 import HathorHeader from '../../../src/components/HathorHeader';
@@ -305,6 +306,60 @@ describe('the token confirmation', () => {
     return actions.find((a) => a.type === types.MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED)
       .payload.draftId;
   }
+
+  describe('the HTR a creation makes public', () => {
+    // Checked, not signed: the saga waits for the user's answer.
+    async function reviewing() {
+      const screen = await confirm();
+      const draftId = await authorize(screen);
+      await act(async () => {
+        screen.store.dispatch(multichainNextCreateTokenUpdate({
+          status: OPERATION_STATUS.SENDING, draftId, review: { publicChange: 45000000n },
+        }));
+      });
+      const answers = () => screen.actions
+        .filter((a) => a.type === types.MULTICHAIN_NEXT_CREATE_TOKEN_REVIEWED)
+        .map((a) => a.payload);
+      const modal = () => screen.renderer.root.findByType(FeedbackModal);
+      // The modal's own buttons, as its action holds them.
+      const press = async (title) => {
+        const target = [].concat(modal().props.action.props.children)
+          .find((element) => element.props.title === title);
+        await act(async () => { target.props.onPress(); });
+      };
+      return {
+        ...screen, draftId, answers, modal, press,
+      };
+    }
+
+    test('is shown with its amount before anything is signed, and Create answers yes', async () => {
+      const { draftId, answers, modal, press } = await reviewing();
+      expect(modal().props.text).toBe(publicChangeText('ATT', '0.45 HTR'));
+      expect(modal().props.text).toContain('Creating ATT makes 0.45 HTR public');
+      expect(answers()).toEqual([]);
+      await press('Create ATT');
+      expect(answers()).toEqual([{ draftId, accept: true }]);
+    });
+
+    test('is answered no by Cancel, and by dismissing it', async () => {
+      const { draftId, answers, modal, press } = await reviewing();
+      await press('Cancel');
+      await act(async () => { modal().props.onDismiss(); });
+      expect(answers()).toEqual([{ draftId, accept: false }, { draftId, accept: false }]);
+    });
+
+    test('is not another draft\'s to show', async () => {
+      const screen = await confirm();
+      await authorize(screen);
+      await act(async () => {
+        screen.store.dispatch(multichainNextCreateTokenUpdate({
+          status: OPERATION_STATUS.SENDING, draftId: 'another', review: { publicChange: 45000000n },
+        }));
+      });
+      const shown = screen.renderer.root.findAllByType(FeedbackModal).map((m) => m.props.text);
+      expect(shown.join(' ')).not.toContain('public. The fee');
+    });
+  });
 
   test('turns Create on again when the passkey was dismissed: nothing was sent', async () => {
     const screen = await confirm();

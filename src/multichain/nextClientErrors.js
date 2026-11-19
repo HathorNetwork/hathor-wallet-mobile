@@ -59,6 +59,13 @@ export const NEXT_CLIENT_ERROR = {
   TOKEN_PREPARE_FAILED: 'token-prepare-failed',
   // The backend built another token than the one approved: nothing was signed.
   TOKEN_REFUSED: 'token-refused',
+  // The backend's creation spends more coins than its fee needs: they would come back as public
+  // change. Nothing was signed.
+  TOKEN_EXTRA_COINS: 'token-extra-coins',
+  // The user didn't agree to the change a creation makes public: nothing was signed.
+  TOKEN_DECLINED: 'token-declined',
+  // The creation expired while it waited for the user's answer: nothing was signed.
+  TOKEN_REVIEW_EXPIRED: 'token-review-expired',
   // The token registry couldn't be read, so no nonce can be proven free for the token's keys.
   TOKEN_AUTHORITIES_UNKNOWN: 'token-authorities-unknown',
   // Too many creations started and didn't finish: a new token couldn't be found again from the
@@ -116,6 +123,12 @@ export function nextClientErrorMessage(code) {
       return t`Hathor Next couldn't prepare this token. Nothing was created.`;
     case NEXT_CLIENT_ERROR.TOKEN_REFUSED:
       return t`Hathor Next prepared a different token than the one you approved, so nothing was signed or created.`;
+    case NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS:
+      return t`Hathor Next prepared this token with more of your HTR than its fee needs, which would have made that HTR public, so nothing was signed or created.`;
+    case NEXT_CLIENT_ERROR.TOKEN_DECLINED:
+      return t`The token wasn't created. Nothing was signed and no fee was paid.`;
+    case NEXT_CLIENT_ERROR.TOKEN_REVIEW_EXPIRED:
+      return t`The token creation expired before you confirmed it, so nothing was signed and no fee was paid. Create the token again.`;
     case NEXT_CLIENT_ERROR.TOKEN_AUTHORITIES_UNKNOWN:
       return t`Hathor Next's list of tokens couldn't be read, so this wallet can't safely pick the keys for a new token. Nothing was created. Try again later.`;
     case NEXT_CLIENT_ERROR.TOKEN_NONCE_BEYOND_REACH:

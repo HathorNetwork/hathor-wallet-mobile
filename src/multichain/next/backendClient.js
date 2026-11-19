@@ -29,6 +29,7 @@ import {
 import { bytesToHex, hexToBytes } from './kit/scalar';
 import { tokenText } from './tokenText';
 import {
+  CoinsNotNeededError,
   LedgerConflictError,
   SignRefusedError,
   checkCreateRequest,
@@ -1268,10 +1269,19 @@ export function createBackendNextClient({
      * The words are needed once, to derive the keys at a nonce no other token of this wallet has
      * used, and are dropped before this returns.
      *
-     * @param {{ words: string, symbol: string, name: string, amount: bigint }} creation
+     * A creation's outputs are all public, its HTR change too. Once the checks pass, and before
+     * anything is signed, `confirmPublicChange` is asked with that change's amount, read from the
+     * bytes: the creation is signed only if it answers true, and is cancelled otherwise. A
+     * creation with no change asks nothing.
+     *
+     * @param {{ words: string, symbol: string, name: string, amount: bigint,
+     *   confirmPublicChange: function(bigint): Promise<boolean> }} creation
      * @returns {Promise<{ sendId: string, tokenId: string }>}
      */
-    async createToken({ words, symbol, name, amount }) {
+    async createToken({ words, symbol, name, amount, confirmPublicChange }) {
+      if (typeof confirmPublicChange !== 'function') {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED);
+      }
       requireConnected();
       if (!keys) {
         throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
@@ -1391,7 +1401,7 @@ export function createBackendNextClient({
         await nonces.release(nonce);
         throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
       }
-      const context = {
+      let context = {
         b: keys.b,
         pubB: keys.pubB,
         intent: { symbol, name, amount, mintAuthority, meltAuthority },
@@ -1402,6 +1412,51 @@ export function createBackendNextClient({
         nowS: Math.floor(nowMs() / 1000),
         ledger,
       };
+      const refused = async (e) => {
+        log.error(`A Hathor Next token creation was refused before signing: ${e.message}`);
+        await cancel();
+        await nonces.release(nonce);
+        return new NextClientError(e instanceof CoinsNotNeededError
+          ? NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS : NEXT_CLIENT_ERROR.TOKEN_REFUSED);
+      };
+      // Checked once before the user is asked, so the change they see is the one they'd sign.
+      let reviewed;
+      try {
+        reviewed = checkCreateRequest(request, context);
+      } catch (e) {
+        throw await refused(e instanceof SignRefusedError
+          ? e : new SignRefusedError(`The request can't be read: ${e.message}`));
+      }
+      if (reviewed.publicChange > 0n) {
+        let accepted = false;
+        try {
+          accepted = (await confirmPublicChange(reviewed.publicChange)) === true;
+        } catch (e) {
+          log.error('The public change of a Hathor Next token creation was not answered.', e);
+        }
+        // The answer may take a while: the app may have left Hathor Next, locked or let the
+        // creation expire meanwhile. Not cancelled where it left, which would log in again there.
+        if (mine !== generation) {
+          await nonces.release(nonce);
+          throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+        }
+        if (!accepted) {
+          await cancel();
+          await nonces.release(nonce);
+          throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_DECLINED);
+        }
+        if (!keys) {
+          await cancel();
+          await nonces.release(nonce);
+          throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
+        }
+        const nowS = Math.floor(nowMs() / 1000);
+        if (request.expires_at <= nowS) {
+          await nonces.release(nonce);
+          throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_REVIEW_EXPIRED);
+        }
+        context = { ...context, b: keys.b, pubB: keys.pubB, nowS };
+      }
       let signed;
       try {
         signed = await verifyAndSign(request, context, checkCreateRequest);
@@ -1414,10 +1469,7 @@ export function createBackendNextClient({
           throw new NextClientError(NEXT_CLIENT_ERROR.EARLIER_PENDING);
         }
         if (e instanceof SignRefusedError) {
-          log.error(`A Hathor Next token creation was refused before signing: ${e.message}`);
-          await cancel();
-          await nonces.release(nonce);
-          throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_REFUSED);
+          throw await refused(e);
         }
         throw e;
       }

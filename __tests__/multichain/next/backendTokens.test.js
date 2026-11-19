@@ -56,6 +56,8 @@ const CREATION = {
   symbol: CASE.approved.symbol,
   name: CASE.approved.name,
   amount: BigInt(CASE.approved.amount),
+  // The user agrees to the change the creation makes public.
+  confirmPublicChange: async () => true,
 };
 const STORAGE_KEY_PREFIX = 'multichain:nextTokenNonces:';
 
@@ -169,12 +171,13 @@ function fakeBackend({
   return { fetchImpl, calls, signatures: () => signatures };
 }
 
-async function connected(backend, storage = memoryStorage(), config = CONFIG) {
+async function connected(backend, storage = memoryStorage(), config = CONFIG, options = {}) {
   const client = createBackendNextClient({
     fetchImpl: backend.fetchImpl,
     WebSocketImpl: null,
     storage,
     sendPollMs: 5,
+    ...options,
   });
   await client.prepareKeys({ words: derivation.mnemonic });
   await client.connect({ network: 'privatenet', config, birthday: 'genesis' });
@@ -495,10 +498,20 @@ describe('a token created on Hathor Next through the backend', () => {
     expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
   });
 
-  it('signs nothing when the app leaves Hathor Next just before signing, and gives the nonce back', async () => {
+  // With no change to show, nothing is asked: the check right before signing is the one that
+  // stops it. With one, the check after the user's answer.
+  it.each([
+    ['a change to show', null],
+    ['no change', 0n],
+  ])('signs nothing when the app leaves Hathor Next just before signing, with %s, and gives the nonce back', async (_, forcedChange) => {
     // The build's answer is checked as it comes, and signing follows a step later: the app may
     // leave in between. Each run leaves one step later than the one before, from the answer
     // until after signing, so one run leaves in that step.
+    if (forcedChange !== null) {
+      const realCheck = signerModule.checkCreateRequest;
+      jest.spyOn(signerModule, 'checkCreateRequest')
+        .mockImplementation((...args) => ({ ...realCheck(...args), publicChange: forcedChange }));
+    }
     const realSign = signerModule.verifyAndSign;
     const order = [];
     jest.spyOn(signerModule, 'verifyAndSign').mockImplementation((...args) => {
@@ -554,7 +567,7 @@ describe('a token created on Hathor Next through the backend', () => {
         });
       }
     } finally {
-      signerModule.verifyAndSign.mockRestore();
+      jest.restoreAllMocks();
     }
     // The runs went from leaving before signing to leaving after it.
     const leftFirst = runs.filter((r) => r.order.startsWith('left'));
@@ -587,6 +600,115 @@ describe('a token created on Hathor Next through the backend', () => {
     await client.createToken({ words: derivation.mnemonic, ...CREATION });
     await expect(named).resolves.toMatchObject({ sendId: 'create-1', status: 'recorded' });
     expect(client.getCreation('create-1').txId).toBe(recordedId);
+  });
+
+  describe('the change a creation makes public, shown before anything is signed', () => {
+    const CHANGE = BigInt(CASE.outputs.find((o) => o.is_change && o.token === NATIVE).amount);
+    const deletes = (backend) => backend.calls.filter((c) => c.method === 'DELETE');
+    const create = (run, confirmPublicChange) => run.createToken({
+      words: derivation.mnemonic, ...CREATION, confirmPublicChange,
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('asks with the change before signing, and signs once the user agrees', async () => {
+      const backend = fakeBackend();
+      client = await connected(backend);
+      const seen = [];
+      await create(client, async (change) => {
+        seen.push({ change, signed: backend.signatures() !== null });
+        return true;
+      });
+      expect(seen).toEqual([{ change: CHANGE, signed: false }]);
+      expect(backend.signatures()).toHaveLength(CASE.inputs.length);
+    });
+
+    it('signs nothing when the user declines: the creation is cancelled, the nonce given back', async () => {
+      const backend = fakeBackend();
+      const storage = memoryStorage();
+      client = await connected(backend, storage);
+      await expect(create(client, async () => false))
+        .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_DECLINED });
+      expect(backend.signatures()).toBeNull();
+      expect(deletes(backend).map((c) => c.path)).toEqual(['/v1/sends/create-1']);
+      expect(nonceRecord(storage).reserved).toEqual([]);
+    });
+
+    it('signs nothing, and cancels nothing there, when the app leaves Hathor Next during the answer', async () => {
+      const backend = fakeBackend();
+      const storage = memoryStorage();
+      client = await connected(backend, storage);
+      await expect(create(client, async () => {
+        client.disconnect();
+        return true;
+      })).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
+      expect(backend.signatures()).toBeNull();
+      expect(deletes(backend)).toEqual([]);
+      expect(nonceRecord(storage).reserved).toEqual([]);
+    });
+
+    it('signs nothing when the app locks during the answer, and cancels the creation', async () => {
+      const backend = fakeBackend();
+      const storage = memoryStorage();
+      client = await connected(backend, storage);
+      await expect(create(client, async () => {
+        client.forgetKeys();
+        return true;
+      })).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NO_KEYS });
+      expect(backend.signatures()).toBeNull();
+      expect(deletes(backend).map((c) => c.path)).toEqual(['/v1/sends/create-1']);
+      expect(nonceRecord(storage).reserved).toEqual([]);
+    });
+
+    it('signs nothing when the creation expires during the answer', async () => {
+      let now = 1788000000 * 1000;
+      const backend = fakeBackend({ request: { ...signRequest(), expires_at: 1788000600 } });
+      const storage = memoryStorage();
+      client = await connected(backend, storage, CONFIG, { nowMs: () => now });
+      await expect(create(client, async () => {
+        now = 1788000600 * 1000;
+        return true;
+      })).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_REVIEW_EXPIRED });
+      expect(backend.signatures()).toBeNull();
+      expect(nonceRecord(storage).reserved).toEqual([]);
+    });
+
+    it('asks nothing of a creation with no change, and signs it', async () => {
+      const realCheck = signerModule.checkCreateRequest;
+      jest.spyOn(signerModule, 'checkCreateRequest')
+        .mockImplementation((...args) => ({ ...realCheck(...args), publicChange: 0n }));
+      const backend = fakeBackend();
+      client = await connected(backend);
+      const confirm = jest.fn(async () => true);
+      await create(client, confirm);
+      expect(confirm).not.toHaveBeenCalled();
+      expect(backend.signatures()).toHaveLength(CASE.inputs.length);
+    });
+
+    it('asks nothing of a creation its checks refuse, and says when it spends coins it doesn\'t need', async () => {
+      jest.spyOn(signerModule, 'checkCreateRequest').mockImplementation(() => {
+        throw new signerModule.CoinsNotNeededError();
+      });
+      const backend = fakeBackend();
+      const storage = memoryStorage();
+      client = await connected(backend, storage);
+      const confirm = jest.fn(async () => true);
+      await expect(create(client, confirm))
+        .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS });
+      expect(confirm).not.toHaveBeenCalled();
+      expect(backend.signatures()).toBeNull();
+      expect(deletes(backend).map((c) => c.path)).toEqual(['/v1/sends/create-1']);
+      expect(nonceRecord(storage).reserved).toEqual([]);
+    });
+
+    it('creates nothing without a way to ask', async () => {
+      const backend = fakeBackend();
+      client = await connected(backend);
+      await expect(create(client, undefined))
+        .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED });
+      expect(createCalls(backend)).toEqual([]);
+    });
   });
 
   it('isn\'t offered by a backend that doesn\'t create tokens', async () => {

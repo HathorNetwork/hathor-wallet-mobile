@@ -104,6 +104,9 @@ const CREATE_TOKEN_INITIAL_STATE = {
   tokenId: null,
   reason: null,
   error: null,
+  // Checked and not signed yet: { publicChange } while the user decides on the HTR the creation
+  // would make public.
+  review: null,
 };
 
 // A transfer in these states is still being decided: a reset leaves it as it is.
