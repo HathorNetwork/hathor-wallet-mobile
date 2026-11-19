@@ -44,13 +44,15 @@ export const NEXT_COLORS = {
 export const NEXT_DECIMAL_PLACES = 8;
 
 /**
- * The transfer addresses of the chain transfer to Hathor Next (hathor-next's plan §3.3): what pays
- * them burns HTR on Hathor Network so it is minted on Hathor Next, and nothing ever spends from
- * them. Only the transfer itself may pay one; a send to one would lose its HTR.
+ * The transfer address of the chain transfer to Hathor Next (hathor-next's plan,
+ * docs/plan/chain-transfer-testnet-one-way.md §3.3): hash160("hathor/chain-transfer/testnet-v1")
+ * as a testnet P2PKH address. It is the hash of a label, not of a key, so nothing ever spends
+ * from it: what pays it burns HTR on Hathor Network so it is minted on Hathor Next. Only the
+ * transfer itself may pay it; a send to it would lose its HTR. A burn pays this address and no
+ * other, whatever a side chain config pins. Mainnet has no chain transfer, so none of its own.
  */
 export const KNOWN_TRANSFER_ADDRESSES = [
   'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL',
-  'HT3Fm4qiQTx6XPe1sFDAPshgqSfck4nsqF',
 ];
 
 /**
