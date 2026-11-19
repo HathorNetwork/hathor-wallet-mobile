@@ -35,6 +35,7 @@ import { isNanoContractsEnabled, isPushNotificationAvailableForUser } from '../u
 import { getNetworkSettings } from '../sagas/helpers';
 import { isShieldedAvailable } from '../shielded/gating';
 import {
+  canCreateNextTokens,
   getMultichainDevBackendFeatureToggle,
   isSideChainAvailable,
   isSideChainConnected,
@@ -83,6 +84,7 @@ const mapStateToProps = (state) => {
       && Boolean(state.fullNodeNetworkName)
       && state.fullNodeNetworkName !== FULL_NETWORK_MAINNET,
     nextKeysReady: state.multichain.next.keysReady,
+    canCreateNextTokens: canCreateNextTokens(state),
   };
 };
 
@@ -221,6 +223,13 @@ export class Settings extends React.Component {
                 <ListMenu
                   title={t`Create a new token`}
                   onPress={() => this.props.navigation.navigate('CreateTokenStack')}
+                />
+              )}
+            {IS_MULTI_TOKEN && this.props.canCreateNextTokens
+              && (
+                <ListMenu
+                  title={t`Create a token on Hathor Next`}
+                  onPress={() => this.props.navigation.navigate('NextCreateToken')}
                 />
               )}
             <ListMenu

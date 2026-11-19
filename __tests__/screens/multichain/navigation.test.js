@@ -32,7 +32,12 @@ import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { reducer } from '../../../src/reducers/reducer';
-import { multichainNextSendUpdate, multichainTransferUpdate, types } from '../../../src/actions';
+import {
+  multichainNextCreateTokenUpdate,
+  multichainNextSendUpdate,
+  multichainTransferUpdate,
+  types,
+} from '../../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_FEATURE_TOGGLE,
@@ -41,6 +46,7 @@ import {
 import { STORE } from '../../../src/store';
 import NavigationService from '../../../src/NavigationService';
 import ChainTransferConfirmScreen from '../../../src/screens/Multichain/ChainTransferConfirmScreen';
+import NextCreateTokenConfirmScreen from '../../../src/screens/Multichain/NextCreateTokenConfirmScreen';
 import UnifiedQRScanner from '../../../src/screens/UnifiedQRScanner';
 import { SendAddressInput } from '../../../src/screens/SendAddressInput';
 import QRCodeReader from '../../../src/components/QRCodeReader';
@@ -134,6 +140,7 @@ const AppScreens = () => (
     <AppStack.Screen name='ChainTransferConfirm' component={ChainTransferConfirmScreen} />
     <AppStack.Screen name='PinScreen' component={PinScreenStub} />
     <AppStack.Screen name='UnifiedQRScanner' component={UnifiedQRScanner} />
+    <AppStack.Screen name='NextCreateTokenConfirm' component={NextCreateTokenConfirmScreen} />
   </AppStack.Navigator>
 );
 const Root = createStackNavigator();
@@ -315,5 +322,32 @@ describe('a Hathor Next address scanned from the Dashboard', () => {
     expect(alert).toHaveBeenCalledWith('Payment on its way', expect.any(String), expect.anything());
     // Send keeps its screens, the one that shows the payment's outcome among them.
     expect(sendRoutes()).toEqual(['SendAddressInput', 'NextSendAmountInput']);
+  });
+});
+
+describe('leaving a token creation', () => {
+  test('Done goes back to the Dashboard and closes the confirm screen', async () => {
+    const { store, actions } = makeStore();
+    const renderer = await mountApp(store);
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'NextCreateTokenConfirm',
+        params: { name: 'App Test Token', symbol: 'ATT', amount: '100000000' },
+      });
+    });
+    expect(appRoutes()).toEqual(['Main', 'NextCreateTokenConfirm']);
+    await act(async () => { buttons(renderer, 'Create token')[0].props.onPress(); });
+    await act(async () => { pinCallback('123456'); });
+    const [request] = actions
+      .filter((a) => a.type === types.MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED);
+    await act(async () => {
+      store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.RECORDED, draftId: request.payload.draftId,
+      }));
+    });
+    const [done] = renderer.root.findAllByType(FeedbackModal);
+    await act(async () => { done.props.action.props.onPress(); });
+    // One Main, and no confirm screen left under it to create the token again.
+    expect(appRoutes()).toEqual(['Main']);
   });
 });

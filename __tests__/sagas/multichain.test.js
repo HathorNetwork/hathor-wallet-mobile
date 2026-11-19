@@ -31,6 +31,7 @@ jest.mock('../../src/multichain/nextClient', () => require('../multichain/fakes/
 jest.mock('../../src/multichain/bridge', () => require('../multichain/fakes/bridgeModule'));
 
 /* eslint-disable import/first */
+import { walletUtils } from '@hathor/wallet-lib';
 import { runSaga, stdChannel } from 'redux-saga';
 import { put } from 'redux-saga/effects';
 import { reducer } from '../../src/reducers/reducer';
@@ -42,6 +43,11 @@ import {
   multichainNextHistoryRequested,
   multichainNextKeysDerived,
   multichainNextKeysUnlockRequested,
+  multichainNextCreateTokenRequested,
+  multichainNextCreateTokenReset,
+  multichainNextCreateTokenReviewed,
+  multichainNextCreateTokenUpdate,
+  multichainNextReset,
   multichainNextSendRequested,
   multichainNextSendReset,
   multichainNextSendUpdate,
@@ -65,6 +71,7 @@ import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
+  MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE,
   multichainKeyMap,
   PRE_SETTINGS_MAINNET,
   PRE_SETTINGS_NEXT_DEVNET,
@@ -72,6 +79,8 @@ import {
 } from '../../src/constants';
 import { STORE } from '../../src/store';
 import {
+  creationHaltedText,
+  creationStoppedText,
   nextClientChannel,
   resolveUncertainTransfer,
   saga,
@@ -80,13 +89,16 @@ import {
 import { prepareNextKeysAtUnlock } from '../../src/multichain/keys';
 import { ensureNextClient, getNextClient, setNextClient } from '../../src/multichain/nextClient';
 import { deriveFakeNextAddress, fakePeerAddress } from '../multichain/fakes/fakeAddress';
-import { fakeLedgerKey, loadLedger, resetLedger } from '../multichain/fakes/fakeLedger';
+import {
+  fakeLedgerKey, loadLedger, resetLedger, saveLedger,
+} from '../multichain/fakes/fakeLedger';
 import { FAKE_SCENARIO } from '../multichain/fakes/scenarios';
 import { FAKE_NETWORK, FAKE_SIDE_CHAIN } from '../multichain/fakes/sideChain';
 import {
   isSideChainAvailable,
   isSideChainConnected,
   selectSideChainConfig,
+  selectSideChainConnection,
   selectSideChainKey,
 } from '../../src/multichain/gating';
 import {
@@ -102,7 +114,12 @@ import {
   NEXT_CLIENT_EVENT,
   NextClientError,
 } from '../../src/multichain/nextClientErrors';
-import { PasskeyCancelledError, withPasskeyWords } from '../../src/passkey/passkeySigner';
+import {
+  PasskeyCancelledError,
+  verifyPasskeyForUnlock,
+  withPasskeyWords,
+} from '../../src/passkey/passkeySigner';
+import * as passkeyService from '../../src/passkey/passkeyService';
 /* eslint-enable import/first */
 
 const NETWORK = FAKE_NETWORK;
@@ -115,6 +132,10 @@ beforeAll(async () => {
 const HTR = '00';
 
 let task = null;
+// The last setup's, for what a screen reads from the store as it asks (a draft's connection).
+let currentEnv = null;
+// The Hathor Next the app is on now: what Create names when tapped.
+const connectionNow = () => selectSideChainConnection(currentEnv.getState());
 
 function setup(options = {}) {
   const {
@@ -140,7 +161,10 @@ function setup(options = {}) {
   task = runSaga(io, saga);
   dispatch(networkSettingsUpdateState(networkSettings));
   if (toggles) {
-    dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: flag }));
+    dispatch(setFeatureToggles({
+      [MULTICHAIN_FEATURE_TOGGLE]: flag,
+      [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: flag,
+    }));
     dispatch(featureToggleInitialized());
   }
   dispatch(setServerInfo({ decimal_places: 2 }));
@@ -148,7 +172,8 @@ function setup(options = {}) {
   if (start) {
     dispatch(startWalletSuccess());
   }
-  return { getState: () => state, dispatch, dispatched, io };
+  currentEnv = { getState: () => state, dispatch, dispatched, io };
+  return currentEnv;
 }
 
 // Advances the clock, then lets the saga finish what the last timer started.
@@ -686,6 +711,435 @@ describe('a Hathor Next payment', () => {
     env.dispatch(draft('draft-1'));
     await wait(1000);
     expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.FAILED,
+      reason: expect.any(String),
+    });
+  });
+});
+
+describe('a Hathor Next token creation', () => {
+  const SUPPLY = 100000000n;
+  const draft = (draftId, connection = connectionNow()) => multichainNextCreateTokenRequested({
+    symbol: 'ATT',
+    name: 'App Test Token',
+    amount: SUPPLY,
+    draftId,
+    pinCode: PIN,
+    connection,
+  });
+
+  // A creation paying HTR back in the open: the fake asks before it signs, as the real client.
+  const CHANGE = 45000000n;
+  const withChange = () => saveLedger(NETWORK, {
+    ...loadLedger(NETWORK), createChange: CHANGE.toString(),
+  });
+  const created = (env) => Object.values(env.getState().multichain.next.tokens)
+    .some((token) => token.symbol === 'ATT');
+
+  describe('the HTR it would make public', () => {
+    test('is shown before anything is signed, and the token is created once the user confirms', async () => {
+      const env = setup();
+      await connect(env);
+      withChange();
+      env.dispatch(draft('token-r1'));
+      await wait(1000);
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.SENDING, draftId: 'token-r1', sendId: null, review: { publicChange: CHANGE },
+      });
+      expect(created(env)).toBe(false);
+      env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-r1', accept: true }));
+      await wait(1000);
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.RECORDED, draftId: 'token-r1', review: null,
+      });
+      expect(created(env)).toBe(true);
+    });
+
+    test('declined, creates nothing, and Create sends the same draft again', async () => {
+      const env = setup();
+      await connect(env);
+      withChange();
+      env.dispatch(draft('token-r2'));
+      await wait(1000);
+      // Another draft's answer is not this one's.
+      env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-other', accept: true }));
+      await wait(10);
+      expect(env.getState().multichain.createToken.review).toEqual({ publicChange: CHANGE });
+      env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-r2', accept: false }));
+      await wait(1000);
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.IDLE, draftId: 'token-r2', error: null, review: null,
+      });
+      expect(created(env)).toBe(false);
+      env.dispatch(draft('token-r2'));
+      await wait(1000);
+      expect(env.getState().multichain.createToken.review).toEqual({ publicChange: CHANGE });
+    });
+
+    test('creates nothing when its screen closes before the user answers', async () => {
+      const env = setup();
+      await connect(env);
+      withChange();
+      env.dispatch(draft('token-r3'));
+      await wait(1000);
+      env.dispatch(multichainNextCreateTokenReset());
+      await wait(1000);
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.IDLE, review: null,
+      });
+      expect(created(env)).toBe(false);
+    });
+
+    test('creates nothing when the app leaves Hathor Next before the user answers', async () => {
+      const env = setup();
+      await connect(env);
+      withChange();
+      env.dispatch(draft('token-r4'));
+      await wait(1000);
+      env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: false }));
+      await wait(1000);
+      // The creation ends, and its draft hears so: nothing waits for an answer any more.
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.ERROR, draftId: 'token-r4', review: null,
+      });
+      expect(created(env)).toBe(false);
+      expect(Object.values(loadLedger(NETWORK).tokens).some((token) => token.symbol === 'ATT'))
+        .toBe(false);
+    });
+
+    // The backend still builds it: the question comes after the screen is gone.
+    test('creates nothing when its screen closes before the question comes', async () => {
+      const env = setup();
+      await connect(env);
+      saveLedger(NETWORK, {
+        ...loadLedger(NETWORK), createChange: CHANGE.toString(), createBuildMs: 500,
+      });
+      env.dispatch(draft('token-r5'));
+      await wait(10);
+      env.dispatch(multichainNextCreateTokenReset());
+      await wait(1000);
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.IDLE, review: null,
+      });
+      expect(created(env)).toBe(false);
+    });
+  });
+
+  describe('right before it is signed', () => {
+    const CREATE_OFF = {
+      [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: false,
+    };
+    const halted = (env, draftId) => expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.ERROR, draftId, error: creationHaltedText(), review: null,
+    });
+
+    test('is stopped when token creation turned off during the review, though the user says yes', async () => {
+      const env = setup();
+      await connect(env);
+      withChange();
+      env.dispatch(draft('token-s1'));
+      await wait(1000);
+      expect(env.getState().multichain.createToken.review).toEqual({ publicChange: CHANGE });
+      env.dispatch(setFeatureToggles(CREATE_OFF));
+      env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-s1', accept: true }));
+      await wait(1000);
+      halted(env, 'token-s1');
+      expect(created(env)).toBe(false);
+    });
+
+    test('with no change, is stopped when token creation turned off while it was built', async () => {
+      const env = setup();
+      await connect(env);
+      saveLedger(NETWORK, { ...loadLedger(NETWORK), createBuildMs: 500 });
+      env.dispatch(draft('token-s2'));
+      await wait(10);
+      env.dispatch(setFeatureToggles(CREATE_OFF));
+      await wait(1000);
+      halted(env, 'token-s2');
+      expect(created(env)).toBe(false);
+    });
+
+    test('is not made on another Hathor Next than the one Create was tapped on', async () => {
+      const env = setup();
+      await connect(env);
+      const tapped = connectionNow();
+      STORE.setItem(multichainKeyMap.devBackend, {
+        url: 'http://192.168.0.10:8930',
+        pins: {
+          next: {
+            network_id: 1777, native_token: '00', service_view_pub: 'ab', wire_format: 'v3',
+          },
+          transfer: null,
+        },
+      });
+      try {
+        // The backend switched while the PIN was asked.
+        env.dispatch(setFeatureToggles({
+          [MULTICHAIN_FEATURE_TOGGLE]: true,
+          [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: true,
+          [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: true,
+        }));
+        await wait(2000);
+        expect(connectionNow()).not.toBe(tapped);
+        const createSpy = jest.spyOn(getNextClient(), 'createToken');
+        env.dispatch(draft('token-s3', tapped));
+        await wait(1000);
+        expect(createSpy).not.toHaveBeenCalled();
+        halted(env, 'token-s3');
+      } finally {
+        STORE.removeItem(multichainKeyMap.devBackend);
+      }
+    });
+  });
+
+  describe('a lock', () => {
+    // The client's question, and what the saga answered it.
+    const answering = () => {
+      const answers = [];
+      const client = getNextClient();
+      const createToken = client.createToken.bind(client);
+      jest.spyOn(client, 'createToken').mockImplementation((params) => createToken({
+        ...params,
+        approveSigning: async (change) => {
+          const answer = await params.approveSigning(change);
+          answers.push({ change, answer });
+          return answer;
+        },
+      }));
+      return answers;
+    };
+
+    // The review is drawn above the lock screen: it could still be answered there.
+    test('during the review closes it, answers no and signs nothing', async () => {
+      const env = setup();
+      await connect(env);
+      withChange();
+      const answers = answering();
+      env.dispatch(draft('token-l1'));
+      await wait(1000);
+      expect(env.getState().multichain.createToken.review).toEqual({ publicChange: CHANGE });
+      env.dispatch(lockScreen());
+      await wait(10);
+      env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-l1', accept: true }));
+      await wait(1000);
+      // No, which the client takes as declined: it cancels the request and gives the nonce back.
+      expect(answers).toEqual([{ change: CHANGE, answer: false }]);
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.IDLE, draftId: 'token-l1', sendId: null, review: null,
+      });
+      expect(created(env)).toBe(false);
+    });
+
+    test('while the backend prepares a creation with no change answers no, and signs nothing', async () => {
+      const env = setup();
+      await connect(env);
+      saveLedger(NETWORK, { ...loadLedger(NETWORK), createBuildMs: 500 });
+      const answers = answering();
+      env.dispatch(draft('token-l2'));
+      await wait(10);
+      // Locked, and unlocked again before the question comes: still a no.
+      env.dispatch(lockScreen());
+      await wait(10);
+      env.dispatch(unlockScreen());
+      await wait(1000);
+      expect(answers).toEqual([{ change: 0n, answer: false }]);
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.IDLE, draftId: 'token-l2', sendId: null,
+      });
+      expect(created(env)).toBe(false);
+    });
+
+    test('is not an unlock: an unlock alone leaves the review open', async () => {
+      const env = setup();
+      await connect(env);
+      withChange();
+      env.dispatch(draft('token-l3'));
+      await wait(1000);
+      env.dispatch(unlockScreen());
+      await wait(10);
+      expect(env.getState().multichain.createToken.review).toEqual({ publicChange: CHANGE });
+      env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-l3', accept: true }));
+      await wait(1000);
+      expect(env.getState().multichain.createToken.status).toBe(OPERATION_STATUS.RECORDED);
+      expect(created(env)).toBe(true);
+    });
+
+    // The ceremony only hands the words over: the unlock's own ceremony goes on.
+    test('of a passkey wallet finds the passkey free while its creation is reviewed', async () => {
+      const passkey = jest.requireActual('../../src/passkey/passkeySigner');
+      const words = walletUtils.generateWalletWords();
+      withPasskeyWords.mockImplementation(passkey.withPasskeyWords);
+      STORE.isPasskeyWallet.mockReturnValue(true);
+      jest.spyOn(STORE, 'getWalletMeta').mockReturnValue({
+        xpub: passkey.derivePasskeyXpub(words), credentialId: 'credential',
+      });
+      jest.spyOn(passkeyService, 'signInWalletWordsFromPasskey')
+        .mockResolvedValue({ words, credentialId: 'credential' });
+      const env = setup();
+      await connect(env);
+      withChange();
+      env.dispatch(draft('token-l4'));
+      await wait(1000);
+      expect(env.getState().multichain.createToken.review).toEqual({ publicChange: CHANGE });
+      const ceremonies = passkeyService.signInWalletWordsFromPasskey.mock.calls.length;
+      await expect(verifyPasskeyForUnlock()).resolves.toBeUndefined();
+      expect(passkeyService.signInWalletWordsFromPasskey).toHaveBeenCalledTimes(ceremonies + 1);
+    });
+  });
+
+  test('a late result of a draft from before the app left Hathor Next leaves the next draft as it is', async () => {
+    const env = setup();
+    await connect(env);
+    // Both drafts take 5 s to build.
+    saveLedger(NETWORK, { ...loadLedger(NETWORK), createBuildMs: 5000 });
+    env.dispatch(draft('token-a'));
+    await wait(10);
+    // The app leaves Hathor Next and comes back, while draft A is still built.
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: false }));
+    await wait(10);
+    env.dispatch(setFeatureToggles({
+      [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: true,
+    }));
+    await wait(2000);
+    env.dispatch(draft('token-b'));
+    await wait(10);
+    const b = env.getState().multichain.createToken;
+    expect(b).toMatchObject({ draftId: 'token-b', status: OPERATION_STATUS.SENDING });
+    // Draft A's late answer: the connection it was built on is gone.
+    await wait(3500);
+    expect(env.getState().multichain.createToken).toEqual(b);
+    await wait(5000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      draftId: 'token-b', status: OPERATION_STATUS.RECORDED,
+    });
+  });
+
+  test('a draft signed before the app left and returning after another took the creation leaves that one alone', async () => {
+    const env = setup();
+    await connect(env);
+    let releaseA = null;
+    jest.spyOn(getNextClient(), 'createToken').mockImplementation(() => new Promise((resolve) => {
+      releaseA = () => resolve({ sendId: 'create-a', tokenId: 'aa'.repeat(32) });
+    }));
+    env.dispatch(draft('token-a'));
+    await wait(10);
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: false }));
+    await wait(10);
+    env.dispatch(setFeatureToggles({
+      [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: true,
+    }));
+    await wait(2000);
+    // Draft B, on whichever client is current now, waits for its review the whole time: unsigned,
+    // it has no send id yet.
+    jest.spyOn(getNextClient(), 'createToken').mockImplementation(() => new Promise(() => {}));
+    env.dispatch(draft('token-b'));
+    await wait(10);
+    releaseA();
+    // Past the wait for an outcome: draft A's never marks draft B as not settled yet.
+    await wait(SEND_SETTLE_MS + 1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      draftId: 'token-b', sendId: null, status: OPERATION_STATUS.SENDING,
+    });
+  });
+
+  test('takes the token id the client already read back, when the saga learns the send id', async () => {
+    const env = setup();
+    await connect(env);
+    const client = getNextClient();
+    jest.spyOn(client, 'createToken').mockResolvedValue({ sendId: 'create-x', tokenId: 'ab'.repeat(32) });
+    jest.spyOn(client, 'getCreation').mockReturnValue({
+      sendId: 'create-x', status: 'recorded', reason: null, txId: 'ee'.repeat(32), provisional: false,
+    });
+    env.dispatch(draft('token-id'));
+    await wait(100);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.RECORDED, tokenId: 'ee'.repeat(32), tokenIdFinal: true,
+    });
+  });
+
+  test('takes the words from the PIN, and the wallet then holds the token\'s supply', async () => {
+    const env = setup();
+    await connect(env);
+    expect(env.getState().multichain.next.canCreateTokens).toBe(true);
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-1'));
+    await wait(1000);
+    expect(STORE.getWalletWords).toHaveBeenCalledWith(PIN);
+    expect(createSpy).toHaveBeenCalledWith({
+      words: WORDS,
+      symbol: 'ATT',
+      name: 'App Test Token',
+      amount: SUPPLY,
+      approveSigning: expect.any(Function),
+    });
+    const { createToken, next } = env.getState().multichain;
+    // Its id, as the client read it back: the token's.
+    expect(createToken).toMatchObject({
+      status: OPERATION_STATUS.RECORDED, draftId: 'token-1', error: null, tokenIdFinal: true,
+    });
+    expect(next.tokens[createToken.tokenId]).toMatchObject({ symbol: 'ATT', name: 'App Test Token' });
+    expect(next.balances[createToken.tokenId].data.available).toBe(SUPPLY);
+    // The PIN is in no state.
+    expect(JSON.stringify(env.getState().multichain, (k, v) => (
+      typeof v === 'bigint' ? v.toString() : v
+    ))).not.toContain(PIN);
+  });
+
+  test('is created at most once per draft, and one at a time', async () => {
+    const env = setup();
+    await connect(env);
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-1'));
+    env.dispatch(draft('token-1'));
+    env.dispatch(draft('token-2'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    env.dispatch(draft('token-1'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('a passkey wallet\'s ceremony gives the words, and dismissing it changes nothing', async () => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    withPasskeyWords.mockImplementation(async (use) => use(WORDS));
+    const env = setup();
+    await connect(env);
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-1'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ words: WORDS }));
+    expect(STORE.getWalletWords).not.toHaveBeenCalledWith(PIN);
+    expect(env.getState().multichain.createToken.status).toBe(OPERATION_STATUS.RECORDED);
+
+    withPasskeyWords.mockRejectedValue(new PasskeyCancelledError());
+    env.dispatch(draft('token-2'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    // The draft stays named, idle: its screen turns Create on again.
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.IDLE, draftId: 'token-2',
+    });
+  });
+
+  test('a creation refused before signing says why', async () => {
+    const env = setup();
+    await connect(env);
+    jest.spyOn(getNextClient(), 'createToken')
+      .mockRejectedValue(new NextClientError(NEXT_CLIENT_ERROR.TOKEN_REFUSED));
+    env.dispatch(draft('token-1'));
+    await wait(1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      error: new NextClientError(NEXT_CLIENT_ERROR.TOKEN_REFUSED).message,
+    });
+  });
+
+  test('the network turning it down is a failure with its words', async () => {
+    const env = setup({ scenario: FAKE_SCENARIO.SEND_REJECTED });
+    await connect(env);
+    env.dispatch(draft('token-1'));
+    await wait(1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
       status: OPERATION_STATUS.FAILED,
       reason: expect.any(String),
     });
@@ -1348,6 +1802,7 @@ describe('a wallet reset', () => {
   test('clears the transfer state and the sign-once ledgers saved before outside the wallet\'s keys', async () => {
     STORE.setItem('multichain:nextSigned:1003:abcd', { entries: [] });
     STORE.setItem('multichain:nextSigned:1777:ef01', { entries: [] });
+    STORE.setItem('multichain:nextTokenNonces:1777:ef01', { reserved: [3], signedFloor: 2 });
     const env = setup({ scenario: FAKE_SCENARIO.EMPTY });
     env.dispatch(multichainTransferUpdate({
       status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1',
@@ -1356,6 +1811,8 @@ describe('a wallet reset', () => {
     await wait(10);
     expect(STORE.getItem('multichain:nextSigned:1003:abcd')).toBeNull();
     expect(STORE.getItem('multichain:nextSigned:1777:ef01')).toBeNull();
+    // Its key names the Hathor Next wallet reset, and so its address.
+    expect(STORE.getItem('multichain:nextTokenNonces:1777:ef01')).toBeNull();
     expect(env.getState().multichain.transfer).toMatchObject({
       status: OPERATION_STATUS.IDLE, uncertainId: null,
     });
@@ -2026,6 +2483,199 @@ describe('a transfer that went through', () => {
     expect(env.getState().multichain.transfer).toMatchObject({
       status: OPERATION_STATUS.ERROR,
       error: 'The transfer failed.',
+    });
+  });
+});
+
+describe('a Hathor Next token creation, after review', () => {
+  const draft = (draftId, connection = connectionNow()) => multichainNextCreateTokenRequested({
+    symbol: 'ATT', name: 'App Test Token', amount: 100000000n, draftId, pinCode: PIN, connection,
+  });
+
+  // The passkey ceremony, held open until the test ends it: the app leaves Hathor Next meanwhile
+  // (its flag turned off, or its backend changed), which clears the creation.
+  const leftDuringCeremony = async (createToken, meanwhile = () => {}) => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    withPasskeyWords.mockImplementation(async (fn) => fn(WORDS));
+    const env = setup();
+    await connect(env);
+    let finish = null;
+    withPasskeyWords.mockImplementation((fn) => new Promise((resolve, reject) => {
+      finish = () => Promise.resolve(fn(WORDS)).then(resolve, reject);
+    }));
+    jest.spyOn(getNextClient(), 'createToken').mockImplementation(createToken);
+    env.dispatch(draft('token-left'));
+    await wait(10);
+    expect(finish).not.toBeNull();
+    env.dispatch(multichainNextReset());
+    meanwhile(env);
+    finish();
+    await wait(10);
+    return env;
+  };
+
+  // Back on Hathor Next, another draft was signed while this one's ceremony was open.
+  const otherSigned = (env) => env.dispatch(multichainNextCreateTokenUpdate({
+    status: OPERATION_STATUS.SENDING,
+    draftId: 'token-other',
+    sendId: 'create-2',
+    tokenId: 'cd'.repeat(32),
+  }));
+
+  // The other draft owns the creation now: this one's late result is not written over it, so the
+  // other's screen keeps following its own creation, and this one's never shows that token.
+  test.each([
+    ['refused', NEXT_CLIENT_ERROR.TOKEN_REFUSED],
+    ['its passkey dismissed', null],
+  ])('%s leaves another draft signed meanwhile as it is', async (_label, code) => {
+    const env = await leftDuringCeremony(async () => {
+      throw code ? new NextClientError(code) : new PasskeyCancelledError();
+    }, otherSigned);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.SENDING,
+      draftId: 'token-other',
+      sendId: 'create-2',
+      tokenId: 'cd'.repeat(32),
+      error: null,
+    });
+  });
+
+  test('refused after the app left Hathor Next still names its draft: its screen says why', async () => {
+    const env = await leftDuringCeremony(async () => {
+      throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+    });
+    // The client stops before any backend is asked: nothing was created, and the screen says so.
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.ERROR, draftId: 'token-left', error: creationStoppedText(),
+    });
+  });
+
+  test('signed after the app left Hathor Next still names its draft, and its id', async () => {
+    const env = await leftDuringCeremony(async () => ({ sendId: 'create-1', tokenId: 'ab'.repeat(32) }));
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.SENDING,
+      draftId: 'token-left',
+      sendId: 'create-1',
+      tokenId: 'ab'.repeat(32),
+    });
+  });
+
+  test('creates nothing while its own flag is off', async () => {
+    const env = setup();
+    await connect(env);
+    env.dispatch(setFeatureToggles({
+      [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: false,
+    }));
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-off'));
+    await wait(1000);
+    expect(createSpy).not.toHaveBeenCalled();
+    // The confirm screen still open says so, rather than wait for nothing.
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      draftId: 'token-off',
+      error: "The token couldn't be created.",
+    });
+  });
+
+  test('of a passkey wallet whose passkey was dismissed is created when Create is tapped again', async () => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    withPasskeyWords.mockImplementation(async (fn) => fn(WORDS));
+    const env = setup();
+    await connect(env);
+    withPasskeyWords.mockReset();
+    withPasskeyWords.mockRejectedValueOnce(new PasskeyCancelledError());
+    withPasskeyWords.mockImplementation(async (fn) => fn(WORDS));
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-passkey'));
+    await wait(10);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.IDLE, draftId: 'token-passkey',
+    });
+    // Nothing was signed: the same draft goes when tapped again.
+    env.dispatch(draft('token-passkey'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    expect(env.getState().multichain.createToken.draftId).toBe('token-passkey');
+  });
+
+  test('is never created twice, even once its state was cleared', async () => {
+    const env = setup();
+    await connect(env);
+    const createSpy = jest.spyOn(getNextClient(), 'createToken');
+    env.dispatch(draft('token-once'));
+    await wait(1000);
+    // The confirm screen closed and cleared the creation, but stayed mounted.
+    env.dispatch(multichainNextCreateTokenReset());
+    env.dispatch(draft('token-once'));
+    await wait(1000);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('refused for a reason without words of its own shows translated words', async () => {
+    const env = setup();
+    await connect(env);
+    jest.spyOn(getNextClient(), 'createToken').mockRejectedValue(new Error('Network request failed'));
+    env.dispatch(draft('token-bug'));
+    await wait(1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.ERROR,
+      error: "The token couldn't be created.",
+    });
+  });
+
+  test('is shown as not settled yet when no outcome comes, so the user can leave', async () => {
+    const env = setup();
+    await connect(env);
+    jest.spyOn(getNextClient(), 'createToken')
+      .mockResolvedValue({ sendId: 'lost', tokenId: 'ab'.repeat(32) });
+    jest.spyOn(getNextClient(), 'getCreation').mockReturnValue(null);
+    env.dispatch(draft('token-lost'));
+    await wait(SEND_SETTLE_MS + 1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.UNCONFIRMED, sendId: 'lost',
+    });
+  });
+
+  // The wallet still submits it again now and then, and the backend says submitted each time.
+  test.each([
+    ['after the wait', null],
+    ['from the client', 'unconfirmed'],
+  ])('shown as not settled yet %s, stays so while it goes out again, until it settles', async (_, told) => {
+    const env = setup();
+    const client = ensureNextClient();
+    const listeners = [];
+    const on = client.on.bind(client);
+    jest.spyOn(client, 'on').mockImplementation((event, listener) => {
+      listeners.push({ event, listener });
+      return on(event, listener);
+    });
+    await connect(env);
+    const tell = (status) => listeners
+      .filter((l) => l.event === NEXT_CLIENT_EVENT.SEND)
+      .forEach((l) => l.listener({ sendId: 'held', status, reason: null, txId: 'ab'.repeat(32) }));
+    jest.spyOn(client, 'createToken').mockResolvedValue({ sendId: 'held', tokenId: 'ab'.repeat(32) });
+    jest.spyOn(client, 'getCreation').mockReturnValue(null);
+    env.dispatch(draft('token-held'));
+    await wait(1000);
+    tell('pending');
+    await wait(10);
+    if (told) {
+      tell(told);
+      await wait(10);
+    } else {
+      await wait(SEND_SETTLE_MS);
+    }
+    expect(env.getState().multichain.createToken.status).toBe(OPERATION_STATUS.UNCONFIRMED);
+    tell('pending');
+    await wait(10);
+    // Not on its way again: its screen lets the user leave.
+    expect(env.getState().multichain.createToken.status).toBe(OPERATION_STATUS.UNCONFIRMED);
+    expect(SEND_IN_FLIGHT).not.toContain(env.getState().multichain.createToken.status);
+    tell('recorded');
+    await wait(10);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.RECORDED, sendId: 'held', draftId: 'token-held',
     });
   });
 });

@@ -10,6 +10,7 @@ import {
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
+  MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE,
   NETWORK_MAINNET,
   NETWORK_PRIVATENET,
 } from '../constants';
@@ -106,6 +107,33 @@ export function getMultichainDevBackendFeatureToggle(state) {
 }
 
 /**
+ * Whether token creation on Hathor Next may show: its own flag, under the multichain one.
+ *
+ * @param {Object} state
+ * @returns {boolean}
+ */
+export function getMultichainTokenCreateFeatureToggle(state) {
+  return getMultichainFeatureToggle(state) && Boolean(
+    state.featureToggles?.[MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]
+      ?? FEATURE_TOGGLE_DEFAULTS[MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]
+  );
+}
+
+/**
+ * Whether the wallet can create a token on Hathor Next now: the flag is on, Hathor Next is
+ * connected and ready, and its backend creates tokens.
+ *
+ * @param {Object} state
+ * @returns {boolean}
+ */
+export function canCreateNextTokens(state) {
+  return getMultichainTokenCreateFeatureToggle(state)
+    && isSideChainConnected(state)
+    && state.multichain.next.status === NEXT_STATUS.READY
+    && state.multichain.next.canCreateTokens === true;
+}
+
+/**
  * The backend for local testing that is in force: the one set in Settings, and only while its
  * flag is on. A saved one waits, unused, while the flag is off.
  *
@@ -171,6 +199,18 @@ export function selectSideChainKey(state) {
   }
   const nodeUrl = (state.networkSettings?.nodeUrl ?? '').trim().replace(/\/+$/, '');
   return `${network} ${nodeUrl}`;
+}
+
+/**
+ * Which Hathor Next the app is on: the network's side chain and the backend it runs on. A
+ * creation authorized on one is never signed on another.
+ *
+ * @param {Object} state Redux state
+ * @returns {string|null} Null where the network has no side chain
+ */
+export function selectSideChainConnection(state) {
+  const config = selectSideChainConfig(state);
+  return config ? `${selectSideChainKey(state)} ${config.backendUrl}` : null;
 }
 
 /**

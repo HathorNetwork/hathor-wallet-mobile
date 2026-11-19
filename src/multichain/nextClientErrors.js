@@ -53,6 +53,24 @@ export const NEXT_CLIENT_ERROR = {
   TRANSFER_FORGOTTEN: 'transfer-forgotten',
   // The amount needs more outputs than one transaction holds.
   TRANSFER_TOO_MANY_INPUTS: 'transfer-too-many-inputs',
+  // The backend doesn't create tokens, or its wallet service can't settle a creation.
+  TOKENS_UNAVAILABLE: 'tokens-unavailable',
+  // The backend couldn't prepare the creation: nothing was created.
+  TOKEN_PREPARE_FAILED: 'token-prepare-failed',
+  // The backend built another token than the one approved: nothing was signed.
+  TOKEN_REFUSED: 'token-refused',
+  // The backend's creation doesn't pay its fee from exactly one coin: several would come back as
+  // one public change, linked on chain. Nothing was signed.
+  TOKEN_EXTRA_COINS: 'token-extra-coins',
+  // The user didn't agree to the change a creation makes public: nothing was signed.
+  TOKEN_DECLINED: 'token-declined',
+  // The creation expired while it waited for the user's answer: nothing was signed.
+  TOKEN_REVIEW_EXPIRED: 'token-review-expired',
+  // The token registry couldn't be read, so no nonce can be proven free for the token's keys.
+  TOKEN_AUTHORITIES_UNKNOWN: 'token-authorities-unknown',
+  // Too many creations started and didn't finish: a new token couldn't be found again from the
+  // words.
+  TOKEN_NONCE_BEYOND_REACH: 'token-nonce-beyond-reach',
   // The backend is on another Hathor Next network than the one this app pins: the network was
   // reset or replaced, and the app needs an update.
   NETWORK_CHANGED: 'network-changed',
@@ -99,6 +117,22 @@ export function nextClientErrorMessage(code) {
       return t`Hathor Next no longer knows this transfer. Check your Hathor Network history before you transfer again.`;
     case NEXT_CLIENT_ERROR.TRANSFER_TOO_MANY_INPUTS:
       return t`This amount needs too many of your Hathor Network outputs for one transfer. Try a smaller amount.`;
+    case NEXT_CLIENT_ERROR.TOKENS_UNAVAILABLE:
+      return t`Tokens can't be created on this Hathor Next network yet.`;
+    case NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED:
+      return t`Hathor Next couldn't prepare this token. Nothing was created.`;
+    case NEXT_CLIENT_ERROR.TOKEN_REFUSED:
+      return t`Hathor Next prepared a different token than the one you approved, so nothing was signed or created.`;
+    case NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS:
+      return t`Hathor Next couldn't pay this token's fee from one of your HTR coins, and paying it from several would make them public together, so nothing was signed or created. Send some HTR to your own Hathor Next address first, so one coin can pay the fee, then try again.`;
+    case NEXT_CLIENT_ERROR.TOKEN_DECLINED:
+      return t`The token wasn't created. Nothing was signed and no fee was paid.`;
+    case NEXT_CLIENT_ERROR.TOKEN_REVIEW_EXPIRED:
+      return t`The token creation expired before you confirmed it, so nothing was signed and no fee was paid. Create the token again.`;
+    case NEXT_CLIENT_ERROR.TOKEN_AUTHORITIES_UNKNOWN:
+      return t`Hathor Next's list of tokens couldn't be read, so this wallet can't safely pick the keys for a new token. Nothing was created. Try again later.`;
+    case NEXT_CLIENT_ERROR.TOKEN_NONCE_BEYOND_REACH:
+      return t`Too many token creations were started without finishing. A new token couldn't be found again from your recovery words, so none was created.`;
     case NEXT_CLIENT_ERROR.NETWORK_CHANGED:
       return t`Hathor Next's network changed, and this version of the app can't connect to it. Update the app, or disconnect the side chain for now.`;
     case NEXT_CLIENT_ERROR.CLOCK:

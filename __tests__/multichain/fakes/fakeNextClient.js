@@ -337,6 +337,122 @@ export function createFakeNextClient() {
       return { sendId };
     },
 
+    /** @returns {boolean} The fake creates tokens whenever it is connected */
+    canCreateTokens() {
+      return connected;
+    },
+
+    /**
+     * Creates a token, its supply paid to the wallet. Sign-once, as a payment: the outcome
+     * arrives as a SEND event, and the token's id is the creation's transaction id. As the real
+     * client, it asks `approveSigning` right before signing, with the HTR the creation pays back
+     * in the open: the ledger's `createChange`, none unless a test sets it. A test can make the
+     * build take `createBuildMs` first.
+     *
+     * @param {{ words: string, symbol: string, name: string, amount: bigint,
+     *   approveSigning: function(bigint): Promise<boolean> }} creation
+     * @returns {Promise<{ sendId: string, tokenId: string }>}
+     */
+    async createToken({ words, symbol, name, amount, approveSigning }) {
+      if (typeof approveSigning !== 'function') {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED);
+      }
+      requireConnected();
+      if (!words) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
+      }
+      if (!online) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.OFFLINE);
+      }
+      if (sweeping) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.SWEEPING);
+      }
+      const mine = generation;
+      const buildMs = Number(ledger().createBuildMs ?? 0);
+      if (buildMs > 0) {
+        await new Promise((resolve) => { setTimeout(resolve, buildMs); });
+      }
+      if (mine !== generation) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+      }
+      const accepted = await approveSigning(BigInt(ledger().createChange ?? '0'));
+      // An answer that comes after a reconnect is the old connection's: nothing of it reaches
+      // the new network's ledger.
+      if (mine !== generation) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+      }
+      if (accepted !== true) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_DECLINED);
+      }
+      const current = ledger();
+      const fee = sendFee();
+      const native = FAKE_NATIVE_TOKEN.id;
+      if (amount <= 0n || fee > (computeBalances(current)[native] ?? 0n)) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS);
+      }
+      sendCount += 1;
+      const now = Date.now();
+      const sendId = `create-${now}-${sendCount}`;
+      const tokenId = fakeTxId((now + sendCount) % 2147483647);
+      const base = {
+        txId: tokenId, mode: 'private', status: 'pending', at: now, reason: null, sendId,
+      };
+      saveLedger(network, {
+        ...current,
+        tokens: { ...current.tokens, [tokenId]: { id: tokenId, name, symbol } },
+        rows: [
+          ...current.rows,
+          {
+            ...base,
+            id: sendId,
+            tokenId,
+            direction: 'in',
+            kind: 'token-create',
+            amount: amount.toString(),
+            peer: null,
+          },
+          {
+            ...base,
+            id: `${sendId}:fee`,
+            tokenId: native,
+            direction: 'out',
+            kind: 'fee',
+            amount: fee.toString(),
+            peer: null,
+          },
+        ],
+      });
+      emitLedgerChanged();
+      schedule(() => {
+        const rejected = ledger().scenario === FAKE_SCENARIO.SEND_REJECTED;
+        const status = rejected ? 'failed' : 'recorded';
+        const reason = rejected ? REJECTION_REASON : null;
+        const settled = ledger();
+        saveLedger(network, {
+          ...settled,
+          rows: settled.rows.map((row) => (
+            row.sendId === sendId ? { ...row, status, reason } : row
+          )),
+        });
+        // Its id is the token's from the start: the fake builds no other bytes than it signs.
+        emit(NEXT_CLIENT_EVENT.SEND, {
+          sendId, status, reason, txId: tokenId, provisional: false,
+        });
+        emitLedgerChanged();
+      }, SEND_DELAY_MS);
+      return { sendId, tokenId };
+    },
+
+    /**
+     * A token creation's state as the fake ledger has it.
+     *
+     * @param {string} sendId
+     */
+    getCreation(sendId) {
+      const send = this.getSend(sendId);
+      return send ? { ...send, provisional: false } : null;
+    },
+
     /**
      * A payment's state as the fake ledger has it.
      *

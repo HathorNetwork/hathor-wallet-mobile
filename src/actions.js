@@ -308,6 +308,10 @@ export const types = {
   MULTICHAIN_NEXT_SEND_REQUESTED: 'MULTICHAIN_NEXT_SEND_REQUESTED',
   MULTICHAIN_NEXT_SEND_UPDATE: 'MULTICHAIN_NEXT_SEND_UPDATE',
   MULTICHAIN_NEXT_SEND_RESET: 'MULTICHAIN_NEXT_SEND_RESET',
+  MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED: 'MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED',
+  MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE: 'MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE',
+  MULTICHAIN_NEXT_CREATE_TOKEN_RESET: 'MULTICHAIN_NEXT_CREATE_TOKEN_RESET',
+  MULTICHAIN_NEXT_CREATE_TOKEN_REVIEWED: 'MULTICHAIN_NEXT_CREATE_TOKEN_REVIEWED',
   MULTICHAIN_TRANSFERS_SET: 'MULTICHAIN_TRANSFERS_SET',
   MULTICHAIN_TRANSFER_REQUESTED: 'MULTICHAIN_TRANSFER_REQUESTED',
   MULTICHAIN_TRANSFER_UPDATE: 'MULTICHAIN_TRANSFER_UPDATE',
@@ -2168,6 +2172,54 @@ export const multichainNextSendUpdate = (payload) => ({
 
 export const multichainNextSendReset = () => ({
   type: types.MULTICHAIN_NEXT_SEND_RESET,
+});
+
+/**
+ * Creates a token on Hathor Next, its whole supply paid to this wallet. Sent at most once per
+ * draft. The PIN is a seed wallet's, which the words for the token's keys are decrypted with; a
+ * passkey wallet's ceremony runs in the saga. No reducer stores it.
+ *
+ * @param {Object} payload
+ * @param {string} payload.symbol
+ * @param {string} payload.name
+ * @param {bigint} payload.amount The supply, in Hathor Next's units
+ * @param {string} payload.draftId
+ * @param {string} [payload.pinCode]
+ * @param {string} payload.connection The Hathor Next the user authorized it on, as
+ *   selectSideChainConnection named it when Create was tapped
+ */
+export const multichainNextCreateTokenRequested = (payload) => ({
+  type: types.MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED,
+  payload: {
+    symbol: payload.symbol,
+    name: payload.name,
+    amount: payload.amount,
+    draftId: payload.draftId,
+    pinCode: payload.pinCode,
+    connection: payload.connection,
+  },
+});
+
+/**
+ * @param {Object} payload Part of state.multichain.createToken
+ */
+export const multichainNextCreateTokenUpdate = (payload) => ({
+  type: types.MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE,
+  payload,
+});
+
+export const multichainNextCreateTokenReset = () => ({
+  type: types.MULTICHAIN_NEXT_CREATE_TOKEN_RESET,
+});
+
+/**
+ * The user's answer to the HTR a token creation would make public.
+ *
+ * @param {{ draftId: string, accept: boolean }} payload
+ */
+export const multichainNextCreateTokenReviewed = ({ draftId, accept }) => ({
+  type: types.MULTICHAIN_NEXT_CREATE_TOKEN_REVIEWED,
+  payload: { draftId, accept },
 });
 
 /**

@@ -60,6 +60,8 @@ import ChainTransferScreen from './screens/Multichain/ChainTransferScreen';
 import ChainTransferConfirmScreen from './screens/Multichain/ChainTransferConfirmScreen';
 import NextSendAmountInput from './screens/Multichain/NextSendAmountInput';
 import NextSendConfirmScreen from './screens/Multichain/NextSendConfirmScreen';
+import NextCreateTokenScreen from './screens/Multichain/NextCreateTokenScreen';
+import NextCreateTokenConfirmScreen from './screens/Multichain/NextCreateTokenConfirmScreen';
 import { isWaitingForNext } from './multichain/gating';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
@@ -455,6 +457,8 @@ const AppStack = () => {
     switch (lastRouteName) {
       case 'RegisterToken':
       case 'CreateTokenStack':
+      case 'NextCreateToken':
+      case 'NextCreateTokenConfirm':
       case 'About':
       case 'ResetWallet':
       case 'UnifiedQRScanner':
@@ -534,6 +538,8 @@ const AppStack = () => {
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
         <Stack.Screen name='NextTokenScreen' component={NextTokenScreen} />
         <Stack.Screen name='MultichainDevBackend' component={DevBackendScreen} />
+        <Stack.Screen name='NextCreateToken' component={NextCreateTokenScreen} />
+        <Stack.Screen name='NextCreateTokenConfirm' component={NextCreateTokenConfirmScreen} />
         <Stack.Screen name='ChainTransfer' component={ChainTransferScreen} />
         <Stack.Screen name='ChainTransferConfirm' component={ChainTransferConfirmScreen} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
