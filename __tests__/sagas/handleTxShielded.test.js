@@ -16,6 +16,7 @@ import {
   SHIELDED_PROVIDER_STATUS,
 } from '../../src/constants';
 import {
+  tokenImportNewTxTokens,
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   tokenInvalidateHistory,
@@ -24,6 +25,8 @@ import {
 
 const HTR = hathorLibConstants.NATIVE_TOKEN_UID;
 const TOKEN = '00000000aaaabbbbccccddddeeeeffff00001111222233334444555566667777';
+// A token the wallet holds and hasn't registered.
+const NEW_TOKEN = '00000000111122223333444455556666777788889999aaaabbbbccccddddeeee';
 // The wallet's addresses: a legacy one, and the spend P2PKH that labels the shielded outputs paid
 // to one of its shielded addresses.
 const WALLET_ADDRESS = 'WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo';
@@ -72,13 +75,27 @@ const walletServiceShieldedOutput = (address) => ({
 // The shielded environment of a wallet on the shielded testnet's fullnode facade.
 const FULLNODE_ENVIRONMENT = { ...WALLET_SERVICE_ENVIRONMENT, useWalletService: false };
 
-async function run(tx, environment = {}, { shieldedEnabled = true } = {}) {
+/**
+ * Runs handleTx for the tx. `walletTokens` is the wallet's token list (by default its registered
+ * tokens), or an error its read fails with; `listed` the unregistered tokens already listed, and
+ * `txBalance` what the wallet's getTxBalance returns.
+ */
+async function run(tx, environment = {}, {
+  shieldedEnabled = true,
+  walletTokens = [HTR, TOKEN],
+  listed = {},
+  txBalance = {},
+} = {}) {
   const mine = new Set([WALLET_ADDRESS, WALLET_SPEND_ADDRESS]);
   const wallet = {
     isReady: () => true,
     // Only the wallet-service facade's wallet has it: the fullnode facade's would throw here.
     ...(environment.useWalletService ? { isShieldedEnabled: () => shieldedEnabled } : {}),
-    getTxBalance: jest.fn(async () => ({})),
+    getTxBalance: jest.fn(async () => txBalance),
+    getTokens: jest.fn(async () => {
+      if (walletTokens instanceof Error) throw walletTokens;
+      return walletTokens;
+    }),
     checkAddressesMine: jest.fn(async (addresses) => Object.fromEntries(
       addresses.map((address) => [address, mine.has(address)]),
     )),
@@ -86,7 +103,7 @@ async function run(tx, environment = {}, { shieldedEnabled = true } = {}) {
   const state = {
     wallet,
     tokens: { [HTR]: { uid: HTR }, [TOKEN]: { uid: TOKEN } },
-    tokenImport: { unregisteredTokens: {} },
+    tokenImport: { unregisteredTokens: listed },
     ...environment,
   };
   const dispatched = [];
@@ -205,6 +222,12 @@ describe('handleTx with shielded outputs on the wallet-service facade', () => {
     tokenInvalidateHistory(TOKEN),
     walletRefreshSharedAddress(),
   ];
+  // The refresh with tokens detected in the wallet's token list, listed after the balance requests.
+  const withDetected = (uids) => [
+    ...REFRESH_ALL.slice(0, -1),
+    tokenImportNewTxTokens(uids),
+    walletRefreshSharedAddress(),
+  ];
 
   test('refreshes every registered token when a shielded output pays the wallet', async () => {
     const { dispatched, wallet } = await run({
@@ -280,5 +303,54 @@ describe('handleTx with shielded outputs on the wallet-service facade', () => {
 
     expect(dispatched).toEqual([walletRefreshSharedAddress()]);
     expect(wallet.checkAddressesMine).toHaveBeenCalledWith([OTHER_ADDRESS]);
+  });
+
+  test('lists a token first received in a fully shielded output', async () => {
+    const { dispatched } = await run({
+      tx_id: 'tx-ws-new-token',
+      inputs: [],
+      outputs: [],
+      shielded_outputs: [walletServiceShieldedOutput(WALLET_SPEND_ADDRESS)],
+    }, WALLET_SERVICE_ENVIRONMENT, { walletTokens: [HTR, TOKEN, NEW_TOKEN] });
+
+    expect(dispatched).toEqual(withDetected([NEW_TOKEN]));
+  });
+
+  test('lists no token that is already listed, or that the tx balance already reported', async () => {
+    const { dispatched } = await run({
+      tx_id: 'tx-ws-known-token',
+      inputs: [],
+      outputs: [],
+      shielded_outputs: [walletServiceShieldedOutput(WALLET_SPEND_ADDRESS)],
+    }, WALLET_SERVICE_ENVIRONMENT, {
+      walletTokens: [HTR, TOKEN, NEW_TOKEN, 'reported'],
+      listed: { [NEW_TOKEN]: { uid: NEW_TOKEN } },
+      txBalance: { reported: { tokens: { locked: 0n, unlocked: 1n } } },
+    });
+
+    // The tx balance reports its own token; the wallet token list adds nothing.
+    expect(dispatched).toEqual([tokenImportNewTxTokens(['reported']), ...REFRESH_ALL]);
+  });
+
+  test('still refreshes the balances when the wallet tokens cannot be read', async () => {
+    const { dispatched } = await run({
+      tx_id: 'tx-ws-tokens-fail',
+      inputs: [],
+      outputs: [],
+      shielded_outputs: [walletServiceShieldedOutput(WALLET_SPEND_ADDRESS)],
+    }, WALLET_SERVICE_ENVIRONMENT, { walletTokens: new Error('offline') });
+
+    expect(dispatched).toEqual(REFRESH_ALL);
+  });
+
+  test('reads no wallet token for shielded outputs paid to others', async () => {
+    const { wallet } = await run({
+      tx_id: 'tx-ws-foreign-tokens',
+      inputs: [transparent(OTHER_ADDRESS, HTR, 100n)],
+      outputs: [],
+      shielded_outputs: [walletServiceShieldedOutput(OTHER_SPEND_ADDRESS)],
+    }, WALLET_SERVICE_ENVIRONMENT, { walletTokens: [HTR, TOKEN, NEW_TOKEN] });
+
+    expect(wallet.getTokens).not.toHaveBeenCalled();
   });
 });

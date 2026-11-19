@@ -297,7 +297,7 @@ describe('ExportPrivacyKeys', () => {
       'Spend public key (xpub)',
       "Path m/44'/280'/2'/0. Lets the auditor derive every receiving spend-side address and find your incoming shielded outputs on-chain.",
       SPEND_MASKED,
-      'Scan private key (xpriv)',
+      'Scan private key (htpr)',
       "Path m/44'/280'/1'/0. Lets the auditor decrypt the value and token of every shielded output your wallet receives. Used only for ECDH; never for signing.",
       SCAN_MASKED,
     ]));
@@ -531,7 +531,7 @@ describe('ExportPrivacyKeys', () => {
     await enterPin();
 
     expect(texts()).toEqual(expect.arrayContaining(['Spend public key (xpub)', SPEND_MASKED]));
-    expect(texts()).not.toContain('Scan private key (xpriv)');
+    expect(texts()).not.toContain('Scan private key (htpr)');
   });
 
   test('asks to unlock a locked private balance, then asks for the PIN once it is unlocked', async () => {

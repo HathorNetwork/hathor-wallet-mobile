@@ -29,10 +29,22 @@ import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
 import { COLORS } from '../styles/themes';
 import { isShieldedEnvironment } from '../shielded/gating';
+import {
+  getMultichainFeatureToggle,
+  isSideChainConnected,
+  selectSideChainConfig,
+} from '../multichain/gating';
+import { addressChain, nextAddressError, normalizeNextAddress } from '../multichain/address';
+import { CHAIN, isTransferAddress } from '../multichain/chains';
+import { ChainTag } from '../components/Multichain/ChainTag';
 
 /**
  * First screen of the Send flow. The address is typed or pasted here; the QR code scanner, which
  * the icon at the top right opens, fills it in.
+ *
+ * With the side chain connected, the address says which chain the send is on: a Hathor Next
+ * address sends on Hathor Next, and its chain shows under it. "Transfer between chains" at the
+ * bottom opens the transfer.
  */
 export const SendAddressInput = () => {
   const route = useRoute();
@@ -51,22 +63,72 @@ export const SendAddressInput = () => {
   // where the wallet sends privately, and in public, to the address of its spend key, anywhere
   // there.
   const allowShielded = useSelector(isShieldedEnvironment);
+  const sideChainConnected = useSelector(isSideChainConnected);
+  const sideChainConfig = useSelector(selectSideChainConfig);
+  const multichainOn = useSelector(getMultichainFeatureToggle);
+  // The chain transfer's own address is refused at once, typed or scanned: what pays it directly
+  // burns, and only the transfer may pay it. Like everything multichain, only behind the flag.
+  const transferAddressError = (address) => (multichainOn
+    && isTransferAddress(address, sideChainConfig)
+    ? t`This address is only for transfers to Hathor Next, and anything sent to it directly is lost. Use Transfer between chains instead.`
+    : null);
+  // What is wrong with an address as it is typed: the transfer address, or, with the side chain
+  // connected, a Hathor Next address the app won't pay (the legacy form, or a key nobody can spend
+  // from), with its reason. Shown at once, as Next stays off for it.
+  const typedAddressError = (address) => {
+    const transferError = transferAddressError(address);
+    if (transferError) {
+      return transferError;
+    }
+    const value = (address ?? '').trim();
+    return sideChainConnected
+      && addressChain(value, network, { allowShielded }) === CHAIN.HATHOR_NEXT
+      ? nextAddressError(value)
+      : null;
+  };
   // A tap anywhere on the card around the input focuses it: an empty multiline input is one
   // line tall, so the card's padding wouldn't take the tap otherwise.
   const inputRef = useRef(null);
 
-  // The QR code scanner comes back to this screen with the address it read.
+  // The QR code scanner comes back to this screen with the address it read. Each scan of the
+  // Dashboard's scanner has a number of its own: a second scan of the same address fills it in
+  // again over what the user typed since.
   useEffect(() => {
     if (route.params?.address) {
-      setFormModel((prev) => ({ ...prev, address: route.params.address, error: null }));
+      setFormModel((prev) => ({
+        ...prev,
+        address: route.params.address,
+        error: typedAddressError(route.params.address),
+      }));
     }
-  }, [route.params?.address]);
+  }, [route.params?.address, route.params?.scan]);
 
   const onAddressChange = (text) => {
-    setFormModel({ address: text, error: null });
+    setFormModel({ address: text, error: typedAddressError(text) });
   };
 
-  const validate = () => validateAddress(formModel.address, network, { allowShielded });
+  // The chain of a valid address, once the side chain is connected: before, a Hathor Next address
+  // is an invalid address, as it always was.
+  const chain = sideChainConnected
+    ? addressChain(formModel.address, network, { allowShielded })
+    : null;
+
+  // Trimmed, as the address goes on: the chain above is read trimmed too, so an address pasted
+  // with a line break shows its chain and is taken.
+  const validate = () => {
+    const address = formModel.address.trim();
+    const transferError = transferAddressError(address);
+    if (transferError) {
+      return { isValid: false, message: transferError };
+    }
+    if (chain === CHAIN.HATHOR_NEXT) {
+      // A Hathor Next address the app won't pay gets its own words: the legacy form, or a key
+      // nobody can spend from.
+      const refused = nextAddressError(address);
+      return refused ? { isValid: false, message: refused } : { isValid: true };
+    }
+    return validateAddress(address, network, { allowShielded });
+  };
 
   const isAddressValid = () => {
     if (!formModel.address) return false;
@@ -79,7 +141,14 @@ export const SendAddressInput = () => {
       setFormModel((prev) => ({ ...prev, error: validation.message }));
       return;
     }
-    navigation.navigate('SendAmountInput', { address: formModel.address });
+    navigation.navigate(
+      chain === CHAIN.HATHOR_NEXT ? 'NextSendAmountInput' : 'SendAmountInput',
+      {
+        address: chain === CHAIN.HATHOR_NEXT
+          ? normalizeNextAddress(formModel.address)
+          : formModel.address.trim(),
+      },
+    );
   };
 
   const onScanPress = () => {
@@ -146,12 +215,25 @@ export const SendAddressInput = () => {
               {formModel.error ? (
                 <Text style={styles.errorText}>{formModel.error}</Text>
               ) : null}
+              {chain && !formModel.error ? (
+                <ChainTag chain={chain} style={styles.chain} />
+              ) : null}
             </View>
-            <NewHathorButton
-              title={t`Next`}
-              disabled={!isAddressValid()}
-              onPress={onButtonPress}
-            />
+            <View>
+              <NewHathorButton
+                title={t`Next`}
+                disabled={!isAddressValid()}
+                onPress={onButtonPress}
+              />
+              {sideChainConnected && (
+                <NewHathorButton
+                  secondary
+                  title={t`Transfer between chains`}
+                  onPress={() => navigation.navigate('ChainTransfer')}
+                  style={styles.transfer}
+                />
+              )}
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
@@ -161,6 +243,13 @@ export const SendAddressInput = () => {
 };
 
 const styles = StyleSheet.create({
+  chain: {
+    marginTop: 8,
+    marginLeft: 4,
+  },
+  transfer: {
+    marginTop: 8,
+  },
   body: {
     flex: 1,
     padding: 16,

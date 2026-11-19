@@ -1,6 +1,6 @@
 {
   "name": "HathorMobile",
-  "version": "0.40.0-rc.3",
+  "version": "0.40.1",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=10.0.0"
@@ -27,10 +27,12 @@
     "@hathor/ct-crypto-mobile": "0.5.0",
     "@hathor/hathor-rpc-handler": "5.1.0",
     "@hathor/unleash-client": "0.1.0",
-    "@hathor/wallet-lib": "4.3.0",
+    "@hathor/wallet-lib": "4.4.0",
     "@json-rpc-tools/utils": "1.7.6",
     "@lavamoat/preinstall-always-fail": "2.1.0",
     "@lavamoat/react-native-lockdown": "0.1.0",
+    "@noble/curves": "1.9.7",
+    "@noble/hashes": "1.8.0",
     "@notifee/react-native": "9.1.8",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-native-community/netinfo": "11.4.1",
@@ -161,6 +163,10 @@
     ],
     "setupFiles": [
       "<rootDir>/jestMockSetup.js"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/__tests__/multichain/fakes/"
     ],
     "cacheDirectory": ".jest/cache"
   },
