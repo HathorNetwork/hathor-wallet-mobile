@@ -59,8 +59,8 @@ export const NEXT_CLIENT_ERROR = {
   TOKEN_PREPARE_FAILED: 'token-prepare-failed',
   // The backend built another token than the one approved: nothing was signed.
   TOKEN_REFUSED: 'token-refused',
-  // The backend's creation spends more coins than its fee needs: they would come back as public
-  // change. Nothing was signed.
+  // The backend's creation doesn't pay its fee from exactly one coin: several would come back as
+  // one public change, linked on chain. Nothing was signed.
   TOKEN_EXTRA_COINS: 'token-extra-coins',
   // The user didn't agree to the change a creation makes public: nothing was signed.
   TOKEN_DECLINED: 'token-declined',
@@ -124,7 +124,7 @@ export function nextClientErrorMessage(code) {
     case NEXT_CLIENT_ERROR.TOKEN_REFUSED:
       return t`Hathor Next prepared a different token than the one you approved, so nothing was signed or created.`;
     case NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS:
-      return t`Hathor Next prepared this token with more of your HTR than its fee needs, which would have made that HTR public, so nothing was signed or created.`;
+      return t`Hathor Next couldn't pay this token's fee from one of your HTR coins, and paying it from several would make them public together, so nothing was signed or created. Send some HTR to your own Hathor Next address first, so one coin can pay the fee, then try again.`;
     case NEXT_CLIENT_ERROR.TOKEN_DECLINED:
       return t`The token wasn't created. Nothing was signed and no fee was paid.`;
     case NEXT_CLIENT_ERROR.TOKEN_REVIEW_EXPIRED:

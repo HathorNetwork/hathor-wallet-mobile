@@ -45,11 +45,12 @@ export class SignRefusedError extends Error {
 }
 
 /**
- * A token creation spends a coin its fee doesn't need: that coin would come back as public change.
+ * A token creation spends other than one coin: several would come back as one public change,
+ * linked on chain, and a coin its fee doesn't need would add its whole amount to it.
  */
 export class CoinsNotNeededError extends SignRefusedError {
   constructor() {
-    super('The token creation spends coins its fee doesn\'t need.');
+    super('The token creation doesn\'t pay its fee from exactly one coin.');
     this.name = 'CoinsNotNeededError';
   }
 }
@@ -250,13 +251,13 @@ export const MAX_SETTLED_ENTRIES = 200;
  * outputs are transparent): the user is told so before approving, and sees the change's amount
  * (publicChange) before it is signed.
  *
- * So no input may be one the fee doesn't need: each would add its whole amount to that public
- * change, and a backend spending every coin would publish the whole balance and link the coins.
- * A creation spends only the native token, so its inputs add up to the change and the fee, and an
- * input is not needed exactly when it is no larger than the change. The app can't read a hidden
- * input's amount, but with every input larger than the change, (inputs − 1) × change < fee: a
- * creation that breaks that has an input it doesn't need. A largest-first choice always meets it,
- * as it stops at the first coin that covers the fee.
+ * So a creation spends exactly one coin, or none for no fee and no change. Each coin it spends
+ * goes into that public change, and several are linked by it on chain; a backend spending every
+ * coin would publish the whole balance. The app can't read a hidden coin's amount, so it can't
+ * tell a coin the fee doesn't need from one it does (coins of 2 and 108 for a fee of 100 read as
+ * coins of 54 and 56): it allows one coin only. A largest-first choice takes one coin whenever one
+ * covers the fee; a wallet whose coins are all smaller than the fee is refused, and sending some
+ * HTR to its own address first makes one coin of them.
  *
  * @param {Object} request The backend's sign request
  * @param {Object} context
@@ -388,7 +389,9 @@ export function checkCreateRequest(request, {
   if (supply !== intent.amount) {
     refuse('The token\'s supply is not the amount the user approved.');
   }
-  if (tx.nIn > 0 && BigInt(tx.nIn - 1) * change >= tx.feeAmount) {
+  const oneCoin = tx.nIn === 1 && tx.feeAmount > 0n;
+  const free = tx.nIn === 0 && tx.feeAmount === 0n && change === 0n;
+  if (!oneCoin && !free) {
     throw new CoinsNotNeededError();
   }
   return { bytes, tx, signingHash, secrets, keys, publicChange: change };

@@ -28,7 +28,7 @@ import {
   unconfirmedBody,
   verdictLead,
 } from '../../multichain/content';
-import { selectSideChainConfig } from '../../multichain/gating';
+import { selectSideChainConfig, selectSideChainConnection } from '../../multichain/gating';
 import { OPERATION_STATUS, SEND_IN_FLIGHT } from '../../multichain/state';
 import { authorizeTransaction } from '../../passkey/authorizeTransaction';
 import NavigationService from '../../NavigationService';
@@ -78,6 +78,7 @@ export default function NextCreateTokenConfirmScreen() {
   const amount = BigInt(params.amount);
   const { name, symbol } = params;
   const config = useSelector(selectSideChainConfig);
+  const connection = useSelector(selectSideChainConnection);
   const current = useSelector((state) => state.multichain.createToken);
   const online = useSelector((state) => state.multichain.next.online);
   const sweeping = useSelector((state) => state.multichain.next.sweeping);
@@ -90,13 +91,16 @@ export default function NextCreateTokenConfirmScreen() {
   // backend changed) clears the creation: an outcome already shown stays shown. One signed (it has
   // its id) and not settled is one the screen lost track of: no update reaches it any more. One
   // not signed yet still has the saga's answer coming, named with this draft: the screen waits
-  // for it, as nothing says yet whether it was created. It is never sent again.
+  // for it, as nothing says yet whether it was created, unless another draft took the creation
+  // meanwhile, whose state the answer never overwrites: lost track of too. It is never sent again.
   const [last, setLast] = useState(null);
   const leaving = useRef(false);
   const kept = !own && !leaving.current ? last : null;
-  const lost = Boolean(kept?.sendId) && (SEND_IN_FLIGHT.includes(kept.status)
-    || kept.status === OPERATION_STATUS.UNCONFIRMED);
-  const answerComing = Boolean(kept) && !kept.sendId && SEND_IN_FLIGHT.includes(kept.status);
+  const otherOwns = current.draftId !== null && !own;
+  const unsignedInFlight = Boolean(kept) && !kept.sendId && SEND_IN_FLIGHT.includes(kept.status);
+  const lost = (Boolean(kept?.sendId) && (SEND_IN_FLIGHT.includes(kept.status)
+    || kept.status === OPERATION_STATUS.UNCONFIRMED)) || (unsignedInFlight && otherOwns);
+  const answerComing = unsignedInFlight && !otherOwns;
   const keptOutcome = kept && kept.status !== OPERATION_STATUS.IDLE
     && !SEND_IN_FLIGHT.includes(kept.status) ? kept : null;
   // What the screen shows of its draft.
@@ -124,15 +128,19 @@ export default function NextCreateTokenConfirmScreen() {
     }
   }, [own, current]);
 
-  const submit = (pinCode) => {
-    setAuthorized(true);
-    dispatch(multichainNextCreateTokenRequested({ symbol, name, amount, draftId, pinCode }));
-  };
-
   const onConfirm = () => {
     if (!canCreate) {
       return;
     }
+    // The Hathor Next it is authorized on, as Create was tapped: the saga creates it there only,
+    // though the backend may change while the PIN is asked.
+    const authorizedOn = connection;
+    const submit = (pinCode) => {
+      setAuthorized(true);
+      dispatch(multichainNextCreateTokenRequested({
+        symbol, name, amount, draftId, pinCode, connection: authorizedOn,
+      }));
+    };
     authorizeTransaction({
       navigation,
       pinParams: {
@@ -206,7 +214,8 @@ export default function NextCreateTokenConfirmScreen() {
             icon={icon(checkIcon)}
             text={[
               t`${symbol} was created on Hathor Next, and its whole supply is in your wallet.`,
-              creation.tokenId ? t`Token id: ${creation.tokenId}` : null,
+              // Once the registry named it: the signed transaction's id may not be the token's.
+              creation.tokenId && creation.tokenIdFinal ? t`Token id: ${creation.tokenId}` : null,
             ].filter(Boolean).join('\n\n')}
             onDismiss={exit}
             action={<NewHathorButton title={t`Done`} onPress={exit} />}

@@ -16,6 +16,7 @@ import derivation from './fixtures/derivation.json';
 import vectors from './fixtures/remote-issuance.json';
 import { createBackendNextClient } from '../../../src/multichain/next/backendClient';
 import * as signerModule from '../../../src/multichain/next/signer';
+import * as nonceModule from '../../../src/multichain/next/tokenNonces';
 import { NEXT_CLIENT_ERROR, NEXT_CLIENT_EVENT } from '../../../src/multichain/nextClientErrors';
 import {
   deriveAccount,
@@ -56,8 +57,8 @@ const CREATION = {
   symbol: CASE.approved.symbol,
   name: CASE.approved.name,
   amount: BigInt(CASE.approved.amount),
-  // The user agrees to the change the creation makes public.
-  confirmPublicChange: async () => true,
+  // The app approves the signing: the user agreed to the change it makes public.
+  approveSigning: async () => true,
 };
 const STORAGE_KEY_PREFIX = 'multichain:nextTokenNonces:';
 
@@ -132,7 +133,8 @@ function fakeBackend({
     }
     if (path === '/v1/wallets') {
       return json(200, {
-        wallet_id: walletId,
+        // The registering wallet's own: another wallet may connect too.
+        wallet_id: bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), hexToBytes(data.pub_b))),
         pub_a: CASE.pub_a,
         address: encodeAddress(CASE.pub_a, data.pub_b),
         birthday: 0,
@@ -260,8 +262,25 @@ describe('a token created on Hathor Next through the backend', () => {
     for (const secret of secrets) {
       expect(everything).not.toContain(secret);
     }
-    for (const word of derivation.mnemonic.split(' ')) {
-      expect(everything).not.toContain(` ${word} `);
+    // The creation asks for exactly these fields.
+    const [create] = createCalls(backend);
+    expect(Object.keys(create.data).sort()).toEqual([
+      'amount', 'intent_id', 'max_fee', 'melt_authority', 'mint_authority', 'name', 'symbol',
+    ]);
+    // No body carries two of the words in a row, however they are written: in one string, or as
+    // a list of them.
+    const words = derivation.mnemonic.split(' ');
+    const pairs = new Set(words.slice(1).map((word, i) => `${words[i]} ${word}`));
+    const wordsOf = (value) => {
+      if (typeof value === 'string') return value.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+      if (Array.isArray(value)) return value.flatMap(wordsOf);
+      if (value && typeof value === 'object') return Object.values(value).flatMap(wordsOf);
+      return [];
+    };
+    for (const call of backend.calls) {
+      const sent = wordsOf(call.data);
+      const found = sent.slice(1).some((word, i) => pairs.has(`${sent[i]} ${word}`));
+      expect(found).toBe(false);
     }
   });
 
@@ -425,7 +444,8 @@ describe('a token created on Hathor Next through the backend', () => {
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
     expect(createCalls(backend)).toHaveLength(0);
     expect(backend.signatures()).toBeNull();
-    expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
+    // Nothing was reserved: no nonce was ever written for a Hathor Next the app left.
+    expect(nonceRecord(storage)).toBeNull();
   });
 
   it('asks neither backend when the app goes to another one as the keys derive', async () => {
@@ -498,8 +518,8 @@ describe('a token created on Hathor Next through the backend', () => {
     expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
   });
 
-  // With no change to show, nothing is asked: the check right before signing is the one that
-  // stops it. With one, the check after the user's answer.
+  // Asked to approve with or without a change: the check before the approval stops what leaves
+  // before it, the one after it what leaves during it.
   it.each([
     ['a change to show', null],
     ['no change', 0n],
@@ -555,7 +575,14 @@ describe('a token created on Hathor Next through the backend', () => {
         let outcome = 'created';
         try {
           // eslint-disable-next-line no-await-in-loop
-          await run.createToken({ words: derivation.mnemonic, ...CREATION });
+          await run.createToken({
+            words: derivation.mnemonic,
+            ...CREATION,
+            approveSigning: async () => {
+              order.push('approve');
+              return true;
+            },
+          });
         } catch (e) {
           outcome = e.code;
         }
@@ -569,13 +596,19 @@ describe('a token created on Hathor Next through the backend', () => {
     } finally {
       jest.restoreAllMocks();
     }
-    // The runs went from leaving before signing to leaving after it.
+    // The runs went from leaving before the approval to leaving after signing. One that left
+    // before it is never approved; one that left during it signs nothing.
     const leftFirst = runs.filter((r) => r.order.startsWith('left'));
     expect(leftFirst.length).toBeGreaterThan(0);
-    expect(runs.some((r) => r.order.startsWith('sign left'))).toBe(true);
+    expect(runs.some((r) => r.order.endsWith('sign left'))).toBe(true);
     for (const r of leftFirst) {
       expect(r).toEqual({
         order: 'left', outcome: NEXT_CLIENT_ERROR.NOT_CONNECTED, sent: false, reserved: [],
+      });
+    }
+    for (const r of runs.filter((run) => run.order === 'approve left')) {
+      expect(r).toMatchObject({
+        outcome: NEXT_CLIENT_ERROR.NOT_CONNECTED, sent: false, reserved: [],
       });
     }
   });
@@ -605,8 +638,8 @@ describe('a token created on Hathor Next through the backend', () => {
   describe('the change a creation makes public, shown before anything is signed', () => {
     const CHANGE = BigInt(CASE.outputs.find((o) => o.is_change && o.token === NATIVE).amount);
     const deletes = (backend) => backend.calls.filter((c) => c.method === 'DELETE');
-    const create = (run, confirmPublicChange) => run.createToken({
-      words: derivation.mnemonic, ...CREATION, confirmPublicChange,
+    const create = (run, approveSigning) => run.createToken({
+      words: derivation.mnemonic, ...CREATION, approveSigning,
     });
     afterEach(() => {
       jest.restoreAllMocks();
@@ -674,16 +707,21 @@ describe('a token created on Hathor Next through the backend', () => {
       expect(nonceRecord(storage).reserved).toEqual([]);
     });
 
-    it('asks nothing of a creation with no change, and signs it', async () => {
+    // The app still approves it: the creation may no longer be allowed where it was asked for.
+    it('asks for a creation with no change too, and signs nothing when the app says no', async () => {
       const realCheck = signerModule.checkCreateRequest;
       jest.spyOn(signerModule, 'checkCreateRequest')
         .mockImplementation((...args) => ({ ...realCheck(...args), publicChange: 0n }));
       const backend = fakeBackend();
-      client = await connected(backend);
-      const confirm = jest.fn(async () => true);
-      await create(client, confirm);
-      expect(confirm).not.toHaveBeenCalled();
-      expect(backend.signatures()).toHaveLength(CASE.inputs.length);
+      const storage = memoryStorage();
+      client = await connected(backend, storage);
+      const approve = jest.fn(async () => false);
+      await expect(create(client, approve))
+        .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_DECLINED });
+      expect(approve).toHaveBeenCalledWith(0n);
+      expect(backend.signatures()).toBeNull();
+      expect(deletes(backend).map((c) => c.path)).toEqual(['/v1/sends/create-1']);
+      expect(nonceRecord(storage).reserved).toEqual([]);
     });
 
     it('asks nothing of a creation its checks refuse, and says when it spends coins it doesn\'t need', async () => {
@@ -693,10 +731,10 @@ describe('a token created on Hathor Next through the backend', () => {
       const backend = fakeBackend();
       const storage = memoryStorage();
       client = await connected(backend, storage);
-      const confirm = jest.fn(async () => true);
-      await expect(create(client, confirm))
+      const approve = jest.fn(async () => true);
+      await expect(create(client, approve))
         .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS });
-      expect(confirm).not.toHaveBeenCalled();
+      expect(approve).not.toHaveBeenCalled();
       expect(backend.signatures()).toBeNull();
       expect(deletes(backend).map((c) => c.path)).toEqual(['/v1/sends/create-1']);
       expect(nonceRecord(storage).reserved).toEqual([]);
@@ -708,6 +746,127 @@ describe('a token created on Hathor Next through the backend', () => {
       await expect(create(client, undefined))
         .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED });
       expect(createCalls(backend)).toEqual([]);
+    });
+  });
+
+  describe('after it is approved and signed', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+    const RECORDED_ID = 'cd'.repeat(32);
+    const recordedRow = {
+      token_id: RECORDED_ID,
+      has_mint_authority: true,
+      has_melt_authority: true,
+      mint_authority: CASE.approved.mint_authority,
+      melt_authority: CASE.approved.melt_authority,
+    };
+    const settle = () => new Promise((resolve) => { setTimeout(resolve, 300); });
+
+    it('gives the nonce back to its own wallet when the app reconnects to another during the approval', async () => {
+      const OTHER = `${'abandon '.repeat(11)}about`;
+      const backend = fakeBackend();
+      const storage = memoryStorage();
+      client = await connected(backend, storage);
+      const { b } = deriveAccount(await mnemonicToSeed(OTHER));
+      const otherId = bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), publicKeyOf(b)));
+      const otherKey = `${STORAGE_KEY_PREFIX}1777:${otherId}`;
+      let ownKey = null;
+      await expect(client.createToken({
+        words: derivation.mnemonic,
+        ...CREATION,
+        approveSigning: async () => {
+          [ownKey] = Object.keys(storage.data).filter((k) => k.startsWith(STORAGE_KEY_PREFIX));
+          client.disconnect();
+          await client.prepareKeys({ words: OTHER });
+          await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+          // The other wallet's own creation holds the same nonce.
+          await storage.setItemAsync(otherKey, { reserved: [0], signedFloor: null });
+          return true;
+        },
+      })).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NOT_CONNECTED });
+      expect(ownKey).not.toBe(otherKey);
+      expect(JSON.parse(storage.data[ownKey]).reserved).toEqual([]);
+      expect(JSON.parse(storage.data[otherKey]).reserved).toEqual([0]);
+      expect(backend.signatures()).toBeNull();
+    });
+
+    it('still sends and follows a signed creation whose nonce couldn\'t be saved as signed', async () => {
+      const realStore = nonceModule.createNonceStore;
+      let failures = 1;
+      jest.spyOn(nonceModule, 'createNonceStore').mockImplementation((...args) => {
+        const store = realStore(...args);
+        return {
+          ...store,
+          markSigned: async (nonce) => {
+            if (failures > 0) {
+              failures -= 1;
+              throw new Error('The disk is full.');
+            }
+            return store.markSigned(nonce);
+          },
+        };
+      });
+      const backend = fakeBackend();
+      const storage = memoryStorage();
+      client = await connected(backend, storage);
+      const recorded = new Promise((resolve) => {
+        client.on(NEXT_CLIENT_EVENT.SEND, (event) => {
+          if (event.status === 'recorded') resolve(event);
+        });
+      });
+      const { sendId } = await client.createToken({ words: derivation.mnemonic, ...CREATION });
+      expect(sendId).toBe('create-1');
+      expect(backend.signatures()).toHaveLength(CASE.inputs.length);
+      // Still reserved, so no other creation takes it.
+      expect(nonceRecord(storage)).toEqual({ reserved: [0], signedFloor: null });
+      await recorded;
+      await settle();
+      // Saved as signed once the creation is recorded.
+      expect(nonceRecord(storage)).toEqual({ reserved: [0], signedFloor: 0 });
+    });
+
+    it('reads the token\'s id again until the registry names it, whatever the refreshes do', async () => {
+      const backend = fakeBackend({ registryAfter: [recordedRow] });
+      let fail = { registry: 1, history: 1 };
+      const fetchImpl = async (url, init) => {
+        if (backend.signatures() !== null) {
+          if (url.includes('authorities=true') && fail.registry > 0) {
+            fail = { ...fail, registry: fail.registry - 1 };
+            throw new Error('The registry is offline.');
+          }
+          if (url.includes('/history') && fail.history > 0) {
+            fail = { ...fail, history: fail.history - 1 };
+            throw new Error('The history is offline.');
+          }
+        }
+        return backend.fetchImpl(url, init);
+      };
+      client = await connected({ ...backend, fetchImpl });
+      const events = [];
+      client.on(NEXT_CLIENT_EVENT.SEND, (event) => events.push(event));
+      const { tokenId } = await client.createToken({ words: derivation.mnemonic, ...CREATION });
+      expect(client.getCreation('create-1')).toMatchObject({ txId: tokenId, provisional: true });
+      await settle();
+      expect(fail).toEqual({ registry: 0, history: 0 });
+      expect(client.getCreation('create-1')).toMatchObject({
+        status: 'recorded', txId: RECORDED_ID, provisional: false,
+      });
+      expect(events.at(-1)).toMatchObject({ txId: RECORDED_ID, provisional: false });
+    });
+
+    it('refreshes balances and history before the tokens, as a refresh of everything does', async () => {
+      const backend = fakeBackend({ registryAfter: [recordedRow] });
+      client = await connected(backend);
+      await client.createToken({ words: derivation.mnemonic, ...CREATION });
+      await settle();
+      const signedAt = backend.calls.findIndex((c) => c.path === '/v1/sends/create-1/signatures');
+      const after = backend.calls.slice(signedAt + 1).map((c) => c.path);
+      const firstTokens = after.findIndex((path) => path.startsWith('/v1/tokens')
+        && !path.includes('authorities=true'));
+      expect(firstTokens).toBeGreaterThan(0);
+      expect(after.slice(0, firstTokens).some((path) => path.endsWith('/balance'))).toBe(true);
+      expect(after.slice(0, firstTokens).some((path) => path.includes('/history'))).toBe(true);
     });
   });
 

@@ -102,6 +102,8 @@ const CREATE_TOKEN_INITIAL_STATE = {
   draftId: null,
   sendId: null,
   tokenId: null,
+  // Whether the registry named tokenId: until then it is the signed transaction's, provisional.
+  tokenIdFinal: false,
   reason: null,
   error: null,
   // Checked and not signed yet: { publicChange } while the user decides on the HTR the creation

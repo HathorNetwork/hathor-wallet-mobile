@@ -202,6 +202,18 @@ export function selectSideChainKey(state) {
 }
 
 /**
+ * Which Hathor Next the app is on: the network's side chain and the backend it runs on. A
+ * creation authorized on one is never signed on another.
+ *
+ * @param {Object} state Redux state
+ * @returns {string|null} Null where the network has no side chain
+ */
+export function selectSideChainConnection(state) {
+  const config = selectSideChainConfig(state);
+  return config ? `${selectSideChainKey(state)} ${config.backendUrl}` : null;
+}
+
+/**
  * Whether the user turned "Connect to side chain" on for this network, so both chains show.
  *
  * @param {Object} state Redux state

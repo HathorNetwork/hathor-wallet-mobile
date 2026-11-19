@@ -100,6 +100,10 @@ const SEND_SETTLED = ['recorded', 'failed', 'expired'];
 
 // How often a payment the backend calls failed is submitted again while it is followed.
 const FAILED_RESUBMIT_MS = 60000;
+
+// How many times a created token's id is read from the registry, a poll apart, once its
+// creation is recorded: a read that fails, or a registry that doesn't list it yet, is read again.
+const TOKEN_ID_READS = 10;
 // How often a payment that isn't settled yet (the backend calls it failed) is read: no sooner
 // than it is submitted again. It can stay so for the whole session.
 export const UNCONFIRMED_POLL_MS = FAILED_RESUBMIT_MS;
@@ -640,6 +644,37 @@ export function createBackendNextClient({
       tick();
     }, entry.status === 'unconfirmed' ? unconfirmedPollMs : sendPollMs);
     tick();
+  }
+
+  // Reads a recorded creation's token id from the registry, the row naming this wallet's mint key
+  // at its nonce, and says so with a SEND event that is no longer provisional. A read that fails,
+  // or a registry that doesn't list it yet, is read again a poll later, TOKEN_ID_READS times at
+  // most.
+  function resolveCreatedToken(mine, creation, mintHex, reads = 0) {
+    schedule(async () => {
+      if (mine !== generation) return;
+      try {
+        const row = (await readRegistry())
+          .find((r) => r.mint_authority?.toLowerCase() === mintHex);
+        if (row) {
+          creation.txId = row.token_id.toLowerCase();
+          creation.provisional = false;
+          emit(NEXT_CLIENT_EVENT.SEND, {
+            sendId: creation.sendId,
+            status: creation.status,
+            reason: creation.reason,
+            txId: creation.txId,
+            provisional: false,
+          });
+          return;
+        }
+      } catch (e) {
+        log.error('Could not read the created token from the registry.', e);
+      }
+      if (reads + 1 < TOKEN_ID_READS) {
+        resolveCreatedToken(mine, creation, mintHex, reads + 1);
+      }
+    }, reads === 0 ? 0 : sendPollMs);
   }
   /* eslint-enable no-param-reassign */
 
@@ -1269,17 +1304,18 @@ export function createBackendNextClient({
      * The words are needed once, to derive the keys at a nonce no other token of this wallet has
      * used, and are dropped before this returns.
      *
-     * A creation's outputs are all public, its HTR change too. Once the checks pass, and before
-     * anything is signed, `confirmPublicChange` is asked with that change's amount, read from the
-     * bytes: the creation is signed only if it answers true, and is cancelled otherwise. A
-     * creation with no change asks nothing.
+     * A creation's outputs are all public, its HTR change too. Once the checks pass, and right
+     * before anything is signed, `approveSigning` is asked with that change's amount, read from
+     * the bytes (0n for none): the user's consent to it, and the app's that the creation is still
+     * allowed where the user authorized it. The creation is signed only if it answers true, and
+     * is cancelled otherwise.
      *
      * @param {{ words: string, symbol: string, name: string, amount: bigint,
-     *   confirmPublicChange: function(bigint): Promise<boolean> }} creation
+     *   approveSigning: function(bigint): Promise<boolean> }} creation
      * @returns {Promise<{ sendId: string, tokenId: string }>}
      */
-    async createToken({ words, symbol, name, amount, confirmPublicChange }) {
-      if (typeof confirmPublicChange !== 'function') {
+    async createToken({ words, symbol, name, amount, approveSigning }) {
+      if (typeof approveSigning !== 'function') {
         throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED);
       }
       requireConnected();
@@ -1305,6 +1341,9 @@ export function createBackendNextClient({
         throw new NextClientError(NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS);
       }
       const mine = generation;
+      // This wallet's nonces: a reconnect to another wallet replaces the client's store, and
+      // this attempt's nonce stays in the one it was taken from.
+      const store = nonces;
       const id = bytesToHex(walletId);
 
       // The keys, at a nonce the registry and this device both show free, reserved on disk first.
@@ -1346,9 +1385,13 @@ export function createBackendNextClient({
       } finally {
         seed.fill(0);
       }
+      // Nothing is reserved for a Hathor Next the app left while the registry was read.
+      if (mine !== generation) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+      }
       let nonce;
       try {
-        nonce = await nonces.reserve(scan);
+        nonce = await store.reserve(scan);
       } catch (e) {
         if (e instanceof NonceBeyondReachError) {
           throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_NONCE_BEYOND_REACH);
@@ -1359,7 +1402,7 @@ export function createBackendNextClient({
       const mintAuthority = derived.mint.get(nonce);
       const meltAuthority = derived.melt.get(nonce);
       if (lockCount !== started || !mintAuthority || !meltAuthority) {
-        await nonces.release(nonce);
+        await store.release(nonce);
         throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
       }
       // The app left Hathor Next (its flag turned off), or went to another backend, while the
@@ -1367,7 +1410,7 @@ export function createBackendNextClient({
       // stops one that comes while the backend builds it, and the check right before signing one
       // that comes after.
       if (mine !== generation) {
-        await nonces.release(nonce);
+        await store.release(nonce);
         throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
       }
 
@@ -1384,7 +1427,7 @@ export function createBackendNextClient({
         }));
       } catch (e) {
         // Nothing was signed: no creation carrying the nonce exists, so the next one takes it.
-        await nonces.release(nonce);
+        await store.release(nonce);
         throw prepareError(e, null, NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED);
       }
       const cancel = () => withSession((token) => api.cancelSend(request.id, token))
@@ -1393,12 +1436,12 @@ export function createBackendNextClient({
       // for a Hathor Next the app left. Not cancelled, which would log in again where it left:
       // the unsigned creation expires.
       if (mine !== generation) {
-        await nonces.release(nonce);
+        await store.release(nonce);
         throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
       }
       if (!keys) {
         await cancel();
-        await nonces.release(nonce);
+        await store.release(nonce);
         throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
       }
       let context = {
@@ -1415,11 +1458,11 @@ export function createBackendNextClient({
       const refused = async (e) => {
         log.error(`A Hathor Next token creation was refused before signing: ${e.message}`);
         await cancel();
-        await nonces.release(nonce);
+        await store.release(nonce);
         return new NextClientError(e instanceof CoinsNotNeededError
           ? NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS : NEXT_CLIENT_ERROR.TOKEN_REFUSED);
       };
-      // Checked once before the user is asked, so the change they see is the one they'd sign.
+      // Checked once before it is approved, so the change the user sees is the one they'd sign.
       let reviewed;
       try {
         reviewed = checkCreateRequest(request, context);
@@ -1427,36 +1470,34 @@ export function createBackendNextClient({
         throw await refused(e instanceof SignRefusedError
           ? e : new SignRefusedError(`The request can't be read: ${e.message}`));
       }
-      if (reviewed.publicChange > 0n) {
-        let accepted = false;
-        try {
-          accepted = (await confirmPublicChange(reviewed.publicChange)) === true;
-        } catch (e) {
-          log.error('The public change of a Hathor Next token creation was not answered.', e);
-        }
-        // The answer may take a while: the app may have left Hathor Next, locked or let the
-        // creation expire meanwhile. Not cancelled where it left, which would log in again there.
-        if (mine !== generation) {
-          await nonces.release(nonce);
-          throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
-        }
-        if (!accepted) {
-          await cancel();
-          await nonces.release(nonce);
-          throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_DECLINED);
-        }
-        if (!keys) {
-          await cancel();
-          await nonces.release(nonce);
-          throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
-        }
-        const nowS = Math.floor(nowMs() / 1000);
-        if (request.expires_at <= nowS) {
-          await nonces.release(nonce);
-          throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_REVIEW_EXPIRED);
-        }
-        context = { ...context, b: keys.b, pubB: keys.pubB, nowS };
+      let approved = false;
+      try {
+        approved = (await approveSigning(reviewed.publicChange)) === true;
+      } catch (e) {
+        log.error('The signing of a Hathor Next token creation was not answered.', e);
       }
+      // The answer may take a while: the app may have left Hathor Next, locked or let the
+      // creation expire meanwhile. Not cancelled where it left, which would log in again there.
+      if (mine !== generation) {
+        await store.release(nonce);
+        throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+      }
+      if (!approved) {
+        await cancel();
+        await store.release(nonce);
+        throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_DECLINED);
+      }
+      if (!keys) {
+        await cancel();
+        await store.release(nonce);
+        throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
+      }
+      const nowS = Math.floor(nowMs() / 1000);
+      if (request.expires_at <= nowS) {
+        await store.release(nonce);
+        throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_REVIEW_EXPIRED);
+      }
+      context = { ...context, b: keys.b, pubB: keys.pubB, nowS };
       let signed;
       try {
         signed = await verifyAndSign(request, context, checkCreateRequest);
@@ -1464,7 +1505,7 @@ export function createBackendNextClient({
         if (e instanceof LedgerConflictError) {
           // An earlier transaction signed these outputs: it goes out again, and this one waits.
           await cancel();
-          await nonces.release(nonce);
+          await store.release(nonce);
           await resubmit(e.entry);
           throw new NextClientError(NEXT_CLIENT_ERROR.EARLIER_PENDING);
         }
@@ -1473,16 +1514,29 @@ export function createBackendNextClient({
         }
         throw e;
       }
-      // Signed: bytes carrying the nonce exist, so it never comes round again.
-      await nonces.markSigned(nonce);
+      // Signed: bytes carrying the nonce exist, so it never comes round again. The signed
+      // transaction is saved already and goes out below, whatever this write does: one that fails
+      // leaves the nonce reserved, which holds it all the same, and is made again once the
+      // creation is recorded.
+      let floorSaved = false;
+      const saveFloor = async () => {
+        try {
+          await store.markSigned(nonce);
+          floorSaved = true;
+        } catch (e) {
+          log.error('Could not save a Hathor Next token\'s nonce as signed; it stays reserved.', e);
+        }
+      };
+      await saveFloor();
       // Recorded: the registry names the token now, and the balance holds its supply. The token's
       // id is the recorded transaction's, which the builder could have made other than the bytes
-      // signed here (it holds the excess's secret): the registry row carrying this wallet's own
-      // keys at this nonce names the token that exists.
+      // signed here (it holds the excess's secret): until the registry row carrying this wallet's
+      // own keys at this nonce names the token, the signed id is provisional.
       const mintHex = bytesToHex(mintAuthority);
       const creation = {
         sendId: request.id,
         txId: signed.txId,
+        provisional: true,
         signedTx: signed.signedTx,
         symbol,
         name,
@@ -1491,23 +1545,17 @@ export function createBackendNextClient({
         reason: null,
         at: nowMs(),
         onRecorded: async () => {
-          await refreshTokens();
-          await Promise.all([refreshHistory(), refreshBalances()]);
+          // As refreshAll does: balances and history first, so the tokens read next include it.
           try {
-            const row = (await readRegistry())
-              .find((r) => r.mint_authority?.toLowerCase() === mintHex);
-            if (row && row.token_id.toLowerCase() !== creation.txId) {
-              creation.txId = row.token_id.toLowerCase();
-              emit(NEXT_CLIENT_EVENT.SEND, {
-                sendId: creation.sendId,
-                status: creation.status,
-                reason: creation.reason,
-                txId: creation.txId,
-              });
-            }
+            await Promise.all([refreshHistory(), refreshBalances()]);
+            await refreshTokens();
           } catch (e) {
-            log.error('Could not read the created token from the registry.', e);
+            log.error('Could not refresh Hathor Next after a token creation.', e);
           }
+          if (!floorSaved) {
+            await saveFloor();
+          }
+          resolveCreatedToken(mine, creation, mintHex);
         },
       };
       creations.set(creation.sendId, creation);
@@ -1529,7 +1577,13 @@ export function createBackendNextClient({
     getCreation(sendId) {
       const creation = creations.get(sendId);
       return creation
-        ? { sendId, status: creation.status, reason: creation.reason, txId: creation.txId }
+        ? {
+          sendId,
+          status: creation.status,
+          reason: creation.reason,
+          txId: creation.txId,
+          provisional: creation.provisional,
+        }
         : null;
     },
 

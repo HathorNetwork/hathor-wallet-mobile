@@ -261,8 +261,8 @@ const CLAIMS = PUBLIC.outputs.map((o) => ({
 /** The creation request for these outputs (in the reader's order), each written honestly. */
 function forged(outputs, options = {}) {
   const { table = [], feeToken = 255, excess = false } = options;
-  const { extraInputs = [], fee = BigInt(PUBLIC.fee) } = options;
-  const inputs = [...PUBLIC.inputs, ...extraInputs];
+  const { extraInputs = [], fee = BigInt(PUBLIC.fee), ownInput = true } = options;
+  const inputs = [...(ownInput ? PUBLIC.inputs : []), ...extraInputs];
   const written = outputs.map((o, index) => honest(o.form, {
     ...o,
     index,
@@ -424,21 +424,38 @@ describe('each check of a token creation, on its own', () => {
     one_time_key: bytesToHex(publicKeyOf(modOrder(offset + bytesToBigintLE(hexToBytes(PUBLIC.b))))),
   });
 
-  // Each coin the fee doesn't need adds its whole amount to the change, which is public.
-  it('refuses a creation spending a coin its fee doesn\'t need', () => {
-    const fee = BigInt(PUBLIC.fee);
-    const spends = (extraInputs, amount) => forged(withChange({ amount }), { extraInputs });
-    const refused = 'The token creation spends coins its fee doesn\'t need.';
-    // Three coins and the vector's change: 2 × change ≥ fee, so one was no larger than the change.
-    const change = CLAIMS[CHANGE_AT].amount;
-    expect(refusedFor(spends([ownInput(7, 11n), ownInput(8, 12n)], change))).toBe(refused);
-    // Two coins: refused from a change of the fee itself, accepted just below it.
-    expect(refusedFor(spends([ownInput(7, 11n)], fee))).toBe(refused);
-    const justBelow = spends([ownInput(7, 11n)], fee - 1n);
-    expect(refusal(() => checkCreateRequest(justBelow, contextOf(PUBLIC)))).toBeNull();
-    // One coin is needed for a fee, whatever comes back from it, and none for no fee.
-    expect(refusal(() => checkCreateRequest(spends([], 10n * fee), contextOf(PUBLIC)))).toBeNull();
-    expect(refusedFor(forged(withChange({ amount: change }), { fee: 0n }))).toBe(refused);
+  // Every coin it spends goes into the public change, and several are linked by it. The app can't
+  // read a hidden coin's amount, so it can't tell a coin the fee doesn't need from one it does:
+  // one coin only.
+  describe('pays its fee from exactly one coin', () => {
+    const refused = 'The token creation doesn\'t pay its fee from exactly one coin.';
+    const creation = ({ extra = [], ownInput = true, fee = 100n, change = 10n }) => forged(
+      withChange({ amount: change }),
+      { extraInputs: extra, ownInput, fee },
+    );
+    const accepted = (request) => refusal(() => checkCreateRequest(request, contextOf(PUBLIC)));
+
+    it('refuses two coins: 2 and 108, or 54 and 56, for a fee of 100 and a change of 10', () => {
+      // Both read the same to the app; with 2 and 108, the 108 alone would pay the fee.
+      expect(refusedFor(creation({ extra: [ownInput(7, 11n)] }))).toBe(refused);
+    });
+
+    it('refuses three coins, and a creation of no coin for a fee', () => {
+      expect(refusedFor(creation({ extra: [ownInput(7, 11n), ownInput(8, 12n)] }))).toBe(refused);
+      expect(refusedFor(creation({ ownInput: false, change: 0n }))).toBe(refused);
+      // No coin and no fee pays back nothing.
+      expect(refusedFor(creation({ ownInput: false, fee: 0n }))).toBe(refused);
+    });
+
+    it('refuses a coin spent for no fee: nothing needs it', () => {
+      expect(refusedFor(creation({ fee: 0n }))).toBe(refused);
+    });
+
+    it('takes one coin for a fee, whatever comes back from it, and no coin for no fee', () => {
+      expect(accepted(creation({}))).toBeNull();
+      expect(accepted(creation({ change: 10000n }))).toBeNull();
+      expect(accepted(creation({ ownInput: false, fee: 0n, change: 0n }))).toBeNull();
+    });
   });
 
   it('gives the change the creation pays back in the open, so the user sees it', () => {
@@ -609,6 +626,26 @@ describe('each check of the registry scan and the authorities, on its own', () =
       mint_authority: bytesToHex(derivePub('melt', 0)),
     });
     expect(scanAuthorities(derivePub, [misplaced])).toEqual({ highest: 0, held: [] });
+  });
+
+  // Anyone can create a token naming this wallet's public authority key.
+  it('holds every token that names its key, the one it created and any other', () => {
+    const mint = bytesToHex(derivePub('mint', 0));
+    const melt = bytesToHex(derivePub('melt', 0));
+    const own = row({ token_id: 'aa'.repeat(32), mint_authority: mint, melt_authority: melt });
+    const copy = row({ token_id: 'bb'.repeat(32), mint_authority: mint });
+    // The same key in the other column too: it takes the nonce and holds nothing there.
+    const crossed = row({ token_id: 'cc'.repeat(32), mint_authority: melt });
+    expect(scanAuthorities(derivePub, [own, copy, crossed])).toEqual({
+      highest: 0,
+      held: [
+        { tokenId: 'aa'.repeat(32), nonce: 0, mint: true, melt: true },
+        { tokenId: 'bb'.repeat(32), nonce: 0, mint: true, melt: false },
+      ],
+    });
+    // In whatever order the registry lists them.
+    expect(scanAuthorities(derivePub, [crossed, copy, own]).held.map((h) => h.tokenId).sort())
+      .toEqual(['aa'.repeat(32), 'bb'.repeat(32)]);
   });
 
   it('derives only a mint or a melt authority, at a whole nonce from 0', () => {

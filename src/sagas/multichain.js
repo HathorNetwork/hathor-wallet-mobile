@@ -51,6 +51,7 @@ import {
   isSideChainConnected,
   selectMultichainNetwork,
   selectSideChainConfig,
+  selectSideChainConnection,
   selectSideChainKey,
 } from '../multichain/gating';
 import { waitForFeatureToggleInitialization } from './helpers';
@@ -167,6 +168,12 @@ export const creationFailedText = () => t`The token couldn't be created.`;
  * Next (its flag turned off, or its backend changed).
  */
 export const creationStoppedText = () => t`Hathor Next was disconnected before the token was signed, so it wasn't created. Nothing left your wallet.`;
+
+/**
+ * What the user is told of a creation stopped right before it was signed because it was no longer
+ * allowed where it was authorized: token creation turned off, or Hathor Next changed meanwhile.
+ */
+export const creationHaltedText = () => t`The token creation was stopped before the token was signed, so it wasn't created. Nothing left your wallet.`;
 
 // The failures of a load that say what to do: a network that changed under the app (update it),
 // and a clock the wallet service refused (set it).
@@ -580,7 +587,9 @@ export function* followNextClient(client, events = null) {
               yield put(multichainNextCreateTokenUpdate({
                 status: payload.status,
                 reason: payload.reason ?? null,
-                ...(payload.txId ? { tokenId: payload.txId } : {}),
+                ...(payload.txId
+                  ? { tokenId: payload.txId, tokenIdFinal: payload.provisional === false }
+                  : {}),
               }));
             }
             break;
@@ -1090,35 +1099,83 @@ const CREATION_CLEARED = {
   status: OPERATION_STATUS.IDLE,
   sendId: null,
   tokenId: null,
+  tokenIdFinal: false,
   reason: null,
   error: null,
   review: null,
 };
 
 /**
- * Asks the user about the HTR a token creation would make public, and gives the client their
- * answer: yes only when they confirm it on the creation's screen. The screen closing, or the app
- * leaving Hathor Next, is a no.
+ * A write of one creation's attempt. It applies while that draft owns the creation's state, or
+ * while no draft does: the app left Hathor Next, which cleared it, and the draft's screen still
+ * shows its outcome. Another draft's state is never touched.
+ *
+ * @param {string} draftId
+ * @param {Object} patch Part of state.multichain.createToken
+ */
+function* updateDraft(draftId, patch) {
+  const owner = yield select((state) => state.multichain.createToken.draftId);
+  if (owner === draftId || owner === null) {
+    yield put(multichainNextCreateTokenUpdate({ ...patch, draftId }));
+  }
+}
+
+/**
+ * Whether a creation authorized on `connection` may still be signed: token creation is on, the
+ * side chain connected, and it is the same Hathor Next.
+ *
+ * @param {string} connection As selectSideChainConnection named it when Create was tapped
+ * @returns {boolean}
+ */
+function* creationAllowed(connection) {
+  return Boolean(connection)
+    && (yield select(getMultichainTokenCreateFeatureToggle))
+    && (yield select(isSideChainConnected))
+    && (yield select(selectSideChainConnection)) === connection;
+}
+
+/**
+ * Answers the client's question right before it signs a creation: yes only when the user agreed
+ * to the HTR it makes public, asked on the creation's screen when there is any, and the creation
+ * is still allowed on the Hathor Next it was authorized on. From the attempt's start, the screen
+ * closing or the app leaving Hathor Next is a no, to a question asked then or later.
  *
  * @param {Object} reviews The channel the client's questions come through
  * @param {string} draftId
+ * @param {string} connection The Hathor Next the user authorized the creation on
+ * @param {{ stop: Function }} attempt Told when a no came from the creation no longer allowed
  */
-function* reviewCreation(reviews, draftId) {
+function* reviewCreation(reviews, draftId, connection, attempt) {
+  const ended = [types.MULTICHAIN_NEXT_CREATE_TOKEN_RESET, types.MULTICHAIN_NEXT_RESET];
+  let gone = false;
   let pending = null;
   try {
     while (true) {
-      const { publicChange, resolve } = yield take(reviews);
-      pending = resolve;
-      yield put(multichainNextCreateTokenUpdate({ review: { publicChange } }));
-      const { answer } = yield race({
-        answer: take((action) => action.type === types.MULTICHAIN_NEXT_CREATE_TOKEN_REVIEWED
-          && action.payload.draftId === draftId),
-        closed: take(types.MULTICHAIN_NEXT_CREATE_TOKEN_RESET),
-        left: take(types.MULTICHAIN_NEXT_RESET),
-      });
-      pending = null;
-      yield put(multichainNextCreateTokenUpdate({ review: null }));
-      resolve(answer?.payload.accept === true);
+      const { question } = yield race({ question: take(reviews), end: take(ended) });
+      if (question) {
+        const { publicChange, resolve } = question;
+        pending = resolve;
+        let accept = !gone;
+        if (accept && publicChange > 0n) {
+          yield call(updateDraft, draftId, { review: { publicChange } });
+          const { answer } = yield race({
+            answer: take((action) => action.type === types.MULTICHAIN_NEXT_CREATE_TOKEN_REVIEWED
+              && action.payload.draftId === draftId),
+            end: take(ended),
+          });
+          yield call(updateDraft, draftId, { review: null });
+          gone = !answer;
+          accept = answer?.payload.accept === true;
+        }
+        if (accept && !(yield call(creationAllowed, connection))) {
+          accept = false;
+          attempt.stop();
+        }
+        pending = null;
+        resolve(accept);
+      } else {
+        gone = true;
+      }
     }
   } finally {
     // Stopped while a question waited: nothing is signed.
@@ -1129,10 +1186,11 @@ function* reviewCreation(reviews, draftId) {
 /**
  * Creates a token on Hathor Next. The token's keys come from the words, so they are needed once
  * more: decrypted with the PIN, or from a passkey ceremony run here. Sign-once, as a payment: a
- * draft is created at most once, and one creation is on its way at a time.
+ * draft is created at most once, and one creation is on its way at a time. It is created only on
+ * the Hathor Next the user authorized it on, and only while token creation is on there.
  */
 export function* onNextCreateTokenRequested({ payload }) {
-  const { symbol, name, amount, draftId, pinCode } = payload;
+  const { symbol, name, amount, draftId, pinCode, connection } = payload;
   const current = yield select((state) => state.multichain.createToken);
   // A draft whose passkey was dismissed is idle again, and goes when asked again.
   const again = current.draftId === draftId && current.status !== OPERATION_STATUS.IDLE;
@@ -1147,63 +1205,73 @@ export function* onNextCreateTokenRequested({ payload }) {
     || !(yield select(isSideChainConnected))) {
     log.error('A Hathor Next token creation was asked for where none can be made.');
     yield put(multichainNextCreateTokenUpdate({
+      ...CREATION_CLEARED,
       status: OPERATION_STATUS.ERROR,
       draftId,
-      sendId: null,
-      tokenId: null,
-      reason: null,
       error: creationFailedText(),
+    }));
+    return;
+  }
+  // Authorized on another Hathor Next: its backend changed while the PIN was asked.
+  if (!(yield call(creationAllowed, connection))) {
+    log.error('A Hathor Next token creation was authorized on another Hathor Next: not made.');
+    yield put(multichainNextCreateTokenUpdate({
+      ...CREATION_CLEARED,
+      status: OPERATION_STATUS.ERROR,
+      draftId,
+      error: creationHaltedText(),
     }));
     return;
   }
   sentDrafts.add(draftId);
   yield put(multichainNextCreateTokenUpdate({
+    ...CREATION_CLEARED,
     status: OPERATION_STATUS.SENDING,
     draftId,
-    sendId: null,
-    tokenId: null,
-    reason: null,
-    error: null,
-    review: null,
   }));
-  // The client asks before it signs a creation that makes some HTR public: the screen shows how
-  // much, and the user's answer comes back to it from reviewCreation.
+  // The client asks right before it signs: the screen shows the HTR the creation makes public,
+  // and the answer comes back to it from reviewCreation.
   const reviews = yield call(channel, buffers.expanding());
-  const confirmPublicChange = (publicChange) => new Promise((resolve) => {
+  const approveSigning = (publicChange) => new Promise((resolve) => {
     reviews.put({ publicChange, resolve });
   });
-  const reviewer = yield fork(reviewCreation, reviews, draftId);
+  let stopped = false;
+  const attempt = { stop: () => { stopped = true; } };
+  const reviewer = yield fork(reviewCreation, reviews, draftId, connection, attempt);
   try {
     const client = getNextClient();
     const create = (words) => client.createToken({
-      words, symbol, name, amount, confirmPublicChange,
+      words, symbol, name, amount, approveSigning,
     });
     const { sendId, tokenId } = STORE.isPasskeyWallet()
       ? yield call(withPasskeyWords, create)
       : yield call(create, yield call([STORE, STORE.getWalletWords], pinCode));
     // Signed: its id says so. Named with its draft, so its screen still shows it if the app left
-    // Hathor Next while it was signed, which clears the creation.
-    yield put(multichainNextCreateTokenUpdate({
+    // Hathor Next while it was signed, which clears the creation. The id is the signed
+    // transaction's until the client reads the recorded one back.
+    yield call(updateDraft, draftId, {
       status: OPERATION_STATUS.SENDING,
-      draftId,
       sendId,
       tokenId,
-    }));
+      tokenIdFinal: false,
+    });
     // It may have settled while createToken ran: its event came before the saga knew the id.
     const now = client.getCreation(sendId);
     if (now && now.status !== 'pending') {
-      yield put(multichainNextCreateTokenUpdate({
+      yield call(updateDraft, draftId, {
         status: now.status,
         reason: now.reason ?? null,
-      }));
+        ...(now.txId ? { tokenId: now.txId, tokenIdFinal: now.provisional === false } : {}),
+      });
     }
   } catch (e) {
     // Nothing happened, the passkey dismissed or the public change declined: the form is as it
     // was, and Create sends this draft when tapped again. The draft stays named, idle: that, and
     // nothing else, turns its screen's Create on again.
-    if (e instanceof PasskeyCancelledError || e?.code === NEXT_CLIENT_ERROR.TOKEN_DECLINED) {
+    if (e instanceof PasskeyCancelledError
+      || (e?.code === NEXT_CLIENT_ERROR.TOKEN_DECLINED && !stopped)) {
       sentDrafts.delete(draftId);
-      yield put(multichainNextCreateTokenUpdate({ ...CREATION_CLEARED, draftId }));
+      yield call(updateDraft, draftId, CREATION_CLEARED);
       return;
     }
     if (!isExpectedPasskeyError(e)) {
@@ -1215,13 +1283,14 @@ export function* onNextCreateTokenRequested({ payload }) {
       error = e.message;
     } else if (e?.code === NEXT_CLIENT_ERROR.NOT_CONNECTED) {
       error = creationStoppedText();
+    } else if (stopped) {
+      error = creationHaltedText();
     }
-    yield put(multichainNextCreateTokenUpdate({
+    yield call(updateDraft, draftId, {
       ...CREATION_CLEARED,
       status: OPERATION_STATUS.ERROR,
-      draftId,
       error,
-    }));
+    });
     return;
   } finally {
     yield cancel(reviewer);

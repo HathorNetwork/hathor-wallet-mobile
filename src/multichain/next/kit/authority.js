@@ -95,6 +95,8 @@ export function scanAuthorities(derivePub, registry, gap = AUTHORITY_GAP) {
     throw new RegistryUnreadableError();
   }
   const hex32 = /^[0-9a-fA-F]{64}$/;
+  // Every token and column naming each key: anyone can create a token naming this wallet's public
+  // authority key, so one key may sit in several tokens, and in either column.
   const keys = new Map();
   for (const row of registry) {
     // A row read wrongly as "no key here" would hand out a nonce already on chain: every field
@@ -116,24 +118,26 @@ export function scanAuthorities(derivePub, registry, gap = AUTHORITY_GAP) {
       if (!hex32.test(key)) {
         throw new RegistryUnreadableError();
       }
-      keys.set(key.toLowerCase(), { tokenId, kind });
+      const named = keys.get(key.toLowerCase()) ?? [];
+      named.push({ tokenId, kind });
+      keys.set(key.toLowerCase(), named);
     }
   }
   let highest = -1;
   const held = new Map();
   for (let nonce = 0; nonce <= highest + gap; nonce += 1) {
     for (const kind of ['mint', 'melt']) {
-      const hit = keys.get(bytesToHex(derivePub(kind, nonce)));
+      const hits = keys.get(bytesToHex(derivePub(kind, nonce))) ?? [];
       // Any match takes the nonce, as the Rust scan counts it. Only a match in the same column is
       // a power this wallet holds: its melt key in a token's mint slot mints nothing.
-      if (hit) {
+      if (hits.length > 0) {
         highest = nonce;
-        if (hit.kind === kind) {
-          const entry = held.get(hit.tokenId)
-            ?? { tokenId: hit.tokenId, nonce, mint: false, melt: false };
-          entry[kind] = true;
-          held.set(hit.tokenId, entry);
-        }
+      }
+      for (const hit of hits.filter((h) => h.kind === kind)) {
+        const entry = held.get(hit.tokenId)
+          ?? { tokenId: hit.tokenId, nonce, mint: false, melt: false };
+        entry[kind] = true;
+        held.set(hit.tokenId, entry);
       }
     }
   }

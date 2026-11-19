@@ -345,26 +345,19 @@ export function createFakeNextClient() {
     /**
      * Creates a token, its supply paid to the wallet. Sign-once, as a payment: the outcome
      * arrives as a SEND event, and the token's id is the creation's transaction id. As the real
-     * client, it asks `confirmPublicChange` before signing when the creation pays back HTR in the
-     * open: the ledger's `createChange`, none unless a test sets it.
+     * client, it asks `approveSigning` right before signing, with the HTR the creation pays back
+     * in the open: the ledger's `createChange`, none unless a test sets it. A test can make the
+     * build take `createBuildMs` first.
      *
      * @param {{ words: string, symbol: string, name: string, amount: bigint,
-     *   confirmPublicChange: function(bigint): Promise<boolean> }} creation
+     *   approveSigning: function(bigint): Promise<boolean> }} creation
      * @returns {Promise<{ sendId: string, tokenId: string }>}
      */
-    async createToken({ words, symbol, name, amount, confirmPublicChange }) {
-      if (typeof confirmPublicChange !== 'function') {
+    async createToken({ words, symbol, name, amount, approveSigning }) {
+      if (typeof approveSigning !== 'function') {
         throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED);
       }
       requireConnected();
-      const publicChange = BigInt(ledger().createChange ?? '0');
-      if (publicChange > 0n) {
-        const accepted = await confirmPublicChange(publicChange);
-        requireConnected();
-        if (accepted !== true) {
-          throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_DECLINED);
-        }
-      }
       if (!words) {
         throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
       }
@@ -373,6 +366,23 @@ export function createFakeNextClient() {
       }
       if (sweeping) {
         throw new NextClientError(NEXT_CLIENT_ERROR.SWEEPING);
+      }
+      const mine = generation;
+      const buildMs = Number(ledger().createBuildMs ?? 0);
+      if (buildMs > 0) {
+        await new Promise((resolve) => { setTimeout(resolve, buildMs); });
+      }
+      if (mine !== generation) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+      }
+      const accepted = await approveSigning(BigInt(ledger().createChange ?? '0'));
+      // An answer that comes after a reconnect is the old connection's: nothing of it reaches
+      // the new network's ledger.
+      if (mine !== generation) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+      }
+      if (accepted !== true) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.TOKEN_DECLINED);
       }
       const current = ledger();
       const fee = sendFee();
@@ -424,7 +434,10 @@ export function createFakeNextClient() {
             row.sendId === sendId ? { ...row, status, reason } : row
           )),
         });
-        emit(NEXT_CLIENT_EVENT.SEND, { sendId, status, reason, txId: tokenId });
+        // Its id is the token's from the start: the fake builds no other bytes than it signs.
+        emit(NEXT_CLIENT_EVENT.SEND, {
+          sendId, status, reason, txId: tokenId, provisional: false,
+        });
         emitLedgerChanged();
       }, SEND_DELAY_MS);
       return { sendId, tokenId };
@@ -436,7 +449,8 @@ export function createFakeNextClient() {
      * @param {string} sendId
      */
     getCreation(sendId) {
-      return this.getSend(sendId);
+      const send = this.getSend(sendId);
+      return send ? { ...send, provisional: false } : null;
     },
 
     /**

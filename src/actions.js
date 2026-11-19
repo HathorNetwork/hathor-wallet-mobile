@@ -2185,10 +2185,19 @@ export const multichainNextSendReset = () => ({
  * @param {bigint} payload.amount The supply, in Hathor Next's units
  * @param {string} payload.draftId
  * @param {string} [payload.pinCode]
+ * @param {string} payload.connection The Hathor Next the user authorized it on, as
+ *   selectSideChainConnection named it when Create was tapped
  */
-export const multichainNextCreateTokenRequested = ({ symbol, name, amount, draftId, pinCode }) => ({
+export const multichainNextCreateTokenRequested = (payload) => ({
   type: types.MULTICHAIN_NEXT_CREATE_TOKEN_REQUESTED,
-  payload: { symbol, name, amount, draftId, pinCode },
+  payload: {
+    symbol: payload.symbol,
+    name: payload.name,
+    amount: payload.amount,
+    draftId: payload.draftId,
+    pinCode: payload.pinCode,
+    connection: payload.connection,
+  },
 });
 
 /**

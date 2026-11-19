@@ -293,9 +293,17 @@ describe('the token confirmation', () => {
         status: OPERATION_STATUS.RECORDED, tokenId: 'ab'.repeat(32),
       }));
     });
+    // Recorded, its id still the signed transaction's: not shown as the token's yet.
+    const recorded = renderer.root.findByType(FeedbackModal);
+    expect(recorded.props.text).toContain('ATT was created on Hathor Next');
+    expect(recorded.props.text).not.toContain('ab'.repeat(32));
+    // The registry named it.
+    await act(async () => {
+      store.dispatch(multichainNextCreateTokenUpdate({ tokenId: 'cd'.repeat(32), tokenIdFinal: true }));
+    });
     const modal = renderer.root.findByType(FeedbackModal);
     expect(modal.props.text).toContain('ATT was created on Hathor Next');
-    expect(modal.props.text).toContain('ab'.repeat(32));
+    expect(modal.props.text).toContain('cd'.repeat(32));
   });
 
   // Authorized with the PIN: the draft the screen asked the saga to create.
@@ -478,12 +486,35 @@ describe('the token confirmation', () => {
     expect(modals(screen).map((m) => m.props.text)).toEqual(['Nothing was signed or created.']);
   });
 
+  // Its answer would not be written over the other draft's state: it never comes here.
+  test('says it lost track of a creation not signed yet when another draft took the creation', async () => {
+    const screen = await confirm();
+    const draftId = await authorize(screen);
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.SENDING, draftId,
+      }));
+    });
+    await leaveHathorNext(screen);
+    await act(async () => {
+      screen.store.dispatch(multichainNextCreateTokenUpdate({
+        status: OPERATION_STATUS.SENDING, draftId: 'another', sendId: 'create-9',
+      }));
+    });
+    const [modal] = modals(screen);
+    expect(modal.props.text).toBe(creationLostText());
+  });
+
   test('keeps showing the token created when the app leaves Hathor Next', async () => {
     const screen = await confirm();
     const draftId = await authorize(screen);
     await act(async () => {
       screen.store.dispatch(multichainNextCreateTokenUpdate({
-        status: OPERATION_STATUS.RECORDED, draftId, sendId: 'create-1', tokenId: 'ab'.repeat(32),
+        status: OPERATION_STATUS.RECORDED,
+        draftId,
+        sendId: 'create-1',
+        tokenId: 'ab'.repeat(32),
+        tokenIdFinal: true,
       }));
     });
     await leaveHathorNext(screen);

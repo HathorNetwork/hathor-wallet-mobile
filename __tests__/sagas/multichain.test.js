@@ -78,6 +78,7 @@ import {
 } from '../../src/constants';
 import { STORE } from '../../src/store';
 import {
+  creationHaltedText,
   creationStoppedText,
   nextClientChannel,
   resolveUncertainTransfer,
@@ -96,6 +97,7 @@ import {
   isSideChainAvailable,
   isSideChainConnected,
   selectSideChainConfig,
+  selectSideChainConnection,
   selectSideChainKey,
 } from '../../src/multichain/gating';
 import {
@@ -123,6 +125,10 @@ beforeAll(async () => {
 const HTR = '00';
 
 let task = null;
+// The last setup's, for what a screen reads from the store as it asks (a draft's connection).
+let currentEnv = null;
+// The Hathor Next the app is on now: what Create names when tapped.
+const connectionNow = () => selectSideChainConnection(currentEnv.getState());
 
 function setup(options = {}) {
   const {
@@ -159,7 +165,8 @@ function setup(options = {}) {
   if (start) {
     dispatch(startWalletSuccess());
   }
-  return { getState: () => state, dispatch, dispatched, io };
+  currentEnv = { getState: () => state, dispatch, dispatched, io };
+  return currentEnv;
 }
 
 // Advances the clock, then lets the saga finish what the last timer started.
@@ -705,12 +712,13 @@ describe('a Hathor Next payment', () => {
 
 describe('a Hathor Next token creation', () => {
   const SUPPLY = 100000000n;
-  const draft = (draftId) => multichainNextCreateTokenRequested({
+  const draft = (draftId, connection = connectionNow()) => multichainNextCreateTokenRequested({
     symbol: 'ATT',
     name: 'App Test Token',
     amount: SUPPLY,
     draftId,
     pinCode: PIN,
+    connection,
   });
 
   // A creation paying HTR back in the open: the fake asks before it signs, as the real client.
@@ -791,6 +799,132 @@ describe('a Hathor Next token creation', () => {
       expect(Object.values(loadLedger(NETWORK).tokens).some((token) => token.symbol === 'ATT'))
         .toBe(false);
     });
+
+    // The backend still builds it: the question comes after the screen is gone.
+    test('creates nothing when its screen closes before the question comes', async () => {
+      const env = setup();
+      await connect(env);
+      saveLedger(NETWORK, {
+        ...loadLedger(NETWORK), createChange: CHANGE.toString(), createBuildMs: 500,
+      });
+      env.dispatch(draft('token-r5'));
+      await wait(10);
+      env.dispatch(multichainNextCreateTokenReset());
+      await wait(1000);
+      expect(env.getState().multichain.createToken).toMatchObject({
+        status: OPERATION_STATUS.IDLE, review: null,
+      });
+      expect(created(env)).toBe(false);
+    });
+  });
+
+  describe('right before it is signed', () => {
+    const CREATE_OFF = {
+      [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: false,
+    };
+    const halted = (env, draftId) => expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.ERROR, draftId, error: creationHaltedText(), review: null,
+    });
+
+    test('is stopped when token creation turned off during the review, though the user says yes', async () => {
+      const env = setup();
+      await connect(env);
+      withChange();
+      env.dispatch(draft('token-s1'));
+      await wait(1000);
+      expect(env.getState().multichain.createToken.review).toEqual({ publicChange: CHANGE });
+      env.dispatch(setFeatureToggles(CREATE_OFF));
+      env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-s1', accept: true }));
+      await wait(1000);
+      halted(env, 'token-s1');
+      expect(created(env)).toBe(false);
+    });
+
+    test('with no change, is stopped when token creation turned off while it was built', async () => {
+      const env = setup();
+      await connect(env);
+      saveLedger(NETWORK, { ...loadLedger(NETWORK), createBuildMs: 500 });
+      env.dispatch(draft('token-s2'));
+      await wait(10);
+      env.dispatch(setFeatureToggles(CREATE_OFF));
+      await wait(1000);
+      halted(env, 'token-s2');
+      expect(created(env)).toBe(false);
+    });
+
+    test('is not made on another Hathor Next than the one Create was tapped on', async () => {
+      const env = setup();
+      await connect(env);
+      const tapped = connectionNow();
+      STORE.setItem(multichainKeyMap.devBackend, {
+        url: 'http://192.168.0.10:8930',
+        pins: {
+          next: {
+            network_id: 1777, native_token: '00', service_view_pub: 'ab', wire_format: 'v3',
+          },
+          transfer: null,
+        },
+      });
+      try {
+        // The backend switched while the PIN was asked.
+        env.dispatch(setFeatureToggles({
+          [MULTICHAIN_FEATURE_TOGGLE]: true,
+          [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: true,
+          [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: true,
+        }));
+        await wait(2000);
+        expect(connectionNow()).not.toBe(tapped);
+        const createSpy = jest.spyOn(getNextClient(), 'createToken');
+        env.dispatch(draft('token-s3', tapped));
+        await wait(1000);
+        expect(createSpy).not.toHaveBeenCalled();
+        halted(env, 'token-s3');
+      } finally {
+        STORE.removeItem(multichainKeyMap.devBackend);
+      }
+    });
+  });
+
+  test('a late result of a draft from before the app left Hathor Next leaves the next draft as it is', async () => {
+    const env = setup();
+    await connect(env);
+    // Both drafts take 5 s to build.
+    saveLedger(NETWORK, { ...loadLedger(NETWORK), createBuildMs: 5000 });
+    env.dispatch(draft('token-a'));
+    await wait(10);
+    // The app leaves Hathor Next and comes back, while draft A is still built.
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: false }));
+    await wait(10);
+    env.dispatch(setFeatureToggles({
+      [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: true,
+    }));
+    await wait(2000);
+    env.dispatch(draft('token-b'));
+    await wait(10);
+    const b = env.getState().multichain.createToken;
+    expect(b).toMatchObject({ draftId: 'token-b', status: OPERATION_STATUS.SENDING });
+    // Draft A's late answer: the connection it was built on is gone.
+    await wait(3500);
+    expect(env.getState().multichain.createToken).toEqual(b);
+    await wait(5000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      draftId: 'token-b', status: OPERATION_STATUS.RECORDED,
+    });
+  });
+
+  test('takes the token id the client already read back, when the saga learns the send id', async () => {
+    const env = setup();
+    await connect(env);
+    const client = getNextClient();
+    jest.spyOn(client, 'createToken').mockResolvedValue({ sendId: 'create-x', tokenId: 'ab'.repeat(32) });
+    jest.spyOn(client, 'getCreation').mockReturnValue({
+      sendId: 'create-x', status: 'recorded', reason: null, txId: 'ee'.repeat(32), provisional: false,
+    });
+    env.dispatch(draft('token-id'));
+    await wait(100);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.RECORDED, tokenId: 'ee'.repeat(32), tokenIdFinal: true,
+    });
   });
 
   test('takes the words from the PIN, and the wallet then holds the token\'s supply', async () => {
@@ -806,11 +940,12 @@ describe('a Hathor Next token creation', () => {
       symbol: 'ATT',
       name: 'App Test Token',
       amount: SUPPLY,
-      confirmPublicChange: expect.any(Function),
+      approveSigning: expect.any(Function),
     });
     const { createToken, next } = env.getState().multichain;
+    // Its id, as the client read it back: the token's.
     expect(createToken).toMatchObject({
-      status: OPERATION_STATUS.RECORDED, draftId: 'token-1', error: null,
+      status: OPERATION_STATUS.RECORDED, draftId: 'token-1', error: null, tokenIdFinal: true,
     });
     expect(next.tokens[createToken.tokenId]).toMatchObject({ symbol: 'ATT', name: 'App Test Token' });
     expect(next.balances[createToken.tokenId].data.available).toBe(SUPPLY);
@@ -2182,8 +2317,8 @@ describe('a transfer that went through', () => {
 });
 
 describe('a Hathor Next token creation, after review', () => {
-  const draft = (draftId) => multichainNextCreateTokenRequested({
-    symbol: 'ATT', name: 'App Test Token', amount: 100000000n, draftId, pinCode: PIN,
+  const draft = (draftId, connection = connectionNow()) => multichainNextCreateTokenRequested({
+    symbol: 'ATT', name: 'App Test Token', amount: 100000000n, draftId, pinCode: PIN, connection,
   });
 
   // The passkey ceremony, held open until the test ends it: the app leaves Hathor Next meanwhile
@@ -2216,16 +2351,21 @@ describe('a Hathor Next token creation, after review', () => {
     tokenId: 'cd'.repeat(32),
   }));
 
+  // The other draft owns the creation now: this one's late result is not written over it, so the
+  // other's screen keeps following its own creation, and this one's never shows that token.
   test.each([
-    ['refused', NEXT_CLIENT_ERROR.TOKEN_REFUSED, OPERATION_STATUS.ERROR],
-    ['its passkey dismissed', null, OPERATION_STATUS.IDLE],
-  ])('%s keeps nothing of another draft signed meanwhile', async (_label, code, status) => {
+    ['refused', NEXT_CLIENT_ERROR.TOKEN_REFUSED],
+    ['its passkey dismissed', null],
+  ])('%s leaves another draft signed meanwhile as it is', async (_label, code) => {
     const env = await leftDuringCeremony(async () => {
       throw code ? new NextClientError(code) : new PasskeyCancelledError();
     }, otherSigned);
-    // The other's events no longer reach it: its screen never shows that token as its own.
     expect(env.getState().multichain.createToken).toMatchObject({
-      status, draftId: 'token-left', sendId: null, tokenId: null, reason: null,
+      status: OPERATION_STATUS.SENDING,
+      draftId: 'token-other',
+      sendId: 'create-2',
+      tokenId: 'cd'.repeat(32),
+      error: null,
     });
   });
 
