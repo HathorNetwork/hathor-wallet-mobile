@@ -573,7 +573,7 @@ export function* followNextClient(client, events = null) {
             break;
           case NEXT_CLIENT_EVENT.SEND: {
             const send = yield select((state) => state.multichain.send);
-            if (send.sendId === payload.sendId) {
+            if (send.sendId === payload.sendId && !backOnItsWay(send.status, payload.status)) {
               yield put(multichainNextSendUpdate({
                 status: payload.status,
                 reason: payload.reason ?? null,
@@ -605,6 +605,19 @@ export function* followNextClient(client, events = null) {
     channel.close();
   }
 }
+
+/**
+ * Whether an update would put a payment shown as not settled yet back on its way. The wallet
+ * still submits it again now and then, and the backend says submitted each time: no outcome. On
+ * its way again, its screen would hold the user with no wait left to let them go. Only an outcome
+ * (recorded, failed or expired) replaces it.
+ *
+ * @param {string} current The payment's status in the state
+ * @param {string} next The status the client says it has now
+ * @returns {boolean}
+ */
+const backOnItsWay = (current, next) => current === OPERATION_STATUS.UNCONFIRMED
+  && SEND_IN_FLIGHT.includes(next);
 
 /**
  * Connects to the network's Hathor Next, unless the client already is, loads it and follows it.

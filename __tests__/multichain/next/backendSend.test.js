@@ -168,6 +168,21 @@ function fakeBackend({
   };
 }
 
+// The storage, whose next write of the sign-once ledger that `when` picks fails, once.
+function failingLedgerWrite(storage, when) {
+  let failures = 1;
+  return {
+    ...storage,
+    setItemAsync: async (key, value) => {
+      if (failures > 0 && key.startsWith('wallet:multichain:nextSigned:') && when(value)) {
+        failures -= 1;
+        throw new Error('The disk is full.');
+      }
+      return storage.setItemAsync(key, value);
+    },
+  };
+}
+
 async function connected(backend, storage = memoryStorage(), options = {}) {
   const client = createBackendNextClient({
     fetchImpl: backend.fetchImpl,
@@ -771,6 +786,24 @@ describe('a payment on its way', () => {
     expect(storage.getItem(key).entries).toMatchObject([{ sendId: 'send-1', recorded: true }]);
   });
 
+  it('heard recorded while its ledger write fails is still told, and marked at the next connect', async () => {
+    const memory = memoryStorage();
+    const storage = failingLedgerWrite(memory, ({ entries }) => entries.some((e) => e.recorded));
+    // A recorded payment submitted again: the backend answers that it is recorded.
+    const backend = fakeBackend({ resubmitStatus: 'recorded' });
+    client = await connected(backend, storage);
+    const recorded = waitFor('recorded');
+    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+    await expect(recorded).resolves.toMatchObject({ sendId: 'send-1' });
+    const key = Object.keys(memory.items())
+      .find((k) => k.startsWith('wallet:multichain:nextSigned:'));
+    expect(memory.getItem(key).entries).toMatchObject([{ sendId: 'send-1' }]);
+    expect(memory.getItem(key).entries[0].recorded).toBeUndefined();
+    // Its bytes go out again at the next connect, and the backend's answer marks it.
+    await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+    expect(memory.getItem(key).entries).toMatchObject([{ sendId: 'send-1', recorded: true }]);
+  });
+
   it('is followed again after a reconnect to the same network, and settles', async () => {
     const backend = fakeBackend({ sendStatus: { status: 'submitted' } });
     client = await connected(backend);
@@ -781,6 +814,24 @@ describe('a payment on its way', () => {
     const recorded = waitFor('recorded');
     backend.setSendStatus({ status: 'recorded' });
     await expect(recorded).resolves.toMatchObject({ sendId: 'send-1' });
+  });
+});
+
+describe('a payment whose signatures can\'t be saved', () => {
+  it('is cancelled, and nothing is submitted', async () => {
+    const backend = fakeBackend();
+    const storage = failingLedgerWrite(memoryStorage(), ({ entries }) => entries.length > 0);
+    const client = await connected(backend, storage);
+    try {
+      await expect(client.send({
+        tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount),
+      })).rejects.toThrow('The disk is full.');
+      expect(backend.signatures()).toBeNull();
+      expect(backend.calls.filter((c) => c.method === 'DELETE').map((c) => c.path))
+        .toEqual(['/v1/sends/send-1']);
+    } finally {
+      client.disconnect();
+    }
   });
 });
 
