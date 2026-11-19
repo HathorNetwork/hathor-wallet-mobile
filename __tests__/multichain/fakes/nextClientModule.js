@@ -15,6 +15,8 @@ const { createFakeNextClient } = require('./fakeNextClient');
 let currentClient = null;
 
 module.exports = {
+  // The same object for `import * as`, so a test's jest.spyOn reaches the app's code.
+  __esModule: true,
   createNextClient: () => createFakeNextClient(),
   getNextClient: () => currentClient,
   ensureNextClient: () => {

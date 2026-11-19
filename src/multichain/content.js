@@ -32,6 +32,8 @@ export function nextStatusLabel(status) {
       return t`Failed`;
     case 'unconfirmed':
       return t`Not settled yet`;
+    case 'expired':
+      return t`Expired`;
     case 'attention':
       return t`Needs attention`;
     default:
@@ -49,13 +51,16 @@ export const settledStatement = () => t`Settled and irreversible.`;
 export const sendingBody = () => t`Waiting for the network to record it.`;
 
 /** (src/content/sendOutcome.ts) */
-export const unconfirmedBody = () => t`Signed and handed to the network. Your statement is up to date and this payment isn't on it yet, so the network is most likely still working on it: if it had been turned down, this screen would say so and name the reason. That notice is a live message, though, and a wallet that was closed can miss one — so this is "not yet", never "fine". Nothing has been lost either way: if it is never accepted, no money leaves your wallet and no fee is paid. The coins for it stay set aside, and the wallet keeps checking.`;
+export const unconfirmedBody = () => t`Signed and handed to the network, and not on your statement yet, so the network is most likely still working on it: if it is turned down, this screen says so and names the reason. That notice is a live message, though, and a wallet that was closed can miss one — so this is "not yet", never "fine". Nothing has been lost either way: if it is never accepted, no money leaves your wallet and no fee is paid. The coins for it stay set aside, and the wallet keeps checking.`;
 
 /** (src/content/sendOutcome.ts) */
 export const rejectedTitle = () => t`The network turned it down`;
 
 /** (src/content/sendOutcome.ts) */
 export const rejectedBody = () => t`The network looked at this payment and turned it down, so it will never settle. Nothing left your wallet, no fee was paid, and the coins that were set aside for it are already back. There is nothing to wait for.`;
+
+/** A payment whose signatures never reached the network in time. */
+export const expiredBody = () => t`This payment expired before the network got its signatures, so it will never settle. Nothing left your wallet, no fee was paid, and its coins are free again.`;
 
 /** What precedes the node's own words about a refusal. (src/content/finality.ts) */
 export const verdictLead = () => t`The network said:`;

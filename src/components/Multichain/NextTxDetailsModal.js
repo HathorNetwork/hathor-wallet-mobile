@@ -17,6 +17,7 @@ import { ChainTag } from './ChainTag';
 import { nextRowTitle } from './NextTxRow';
 import { renderNextValue } from '../../multichain/amount';
 import {
+  expiredBody,
   finalitySentence,
   nextStatusLabel,
   rejectedBody,
@@ -43,6 +44,8 @@ function statusExplanation(row) {
       return unconfirmedBody();
     case 'failed':
       return rejectedBody();
+    case 'expired':
+      return expiredBody();
     default:
       return null;
   }

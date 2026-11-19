@@ -25,14 +25,14 @@ jest.mock('../../../src/components/QRCodeReader', () => {
 
 /* eslint-disable import/first */
 import React from 'react';
-import { Text, TextInput } from 'react-native';
+import { Alert, Text, TextInput } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { reducer } from '../../../src/reducers/reducer';
-import { multichainTransferUpdate, types } from '../../../src/actions';
+import { multichainNextSendUpdate, multichainTransferUpdate, types } from '../../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_FEATURE_TOGGLE,
@@ -48,10 +48,11 @@ import FeedbackModal from '../../../src/components/FeedbackModal';
 import NewHathorButton from '../../../src/components/NewHathorButton';
 import { PortalProvider } from '../../../src/components/Portal';
 import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
 import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 /* eslint-enable import/first */
 
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
+const OWN_ADDRESS = fakePeerAddress('cd34');
 
 let mounted = null;
 let pinCallback = null;
@@ -188,8 +189,11 @@ describe('leaving a transfer', () => {
     expect(appRoutes()).toEqual(['Main', 'ChainTransferConfirm']);
     await act(async () => { buttons(renderer, 'Confirm and send')[0].props.onPress(); });
     await act(async () => { pinCallback('123456'); });
+    // The outcome of this screen's own request.
+    const { requestId } = actions
+      .find((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED).payload;
     await act(async () => {
-      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE }));
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE, requestId }));
     });
     const [done] = renderer.root.findAllByType(FeedbackModal);
     await act(async () => { done.props.action.props.onPress(); });
@@ -199,6 +203,27 @@ describe('leaving a transfer', () => {
     expect(appRoutes()).toEqual(['Main']);
     const requests = actions.filter((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED);
     expect(requests).toHaveLength(1);
+  });
+});
+
+describe('leaving a transfer not confirmed yet', () => {
+  test('Close leaves, and its message with it', async () => {
+    const { store } = makeStore();
+    const renderer = await mountApp(store);
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'ChainTransferConfirm',
+        params: {
+          from: 'hathor', to: 'hathor-next', tokenId: '00', amount: '10000', toAddress: OWN_ADDRESS,
+        },
+      });
+    });
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.UNCONFIRMED }));
+    });
+    const [unconfirmed] = renderer.root.findAllByType(FeedbackModal);
+    await act(async () => { unconfirmed.props.action.props.onPress(); });
+    expect(appRoutes()).toEqual(['Main']);
   });
 });
 
@@ -242,7 +267,7 @@ describe('a Hathor Next address scanned from the Dashboard', () => {
 
   test('a second scan of the same address fills it in again over what the user typed', async () => {
     addressStep = SendAddressInput;
-    const OTHER_ADDRESS = `samba:${'ab12'.repeat(32)}`;
+    const OTHER_ADDRESS = fakePeerAddress('ab12');
     const { store } = makeStore();
     const renderer = await mountApp(store);
     const field = () => renderer.root.findByType(TextInput);
@@ -262,5 +287,33 @@ describe('a Hathor Next address scanned from the Dashboard', () => {
     expect(sendRoutes()).toEqual(['SendAddressInput']);
     // The address scanned, not the one typed before: Next would pay that one.
     expect(field().props.value).toBe(OWN_ADDRESS);
+  });
+
+  // Sent to the backend (sending), or signed and sent to the network (pending).
+  test.each([OPERATION_STATUS.SENDING, 'pending'])('waits while a payment is on its way (%s), not closing its screen', async (status) => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const { store } = makeStore();
+    const renderer = await mountApp(store);
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'Main',
+        params: { screen: 'Send', params: { screen: 'SendAddressInput', params: { address: 'x' } } },
+      });
+    });
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'Main',
+        params: { screen: 'Send', params: { screen: 'NextSendAmountInput' } },
+      });
+    });
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status, draftId: 'payment-1' }));
+    });
+    await act(async () => { navigationRef.current.navigate('App', { screen: 'UnifiedQRScanner' }); });
+    const reader = renderer.root.findByType(QRCodeReader);
+    await act(async () => { reader.props.onSuccess({ data: OWN_ADDRESS }); });
+    expect(alert).toHaveBeenCalledWith('Payment on its way', expect.any(String), expect.anything());
+    // Send keeps its screens, the one that shows the payment's outcome among them.
+    expect(sendRoutes()).toEqual(['SendAddressInput', 'NextSendAmountInput']);
   });
 });

@@ -13,5 +13,7 @@
 const { createFakeBridge } = require('./fakeBridge');
 
 module.exports = {
+  // The same object for `import * as`, so a test's jest.spyOn reaches the app's code.
+  __esModule: true,
   createBridge: (config, options) => createFakeBridge(config, options),
 };

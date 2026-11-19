@@ -110,6 +110,22 @@ const styles = StyleSheet.create({
 
 export const CustomNetworkSettingsNav = Symbol('CustomNetworkSettings').toString();
 
+/**
+ * A URL field. It wraps, so a URL longer than the field shows whole instead of running past its
+ * edge, and Return closes the keyboard instead of breaking the line.
+ */
+const UrlInput = (props) => (
+  <SimpleInput
+    keyboardType='url'
+    autoCapitalize='none'
+    multiline
+    returnKeyType='done'
+    blurOnSubmit
+    containerStyle={styles.input}
+    {...props}
+  />
+);
+
 export const CustomNetworkSettingsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const networkSettings = useSelector((state) => state.networkSettings);
@@ -138,7 +154,10 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
 
   // eslint-disable-next-line max-len
   /* @param {'nodeUrl' | 'explorerUrl' | 'explorerServiceUrl' | 'walletServiceUrl' | 'walletServiceWsUrl' } name */
-  const handleInputChange = (name) => (value) => {
+  const handleInputChange = (name) => (typed) => {
+    // A URL has no line break: one pasted into the wrapping field is dropped.
+    const value = typed.replace(/[\r\n]/g, '');
+
     // update invalid model
     const invalidModelCopy = { ...invalidModel };
     delete invalidModelCopy[name];
@@ -230,9 +249,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
 
         <ScrollView>
           <View style={[styles.container, styles.formWrapper]}>
-            <SimpleInput
-              keyboardType='url'
-              containerStyle={styles.input}
+            <UrlInput
               label={t`Node URL`}
               autoFocus
               onChangeText={handleInputChange('nodeUrl')}
@@ -240,27 +257,21 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
               value={formModel.nodeUrl}
             />
 
-            <SimpleInput
-              keyboardType='url'
-              containerStyle={styles.input}
+            <UrlInput
               label={t`Explorer URL`}
               onChangeText={handleInputChange('explorerUrl')}
               error={invalidModel.explorerUrl}
               value={formModel.explorerUrl}
             />
 
-            <SimpleInput
-              keyboardType='url'
-              containerStyle={styles.input}
+            <UrlInput
               label={t`Explorer Service URL`}
               onChangeText={handleInputChange('explorerServiceUrl')}
               error={invalidModel.explorerServiceUrl}
               value={formModel.explorerServiceUrl}
             />
 
-            <SimpleInput
-              keyboardType='url'
-              containerStyle={styles.input}
+            <UrlInput
               label={t`Transaction Mining Service URL`}
               onChangeText={handleInputChange('txMiningServiceUrl')}
               error={invalidModel.txMiningServiceUrl}
@@ -269,18 +280,14 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
 
             {walletServiceEnabled && (
             <>
-              <SimpleInput
-                keyboardType='url'
-                containerStyle={styles.input}
+              <UrlInput
                 label={t`Wallet Service URL (optional)`}
                 onChangeText={handleInputChange('walletServiceUrl')}
                 error={invalidModel.walletServiceUrl}
                 value={formModel.walletServiceUrl}
               />
 
-              <SimpleInput
-                keyboardType='url'
-                containerStyle={styles.input}
+              <UrlInput
                 label={t`Wallet Service WS URL (optional)`}
                 onChangeText={handleInputChange('walletServiceWsUrl')}
                 error={invalidModel.walletServiceWsUrl}

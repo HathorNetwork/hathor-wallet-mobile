@@ -8,7 +8,8 @@
 import { getIntegerAmount } from '../../../src/utils';
 import { STORE } from '../../../src/store';
 import { withPasskeyWords } from '../../../src/passkey/passkeySigner';
-import { hathorToNextAmount } from '../../../src/multichain/amount';
+import { sameNextAddress } from '../../../src/multichain/address';
+import { hathorToNextAmount, mintScaleOf } from '../../../src/multichain/amount';
 import { canTransfer, CHAIN } from '../../../src/multichain/chains';
 import { NextClientError, NEXT_CLIENT_ERROR } from '../../../src/multichain/nextClientErrors';
 import { TRANSFER_STATUS } from '../../../src/multichain/state';
@@ -58,7 +59,7 @@ export function createFakeBridge(config, { network, decimalPlaces }) {
     return {
       bridgeFee,
       networkFee,
-      receiveAmount: hathorToNextAmount(received, decimalPlaces),
+      receiveAmount: hathorToNextAmount(received, mintScaleOf(config)),
       etaSeconds: BRIDGE_ETA_SECONDS,
       min: units(BRIDGE_MIN_AMOUNT),
       max,
@@ -135,7 +136,7 @@ export function createFakeBridge(config, { network, decimalPlaces }) {
         bridgeFee: bridgeFee.toString(),
         networkFee: networkFee.toString(),
         toAddress,
-        toOwn: Boolean(ownAddress) && toAddress === ownAddress,
+        toOwn: sameNextAddress(toAddress, ownAddress),
         sentAt,
         arriveAt: sentAt + BRIDGE_ETA_SECONDS * 1000,
         status: TRANSFER_STATUS.PENDING,

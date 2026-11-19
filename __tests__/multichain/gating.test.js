@@ -11,17 +11,32 @@ import { jest, describe, test, expect, afterEach } from '@jest/globals';
 jest.mock('../../src/multichain/chains', () => require('./fakes/chainsModule'));
 
 /* eslint-disable import/first */
-import { MULTICHAIN_FEATURE_TOGGLE } from '../../src/constants';
+import { Address, Network, helpersUtils } from '@hathor/wallet-lib';
+import { ripemd160 } from '@noble/hashes/ripemd160';
+import { sha256 } from '@noble/hashes/sha256';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils';
+import {
+  MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
+  MULTICHAIN_FEATURE_TOGGLE,
+  MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
+  PRE_SETTINGS_NEXT_DEVNET,
+} from '../../src/constants';
 import { canTransfer, CHAIN, getSideChainConfig, otherChain } from '../../src/multichain/chains';
 import {
+  getMultichainDevBackendFeatureToggle,
   getMultichainFeatureToggle,
+  getMultichainFeatureToggleAtUnlock,
+  getMultichainNetworkPresetFeatureToggle,
   isSideChainAvailable,
   isSideChainConnected,
   isWaitingForNext,
+  selectDevBackend,
   selectMappedNextId,
+  selectSideChainConfig,
   selectTokenMap,
 } from '../../src/multichain/gating';
 import { MULTICHAIN_INITIAL_STATE, NEXT_STATUS } from '../../src/multichain/state';
+import { FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, STORE } from '../../src/store';
 import { FAKE_NETWORK } from './fakes/sideChain';
 /* eslint-enable import/first */
 
@@ -44,6 +59,110 @@ const state = ({
     connectedNetworks: connected ? { [network]: true } : {},
     next: { ...MULTICHAIN_INITIAL_STATE.next, status: nextStatus },
   },
+});
+
+describe('the Hathor Next Devnet preset', () => {
+  test("names devnet-alpha's hathor-core node and tx mining, with no wallet-service", () => {
+    expect(PRE_SETTINGS_NEXT_DEVNET).toMatchObject({
+      network: 'privatenet',
+      fullNetwork: 'privatenet',
+      nodeUrl: 'https://legacy-node.devnet-alpha.samba.hathor.network/v1a/',
+      txMiningServiceUrl: 'https://tx-mining.devnet-alpha.samba.hathor.network/',
+    });
+    expect(PRE_SETTINGS_NEXT_DEVNET.walletServiceUrl).toBeUndefined();
+  });
+
+  test('shows only with its own flag', () => {
+    expect(getMultichainNetworkPresetFeatureToggle({ featureToggles: {} })).toBe(false);
+    expect(getMultichainNetworkPresetFeatureToggle({
+      featureToggles: { [MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]: true },
+    })).toBe(true);
+  });
+});
+
+describe("devnet-alpha's side chain", () => {
+  const DEVNET_NODE = PRE_SETTINGS_NEXT_DEVNET.nodeUrl;
+  const NHTR = 'e5bcdd06b7d2b896fe194e09b55d687737af3767407d9efc957ac0ea84f1e54c';
+
+  test("is its backend's, with the values the app pins", () => {
+    const config = actualChains.getSideChainConfig('privatenet', null, DEVNET_NODE);
+    expect(config).toMatchObject({
+      client: 'backend',
+      backendUrl: 'https://wallet-backend.devnet-alpha.samba.hathor.network',
+      nextNetworkId: 1003,
+      nativeTokenId: NHTR,
+      serviceViewPub: 'b292d1f347dd954a23814d66d60adc6848d89e97f09be952bb2f5f9025fe2e0e',
+      wireFormat: 'v3',
+    });
+    expect(config.transfer).toMatchObject({
+      transfer_address: 'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL',
+      confirmations: 21,
+      hathor_network: 'privatenet',
+    });
+    expect(BigInt(config.maxSendFee)).toBeGreaterThan(0n);
+  });
+
+  test('carries HTR to nHTR as one token, HTR on both chains', () => {
+    const config = actualChains.getSideChainConfig('privatenet', null, DEVNET_NODE);
+    expect(config.tokenMap).toEqual([{ hathor: '00', next: NHTR }]);
+    expect(config.nativeTokenSymbol).toBe('HTR');
+    expect(actualChains.transferReceiveSymbol(config, 'HTR')).toBe('HTR');
+    expect(canTransfer(config, CHAIN.HATHOR, CHAIN.HATHOR_NEXT)).toBe(true);
+    expect(actualChains.isTransferAddress('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL', config)).toBe(true);
+  });
+
+  test('refuses the P2SH address of a transfer address\'s hash too', () => {
+    const net = new Network('privatenet');
+    const hash = new Address('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL', { network: net })
+      .decode().subarray(1, 21);
+    const p2sh = helpersUtils.encodeAddressP2SH(hash, net).base58;
+    expect(p2sh).not.toBe('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL');
+    expect(actualChains.isTransferAddress(p2sh, null)).toBe(true);
+  });
+
+  test('is known by the node, with or without its trailing slash', () => {
+    expect(actualChains.getSideChainConfig('privatenet', null, DEVNET_NODE.replace(/\/$/, '')))
+      .toMatchObject({ client: 'backend' });
+  });
+
+  test("is no other privatenet's", () => {
+    expect(actualChains.getSideChainConfig('privatenet', null, 'http://192.168.0.10:8080/v1a/'))
+      .toBeNull();
+  });
+
+  test('gives way to a backend set for local testing', () => {
+    const devBackend = {
+      url: 'http://192.168.0.10:8930',
+      pins: { next: { network_id: 1777, native_token: '00' }, transfer: null },
+    };
+    expect(actualChains.getSideChainConfig('privatenet', devBackend, DEVNET_NODE))
+      .toMatchObject({ backendUrl: 'http://192.168.0.10:8930' });
+  });
+
+  test('waits, like every side chain, for the wallet to know its network', () => {
+    expect(actualChains.getSideChainConfig(null, null, DEVNET_NODE)).toBeNull();
+  });
+
+  test('shows "Connect to side chain" there with the multichain flag alone', () => {
+    const devnet = {
+      ...state({ network: 'privatenet', connected: false }),
+      networkSettings: PRE_SETTINGS_NEXT_DEVNET,
+    };
+    expect(isSideChainAvailable(devnet)).toBe(true);
+    expect(isSideChainAvailable({ ...devnet, featureToggles: {} })).toBe(false);
+  });
+});
+
+describe("the chain transfer's address", () => {
+  // hathor-next's plan, docs/plan/chain-transfer-testnet-one-way.md §3.3: the hash of a label,
+  // not of a key, so no key spends from it.
+  test('is the plan\'s: hash160 of its testnet label, as a testnet address, and the only one', () => {
+    const hash = ripemd160(sha256(utf8ToBytes('hathor/chain-transfer/testnet-v1')));
+    expect(bytesToHex(hash)).toBe('2b33ad1665287315391f434b5d6b894302602f5d');
+    const address = helpersUtils.encodeAddress(Buffer.from(hash), new Network('testnet')).base58;
+    expect(address).toBe('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL');
+    expect(actualChains.KNOWN_TRANSFER_ADDRESSES).toEqual([address]);
+  });
 });
 
 describe('getSideChainConfig', () => {
@@ -100,6 +219,78 @@ describe('the flags', () => {
   });
 });
 
+describe('the multichain flag at an unlock', () => {
+  afterEach(() => {
+    STORE.removeItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY);
+  });
+
+  const waiting = { featureTogglesInitialized: false, featureToggles: {} };
+
+  test("is Unleash's answer once it came, whatever this device saved", () => {
+    STORE.setItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, { [MULTICHAIN_FEATURE_TOGGLE]: true });
+    expect(getMultichainFeatureToggleAtUnlock({
+      featureTogglesInitialized: true,
+      featureToggles: {},
+    })).toBe(false);
+    STORE.removeItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY);
+    expect(getMultichainFeatureToggleAtUnlock({
+      featureTogglesInitialized: true,
+      featureToggles: { [MULTICHAIN_FEATURE_TOGGLE]: true },
+    })).toBe(true);
+  });
+
+  test('is the answer this device saved until Unleash answers, and off with none', () => {
+    STORE.setItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, { [MULTICHAIN_FEATURE_TOGGLE]: true });
+    expect(getMultichainFeatureToggleAtUnlock(waiting)).toBe(true);
+    // A saved answer lists only the flags Unleash returned: one missing from it was off.
+    STORE.setItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, { 'another.rollout': true });
+    expect(getMultichainFeatureToggleAtUnlock(waiting)).toBe(false);
+    STORE.removeItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY);
+    expect(getMultichainFeatureToggleAtUnlock(waiting)).toBe(false);
+  });
+});
+
+describe('the backend for local testing', () => {
+  const DEV_BACKEND = {
+    url: 'http://192.168.0.10:8930',
+    pins: {
+      next: {
+        network_id: 1777,
+        native_token: 'aa'.repeat(32),
+        service_view_pub: 'bb'.repeat(32),
+        wire_format: 'v2',
+      },
+      transfer: null,
+    },
+  };
+  const withBackend = ({ flag = true, devFlag = true } = {}) => {
+    const base = state({ flag });
+    return {
+      ...base,
+      featureToggles: { ...base.featureToggles, [MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE]: devFlag },
+      multichain: { ...base.multichain, devBackend: DEV_BACKEND },
+    };
+  };
+
+  test('is in force only with its own flag and the multichain flag on', () => {
+    expect(getMultichainDevBackendFeatureToggle({ featureToggles: {} })).toBe(false);
+    expect(selectDevBackend(withBackend())).toBe(DEV_BACKEND);
+    expect(selectSideChainConfig(withBackend())).toMatchObject({
+      client: 'backend',
+      backendUrl: DEV_BACKEND.url,
+    });
+  });
+
+  test('is ignored, saved but unused, with either flag off', () => {
+    for (const flags of [{ devFlag: false }, { flag: false }]) {
+      const s = withBackend(flags);
+      expect(getMultichainDevBackendFeatureToggle(s)).toBe(false);
+      expect(selectDevBackend(s)).toBeNull();
+      expect(selectSideChainConfig(s)?.client).not.toBe('backend');
+    }
+  });
+});
+
 describe('the side chain setting', () => {
   test('shows with the flag on a network with a side chain', () => {
     expect(isSideChainAvailable(state())).toBe(true);
@@ -151,5 +342,64 @@ describe('the token map', () => {
     expect(canTransfer(config, CHAIN.HATHOR_NEXT, CHAIN.HATHOR)).toBe(false);
     expect(canTransfer(null, CHAIN.HATHOR, CHAIN.HATHOR_NEXT)).toBe(false);
     expect(otherChain(CHAIN.HATHOR)).toBe(CHAIN.HATHOR_NEXT);
+  });
+});
+
+describe('a side chain on the real pins', () => {
+  const DEVNET = 'https://legacy-node.devnet-alpha.samba.hathor.network/v1a/';
+  const local = { url: 'http://192.168.0.10:8930', pins: { next: {}, transfer: null } };
+
+  test('is none on mainnet, even with the devnet\'s node or a backend for local testing', () => {
+    // A mainnet wallet service names the network mainnet; the node was pointed at the devnet.
+    expect(actualChains.getSideChainConfig('mainnet', null, DEVNET)).toBeNull();
+    expect(actualChains.getSideChainConfig('mainnet', local, DEVNET)).toBeNull();
+    expect(actualChains.getSideChainConfig('mainnet', local, null)).toBeNull();
+  });
+
+  test('is none on a network other than the one it names', () => {
+    expect(actualChains.getSideChainConfig('privatenet', null, DEVNET)).not.toBeNull();
+    expect(actualChains.getSideChainConfig('testnet', null, DEVNET)).toBeNull();
+  });
+
+  test('refuses, in its place, a backend for local testing that passes as one holding value', () => {
+    // devnet-alpha's own values, given by a backend set for local testing.
+    const devBackend = () => ({
+      url: 'http://192.168.0.10:8930',
+      pins: {
+        next: {
+          network_id: 1003,
+          native_token: 'e5bcdd06b7d2b896fe194e09b55d687737af3767407d9efc957ac0ea84f1e54c',
+          service_view_pub: 'b292d1f347dd954a23814d66d60adc6848d89e97f09be952bb2f5f9025fe2e0e',
+          wire_format: 'v3',
+        },
+        transfer: null,
+      },
+    });
+    expect(actualChains.getSideChainConfig('privatenet', devBackend(), DEVNET)).not.toBeNull();
+    // Were devnet-alpha to hold value, that backend would be no side chain at all.
+    const pinned = actualChains.nodeSideChain(DEVNET);
+    pinned.holdsValue = true;
+    try {
+      expect(actualChains.getSideChainConfig('privatenet', devBackend(), DEVNET)).toBeNull();
+    } finally {
+      pinned.holdsValue = false;
+    }
+  });
+
+  test('is never one a backend for local testing could pass as, once its network holds value', () => {
+    const valued = {
+      holdsValue: true, nextNetworkId: 7, nativeTokenId: 'aa'.repeat(32), serviceViewPub: 'bb'.repeat(32),
+    };
+    const pins = (next) => ({ next: { network_id: 1, native_token: 'cc'.repeat(32), service_view_pub: 'dd'.repeat(32), ...next } });
+    expect(actualChains.impersonatedSideChain(pins({ network_id: 7 }), [valued])).toBe(valued);
+    expect(actualChains.impersonatedSideChain(pins({ native_token: 'aa'.repeat(32) }), [valued]))
+      .toBe(valued);
+    expect(actualChains.impersonatedSideChain(pins({ service_view_pub: 'bb'.repeat(32) }), [valued]))
+      .toBe(valued);
+    expect(actualChains.impersonatedSideChain(pins({}), [valued])).toBeNull();
+    const playMoney = { ...valued, holdsValue: false };
+    expect(actualChains.impersonatedSideChain(pins({ network_id: 7 }), [playMoney])).toBeNull();
+    // None of the pinned networks holds value yet.
+    expect(actualChains.impersonatedSideChain(pins({ network_id: 1003 }))).toBeNull();
   });
 });

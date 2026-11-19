@@ -18,6 +18,7 @@ import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
 import { multichainNextSendRequested, multichainNextSendReset } from '../../actions';
 import { renderNextValue } from '../../multichain/amount';
 import {
+  expiredBody,
   finalitySentence,
   nextStatusLabel,
   privateSendStatement,
@@ -30,7 +31,7 @@ import {
   verdictLead,
 } from '../../multichain/content';
 import { selectSideChainConfig } from '../../multichain/gating';
-import { OPERATION_STATUS } from '../../multichain/state';
+import { OPERATION_STATUS, SEND_IN_FLIGHT } from '../../multichain/state';
 import { authorizeTransaction } from '../../passkey/authorizeTransaction';
 import {
   isExpectedPasskeyError,
@@ -44,6 +45,7 @@ import { COLORS } from '../../styles/themes';
 import { selectNextSendFee } from './NextSendAmountInput';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import errorIcon from '../../assets/images/icErrorBig.png';
+import { useHoldScreen } from '../../multichain/hooks';
 
 const log = logger('next-send');
 
@@ -79,6 +81,10 @@ export default function NextSendConfirmScreen() {
   const amount = BigInt(params.amount);
   const { address } = params;
   const config = useSelector(selectSideChainConfig);
+  // What the payment sends: the native token unless the amount step picked another.
+  const tokenId = params.tokenId ?? config?.nativeTokenId;
+  const native = tokenId === config?.nativeTokenId;
+  const tokenSymbol = useSelector((state) => state.multichain.next.tokens[tokenId]?.symbol);
   const send = useSelector((state) => state.multichain.send);
   const online = useSelector((state) => state.multichain.next.online);
   const sweeping = useSelector((state) => state.multichain.next.sweeping);
@@ -88,24 +94,31 @@ export default function NextSendConfirmScreen() {
   // While the passkey sheet is open.
   const [authorizing, setAuthorizing] = useState(false);
   const [passkeyError, setPasskeyError] = useState(null);
+  // Another draft's payment still on its way: this one waits for its outcome.
+  const earlierOnItsWay = send.draftId !== draftId && SEND_IN_FLIGHT.includes(send.status);
   // Sending also pauses while Hathor Next is offline or syncing: the draft would be refused.
-  const canSend = !authorized && !authorizing && online && !sweeping;
+  const canSend = !authorized && !authorizing && online && !sweeping && !earlierOnItsWay;
 
   useEffect(() => () => {
     dispatch(multichainNextSendReset());
   }, []);
 
-  const symbol = config?.nativeTokenSymbol ?? 'HTR';
+  const nativeSymbol = config?.nativeTokenSymbol ?? 'HTR';
+  const symbol = native ? nativeSymbol : (tokenSymbol ?? '');
   const fee = useSelector(selectNextSendFee);
   const hathorDecimalPlaces = useSelector((state) => state.serverInfo?.decimal_places ?? 2);
-  const render = (value) => `${renderNextValue(value, hathorDecimalPlaces)} ${symbol}`;
+  const render = (value, unit = symbol) => (
+    `${renderNextValue(value, hathorDecimalPlaces)} ${unit}`
+  );
   const outcome = send.draftId === draftId ? send.status : OPERATION_STATUS.IDLE;
+  // No way back while the payment is on its way: the outcome shows here.
+  useHoldScreen(navigation, SEND_IN_FLIGHT.includes(outcome));
 
   // The PIN only authorizes: the keys are in memory since the unlock, so it goes nowhere.
   const submit = () => {
     setAuthorized(true);
     dispatch(multichainNextSendRequested({
-      tokenId: config.nativeTokenId,
+      tokenId,
       to: address,
       amount,
       draftId,
@@ -157,6 +170,17 @@ export default function NextSendConfirmScreen() {
     }, 500);
   };
 
+  // Leaving Hathor Next (the setting turned off, the network changed) drops the payment's state:
+  // this screen has nothing left to show, so it closes.
+  const sawDraft = useRef(false);
+  useEffect(() => {
+    if (send.draftId === draftId) {
+      sawDraft.current = true;
+    } else if (authorized && sawDraft.current) {
+      exit();
+    }
+  }, [send.draftId]);
+
   const icon = (source) => (
     <Image source={source} style={styles.feedbackIcon} resizeMode='contain' />
   );
@@ -180,6 +204,15 @@ export default function NextSendConfirmScreen() {
           <FeedbackModal
             icon={icon(checkIcon)}
             text={`${settledStatement()} ${finalitySentence()}`}
+            onDismiss={exit}
+            action={<NewHathorButton title={t`Done`} onPress={exit} />}
+          />
+        );
+      case OPERATION_STATUS.EXPIRED:
+        return (
+          <FeedbackModal
+            icon={icon(errorIcon)}
+            text={`${nextStatusLabel('expired')}. ${expiredBody()}`}
             onDismiss={exit}
             action={<NewHathorButton title={t`Done`} onPress={exit} />}
           />
@@ -231,11 +264,26 @@ export default function NextSendConfirmScreen() {
         <Text style={styles.amount}>{render(amount)}</Text>
         <Text style={styles.label}>{t`Address`}</Text>
         <Text style={styles.address} selectable>{address}</Text>
+        {/* Anyone can name a token anything on Hathor Next: its id is what tells it apart. */}
+        {!native && (
+          <>
+            <Text style={styles.label}>{t`Token id`}</Text>
+            <Text style={styles.address} selectable>{tokenId}</Text>
+          </>
+        )}
         <View style={styles.summary}>
-          <Row label={t`Network fee`} value={render(fee)} />
-          <Row label={t`Total`} value={render(amount + fee)} strong />
+          {/* The fee is always in the native token: a total adds up only when the payment is
+              too. */}
+          <Row label={t`Network fee`} value={render(fee, nativeSymbol)} />
+          {native && <Row label={t`Total`} value={render(amount + fee)} strong />}
         </View>
         {sweeping && <SyncingNotice text={syncingSendBody()} style={styles.syncing} />}
+        {earlierOnItsWay && (
+          <SyncingNotice
+            text={t`An earlier payment is still on its way. You can send once it settles.`}
+            style={styles.syncing}
+          />
+        )}
         <View style={styles.privacy}>
           <Text style={styles.privacyTitle}>{t`Private`}</Text>
           <Text style={styles.privacyText}>{privateSendStatement()}</Text>

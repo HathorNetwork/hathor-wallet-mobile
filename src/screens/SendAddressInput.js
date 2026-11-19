@@ -29,9 +29,13 @@ import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
 import { COLORS } from '../styles/themes';
 import { isShieldedEnvironment } from '../shielded/gating';
-import { isSideChainConnected } from '../multichain/gating';
-import { addressChain } from '../multichain/address';
-import { CHAIN } from '../multichain/chains';
+import {
+  getMultichainFeatureToggle,
+  isSideChainConnected,
+  selectSideChainConfig,
+} from '../multichain/gating';
+import { addressChain, nextAddressError, normalizeNextAddress } from '../multichain/address';
+import { CHAIN, isTransferAddress } from '../multichain/chains';
 import { ChainTag } from '../components/Multichain/ChainTag';
 
 /**
@@ -60,6 +64,28 @@ export const SendAddressInput = () => {
   // there.
   const allowShielded = useSelector(isShieldedEnvironment);
   const sideChainConnected = useSelector(isSideChainConnected);
+  const sideChainConfig = useSelector(selectSideChainConfig);
+  const multichainOn = useSelector(getMultichainFeatureToggle);
+  // The chain transfer's own address is refused at once, typed or scanned: what pays it directly
+  // burns, and only the transfer may pay it. Like everything multichain, only behind the flag.
+  const transferAddressError = (address) => (multichainOn
+    && isTransferAddress(address, sideChainConfig)
+    ? t`This address is only for transfers to Hathor Next, and anything sent to it directly is lost. Use Transfer between chains instead.`
+    : null);
+  // What is wrong with an address as it is typed: the transfer address, or, with the side chain
+  // connected, a Hathor Next address the app won't pay (the legacy form, or a key nobody can spend
+  // from), with its reason. Shown at once, as Next stays off for it.
+  const typedAddressError = (address) => {
+    const transferError = transferAddressError(address);
+    if (transferError) {
+      return transferError;
+    }
+    const value = (address ?? '').trim();
+    return sideChainConnected
+      && addressChain(value, network, { allowShielded }) === CHAIN.HATHOR_NEXT
+      ? nextAddressError(value)
+      : null;
+  };
   // A tap anywhere on the card around the input focuses it: an empty multiline input is one
   // line tall, so the card's padding wouldn't take the tap otherwise.
   const inputRef = useRef(null);
@@ -69,12 +95,16 @@ export const SendAddressInput = () => {
   // again over what the user typed since.
   useEffect(() => {
     if (route.params?.address) {
-      setFormModel((prev) => ({ ...prev, address: route.params.address, error: null }));
+      setFormModel((prev) => ({
+        ...prev,
+        address: route.params.address,
+        error: typedAddressError(route.params.address),
+      }));
     }
   }, [route.params?.address, route.params?.scan]);
 
   const onAddressChange = (text) => {
-    setFormModel({ address: text, error: null });
+    setFormModel({ address: text, error: typedAddressError(text) });
   };
 
   // The chain of a valid address, once the side chain is connected: before, a Hathor Next address
@@ -85,9 +115,20 @@ export const SendAddressInput = () => {
 
   // Trimmed, as the address goes on: the chain above is read trimmed too, so an address pasted
   // with a line break shows its chain and is taken.
-  const validate = () => (chain === CHAIN.HATHOR_NEXT
-    ? { isValid: true }
-    : validateAddress(formModel.address.trim(), network, { allowShielded }));
+  const validate = () => {
+    const address = formModel.address.trim();
+    const transferError = transferAddressError(address);
+    if (transferError) {
+      return { isValid: false, message: transferError };
+    }
+    if (chain === CHAIN.HATHOR_NEXT) {
+      // A Hathor Next address the app won't pay gets its own words: the legacy form, or a key
+      // nobody can spend from.
+      const refused = nextAddressError(address);
+      return refused ? { isValid: false, message: refused } : { isValid: true };
+    }
+    return validateAddress(address, network, { allowShielded });
+  };
 
   const isAddressValid = () => {
     if (!formModel.address) return false;
@@ -102,7 +143,11 @@ export const SendAddressInput = () => {
     }
     navigation.navigate(
       chain === CHAIN.HATHOR_NEXT ? 'NextSendAmountInput' : 'SendAmountInput',
-      { address: formModel.address.trim() },
+      {
+        address: chain === CHAIN.HATHOR_NEXT
+          ? normalizeNextAddress(formModel.address)
+          : formModel.address.trim(),
+      },
     );
   };
 

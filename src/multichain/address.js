@@ -8,19 +8,41 @@
 import { t } from 'ttag';
 import { validateAddress } from '../utils';
 import { CHAIN } from './chains';
+import { bytesToHex } from './next/kit/scalar';
+
+// The Hathor Next kit's address codec, required on first use rather than imported at the top:
+// the kit, and the crypto library it alone uses, run only once a Hathor Next address is read or
+// written, never at the app's start with its flags off.
+// eslint-disable-next-line global-require
+const kitAddress = () => require('./next/kit/address');
 
 /**
- * The shapes of a Hathor Next address, from the Hathor Next wallet (hathor-next-wallet-mobile's
- * src/lib/format.ts), which is deliberately the only place there that decides what counts as one:
- * - live: `samba:` and 128 hex characters (the view and spend public keys). The prefix is part of
- *   the address and is lowercase: `SAMBA:` is refused, as Hathor Next's core refuses it;
- * - placeholder: `smb1…`, the bech32-like form the Hathor Next fixtures use.
- * The real encoding (bech32m) is still open; when it lands, these change and nothing else does.
+ * A Hathor Next address is read by the kit's codec (next/kit/address.js), a copy of Hathor Next's
+ * own: the bech32m form `samba1z…` (116 characters, all lowercase or all uppercase), and the
+ * legacy `samba:` + 128 hex on input. Both keys must be curve points. The codec is the only place
+ * that decides what counts as an address.
  */
-const NEXT_ADDRESS_RE = /^samba:[0-9a-fA-F]{128}$/;
-const NEXT_PLACEHOLDER_ADDRESS_RE = /^smb1[02-9ac-hj-np-z]{40,}$/i;
-// A live address followed by a payment request's query (`?amount=…`), or nothing.
-const NEXT_URI_RE = /^(samba:[0-9a-fA-F]{128})(\?.*)?$/;
+// A payment request: an address, optionally behind the `samba:` scheme, and an optional query.
+const SCHEME_RE = /^samba:(\/\/)?/i;
+
+/**
+ * The keys of a Hathor Next address, or null when the text isn't one.
+ *
+ * @param {string|null|undefined} text
+ * @returns {{ view: Uint8Array, spend: Uint8Array }|null}
+ */
+export function nextAddressKeys(text) {
+  const value = (text ?? '').trim();
+  if (!value) {
+    return null;
+  }
+  try {
+    const { view, spend } = kitAddress().decodeAddressKeys(value);
+    return { view, spend };
+  } catch (e) {
+    return null;
+  }
+}
 
 /**
  * Whether a text is a Hathor Next address.
@@ -29,27 +51,86 @@ const NEXT_URI_RE = /^(samba:[0-9a-fA-F]{128})(\?.*)?$/;
  * @returns {boolean}
  */
 export function isNextAddress(text) {
-  const value = (text ?? '').trim();
-  return NEXT_ADDRESS_RE.test(value) || NEXT_PLACEHOLDER_ADDRESS_RE.test(value);
+  return nextAddressKeys(text) !== null;
+}
+
+const isIdentity = (key) => key.every((byte) => byte === 0);
+
+/**
+ * Why a Hathor Next address can't be paid where a person typed or scanned it, or null when it
+ * can (or isn't a Hathor Next address at all). The legacy form `samba:` + hex has no checksum, so
+ * a typo in it still reads as two other keys, and the app would show and pay a well-formed
+ * address nobody holds; the backend refuses it for a transfer for that reason, and only ever
+ * sees the canonical form. A key that is the identity is one nobody can spend from.
+ *
+ * @param {string|null|undefined} text
+ * @returns {string|null}
+ */
+export function nextAddressError(text) {
+  let decoded;
+  try {
+    decoded = kitAddress().decodeAddressKeys((text ?? '').trim());
+  } catch (e) {
+    return null;
+  }
+  if (decoded.form === 'legacy') {
+    return t`This is an old Hathor Next address, with no checksum to catch a typo. Ask for the address that starts with samba1z.`;
+  }
+  if (isIdentity(decoded.view) || isIdentity(decoded.spend)) {
+    return t`Nobody can spend from this Hathor Next address, so it can't be paid.`;
+  }
+  return null;
 }
 
 /**
- * What a scanned QR code holds for Hathor Next: `{ address }` for an address alone, `{ error }`
- * for a payment request on one (`samba:…?amount=…`), or null when it holds no Hathor Next
- * address. A payment request is refused, as Hathor Network's scanner refuses one: taking only its
- * address would drop the amount and the token it asks for without a word.
+ * The canonical form of a Hathor Next address: the lowercase `samba1z…` of its keys, whichever
+ * form was typed or scanned.
+ *
+ * @param {string|null|undefined} text
+ * @returns {string|null} null when the text isn't an address
+ */
+export function normalizeNextAddress(text) {
+  const keys = nextAddressKeys(text);
+  return keys ? kitAddress().encodeAddress(bytesToHex(keys.view), bytesToHex(keys.spend)) : null;
+}
+
+/**
+ * Whether two texts are the same Hathor Next address: the same keys, in any form or case.
+ *
+ * @param {string|null|undefined} a
+ * @param {string|null|undefined} b
+ * @returns {boolean}
+ */
+export function sameNextAddress(a, b) {
+  const one = normalizeNextAddress(a);
+  return one !== null && one === normalizeNextAddress(b);
+}
+
+/**
+ * What a scanned QR code holds for Hathor Next: `{ address }` for an address alone, in its
+ * canonical form, `{ error }` for a payment request on one (`samba:<address>?amount=…`), or null
+ * when it holds no Hathor Next address. A payment request is refused, as Hathor Network's scanner
+ * refuses one: taking only its address would drop the amount and the token it asks for without a
+ * word.
  *
  * @param {string|null|undefined} data
  * @returns {{ address: string }|{ error: string }|null}
  */
 export function parseNextQrCode(data) {
   const value = (data ?? '').trim();
-  const match = NEXT_URI_RE.exec(value);
-  if (match) {
-    // A bare `?` asks for nothing.
-    return match[2] && match[2] !== '?' ? { error: paymentRequestText() } : { address: match[1] };
+  const [head, ...rest] = value.split('?');
+  // The legacy form starts with the scheme's own letters: it is an address as it stands.
+  const address = normalizeNextAddress(head)
+    ?? (SCHEME_RE.test(head) ? normalizeNextAddress(head.replace(SCHEME_RE, '')) : null);
+  if (!address) {
+    return null;
   }
-  return NEXT_PLACEHOLDER_ADDRESS_RE.test(value) ? { address: value } : null;
+  const refused = nextAddressError(head) ?? nextAddressError(head.replace(SCHEME_RE, ''));
+  if (refused) {
+    return { error: refused };
+  }
+  // A bare `?` asks for nothing.
+  return rest.join('?') ? { error: paymentRequestText() } : { address };
 }
 
 /** Why a payment request's QR code is refused. */
@@ -101,6 +182,10 @@ export function addressChain(address, network, { allowShielded = true } = {}) {
  */
 export function validateTransferAddress(address, network, toChain = CHAIN.HATHOR_NEXT) {
   const chain = addressChain(address, network);
+  const refused = chain === CHAIN.HATHOR_NEXT ? nextAddressError(address) : null;
+  if (refused) {
+    return { isValid: false, message: refused };
+  }
   if (chain === toChain) {
     return { isValid: true };
   }

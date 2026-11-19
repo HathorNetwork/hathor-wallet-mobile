@@ -11,6 +11,7 @@ jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: jest.fn(),
   useRoute: jest.fn(),
+  useIsFocused: jest.fn(),
 }));
 
 jest.mock('../../../src/NavigationService', () => ({
@@ -30,35 +31,46 @@ import { Pressable, Text, TextInput } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { reducer } from '../../../src/reducers/reducer';
-import { multichainTransferUpdate, types } from '../../../src/actions';
+import { multichainTransfersSet, multichainTransferUpdate, types } from '../../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_FEATURE_TOGGLE,
   PRE_SETTINGS_TESTNET,
 } from '../../../src/constants';
 import { STORE } from '../../../src/store';
-import ChainTransferScreen from '../../../src/screens/Multichain/ChainTransferScreen';
-import ChainTransferConfirmScreen from '../../../src/screens/Multichain/ChainTransferConfirmScreen';
+import ChainTransferScreen, {
+  transferForgottenNoticeText,
+} from '../../../src/screens/Multichain/ChainTransferScreen';
+import ChainTransferConfirmScreen, {
+  earlierTransferDoneText,
+  earlierTransferEndedText,
+  earlierTransferForgottenText,
+  earlierTransferPendingText,
+} from '../../../src/screens/Multichain/ChainTransferConfirmScreen';
+import { NEXT_CLIENT_ERROR, NextClientError } from '../../../src/multichain/nextClientErrors';
 import { SendAddressInput } from '../../../src/screens/SendAddressInput';
 import AmountTextInput from '../../../src/components/AmountTextInput';
 import FeedbackModal from '../../../src/components/FeedbackModal';
 import NewHathorButton from '../../../src/components/NewHathorButton';
 import { PortalProvider } from '../../../src/components/Portal';
-import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { NEXT_STATUS, OPERATION_STATUS, TRANSFER_STATUS } from '../../../src/multichain/state';
+import { TransfersOnTheirWay } from '../../../src/components/Multichain/TransfersOnTheirWay';
+import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
 import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 /* eslint-enable import/first */
 
 const NETWORK = FAKE_NETWORK;
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
-const NEXT_ADDRESS = `samba:${'ab12'.repeat(32)}`;
+const OWN_ADDRESS = fakePeerAddress('cd34');
+const NEXT_ADDRESS = fakePeerAddress('ab12');
 const HATHOR_ADDRESS = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';
 
 let mounted = null;
 
 beforeEach(() => {
   jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(false);
+  useIsFocused.mockReturnValue(true);
 });
 
 afterEach(async () => {
@@ -69,7 +81,8 @@ afterEach(async () => {
   jest.restoreAllMocks();
 });
 
-function makeStore({ connected = true } = {}) {
+// `nativeToken` is what the fullnode reports; none until its version data is read.
+function makeStore({ connected = true, nativeToken } = {}) {
   const initial = reducer(undefined, { type: '@@INIT' });
   const actions = [];
   const record = () => (nextFn) => (action) => {
@@ -80,7 +93,7 @@ function makeStore({ connected = true } = {}) {
     ...initial,
     networkSettings: PRE_SETTINGS_TESTNET,
     featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [MULTICHAIN_FEATURE_TOGGLE]: true },
-    serverInfo: { decimal_places: 2 },
+    serverInfo: { decimal_places: 2, native_token: nativeToken },
     fullNodeNetworkName: NETWORK,
     tokensBalance: { '00': { status: 'ready', data: { available: 125000n } } },
     multichain: {
@@ -177,8 +190,28 @@ describe('the transfer between chains', () => {
     );
   });
 
+  // A navigation that records the screen's beforeRemove listener, to try leaving the screen.
+  const holdableNavigation = () => {
+    const listeners = {};
+    return {
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      setOptions: jest.fn(),
+      addListener: jest.fn((event, listener) => {
+        listeners[event] = listener;
+        return jest.fn();
+      }),
+      // Whether leaving now would be stopped.
+      held: () => {
+        const preventDefault = jest.fn();
+        listeners.beforeRemove?.({ preventDefault });
+        return preventDefault.mock.calls.length > 0;
+      },
+    };
+  };
+
   test('confirms with the PIN, and ends with Done', async () => {
-    const navigation = { navigate: jest.fn(), goBack: jest.fn() };
+    const navigation = holdableNavigation();
     const { store, actions } = makeStore();
     const renderer = await mount(
       store, (
@@ -206,14 +239,336 @@ describe('the transfer between chains', () => {
         amount: 10000n,
         toAddress: OWN_ADDRESS,
         pinCode: '123456',
+        requestId: expect.any(String),
       },
     });
+    const { requestId } = actions
+      .find((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED).payload;
     await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.SENDING, requestId }));
       store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE }));
     });
     const feedback = renderer.root.findByType(FeedbackModal);
     expect(feedback.props.text).toBe('Your HTR will arrive on Hathor Next in about 2 minutes.');
     expect(feedback.props.action.props.title).toBe('Done');
+  });
+
+  test('stays while the transfer is sent, and keeps it when it ends without an answer', async () => {
+    const navigation = holdableNavigation();
+    const { store, actions } = makeStore();
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={navigation}
+          route={{ params: { amount: '10000', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    expect(navigation.held()).toBe(false);
+    await act(async () => { button(renderer, 'Confirm and send').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([route]) => route === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    const { requestId } = actions
+      .find((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED).payload;
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.SENDING, requestId }));
+    });
+    expect(navigation.held()).toBe(true);
+    expect(navigation.setOptions).toHaveBeenLastCalledWith({ gestureEnabled: false });
+
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.UNCONFIRMED,
+        error: 'not yet',
+        uncertainId: 'transfer-1',
+      }));
+    });
+    expect(navigation.held()).toBe(false);
+    expect(renderer.root.findByType(FeedbackModal).props.text).toBe('not yet');
+    expect(button(renderer, 'Confirm and send').props.disabled).toBe(true);
+    // Leaving doesn't drop it: the next transfer settles it first.
+    await act(async () => { renderer.unmount(); });
+    expect(store.getState().multichain.transfer).toMatchObject({
+      status: OPERATION_STATUS.UNCONFIRMED,
+      uncertainId: 'transfer-1',
+    });
+  });
+
+  test("shows an earlier transfer's outcome as that one's, then lets this one be confirmed", async () => {
+    const navigation = holdableNavigation();
+    const { store } = makeStore();
+    // Signed without an answer before this screen opened (in an earlier run of the app, say).
+    store.dispatch(multichainTransferUpdate({
+      status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1', requestId: null,
+    }));
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={navigation}
+          route={{ params: { amount: '500', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    const modalText = () => renderer.root.findByType(FeedbackModal).props.text;
+    expect(modalText()).toBe(earlierTransferPendingText());
+    expect(button(renderer, 'Confirm and send').props.disabled).toBe(true);
+    // The poll settles it as sent: never this transfer's success.
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.DONE, uncertainId: null, record: { id: 'transfer-1' },
+      }));
+    });
+    expect(modalText()).toBe(earlierTransferDoneText());
+    expect(modalText()).not.toContain('will arrive');
+    const ok = renderer.root.findByType(FeedbackModal).props.action;
+    await act(async () => { ok.props.onPress(); });
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+    expect(button(renderer, 'Confirm and send').props.disabled).toBe(false);
+  });
+
+  test("names an earlier transfer that didn't go through as that one", async () => {
+    const { store } = makeStore();
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={holdableNavigation()}
+          route={{ params: { amount: '500', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.ERROR, error: 'Nothing left your wallet.', requestId: null,
+      }));
+    });
+    expect(renderer.root.findByType(FeedbackModal).props.text)
+      .toBe(earlierTransferEndedText('Nothing left your wallet.'));
+  });
+
+  test('never calls an earlier transfer Hathor Next forgot settled: its HTR may have left', async () => {
+    const { store } = makeStore();
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={holdableNavigation()}
+          route={{ params: { amount: '500', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.ERROR,
+        error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN).message,
+        errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+        requestId: null,
+      }));
+    });
+    const { text } = renderer.root.findByType(FeedbackModal).props;
+    expect(text).toBe(earlierTransferForgottenText());
+    expect(text).toContain('may have left your wallet');
+    expect(text).not.toContain('settled');
+  });
+
+  // Found forgotten while no confirm screen was open: by the poll, or at a restart.
+  const forgottenEarlier = () => multichainTransferUpdate({
+    status: OPERATION_STATUS.ERROR,
+    error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN).message,
+    errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+    uncertainId: null,
+    requestId: null,
+  });
+
+  test('tells of an earlier transfer Hathor Next forgot when it opens, until it is dismissed', async () => {
+    const { store, actions } = makeStore();
+    store.dispatch(forgottenEarlier());
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={holdableNavigation()}
+          route={{ params: { amount: '500', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    // Its own reset on opening leaves it.
+    const modal = renderer.root.findByType(FeedbackModal);
+    expect(modal.props.text).toBe(earlierTransferForgottenText());
+    await act(async () => { modal.props.onDismiss(); });
+    expect(actions.map((a) => a.type)).toContain(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN);
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+    expect(store.getState().multichain.transfer.status).toBe(OPERATION_STATUS.IDLE);
+  });
+
+  test('the transfer screen tells of an earlier transfer Hathor Next forgot first', async () => {
+    const { store, actions } = makeStore();
+    store.dispatch(forgottenEarlier());
+    const renderer = await mount(
+      store,
+      <ChainTransferScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} route={{}} />,
+    );
+    const modal = renderer.root.findByType(FeedbackModal);
+    expect(modal.props.text).toBe(transferForgottenNoticeText());
+    await act(async () => { modal.props.action.props.onPress(); });
+    expect(actions.map((a) => a.type)).toContain(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN);
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+  });
+
+  test("the transfer screen's notice goes with a tap outside it too", async () => {
+    const { store, actions } = makeStore();
+    store.dispatch(forgottenEarlier());
+    const renderer = await mount(
+      store,
+      <ChainTransferScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} route={{}} />,
+    );
+    await act(async () => { renderer.root.findByType(FeedbackModal).props.onDismiss(); });
+    expect(actions.map((a) => a.type)).toContain(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN);
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+  });
+
+  test('the transfer screen leaves the notice to a confirm screen in front of it', async () => {
+    const { store } = makeStore();
+    const navigation = { navigate: jest.fn(), goBack: jest.fn() };
+    useIsFocused.mockReturnValue(false);
+    store.dispatch(forgottenEarlier());
+    const renderer = await mount(
+      store,
+      <ChainTransferScreen navigation={navigation} route={{}} />,
+    );
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+    // Back in front, with the notice still not dismissed: it shows here.
+    useIsFocused.mockReturnValue(true);
+    await act(async () => {
+      renderer.update(
+        <Provider store={store}>
+          <PortalProvider>
+            <ChainTransferScreen navigation={navigation} route={{}} />
+          </PortalProvider>
+        </Provider>,
+      );
+    });
+    expect(renderer.root.findByType(FeedbackModal).props.text).toBe(transferForgottenNoticeText());
+  });
+
+  test('its own transfer found forgotten closes when dismissed, and stays closed', async () => {
+    const navigation = holdableNavigation();
+    const { store, actions } = makeStore();
+    const renderer = await mount(
+      store, (
+        <ChainTransferConfirmScreen
+          navigation={navigation}
+          route={{ params: { amount: '500', toAddress: OWN_ADDRESS } }}
+        />
+      )
+    );
+    await act(async () => { button(renderer, 'Confirm and send').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([route]) => route === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    const { requestId } = actions
+      .find((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED).payload;
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.SENDING, requestId }));
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.UNCONFIRMED, uncertainId: 'transfer-1',
+      }));
+      store.dispatch(multichainTransferUpdate({
+        status: OPERATION_STATUS.ERROR,
+        error: new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN).message,
+        errorCode: NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN,
+        uncertainId: null,
+      }));
+    });
+    const modal = renderer.root.findByType(FeedbackModal);
+    expect(modal.props.text)
+      .toBe(new NextClientError(NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN).message);
+    await act(async () => { modal.props.onDismiss(); });
+    expect(actions.map((a) => a.type)).toContain(types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN);
+    expect(renderer.root.findAllByType(FeedbackModal)).toHaveLength(0);
+    expect(store.getState().multichain.transfer.status).toBe(OPERATION_STATUS.IDLE);
+  });
+
+  test("names Hathor Network's native token by the symbol the fullnode reports", async () => {
+    const { store, actions } = makeStore({ nativeToken: { name: 'Test Native', symbol: 'TNT' } });
+    const params = { amount: '10000', toAddress: OWN_ADDRESS };
+    const form = await mount(
+      store, (
+        <ChainTransferScreen
+          navigation={{ navigate: jest.fn(), goBack: jest.fn() }}
+          route={{ params }}
+        />
+      )
+    );
+    const formText = textOf(form);
+    expect(formText).toEqual(expect.arrayContaining([
+      'TNT · 1,250.00 TNT available',
+      'TNT',
+      '99.90 TNT',
+      '0.10 TNT',
+    ]));
+    expect(formText.join(' ')).not.toContain('HTR');
+    await act(async () => { form.unmount(); });
+
+    const navigation = holdableNavigation();
+    const confirm = await mount(
+      store,
+      <ChainTransferConfirmScreen navigation={navigation} route={{ params }} />,
+    );
+    expect(textOf(confirm)).toContain('100.00 TNT');
+    expect(textOf(confirm).join(' ')).not.toContain('HTR');
+    await act(async () => { button(confirm, 'Confirm and send').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([route]) => route === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    const { requestId } = actions
+      .find((a) => a.type === types.MULTICHAIN_TRANSFER_REQUESTED).payload;
+    await act(async () => {
+      store.dispatch(multichainTransferUpdate({ status: OPERATION_STATUS.DONE, requestId }));
+    });
+    expect(confirm.root.findByType(FeedbackModal).props.text)
+      .toBe('Your TNT will arrive on Hathor Next in about 2 minutes.');
+  });
+});
+
+describe('transfers on their way, where HTR shows on Hathor Network alone', () => {
+  const record = (fields) => ({
+    id: 'transfer-1',
+    from: 'hathor',
+    to: 'hathor-next',
+    hathorTokenId: '00',
+    nextTokenId: 'aa'.repeat(32),
+    amount: '700',
+    receiveAmount: '700',
+    bridgeFee: '0',
+    networkFee: '1',
+    toAddress: OWN_ADDRESS,
+    toOwn: true,
+    sentAt: 1000,
+    arriveAt: 2000,
+    sourceTxId: 'ee'.repeat(32),
+    debitedOnSource: true,
+    ...fields,
+  });
+
+  test('say where each transfer stands, and which failed', async () => {
+    const { store } = makeStore();
+    store.dispatch(multichainTransfersSet([
+      record({
+        status: TRANSFER_STATUS.PENDING,
+        progress: { stage: 'confirming', confirmations: 5, needed: 21 },
+      }),
+      record({ id: 'transfer-2', status: TRANSFER_STATUS.FAILED, debitedOnSource: false }),
+      record({ id: 'transfer-3', status: TRANSFER_STATUS.ARRIVED }),
+    ]));
+    const renderer = await mount(store, <TransfersOnTheirWay token={{ uid: '00', symbol: 'HTR' }} />);
+    const text = textOf(renderer);
+    expect(text).toContain('Confirming 5 of 21 on Hathor Network');
+    expect(text).toContain("Didn't go through: nothing moved");
+    // An arrived transfer is in the history already.
+    expect(text.filter((line) => line === 'Moved to Hathor Next')).toHaveLength(2);
+  });
+
+  test('show nothing without the side chain', async () => {
+    const { store } = makeStore({ connected: false });
+    store.dispatch(multichainTransfersSet([record({ status: TRANSFER_STATUS.PENDING })]));
+    const renderer = await mount(store, <TransfersOnTheirWay token={{ uid: '00', symbol: 'HTR' }} />);
+    expect(renderer.toJSON()).toBeNull();
   });
 });
 

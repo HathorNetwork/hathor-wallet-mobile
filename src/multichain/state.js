@@ -6,6 +6,7 @@
  */
 
 import { types } from '../actions';
+import { NEXT_CLIENT_ERROR } from './nextClientErrors';
 
 /**
  * Where turning "Connect to side chain" on stands: idle, unlocking (the passkey ceremony that
@@ -38,6 +39,8 @@ export const OPERATION_STATUS = {
   RECORDED: 'recorded',
   UNCONFIRMED: 'unconfirmed',
   FAILED: 'failed',
+  // The backend never took the payment's signatures: it won't settle, and its coins are free.
+  EXPIRED: 'expired',
   ERROR: 'error',
   DONE: 'done',
 };
@@ -48,6 +51,8 @@ export const OPERATION_STATUS = {
 export const TRANSFER_STATUS = {
   PENDING: 'pending',
   ARRIVED: 'arrived',
+  // The burn reached the network and was refused there: nothing moved.
+  FAILED: 'failed',
 };
 
 export const NEXT_INITIAL_STATE = {
@@ -83,10 +88,33 @@ const SEND_INITIAL_STATE = {
   error: null,
 };
 
+/**
+ * A Hathor Next payment in these states is on its way: its outcome is still to come.
+ */
+export const SEND_IN_FLIGHT = [OPERATION_STATUS.SENDING, 'pending'];
+
+// A transfer in these states is still being decided: a reset leaves it as it is.
+const TRANSFER_IN_FLIGHT = [OPERATION_STATUS.SENDING, OPERATION_STATUS.UNCONFIRMED];
+
+/**
+ * Whether a transfer's state is the outcome of one Hathor Next forgot, not dismissed yet.
+ *
+ * @param {Object} transfer state.multichain.transfer
+ * @returns {boolean}
+ */
+export const isForgotten = (transfer) => transfer.status === OPERATION_STATUS.ERROR
+  && transfer.errorCode === NEXT_CLIENT_ERROR.TRANSFER_FORGOTTEN;
+
 const TRANSFER_INITIAL_STATE = {
   status: OPERATION_STATUS.IDLE,
   record: null,
   error: null,
+  // The error's NEXT_CLIENT_ERROR code, when its words depend on whose screen shows it.
+  errorCode: null,
+  // A transfer signed without an answer: no other one starts until it settles.
+  uncertainId: null,
+  // The confirm screen whose request the outcome is: any other shows it as an earlier transfer's.
+  requestId: null,
 };
 
 export const MULTICHAIN_INITIAL_STATE = {
@@ -98,6 +126,8 @@ export const MULTICHAIN_INITIAL_STATE = {
   transfers: [],
   send: SEND_INITIAL_STATE,
   transfer: TRANSFER_INITIAL_STATE,
+  // A Hathor Next backend for local testing: { url, pins }, or null for the side chain's own
+  devBackend: null,
 };
 
 /**
@@ -159,11 +189,35 @@ export function multichainReducer(state = MULTICHAIN_INITIAL_STATE, action) {
     case types.MULTICHAIN_NEXT_SEND_UPDATE:
       return { ...state, send: { ...state.send, ...action.payload } };
     case types.MULTICHAIN_NEXT_SEND_RESET:
+      // A payment on its way outlives the screen that sent it: its outcome is still to come.
+      // Leaving Hathor Next (MULTICHAIN_NEXT_RESET) is what drops it.
+      if (SEND_IN_FLIGHT.includes(state.send.status)) {
+        return state;
+      }
       return { ...state, send: SEND_INITIAL_STATE };
     case types.MULTICHAIN_TRANSFER_UPDATE:
       return { ...state, transfer: { ...state.transfer, ...action.payload } };
     case types.MULTICHAIN_TRANSFER_RESET:
-      return { ...state, transfer: TRANSFER_INITIAL_STATE };
+      // A transfer on its way, or signed without an answer, outlives the screen that started it.
+      // So does one Hathor Next forgot: its HTR may have left the wallet, and it shows until the
+      // user dismisses it (MULTICHAIN_TRANSFER_FORGOTTEN_SEEN).
+      if (TRANSFER_IN_FLIGHT.includes(state.transfer.status) || isForgotten(state.transfer)) {
+        return state;
+      }
+      return {
+        ...state,
+        transfer: { ...TRANSFER_INITIAL_STATE, uncertainId: state.transfer.uncertainId },
+      };
+    case types.MULTICHAIN_TRANSFER_FORGOTTEN_SEEN:
+      if (!isForgotten(state.transfer)) {
+        return state;
+      }
+      return {
+        ...state,
+        transfer: { ...TRANSFER_INITIAL_STATE, uncertainId: state.transfer.uncertainId },
+      };
+    case types.MULTICHAIN_DEV_BACKEND_SET:
+      return { ...state, devBackend: action.payload ?? null };
     default:
       return state;
   }

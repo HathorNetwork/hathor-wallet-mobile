@@ -32,7 +32,7 @@ jest.mock('../../../src/multichain/bridge', () => require('../../multichain/fake
 
 /* eslint-disable import/first */
 import React from 'react';
-import { Alert, Text, TextInput } from 'react-native';
+import { Alert, Keyboard, Text, TextInput } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
@@ -50,6 +50,9 @@ import { SendAddressInput } from '../../../src/screens/SendAddressInput';
 import SendAmountInput from '../../../src/screens/SendAmountInput';
 import NextSendAmountInput from '../../../src/screens/Multichain/NextSendAmountInput';
 import NextSendConfirmScreen from '../../../src/screens/Multichain/NextSendConfirmScreen';
+import { NextTokenPicker } from '../../../src/components/Multichain/NextTokenPicker';
+import TokenBox from '../../../src/components/TokenBox';
+import BackdropModal from '../../../src/components/BackdropModal';
 import UnifiedQRScanner from '../../../src/screens/UnifiedQRScanner';
 import AmountTextInput from '../../../src/components/AmountTextInput';
 import FeedbackModal from '../../../src/components/FeedbackModal';
@@ -58,12 +61,14 @@ import QRCodeReader from '../../../src/components/QRCodeReader';
 import { PortalProvider } from '../../../src/components/Portal';
 import { ChainTag } from '../../../src/components/Multichain/ChainTag';
 import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
 import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
+import addressVectors from '../../multichain/next/fixtures/address-v2.json';
 /* eslint-enable import/first */
 
 const NETWORK = FAKE_NETWORK;
-const OWN_ADDRESS = `samba:${'cd34'.repeat(32)}`;
-const NEXT_ADDRESS = `samba:${'ab12'.repeat(32)}`;
+const OWN_ADDRESS = fakePeerAddress('cd34');
+const NEXT_ADDRESS = fakePeerAddress('ab12');
 const HATHOR_ADDRESS = 'Wa9Q77VagNbzfecxW6g56jBuetkgEYyxoh';
 const HTR = { uid: '00', name: 'Hathor', symbol: 'HTR' };
 
@@ -160,12 +165,31 @@ describe('the Send address step', () => {
     expect(navigation.navigate).toHaveBeenCalledWith('SendAmountInput', { address: HATHOR_ADDRESS });
   });
 
+  test.each([true, false])(
+    'refuses the transfer address at once, and says to transfer instead (connected: %s)',
+    async (connected) => {
+      const { renderer, navigation } = await typeAddress('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL', { connected });
+      expect(textOf(renderer).join(' ')).toContain('anything sent to it directly is lost');
+      expect(button(renderer, 'Next').props.disabled).toBe(true);
+      expect(navigation.navigate).not.toHaveBeenCalled();
+    },
+  );
+
   test('takes a Hathor Network address pasted with a line break, as its chain says', async () => {
     const { renderer, navigation } = await typeAddress(`${HATHOR_ADDRESS}\n`);
     expect(renderer.root.findByType(ChainTag).props.chain).toBe('hathor');
     expect(button(renderer, 'Next').props.disabled).toBe(false);
     await act(async () => { button(renderer, 'Next').props.onPress(); });
     expect(navigation.navigate).toHaveBeenCalledWith('SendAmountInput', { address: HATHOR_ADDRESS });
+  });
+
+  test('says at once why it refuses an old Hathor Next address, and tags no chain', async () => {
+    const legacy = addressVectors.valid.find((v) => v.form === 'legacy').address;
+    const { renderer, navigation } = await typeAddress(legacy);
+    expect(textOf(renderer).join(' ')).toContain('samba1z');
+    expect(renderer.root.findAllByType(ChainTag)).toHaveLength(0);
+    expect(button(renderer, 'Next').props.disabled).toBe(true);
+    expect(navigation.navigate).not.toHaveBeenCalled();
   });
 
   test('takes no Hathor Next address before the side chain is connected', async () => {
@@ -219,6 +243,151 @@ describe('a send short on Hathor Next', () => {
   });
 });
 
+describe('a Hathor Next payment in another token', () => {
+  const ATT = 'c230a6631f721ad5cab42b3eeb726513274f411134bbcd474471a76088979873';
+  const EMPTY = 'e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3';
+  // 250.00 ATT, none of another token, and HTR as asked.
+  const holding = (htr = 300000000n) => ({
+    next: {
+      tokens: {
+        '00': { id: '00', name: 'Hathor', symbol: 'HTR' },
+        [ATT]: { id: ATT, name: 'App Test Token', symbol: 'ATT', lastActivityAt: 2 },
+        [EMPTY]: { id: EMPTY, name: 'Spent Token', symbol: 'SPT', lastActivityAt: 1 },
+      },
+      balances: {
+        '00': { status: 'ready', data: { available: htr } },
+        [ATT]: { status: 'ready', data: { available: 25000000000n } },
+        [EMPTY]: { status: 'ready', data: { available: 0n } },
+      },
+    },
+  });
+
+  async function amountStep(storeOptions = holding()) {
+    const navigation = { navigate: jest.fn(), goBack: jest.fn() };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS } });
+    const renderer = await mount(makeStore(storeOptions).store, <NextSendAmountInput />);
+    const pickAtt = async () => {
+      await act(async () => { renderer.root.findByType(NextTokenPicker).props.onChange(ATT); });
+    };
+    const next = async (amount) => {
+      await act(async () => {
+        renderer.root.findByType(AmountTextInput).props.onAmountUpdate('x', amount);
+      });
+      await act(async () => { button(renderer, 'Next').props.onPress(); });
+    };
+    return { renderer, navigation, pickAtt, next };
+  }
+
+  test('offers the tokens the wallet holds there, and sends the one picked', async () => {
+    const { renderer, navigation, pickAtt, next } = await amountStep();
+    expect(renderer.root.findByType(NextTokenPicker).props.options).toEqual([
+      {
+        id: '00', symbol: 'HTR', name: 'Hathor', plainName: 'Hathor', idTag: null, balance: '3.00',
+      },
+      {
+        id: ATT,
+        symbol: 'ATT',
+        name: 'App Test Token · c230a6',
+        plainName: 'App Test Token',
+        idTag: 'c230a6',
+        balance: '250.00',
+      },
+    ]);
+    await pickAtt();
+    expect(textOf(renderer)).toEqual(expect.arrayContaining([
+      'SEND ATT', '250.00 ATT available', 'Network fee: 0.05 HTR',
+    ]));
+    await next(1000000000n);
+    expect(navigation.navigate).toHaveBeenCalledWith('NextSendConfirmScreen', {
+      address: NEXT_ADDRESS, amount: '1000000000', tokenId: ATT,
+    });
+  });
+
+  // The whole balance can go: the fee comes out of the native token.
+  test('sends all of it, and takes the fee from the native token', async () => {
+    const { navigation, pickAtt, next } = await amountStep();
+    await pickAtt();
+    await next(25000000000n);
+    expect(navigation.navigate).toHaveBeenCalledWith('NextSendConfirmScreen', expect.objectContaining({
+      amount: '25000000000', tokenId: ATT,
+    }));
+  });
+
+  test('says when the native token is short of the fee', async () => {
+    const { renderer, navigation, pickAtt, next } = await amountStep(holding(1000000n));
+    await pickAtt();
+    await next(1000000000n);
+    expect(textOf(renderer)).toContain(
+      'The network fee is paid in HTR. You need 0.05 HTR on Hathor Next.',
+    );
+    expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+
+  // The bridge carries only HTR: Hathor Network can't help with any other token.
+  test('offers no transfer between chains for a token the bridge doesn\'t carry', async () => {
+    const { renderer, pickAtt, next } = await amountStep();
+    await pickAtt();
+    await next(25000000001n);
+    expect(textOf(renderer)).toContain('Insufficient funds');
+    expect(button(renderer, 'Transfer between chains')).toBeUndefined();
+  });
+
+  test("never lets a long name hide a token's id in the sheet", async () => {
+    const longName = 'App Test Token Of A Name Far Longer Than Its Row';
+    const store = holding();
+    store.next.tokens[ATT].name = longName;
+    const { renderer } = await amountStep(store);
+    await act(async () => { renderer.root.findByType(TokenBox).props.onPress(); });
+    // The sheet shows its rows a moment after it opens.
+    await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 150); }); });
+    const texts = renderer.root.findAllByType(Text);
+    const name = texts.find((node) => node.props.children === longName);
+    const tag = texts.find((node) => node.props.children === ' · c230a6');
+    expect(name.props.numberOfLines).toBe(1);
+    expect([].concat(name.props.style)).toContainEqual(expect.objectContaining({ flexShrink: 1 }));
+    expect(tag.props.numberOfLines).toBeUndefined();
+  });
+
+  test('closes the keyboard when the token box opens its sheet', async () => {
+    const dismiss = jest.spyOn(Keyboard, 'dismiss');
+    const { renderer } = await amountStep();
+    const picker = renderer.root.findByType(NextTokenPicker);
+    await act(async () => { picker.findByType(TokenBox).props.onPress(); });
+    expect(dismiss).toHaveBeenCalled();
+    expect(picker.findByType(BackdropModal).props.visible).toBe(true);
+  });
+
+  test('shows no token picker while the wallet holds only the native token', async () => {
+    const { renderer } = await amountStep({});
+    expect(renderer.root.findAllByType(NextTokenPicker)).toHaveLength(0);
+    expect(textOf(renderer)).toContain('HTR');
+  });
+
+  test('confirms the token picked, with the fee in the native token, and sends it', async () => {
+    const navigation = {
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      setOptions: jest.fn(),
+      addListener: jest.fn(() => jest.fn()),
+    };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS, amount: '1000000000', tokenId: ATT } });
+    const env = makeStore(holding());
+    const renderer = await mount(env.store, <NextSendConfirmScreen />);
+    const texts = textOf(renderer);
+    expect(texts).toEqual(expect.arrayContaining(['SEND ATT', '10.00 ATT', 'Network fee', '0.05 HTR']));
+    // The two amounts are in different tokens: there is no total.
+    expect(texts).not.toContain('Total');
+    await act(async () => { button(renderer, 'Send').props.onPress(); });
+    const [, pinParams] = navigation.navigate.mock.calls.find(([route]) => route === 'PinScreen');
+    await act(async () => { pinParams.cb('123456'); });
+    const sends = env.actions.filter((a) => a.type === types.MULTICHAIN_NEXT_SEND_REQUESTED);
+    expect(sends).toHaveLength(1);
+    expect(sends[0].payload).toMatchObject({ tokenId: ATT, to: NEXT_ADDRESS, amount: 1000000000n });
+  });
+});
+
 describe('a send short on Hathor Network', () => {
   test("says Hathor Next has it, and that the transfer from there isn't available yet", async () => {
     useNavigation.mockReturnValue({
@@ -237,18 +406,38 @@ describe('a send short on Hathor Network', () => {
 });
 
 describe('the Hathor Next send confirmation (sign-once)', () => {
-  async function renderConfirm({ next = {} } = {}) {
+  // `earlier` is another draft's payment, already in the state when the screen opens.
+  async function renderConfirm({ next = {}, earlier = null } = {}) {
     STORE.isPasskeyWallet.mockReturnValue(true);
     const ceremony = jest.spyOn(passkeySigner, 'withPasskeyWords')
       .mockImplementation(async (fn) => fn('words'));
-    const navigation = { navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn() };
+    const listeners = {};
+    const navigation = {
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      popToTop: jest.fn(),
+      setOptions: jest.fn(),
+      addListener: jest.fn((event, listener) => {
+        listeners[event] = listener;
+        return jest.fn();
+      }),
+    };
+    // Whether leaving now would be stopped.
+    const held = () => {
+      const preventDefault = jest.fn();
+      listeners.beforeRemove?.({ preventDefault });
+      return preventDefault.mock.calls.length > 0;
+    };
     useNavigation.mockReturnValue(navigation);
     useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS, amount: '100000000' } });
     const env = makeStore({ next });
+    if (earlier) {
+      env.store.dispatch(multichainNextSendUpdate(earlier));
+    }
     const renderer = await mount(env.store, <NextSendConfirmScreen />);
     const sendButton = () => button(renderer, 'Send');
     const sends = () => env.actions.filter((a) => a.type === types.MULTICHAIN_NEXT_SEND_REQUESTED);
-    return { ...env, renderer, sendButton, sends, ceremony };
+    return { ...env, renderer, navigation, held, sendButton, sends, ceremony };
   }
 
   test('sends once, and Send never turns back on, whatever the outcome', async () => {
@@ -271,7 +460,9 @@ describe('the Hathor Next send confirmation (sign-once)', () => {
 
   test('carries no PIN: the keys are in memory, and the PIN only authorizes', async () => {
     STORE.isPasskeyWallet.mockReturnValue(false);
-    const navigation = { navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn() };
+    const navigation = {
+      navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn(), addListener: () => () => {},
+    };
     useNavigation.mockReturnValue(navigation);
     useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS, amount: '100000000' } });
     const { store, actions } = makeStore();
@@ -323,6 +514,60 @@ describe('the Hathor Next send confirmation (sign-once)', () => {
     await act(async () => { syncing.sendButton().props.onPress(); });
     expect(syncing.sends()).toHaveLength(0);
   });
+
+  test('stays while the payment is on its way, and keeps it when the screen goes', async () => {
+    const { store, renderer, navigation, held, sendButton, sends } = await renderConfirm();
+    expect(held()).toBe(false);
+    await act(async () => { sendButton().props.onPress(); });
+    const { draftId } = sends()[0].payload;
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: OPERATION_STATUS.SENDING, draftId }));
+    });
+    expect(held()).toBe(true);
+    expect(navigation.setOptions).toHaveBeenLastCalledWith({ gestureEnabled: false });
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: 'pending', sendId: 'send-1' }));
+    });
+    expect(held()).toBe(true);
+
+    // Gone anyway (Hathor Next's own reset is what drops a payment): its outcome is still to come.
+    await act(async () => { renderer.unmount(); });
+    mounted = null;
+    expect(store.getState().multichain.send).toMatchObject({ status: 'pending', draftId });
+  });
+
+  test('lets the screen go once the outcome shows', async () => {
+    const { store, held, sendButton, sends } = await renderConfirm();
+    await act(async () => { sendButton().props.onPress(); });
+    const { draftId } = sends()[0].payload;
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: 'pending', draftId }));
+    });
+    expect(held()).toBe(true);
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: OPERATION_STATUS.RECORDED }));
+    });
+    expect(held()).toBe(false);
+  });
+
+  test('Send waits for an earlier payment still on its way', async () => {
+    const { store, renderer, sendButton, sends } = await renderConfirm({
+      earlier: { status: 'pending', draftId: 'earlier-draft', sendId: 'send-1' },
+    });
+    expect(sendButton().props.disabled).toBe(true);
+    expect(textOf(renderer)).toContain(
+      'An earlier payment is still on its way. You can send once it settles.',
+    );
+    await act(async () => { sendButton().props.onPress(); });
+    expect(sends()).toHaveLength(0);
+
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({ status: OPERATION_STATUS.RECORDED }));
+    });
+    expect(sendButton().props.disabled).toBe(false);
+    await act(async () => { sendButton().props.onPress(); });
+    expect(sends()).toHaveLength(1);
+  });
 });
 
 describe('the scanner', () => {
@@ -362,5 +607,54 @@ describe('the scanner', () => {
     );
     expect(navigation.popTo).not.toHaveBeenCalled();
     expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+});
+
+describe('the Hathor Next send confirmation, after review', () => {
+  const ATT = 'c230a6631f721ad5cab42b3eeb726513274f411134bbcd474471a76088979873';
+
+  async function confirm(params) {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    jest.spyOn(passkeySigner, 'withPasskeyWords').mockImplementation(async (fn) => fn('words'));
+    const navigation = {
+      navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn(), addListener: () => () => {},
+    };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({ params });
+    const env = makeStore({
+      next: {
+        tokens: {
+          '00': { id: '00', name: 'Hathor', symbol: 'HTR' },
+          [ATT]: { id: ATT, name: 'App Test Token', symbol: 'ATT' },
+        },
+        balances: {
+          '00': { status: 'ready', data: { available: 300000000n } },
+          [ATT]: { status: 'ready', data: { available: 25000000000n } },
+        },
+      },
+    });
+    const renderer = await mount(env.store, <NextSendConfirmScreen />);
+    return { ...env, renderer };
+  }
+
+  test("shows a token's full id when it isn't the native one", async () => {
+    const { renderer } = await confirm({
+      address: NEXT_ADDRESS, amount: '100000000', tokenId: ATT,
+    });
+    expect(textOf(renderer)).toEqual(expect.arrayContaining(['Token id', ATT]));
+  });
+
+  test('says a payment that expired never settles, and its coins are free again', async () => {
+    const { store, renderer, actions } = await confirm({ address: NEXT_ADDRESS, amount: '100000000' });
+    await act(async () => { button(renderer, 'Send').props.onPress(); });
+    const [request] = actions.filter((a) => a.type === types.MULTICHAIN_NEXT_SEND_REQUESTED);
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({
+        status: OPERATION_STATUS.EXPIRED, draftId: request.payload.draftId,
+      }));
+    });
+    const [outcome] = renderer.root.findAllByType(FeedbackModal);
+    expect(outcome.props.text).toMatch(/^Expired\. This payment expired before the network got its signatures/);
+    expect(outcome.props.text).not.toMatch(/turned it down/);
   });
 });

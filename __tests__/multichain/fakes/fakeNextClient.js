@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import CryptoJS from 'crypto-js';
 import { getIntegerAmount } from '../../../src/utils';
 import { NEXT_DECIMAL_PLACES } from '../../../src/multichain/chains';
 import { NEXT_CLIENT_EVENT, NextClientError, NEXT_CLIENT_ERROR } from '../../../src/multichain/nextClientErrors';
@@ -20,6 +19,7 @@ import {
   saveLedger,
 } from './fakeLedger';
 import { FAKE_SCENARIO } from './scenarios';
+import { deriveFakeNextAddress } from './fakeAddress';
 import {
   CONNECT_DELAY_MS,
   NEXT_SEND_FEE,
@@ -29,22 +29,13 @@ import {
   SLOW_SYNC_MS,
 } from './fakeValues';
 
+export { deriveFakeNextAddress, fakePeerAddress } from './fakeAddress';
+
 const HISTORY_PAGE_SIZE = 20;
 
 const REJECTION_REASON = 'Rejected by the network: the transaction failed validation.';
 
 const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
-
-/**
- * The fake address of a wallet: `samba:` and 128 hex characters, the live form, derived from
- * the words so it is the same on every start and every device holding them.
- *
- * @param {string} words
- * @returns {string}
- */
-export function deriveFakeNextAddress(words) {
-  return `samba:${CryptoJS.SHA512(`hathor-next-mock:${words}`).toString(CryptoJS.enc.Hex)}`;
-}
 
 /**
  * A fake Hathor Next client for tests, with the interface of the real one
@@ -113,16 +104,25 @@ export function createFakeNextClient() {
      * Derives the wallet's Hathor Next keys from its words. No network.
      *
      * @param {{ words: string }} params
-     * @returns {{ address: string }}
+     * @returns {Promise<{ address: string }>}
      */
-    prepareKeys({ words }) {
-      address = deriveFakeNextAddress(words);
+    async prepareKeys({ words }) {
+      address = await deriveFakeNextAddress(words);
       return { address };
     },
 
     /** @returns {boolean} Whether the keys were derived */
     hasKeys() {
       return address !== null;
+    },
+
+    /**
+     * The fake keys are no secret, so a lock keeps them.
+     *
+     * @returns {boolean} false: nothing was dropped
+     */
+    forgetKeys() {
+      return false;
     },
 
     /**
@@ -335,6 +335,17 @@ export function createFakeNextClient() {
       }, SEND_DELAY_MS);
 
       return { sendId };
+    },
+
+    /**
+     * A payment's state as the fake ledger has it.
+     *
+     * @param {string} sendId
+     * @returns {{ sendId: string, status: string, reason: string|null, txId: string|null }|null}
+     */
+    getSend(sendId) {
+      const row = connected ? ledger().rows.find((r) => r.id === sendId) : null;
+      return row ? { sendId, status: row.status, reason: row.reason, txId: row.txId } : null;
     },
 
     /**

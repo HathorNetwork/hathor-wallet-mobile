@@ -73,6 +73,17 @@ describe("a token's history on both chains", () => {
     expect(rows.map((row) => row.key)).toEqual(['transfer:transfer-1', 'next:n1', 'hathor:h1']);
   });
 
+  test('hides the mint a transfer arrived in, by its transaction', () => {
+    const rows = history(HISTORY_VIEW.HATHOR_NEXT, {
+      transfers: [transfer({ progress: { stage: 'arrived', mintTxId: 'mint-tx' } })],
+      nextRows: [
+        nextRow('n2', 100000, { kind: 'mint', txId: 'mint-tx', transferId: null }),
+        nextRow('n1', 20000, { kind: 'mint', txId: 'other-mint' }),
+      ],
+    });
+    expect(rows.map((row) => row.key)).toEqual(['transfer:transfer-1', 'next:n1']);
+  });
+
   test('holds back rows older than what a chain with more pages has loaded', () => {
     const rows = history(HISTORY_VIEW.ALL, { hathorHasMore: true, hathorTxs: [hathorTx('h2', 90)] });
     // Hathor Network may still have rows between 90 s and now: nothing older shows yet.

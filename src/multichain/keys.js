@@ -5,22 +5,35 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { cryptoUtils } from '@hathor/wallet-lib';
 import { multichainKeyMap } from '../constants';
 import { logger } from '../logger';
 import { STORE } from '../store';
 import { ensureNextClient } from './nextClient';
+import {
+  bigintToBytesLE,
+  bytesToBigintLE,
+  bytesToHex,
+  hexToBytes,
+} from './next/kit/scalar';
 
 const log = logger('multichain-keys');
 
 /**
- * What the wallet saved about Hathor Next. All of it is public: the address, and the networks the
- * wallet was registered on. Its keys are never saved.
+ * What the wallet saved about Hathor Next. All of it is public: the address, the public spend key,
+ * and the networks the wallet was registered on. The spend secret is saved apart, encrypted with
+ * the PIN (prepareNextKeysWithPin).
  *
- * @returns {{ address: string|null, registered: { [network: string]: true } }}
+ * @returns {{
+ *   address: string|null,
+ *   pubB: string|null,
+ *   registered: { [network: string]: true },
+ * }}
  */
 export function loadSavedNext() {
   return {
     address: null,
+    pubB: null,
     registered: {},
     ...(STORE.getItem(multichainKeyMap.next) ?? {}),
   };
@@ -30,7 +43,8 @@ export function loadSavedNext() {
  * @param {Object} patch Part of what loadSavedNext returns
  */
 export function saveNext(patch) {
-  STORE.setItem(multichainKeyMap.next, { ...loadSavedNext(), ...patch });
+  const saved = STORE.getItem(multichainKeyMap.next) ?? {};
+  STORE.setItem(multichainKeyMap.next, { ...saved, ...patch });
 }
 
 /**
@@ -40,37 +54,126 @@ export function saveNext(patch) {
  * @returns {boolean}
  */
 export function hasUsedNext() {
-  return Boolean(loadSavedNext().address);
+  const saved = loadSavedNext();
+  return Boolean(saved.address || saved.pubB);
 }
 
 /**
- * Derives the wallet's Hathor Next keys from its words into the running client, and saves the
- * address they give. The caller drops the words.
+ * Derives the wallet's Hathor Next keys from its words into the running client, and saves what
+ * public they give: the address, or the public spend key of a client that knows its address only
+ * once connected. The caller drops the words.
  *
  * @param {string} words
- * @returns {string} The Hathor Next address
+ * @returns {Promise<string|null>} The Hathor Next address, when already known
  */
-export function prepareNextKeys(words) {
-  const { address } = ensureNextClient().prepareKeys({ words });
-  saveNext({ address });
+export async function prepareNextKeys(words) {
+  const { address = null, pubB = null } = await ensureNextClient().prepareKeys({ words });
+  saveNext(address ? { address } : { pubB });
   return address;
 }
 
 /**
+ * The wallet's own public key on Hathor Network, which tells it apart from any other: null when
+ * its access data can't be read.
+ *
+ * @returns {Promise<string|null>}
+ */
+async function walletXpub() {
+  try {
+    const { accessData } = await STORE.getAvailableAccessData();
+    return accessData?.xpubkey ?? null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Derives the Hathor Next keys with the PIN. The words are stretched (2,048 rounds of PBKDF2, which
+ * hold the JS thread for seconds on a phone) only the first time: the spend secret they give is
+ * then kept on this device, encrypted with the PIN as the wallet's words are, and every later
+ * unlock decrypts it instead. A PIN change, and a move of the words to the biometry's password,
+ * move it too (changePinOnAccessData).
+ *
+ * It is kept with the wallet's own public key and the public spend key it gives. A copy that is
+ * another wallet's, that the PIN doesn't open, or whose secret doesn't give its public key, is
+ * derived again from the words, and saved again. It is under the wallet's keys, so a wallet reset
+ * clears it.
+ *
+ * @param {string} pinCode
+ * @param {Function} wordsOf The wallet's words, decrypted with the PIN: (pinCode) => Promise
+ * @returns {Promise<string|null>} The address, as prepareNextKeys
+ */
+export async function prepareNextKeysWithPin(pinCode, wordsOf) {
+  const client = ensureNextClient();
+  const xpub = await walletXpub();
+  const saved = STORE.getItem(multichainKeyMap.nextSecret);
+  if (saved && client.prepareKeysFromSecret) {
+    try {
+      if (!xpub || saved.xpub !== xpub) {
+        throw new Error('The saved Hathor Next secret is not this wallet\'s.');
+      }
+      const secret = cryptoUtils.decryptData(saved.secret, pinCode);
+      const { pubB } = client.prepareKeysFromSecret({
+        spendSecret: bytesToBigintLE(hexToBytes(secret)),
+      });
+      if (pubB === saved.pubB) {
+        saveNext({ pubB });
+        return null;
+      }
+      client.forgetKeys();
+      log.error('The saved Hathor Next secret doesn\'t give its public key; deriving it again.');
+    } catch (e) {
+      log.error('The saved Hathor Next secret can\'t be used; deriving it again.', e);
+    }
+  }
+  const words = await wordsOf(pinCode);
+  const { address = null, pubB = null, spendSecret } = await client.prepareKeys({ words });
+  if (spendSecret !== undefined) {
+    STORE.setItem(multichainKeyMap.nextSecret, {
+      xpub,
+      pubB,
+      secret: cryptoUtils.encryptData(bytesToHex(bigintToBytesLE(spendSecret)), pinCode),
+    });
+  }
+  saveNext(address ? { address } : { pubB });
+  return address;
+}
+
+// The derivation an unlock started, while it runs: a load that needs the keys waits for it
+// instead of failing for want of them (the passkey unlock doesn't wait for it to finish).
+let unlockDerivation = null;
+
+/**
  * At an unlock, with the words the PIN or the passkey gave: derives the Hathor Next keys if the
- * wallet used Hathor Next before. It never throws, so it can't fail an unlock.
+ * multichain flag is on and the wallet used Hathor Next before. It never rejects, so it can't fail
+ * an unlock.
  *
  * @param {string} words
- * @returns {string|null} The Hathor Next address, or null when nothing was derived
+ * @param {boolean} multichainOn The multichain flag, as the unlock knows it
+ *   (getMultichainFeatureToggleAtUnlock)
+ * @returns {Promise<string|null>} The Hathor Next address, or null when none is known yet
  */
-export function prepareNextKeysAtUnlock(words) {
-  if (!hasUsedNext()) {
-    return null;
+export function prepareNextKeysAtUnlock(words, multichainOn) {
+  if (!multichainOn || !hasUsedNext()) {
+    return Promise.resolve(null);
   }
-  try {
-    return prepareNextKeys(words);
-  } catch (e) {
-    log.error('Could not derive the Hathor Next keys at unlock.', e);
-    return null;
-  }
+  const derivation = (async () => {
+    try {
+      return await prepareNextKeys(words);
+    } catch (e) {
+      log.error('Could not derive the Hathor Next keys at unlock.', e);
+      return null;
+    } finally {
+      if (unlockDerivation === derivation) {
+        unlockDerivation = null;
+      }
+    }
+  })();
+  unlockDerivation = derivation;
+  return derivation;
+}
+
+/** @returns {Promise<string|null>|null} The unlock's derivation while it runs */
+export function pendingUnlockDerivation() {
+  return unlockDerivation;
 }

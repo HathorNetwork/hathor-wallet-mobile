@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion, cryptoUtils } from '@hathor/wallet-lib';
 import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import CryptoJS from 'crypto-js';
 import * as Keychain from 'react-native-keychain';
@@ -16,7 +16,7 @@ import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE, FBT_FEATURE_TOGGLE, AMOUNT_FORMAT, AMOUNT_FORMAT_DEFAULT, AMOUNT_FORMAT_FEATURE_TOGGLE } from './constants';
+import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE, FBT_FEATURE_TOGGLE, AMOUNT_FORMAT, AMOUNT_FORMAT_DEFAULT, AMOUNT_FORMAT_FEATURE_TOGGLE, multichainKeyMap } from './constants';
 import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY, SAFE_BIOMETRY_FEATURE_FLAG_KEY, FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
@@ -626,6 +626,32 @@ export const setKeychainPin = (pin) => {
 };
 
 /**
+ * Moves the Hathor Next spend secret this device keeps, encrypted with the PIN as the words are
+ * (src/multichain/keys.js), to the new PIN or password, as the words just moved. One the old PIN
+ * doesn't open is dropped: the next unlock derives it again. A device that never had the side
+ * chain's flag on keeps none, and nothing happens. One that had it keeps the secret after the
+ * flag goes off, and it moves then too.
+ *
+ * @param {string} oldPin
+ * @param {string} newPin
+ */
+export function changeNextSecretPin(oldPin, newPin) {
+  const saved = STORE.getItem(multichainKeyMap.nextSecret);
+  if (!saved) {
+    return;
+  }
+  try {
+    const secret = cryptoUtils.decryptData(saved.secret, oldPin);
+    STORE.setItem(multichainKeyMap.nextSecret, {
+      ...saved,
+      secret: cryptoUtils.encryptData(secret, newPin),
+    });
+  } catch (e) {
+    STORE.removeItem(multichainKeyMap.nextSecret);
+  }
+}
+
+/**
  * @param {HathorWallet} wallet
  * @param {string} oldPin
  * @param {string} newPin
@@ -665,6 +691,13 @@ export async function changePinOnAccessData(storage, oldPin, newPin) {
   }
 
   setKeychainPin(newPin);
+  // The words moved: nothing of Hathor Next can fail the change now. A secret left behind is one
+  // the new PIN doesn't open, and the next unlock derives it again.
+  try {
+    changeNextSecretPin(oldPin, newPin);
+  } catch (e) {
+    log.error('Could not move the Hathor Next secret to the new PIN.', e);
+  }
   return true;
 }
 

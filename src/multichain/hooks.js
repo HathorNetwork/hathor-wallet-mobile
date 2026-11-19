@@ -5,8 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { mintScaleOf } from './amount';
 import { selectSideChainConfig, selectTokenMap } from './gating';
 import { combinedTokenList } from './tokens';
 
@@ -24,6 +25,7 @@ export function useCombinedTokens() {
   const transfers = useSelector((state) => state.multichain.transfers);
   const tokenMap = useSelector(selectTokenMap);
   const nativeTokenId = useSelector((state) => selectSideChainConfig(state)?.nativeTokenId);
+  const mintScale = useSelector((state) => mintScaleOf(selectSideChainConfig(state)));
 
   return useMemo(() => combinedTokenList({
     hathorTokens,
@@ -34,6 +36,7 @@ export function useCombinedTokens() {
     tokenMap,
     nativeTokenId,
     transfers,
+    mintScale,
   }), [
     hathorTokens,
     hathorBalances,
@@ -43,5 +46,27 @@ export function useCombinedTokens() {
     tokenMap,
     nativeTokenId,
     transfers,
+    mintScale,
   ]);
+}
+
+/**
+ * Keeps a screen open while `hold` is true: the header's back, Android's back button and the
+ * swipe all stay where they are. A payment or transfer being decided shows its outcome there,
+ * and leaving would reset what decides it.
+ *
+ * @param {Object} navigation The screen's navigation
+ * @param {boolean} hold
+ */
+export function useHoldScreen(navigation, hold) {
+  const holding = useRef(hold);
+  holding.current = hold;
+  useEffect(() => navigation.addListener('beforeRemove', (e) => {
+    if (holding.current) {
+      e.preventDefault();
+    }
+  }), [navigation]);
+  useEffect(() => {
+    navigation.setOptions?.({ gestureEnabled: !hold });
+  }, [navigation, hold]);
 }
