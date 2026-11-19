@@ -913,6 +913,34 @@ describe('a Hathor Next token creation', () => {
     });
   });
 
+  test('a draft signed before the app left and returning after another took the creation leaves that one alone', async () => {
+    const env = setup();
+    await connect(env);
+    let releaseA = null;
+    jest.spyOn(getNextClient(), 'createToken').mockImplementation(() => new Promise((resolve) => {
+      releaseA = () => resolve({ sendId: 'create-a', tokenId: 'aa'.repeat(32) });
+    }));
+    env.dispatch(draft('token-a'));
+    await wait(10);
+    env.dispatch(setFeatureToggles({ [MULTICHAIN_FEATURE_TOGGLE]: false }));
+    await wait(10);
+    env.dispatch(setFeatureToggles({
+      [MULTICHAIN_FEATURE_TOGGLE]: true, [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: true,
+    }));
+    await wait(2000);
+    // Draft B, on whichever client is current now, waits for its review the whole time: unsigned,
+    // it has no send id yet.
+    jest.spyOn(getNextClient(), 'createToken').mockImplementation(() => new Promise(() => {}));
+    env.dispatch(draft('token-b'));
+    await wait(10);
+    releaseA();
+    // Past the wait for an outcome: draft A's never marks draft B as not settled yet.
+    await wait(SEND_SETTLE_MS + 1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      draftId: 'token-b', sendId: null, status: OPERATION_STATUS.SENDING,
+    });
+  });
+
   test('takes the token id the client already read back, when the saga learns the send id', async () => {
     const env = setup();
     await connect(env);
@@ -2505,6 +2533,48 @@ describe('a Hathor Next token creation, after review', () => {
     await wait(SEND_SETTLE_MS + 1000);
     expect(env.getState().multichain.createToken).toMatchObject({
       status: OPERATION_STATUS.UNCONFIRMED, sendId: 'lost',
+    });
+  });
+
+  // The wallet still submits it again now and then, and the backend says submitted each time.
+  test.each([
+    ['after the wait', null],
+    ['from the client', 'unconfirmed'],
+  ])('shown as not settled yet %s, stays so while it goes out again, until it settles', async (_, told) => {
+    const env = setup();
+    const client = ensureNextClient();
+    const listeners = [];
+    const on = client.on.bind(client);
+    jest.spyOn(client, 'on').mockImplementation((event, listener) => {
+      listeners.push({ event, listener });
+      return on(event, listener);
+    });
+    await connect(env);
+    const tell = (status) => listeners
+      .filter((l) => l.event === NEXT_CLIENT_EVENT.SEND)
+      .forEach((l) => l.listener({ sendId: 'held', status, reason: null, txId: 'ab'.repeat(32) }));
+    jest.spyOn(client, 'createToken').mockResolvedValue({ sendId: 'held', tokenId: 'ab'.repeat(32) });
+    jest.spyOn(client, 'getCreation').mockReturnValue(null);
+    env.dispatch(draft('token-held'));
+    await wait(1000);
+    tell('pending');
+    await wait(10);
+    if (told) {
+      tell(told);
+      await wait(10);
+    } else {
+      await wait(SEND_SETTLE_MS);
+    }
+    expect(env.getState().multichain.createToken.status).toBe(OPERATION_STATUS.UNCONFIRMED);
+    tell('pending');
+    await wait(10);
+    // Not on its way again: its screen lets the user leave.
+    expect(env.getState().multichain.createToken.status).toBe(OPERATION_STATUS.UNCONFIRMED);
+    expect(SEND_IN_FLIGHT).not.toContain(env.getState().multichain.createToken.status);
+    tell('recorded');
+    await wait(10);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.RECORDED, sendId: 'held', draftId: 'token-held',
     });
   });
 });

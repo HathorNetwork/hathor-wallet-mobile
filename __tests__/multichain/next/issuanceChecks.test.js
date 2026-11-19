@@ -418,7 +418,7 @@ describe('each check of a token creation, on its own', () => {
   });
 
   // Another coin of this wallet's, spent beside the vector's own: its key is this wallet's.
-  const ownInput = (globalIndex, offset) => ({
+  const anotherOwnCoin = (globalIndex, offset) => ({
     global_index: globalIndex,
     otk_offset: bytesToHex(bigintToBytesLE(offset)),
     one_time_key: bytesToHex(publicKeyOf(modOrder(offset + bytesToBigintLE(hexToBytes(PUBLIC.b))))),
@@ -437,11 +437,12 @@ describe('each check of a token creation, on its own', () => {
 
     it('refuses two coins: 2 and 108, or 54 and 56, for a fee of 100 and a change of 10', () => {
       // Both read the same to the app; with 2 and 108, the 108 alone would pay the fee.
-      expect(refusedFor(creation({ extra: [ownInput(7, 11n)] }))).toBe(refused);
+      expect(refusedFor(creation({ extra: [anotherOwnCoin(7, 11n)] }))).toBe(refused);
     });
 
     it('refuses three coins, and a creation of no coin for a fee', () => {
-      expect(refusedFor(creation({ extra: [ownInput(7, 11n), ownInput(8, 12n)] }))).toBe(refused);
+      const three = creation({ extra: [anotherOwnCoin(7, 11n), anotherOwnCoin(8, 12n)] });
+      expect(refusedFor(three)).toBe(refused);
       expect(refusedFor(creation({ ownInput: false, change: 0n }))).toBe(refused);
       // No coin and no fee pays back nothing.
       expect(refusedFor(creation({ ownInput: false, fee: 0n }))).toBe(refused);

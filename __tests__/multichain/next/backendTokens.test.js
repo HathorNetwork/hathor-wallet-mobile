@@ -93,6 +93,17 @@ const signRequest = () => ({
   },
 });
 
+// The id of the vector's creation signed with these signatures: its inputs' signatures are
+// randomized, so each signing makes another.
+const signedTxId = (signatures) => {
+  const unsigned = hexToBytes(CASE.unsigned_tx);
+  return bytesToHex(txIdOf(withInputSignatures(
+    unsigned,
+    parseIssuanceTx(unsigned),
+    signatures.map(hexToBytes),
+  )));
+};
+
 function fakeBackend({
   issuance = true,
   registry = [],
@@ -102,9 +113,14 @@ function fakeBackend({
   request = signRequest(),
   onRegistry = null,
   amountWidth = null,
+  // The id of the transaction the backend says it recorded: the one signed, unless told.
+  recordedTxId = null,
+  // Once signed, what the creation's status says: recorded, unless told.
+  sendStatus: initialSendStatus = 'recorded',
 } = {}) {
   const calls = [];
   let signatures = null;
+  let sendStatus = initialSendStatus;
   const json = (status, body) => ({
     ok: status < 300,
     status,
@@ -165,12 +181,35 @@ function fakeBackend({
       return json(200, { id: 'create-1', tx_id: CASE.tx_id, status: 'submitted' });
     }
     if (path === '/v1/sends/create-1' && method === 'GET') {
-      return json(200, { id: 'create-1', status: signatures ? 'recorded' : 'awaiting_signatures' });
+      return json(200, signatures
+        ? { id: 'create-1', status: sendStatus, tx_id: recordedTxId ?? signedTxId(signatures) }
+        : { id: 'create-1', status: 'awaiting_signatures', tx_id: null });
     }
     if (method === 'DELETE') return json(200, {});
     return json(404, { error: 'not found' });
   };
-  return { fetchImpl, calls, signatures: () => signatures };
+  return {
+    fetchImpl,
+    calls,
+    signatures: () => signatures,
+    setSendStatus: (status) => { sendStatus = status; },
+  };
+}
+
+// The storage, whose next write of the sign-once ledger that `when` picks fails, once.
+function failingLedgerWrite(storage, when) {
+  let failures = 1;
+  return {
+    ...storage,
+    failed: () => failures === 0,
+    setItemAsync: async (key, value) => {
+      if (failures > 0 && key.startsWith('wallet:multichain:nextSigned:') && when(value)) {
+        failures -= 1;
+        throw new Error('The disk is full.');
+      }
+      return storage.setItemAsync(key, value);
+    },
+  };
 }
 
 async function connected(backend, storage = memoryStorage(), config = CONFIG, options = {}) {
@@ -616,6 +655,7 @@ describe('a token created on Hathor Next through the backend', () => {
   it('names the token the registry lists with this wallet\'s keys, once recorded', async () => {
     const recordedId = 'cd'.repeat(32);
     const backend = fakeBackend({
+      recordedTxId: recordedId,
       registryAfter: [{
         token_id: recordedId,
         has_mint_authority: true,
@@ -827,7 +867,8 @@ describe('a token created on Hathor Next through the backend', () => {
     });
 
     it('reads the token\'s id again until the registry names it, whatever the refreshes do', async () => {
-      const backend = fakeBackend({ registryAfter: [recordedRow] });
+      // The backend recorded other bytes than those signed: the registry names its id.
+      const backend = fakeBackend({ registryAfter: [recordedRow], recordedTxId: RECORDED_ID });
       let fail = { registry: 1, history: 1 };
       const fetchImpl = async (url, init) => {
         if (backend.signatures() !== null) {
@@ -852,7 +893,115 @@ describe('a token created on Hathor Next through the backend', () => {
       expect(client.getCreation('create-1')).toMatchObject({
         status: 'recorded', txId: RECORDED_ID, provisional: false,
       });
+      // Recorded first, with the signed id still provisional; then the id read back.
+      expect(events.find((e) => e.status === 'recorded')).toMatchObject({
+        txId: tokenId, provisional: true,
+      });
       expect(events.at(-1)).toMatchObject({ txId: RECORDED_ID, provisional: false });
+    });
+
+    // Anyone can create a token naming this wallet's mint key, after seeing this creation.
+    const copyRow = { ...recordedRow, token_id: 'ee'.repeat(32) };
+
+    it('takes the row carrying the recorded id, not another token naming the same key first', async () => {
+      const backend = fakeBackend({
+        registryAfter: [copyRow, recordedRow], recordedTxId: RECORDED_ID,
+      });
+      client = await connected(backend);
+      await client.createToken({ words: derivation.mnemonic, ...CREATION });
+      await settle();
+      expect(client.getCreation('create-1')).toMatchObject({
+        status: 'recorded', txId: RECORDED_ID, provisional: false,
+      });
+    });
+
+    it('leaves the id provisional when only another token names the key', async () => {
+      const backend = fakeBackend({ registryAfter: [copyRow], recordedTxId: RECORDED_ID });
+      client = await connected(backend);
+      const events = [];
+      client.on(NEXT_CLIENT_EVENT.SEND, (event) => events.push(event));
+      const { tokenId } = await client.createToken({ words: derivation.mnemonic, ...CREATION });
+      await settle();
+      expect(client.getCreation('create-1')).toMatchObject({
+        status: 'recorded', txId: tokenId, provisional: true,
+      });
+      expect(events.some((e) => e.provisional === false)).toBe(false);
+    });
+
+    it('reads the id back after a reconnect to the same backend while the creation is on its way', async () => {
+      const backend = fakeBackend({
+        registryAfter: [recordedRow], recordedTxId: RECORDED_ID, sendStatus: 'submitted',
+      });
+      client = await connected(backend);
+      await client.createToken({ words: derivation.mnemonic, ...CREATION });
+      await settle();
+      expect(client.getCreation('create-1')).toMatchObject({ status: 'pending', provisional: true });
+      await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+      backend.setSendStatus('recorded');
+      await settle();
+      expect(client.getCreation('create-1')).toMatchObject({
+        status: 'recorded', txId: RECORDED_ID, provisional: false,
+      });
+    });
+
+    it('reads the id back at the next connect when every read failed', async () => {
+      const backend = fakeBackend({ registryAfter: [recordedRow], recordedTxId: RECORDED_ID });
+      let registryDown = true;
+      const readBacks = () => backend.calls.filter((c) => c.path.includes('authorities=true'));
+      const fetchImpl = async (url, init) => {
+        if (registryDown && backend.signatures() !== null && url.includes('authorities=true')) {
+          backend.calls.push({ method: 'GET', path: url.replace('http://backend.test', '') });
+          throw new Error('The registry is offline.');
+        }
+        return backend.fetchImpl(url, init);
+      };
+      client = await connected({ ...backend, fetchImpl });
+      await client.createToken({ words: derivation.mnemonic, ...CREATION });
+      await settle();
+      const tried = readBacks().length;
+      await settle();
+      // Its reads ran out: none since.
+      expect(readBacks().length).toBe(tried);
+      expect(client.getCreation('create-1')).toMatchObject({ status: 'recorded', provisional: true });
+      registryDown = false;
+      await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+      await settle();
+      expect(client.getCreation('create-1')).toMatchObject({
+        status: 'recorded', txId: RECORDED_ID, provisional: false,
+      });
+    });
+
+    it('tells it was recorded, and reads its id back, when the ledger can\'t save it as recorded', async () => {
+      const storage = failingLedgerWrite(
+        memoryStorage(),
+        ({ entries }) => entries.some((e) => e.recorded),
+      );
+      const backend = fakeBackend({ registryAfter: [recordedRow], recordedTxId: RECORDED_ID });
+      client = await connected(backend, storage);
+      const recorded = new Promise((resolve) => {
+        client.on(NEXT_CLIENT_EVENT.SEND, (event) => {
+          if (event.status === 'recorded') resolve(event);
+        });
+      });
+      await client.createToken({ words: derivation.mnemonic, ...CREATION });
+      await expect(recorded).resolves.toMatchObject({ sendId: 'create-1', provisional: true });
+      await settle();
+      expect(storage.failed()).toBe(true);
+      expect(client.getCreation('create-1')).toMatchObject({ txId: RECORDED_ID, provisional: false });
+    });
+
+    it('cancels a creation whose signatures can\'t be saved, submits nothing and keeps its nonce', async () => {
+      const storage = failingLedgerWrite(memoryStorage(), ({ entries }) => entries.length > 0);
+      const backend = fakeBackend();
+      client = await connected(backend, storage);
+      await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
+        .rejects.toThrow('The disk is full.');
+      expect(storage.failed()).toBe(true);
+      expect(backend.signatures()).toBeNull();
+      expect(backend.calls.filter((c) => c.method === 'DELETE').map((c) => c.path))
+        .toEqual(['/v1/sends/create-1']);
+      // Its signatures may exist: the nonce is never handed out again.
+      expect(nonceRecord(storage)).toEqual({ reserved: [0], signedFloor: null });
     });
 
     it('refreshes balances and history before the tokens, as a refresh of everything does', async () => {

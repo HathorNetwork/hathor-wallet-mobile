@@ -581,7 +581,8 @@ export function* followNextClient(client, events = null) {
               }));
             }
             const creation = yield select((state) => state.multichain.createToken);
-            if (creation.sendId === payload.sendId) {
+            if (creation.sendId === payload.sendId
+              && !backOnItsWay(creation.status, payload.status)) {
               // The token's id is the recorded transaction's, which the client reads back from
               // the registry once it is recorded.
               yield put(multichainNextCreateTokenUpdate({
@@ -607,12 +608,12 @@ export function* followNextClient(client, events = null) {
 }
 
 /**
- * Whether an update would put a payment shown as not settled yet back on its way. The wallet
- * still submits it again now and then, and the backend says submitted each time: no outcome. On
- * its way again, its screen would hold the user with no wait left to let them go. Only an outcome
- * (recorded, failed or expired) replaces it.
+ * Whether an update would put a payment, or a token creation, shown as not settled yet back on its
+ * way. The wallet still submits it again now and then, and the backend says submitted each time:
+ * no outcome. On its way again, its screen would hold the user with no wait left to let them go.
+ * Only an outcome (recorded, failed or expired) replaces it.
  *
- * @param {string} current The payment's status in the state
+ * @param {string} current The payment's or the creation's status in the state
  * @param {string} next The status the client says it has now
  * @returns {boolean}
  */
@@ -1081,11 +1082,14 @@ export function* onNextSendRequested({ payload }) {
  * the payment itself is safe either way: what was signed is sent again until it settles.
  *
  * @param {string} sendId
+ * @param {Object} [options] For a token creation: its state, its update, and its draft, whose
+ *   state alone the wait marks
  */
 function* awaitSendOutcome(sendId, {
   stateKey = 'send',
   updateType = types.MULTICHAIN_NEXT_SEND_UPDATE,
   update = multichainNextSendUpdate,
+  draftId = null,
 } = {}) {
   const settled = (state) => SEND_SETTLED.includes(state.multichain[stateKey].status);
   if (yield select(settled)) {
@@ -1100,7 +1104,8 @@ function* awaitSendOutcome(sendId, {
     return;
   }
   const current = yield select((state) => state.multichain[stateKey]);
-  if (current.sendId === sendId && !SEND_SETTLED.includes(current.status)) {
+  if (current.sendId === sendId && (draftId === null || current.draftId === draftId)
+    && !SEND_SETTLED.includes(current.status)) {
     yield put(update({ status: OPERATION_STATUS.UNCONFIRMED }));
   }
 }
@@ -1251,14 +1256,18 @@ export function* onNextCreateTokenRequested({ payload }) {
   let stopped = false;
   const attempt = { stop: () => { stopped = true; } };
   const reviewer = yield fork(reviewCreation, reviews, draftId, connection, attempt);
+  // This attempt's own: by the time it returns, another draft may own the creation's state.
+  let sendId = null;
   try {
     const client = getNextClient();
     const create = (words) => client.createToken({
       words, symbol, name, amount, approveSigning,
     });
-    const { sendId, tokenId } = STORE.isPasskeyWallet()
+    const created = STORE.isPasskeyWallet()
       ? yield call(withPasskeyWords, create)
       : yield call(create, yield call([STORE, STORE.getWalletWords], pinCode));
+    ({ sendId } = created);
+    const { tokenId } = created;
     // Signed: its id says so. Named with its draft, so its screen still shows it if the app left
     // Hathor Next while it was signed, which clears the creation. The id is the signed
     // transaction's until the client reads the recorded one back.
@@ -1308,11 +1317,17 @@ export function* onNextCreateTokenRequested({ payload }) {
   } finally {
     yield cancel(reviewer);
   }
-  const { sendId } = yield select((state) => state.multichain.createToken);
+  // Its outcome is waited for only while this draft owns the creation's state, and by its own id:
+  // the wait never marks another draft's creation, nor one still unsigned (no id yet).
+  const owner = yield select((state) => state.multichain.createToken);
+  if (!sendId || owner.draftId !== draftId || owner.sendId !== sendId) {
+    return;
+  }
   yield call(awaitSendOutcome, sendId, {
     stateKey: 'createToken',
     updateType: types.MULTICHAIN_NEXT_CREATE_TOKEN_UPDATE,
     update: multichainNextCreateTokenUpdate,
+    draftId,
   });
 }
 

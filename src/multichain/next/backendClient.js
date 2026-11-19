@@ -124,6 +124,18 @@ function ledgerOf(storage, key) {
   return byKey.get(key);
 }
 
+/**
+ * The transaction id a send's status gives, lowercase, or null without a well-formed one.
+ *
+ * @param {Object} status The backend's
+ * @returns {string|null}
+ */
+const txIdOfStatus = (status) => (
+  typeof status?.tx_id === 'string' && /^[0-9a-f]{64}$/i.test(status.tx_id)
+    ? status.tx_id.toLowerCase()
+    : null
+);
+
 const sendStatusOf = (status) => (
   typeof status === 'string' && Object.prototype.hasOwnProperty.call(SEND_STATUS, status)
     ? SEND_STATUS[status]
@@ -601,7 +613,7 @@ export function createBackendNextClient({
   // Reads a payment's or a creation's status until it settles: each answer can move it on, free
   // its inputs or ask for its signatures again. A reconnect follows again the ones still on their
   // way. One not settled yet is read only as often as it is submitted again. `entry.onRecorded`
-  // runs once the statement records it.
+  // runs once the statement records it, with the generation of the follower that saw it.
   function followSent(mine, entry) {
     const tick = () => schedule(async () => {
       if (mine !== generation || SEND_SETTLED.includes(entry.status)) return;
@@ -628,6 +640,9 @@ export function createBackendNextClient({
           entry.status = next;
           entry.reason = status.reason ?? null;
           if (next === 'recorded') {
+            // The transaction the backend recorded, by the id it gives: a token's id is its
+            // creation's. Without one, the transaction signed here.
+            entry.recordedTxId = txIdOfStatus(status) ?? entry.txId;
             // The outcome is told whatever this write does: the next tick sees it settled and
             // stops. An entry left unmarked goes out again at the next connect, and the
             // backend's answer, recorded, marks it then.
@@ -638,11 +653,16 @@ export function createBackendNextClient({
             }
           }
           emit(NEXT_CLIENT_EVENT.SEND, {
-            sendId: entry.sendId, status: next, reason: entry.reason, txId: entry.txId,
+            sendId: entry.sendId,
+            status: next,
+            reason: entry.reason,
+            txId: entry.txId,
+            // A creation's: whether its token id is still the signed one, not yet read back.
+            ...('provisional' in entry ? { provisional: entry.provisional } : {}),
           });
           emit(NEXT_CLIENT_EVENT.HISTORY, null);
           if (next === 'recorded') {
-            await entry.onRecorded();
+            await entry.onRecorded(mine);
           }
         }
       } catch (e) {
@@ -653,18 +673,23 @@ export function createBackendNextClient({
     tick();
   }
 
-  // Reads a recorded creation's token id from the registry, the row naming this wallet's mint key
-  // at its nonce, and says so with a SEND event that is no longer provisional. A read that fails,
-  // or a registry that doesn't list it yet, is read again a poll later, TOKEN_ID_READS times at
-  // most.
-  function resolveCreatedToken(mine, creation, mintHex, reads = 0) {
+  // Reads a recorded creation's token id back from the registry: the row naming this wallet's
+  // mint key at its nonce and carrying the id of the transaction the backend recorded. Anyone can
+  // create a token naming that key, so the key alone names nothing: a row with another id leaves
+  // the id provisional. Found, the id is final, and a SEND event says so. A read that fails, or a
+  // registry that doesn't list it yet, is read again a poll later, TOKEN_ID_READS times at most;
+  // a connect to the same wallet and backend reads again.
+  function resolveCreatedToken(mine, creation, reads = 0) {
     schedule(async () => {
       if (mine !== generation) return;
       try {
-        const row = (await readRegistry())
-          .find((r) => r.mint_authority?.toLowerCase() === mintHex);
+        const row = (await readRegistry()).find((r) => (
+          typeof r?.token_id === 'string'
+          && r.token_id.toLowerCase() === creation.recordedTxId
+          && r.mint_authority?.toLowerCase() === creation.mint
+        ));
         if (row) {
-          creation.txId = row.token_id.toLowerCase();
+          creation.txId = creation.recordedTxId;
           creation.provisional = false;
           emit(NEXT_CLIENT_EVENT.SEND, {
             sendId: creation.sendId,
@@ -679,7 +704,7 @@ export function createBackendNextClient({
         log.error('Could not read the created token from the registry.', e);
       }
       if (reads + 1 < TOKEN_ID_READS) {
-        resolveCreatedToken(mine, creation, mintHex, reads + 1);
+        resolveCreatedToken(mine, creation, reads + 1);
       }
     }, reads === 0 ? 0 : sendPollMs);
   }
@@ -1046,6 +1071,15 @@ export function createBackendNextClient({
       for (const entry of [...sends.values(), ...creations.values()]) {
         if (!SEND_SETTLED.includes(entry.status)) {
           followSent(mine, entry);
+        }
+      }
+      // A recorded creation whose token id isn't read back yet (its reads ran out, or the app
+      // left meanwhile) is read again, on the wallet that made it. Another network or backend
+      // cleared it above.
+      const wallet = bytesToHex(walletId);
+      for (const creation of creations.values()) {
+        if (creation.status === 'recorded' && creation.provisional && creation.wallet === wallet) {
+          resolveCreatedToken(mine, creation);
         }
       }
     },
@@ -1524,6 +1558,11 @@ export function createBackendNextClient({
         if (e instanceof SignRefusedError) {
           throw await refused(e);
         }
+        // Not signed, or its signatures not saved (the ledger's write failed): nothing was
+        // submitted, which comes after signing returns, so the creation is cancelled. Its nonce
+        // stays reserved: the failed write may still have saved the signatures, and a nonce whose
+        // signatures may exist is never used again. One left unused so costs nothing.
+        await cancel();
         throw e;
       }
       // Signed: bytes carrying the nonce exist, so it never comes round again. The signed
@@ -1543,12 +1582,17 @@ export function createBackendNextClient({
       // Recorded: the registry names the token now, and the balance holds its supply. The token's
       // id is the recorded transaction's, which the builder could have made other than the bytes
       // signed here (it holds the excess's secret): until the registry row carrying this wallet's
-      // own keys at this nonce names the token, the signed id is provisional.
-      const mintHex = bytesToHex(mintAuthority);
+      // own mint key at this nonce and the recorded id names the token, the signed id is
+      // provisional.
       const creation = {
         sendId: request.id,
         txId: signed.txId,
         provisional: true,
+        // What the read-back needs: the wallet and mint key it was made with, and the recorded
+        // transaction's id once the backend gives it.
+        wallet: id,
+        mint: bytesToHex(mintAuthority),
+        recordedTxId: null,
         signedTx: signed.signedTx,
         symbol,
         name,
@@ -1556,7 +1600,7 @@ export function createBackendNextClient({
         status: 'pending',
         reason: null,
         at: nowMs(),
-        onRecorded: async () => {
+        onRecorded: async (at) => {
           // As refreshAll does: balances and history first, so the tokens read next include it.
           try {
             await Promise.all([refreshHistory(), refreshBalances()]);
@@ -1567,7 +1611,7 @@ export function createBackendNextClient({
           if (!floorSaved) {
             await saveFloor();
           }
-          resolveCreatedToken(mine, creation, mintHex);
+          resolveCreatedToken(at, creation);
         },
       };
       creations.set(creation.sendId, creation);

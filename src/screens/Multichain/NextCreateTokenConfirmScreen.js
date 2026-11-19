@@ -47,6 +47,13 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 export const creationLostText = () => t`The token creation was sent, but this screen lost track of it when the app left Hathor Next. Check your tokens on Hathor Next before you create this one again.`;
 
 /**
+ * What the screen says of a creation it lost track of before it knew whether it was signed:
+ * another draft took the creation after the app left Hathor Next, and this one's answer never
+ * comes here.
+ */
+export const creationUnknownText = () => t`This screen lost track of the token creation before it knew whether it was signed. Check your tokens on Hathor Next before you create this one again.`;
+
+/**
  * What the user is asked before a creation that pays some of their HTR back in the open is signed.
  *
  * @param {string} symbol The token's
@@ -198,7 +205,7 @@ export default function NextCreateTokenConfirmScreen() {
       return (
         <FeedbackModal
           icon={icon(errorIcon)}
-          text={creationLostText()}
+          text={kept?.sendId ? creationLostText() : creationUnknownText()}
           onDismiss={exit}
           action={<NewHathorButton title={t`Done`} onPress={exit} />}
         />

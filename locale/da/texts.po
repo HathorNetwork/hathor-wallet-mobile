@@ -81,7 +81,7 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:95
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:272
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:279
 #: src/screens/Multichain/NextCreateTokenScreen.js:157 src/utils.js:890
 msgid "CREATE TOKEN"
 msgstr "OPRET TOKEN"
@@ -526,13 +526,13 @@ msgid "Amount of ${ name }"
 msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:272
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:276
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:283
 #: src/screens/Multichain/NextCreateTokenScreen.js:169
 msgid "Token name"
 msgstr "Token navn"
 
 #: src/screens/CreateTokenConfirm.js:278 src/screens/CreateTokenSymbol.js:71
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:278
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:285
 #: src/screens/Multichain/NextCreateTokenScreen.js:181
 msgid "Token symbol"
 msgstr "Token symbol"
@@ -548,14 +548,14 @@ msgstr "Indsæt"
 #: src/screens/CreateTokenConfirm.js:293
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:245
 #: src/screens/Multichain/ChainTransferScreen.js:274
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:283
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:290
 #: src/screens/Multichain/NextSendConfirmScreen.js:277
 #: src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
 msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:302
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:298
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:305
 msgid "Create token"
 msgstr "Opret token"
 
@@ -1017,7 +1017,7 @@ msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:189
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:196
 #: src/screens/PinScreen.js:341 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr "Annuller"
@@ -2007,12 +2007,12 @@ msgstr ""
 #: src/components/AmountInputAccessory.js:105
 #: src/components/Multichain/TransferDetailsModal.js:105
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:188
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:203
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:221
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:230
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:239
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:251
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:260
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:210
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:228
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:237
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:246
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:258
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:267
 #: src/screens/Multichain/NextSendConfirmScreen.js:208
 #: src/screens/Multichain/NextSendConfirmScreen.js:217
 #: src/screens/Multichain/NextSendConfirmScreen.js:226
@@ -2113,7 +2113,7 @@ msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:103
 #: src/screens/Multichain/ChainTransferScreen.js:255
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:280
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:287
 #: src/screens/Multichain/NextSendConfirmScreen.js:263
 msgid "Amount"
 msgstr "Antal"
@@ -2133,7 +2133,13 @@ msgid ""
 "one again."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:55
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:54
+msgid ""
+"This screen lost track of the token creation before it knew whether it was "
+"signed. Check your tokens on Hathor Next before you create this one again."
+msgstr ""
+
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:62
 #, javascript-format
 msgid ""
 "Creating ${ symbol } makes ${ shown } public. The fee is paid from your HTR, "
@@ -2141,25 +2147,25 @@ msgid ""
 "address, where anyone who knows that address can see it."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:149
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:156
 msgid "Enter your 6-digit pin to create the token"
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:150
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:157
 msgid "Create the token"
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:185
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:192
 #, javascript-format
 msgid "Create ${ symbol }"
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:210
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:217
 #, javascript-format
 msgid "Creating ${ symbol } on Hathor Next…"
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:216
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:223
 #, javascript-format
 msgid ""
 "${ symbol } was created on Hathor Next, and its whole supply is in your "
@@ -2167,33 +2173,33 @@ msgid ""
 msgstr ""
 
 #.  Once the registry named it: the signed transaction's id may not be the token's.
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:218
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:225
 msgid "Token id: ${ creation.tokenId }"
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:237
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:244
 msgid ""
 "The creation expired before the network got its signatures, so the token "
 "wasn't created. Nothing left your wallet and no fee was paid."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:247
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:254
 msgid "The token wasn't created."
 msgstr ""
 
 #: src/sagas/multichain.js:164
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:258
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:265
 msgid "The token couldn't be created."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:288
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:295
 msgid ""
 "An earlier token creation is still on its way. You can create another once "
 "it settles."
 msgstr ""
 
 #: src/components/PrivacyModeCard.js:68
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:293
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:300
 msgid "Public"
 msgstr ""
 

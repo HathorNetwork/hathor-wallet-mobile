@@ -49,6 +49,7 @@ import NextCreateTokenScreen, {
 } from '../../../src/screens/Multichain/NextCreateTokenScreen';
 import NextCreateTokenConfirmScreen, {
   creationLostText,
+  creationUnknownText,
   publicChangeText,
 } from '../../../src/screens/Multichain/NextCreateTokenConfirmScreen';
 import NavigationService from '../../../src/NavigationService';
@@ -503,7 +504,8 @@ describe('the token confirmation', () => {
     expect(modals(screen).map((m) => m.props.text)).toEqual(['Nothing was signed or created.']);
   });
 
-  // Its answer would not be written over the other draft's state: it never comes here.
+  // Its answer would not be written over the other draft's state: it never comes here. Nothing
+  // says it was signed, let alone sent.
   test('says it lost track of a creation not signed yet when another draft took the creation', async () => {
     const screen = await confirm();
     const draftId = await authorize(screen);
@@ -518,8 +520,7 @@ describe('the token confirmation', () => {
         status: OPERATION_STATUS.SENDING, draftId: 'another', sendId: 'create-9',
       }));
     });
-    const [modal] = modals(screen);
-    expect(modal.props.text).toBe(creationLostText());
+    expect(modals(screen).map((m) => m.props.text)).toEqual([creationUnknownText()]);
   });
 
   test('keeps showing the token created when the app leaves Hathor Next', async () => {
