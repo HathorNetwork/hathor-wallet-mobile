@@ -12,6 +12,9 @@ jest.mock('../../src/multichain/chains', () => require('./fakes/chainsModule'));
 
 /* eslint-disable import/first */
 import { Address, Network, helpersUtils } from '@hathor/wallet-lib';
+import { ripemd160 } from '@noble/hashes/ripemd160';
+import { sha256 } from '@noble/hashes/sha256';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils';
 import {
   MULTICHAIN_DEV_BACKEND_FEATURE_TOGGLE,
   MULTICHAIN_FEATURE_TOGGLE,
@@ -147,6 +150,18 @@ describe("devnet-alpha's side chain", () => {
     };
     expect(isSideChainAvailable(devnet)).toBe(true);
     expect(isSideChainAvailable({ ...devnet, featureToggles: {} })).toBe(false);
+  });
+});
+
+describe("the chain transfer's address", () => {
+  // hathor-next's plan, docs/plan/chain-transfer-testnet-one-way.md §3.3: the hash of a label,
+  // not of a key, so no key spends from it.
+  test('is the plan\'s: hash160 of its testnet label, as a testnet address, and the only one', () => {
+    const hash = ripemd160(sha256(utf8ToBytes('hathor/chain-transfer/testnet-v1')));
+    expect(bytesToHex(hash)).toBe('2b33ad1665287315391f434b5d6b894302602f5d');
+    const address = helpersUtils.encodeAddress(Buffer.from(hash), new Network('testnet')).base58;
+    expect(address).toBe('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL');
+    expect(actualChains.KNOWN_TRANSFER_ADDRESSES).toEqual([address]);
   });
 });
 
