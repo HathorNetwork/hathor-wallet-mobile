@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createBackendBridge } from './next/backendBridge';
 import { NextClientError, NEXT_CLIENT_ERROR } from './nextClientErrors';
 
 /**
@@ -34,6 +33,10 @@ import { NextClientError, NEXT_CLIENT_ERROR } from './nextClientErrors';
  */
 export function createBridge(config, options) {
   if (config.client === 'backend') {
+    // Required here, not imported at the top: the Hathor Next code, and the crypto library it
+    // alone uses, run only once Hathor Next is used, never at the app's start with its flags off.
+    // eslint-disable-next-line global-require
+    const { createBackendBridge } = require('./next/backendBridge');
     return createBackendBridge(config, {
       wallet: options.wallet,
       network: options.hathorNetwork,

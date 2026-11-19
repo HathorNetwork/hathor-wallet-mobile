@@ -8,8 +8,13 @@
 import { t } from 'ttag';
 import { validateAddress } from '../utils';
 import { CHAIN } from './chains';
-import { decodeAddressKeys, encodeAddress } from './next/kit/address';
 import { bytesToHex } from './next/kit/scalar';
+
+// The Hathor Next kit's address codec, required on first use rather than imported at the top:
+// the kit, and the crypto library it alone uses, run only once a Hathor Next address is read or
+// written, never at the app's start with its flags off.
+// eslint-disable-next-line global-require
+const kitAddress = () => require('./next/kit/address');
 
 /**
  * A Hathor Next address is read by the kit's codec (next/kit/address.js), a copy of Hathor Next's
@@ -32,7 +37,7 @@ export function nextAddressKeys(text) {
     return null;
   }
   try {
-    const { view, spend } = decodeAddressKeys(value);
+    const { view, spend } = kitAddress().decodeAddressKeys(value);
     return { view, spend };
   } catch (e) {
     return null;
@@ -64,7 +69,7 @@ const isIdentity = (key) => key.every((byte) => byte === 0);
 export function nextAddressError(text) {
   let decoded;
   try {
-    decoded = decodeAddressKeys((text ?? '').trim());
+    decoded = kitAddress().decodeAddressKeys((text ?? '').trim());
   } catch (e) {
     return null;
   }
@@ -86,7 +91,7 @@ export function nextAddressError(text) {
  */
 export function normalizeNextAddress(text) {
   const keys = nextAddressKeys(text);
-  return keys ? encodeAddress(bytesToHex(keys.view), bytesToHex(keys.spend)) : null;
+  return keys ? kitAddress().encodeAddress(bytesToHex(keys.view), bytesToHex(keys.spend)) : null;
 }
 
 /**

@@ -5,8 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createBackendNextClient } from './next/backendClient';
-
 /**
  * The Hathor Next client: the one object that talks to Hathor Next. It is backed by the Hathor
  * Next backend, which reads Hathor Next and builds transactions while the client keeps the keys
@@ -42,6 +40,10 @@ import { createBackendNextClient } from './next/backendClient';
  * @returns {Object}
  */
 export function createNextClient() {
+  // Required here, not imported at the top: the Hathor Next code, and the crypto library it
+  // alone uses, run only once Hathor Next is used, never at the app's start with its flags off.
+  // eslint-disable-next-line global-require
+  const { createBackendNextClient } = require('./next/backendClient');
   return createBackendNextClient();
 }
 

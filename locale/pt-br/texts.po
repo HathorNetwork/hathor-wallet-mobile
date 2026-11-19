@@ -65,7 +65,7 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "This wallet does not support shielded addresses."
 msgstr "Esta wallet não suporta endereços blindados."
 
-#: src/multichain/address.js:199 src/multichain/nextClientErrors.js:91
+#: src/multichain/address.js:204 src/multichain/nextClientErrors.js:91
 #: src/utils.js:305
 msgid "Invalid address"
 msgstr "Endereço inválido"
@@ -2462,7 +2462,7 @@ msgid ""
 "Sending from a passkey wallet isn't supported in this version of the app yet."
 msgstr "Enviar de uma carteira com passkey ainda não é suportado nessa versão."
 
-#: src/multichain/address.js:72
+#: src/multichain/address.js:77
 msgid ""
 "This is an old Hathor Next address, with no checksum to catch a typo. Ask "
 "for the address that starts with samba1z."
@@ -2470,13 +2470,13 @@ msgstr ""
 "Este é um endereço antigo da Hathor Next, sem checksum para detectar um erro "
 "de digitação. Peça o endereço que começa com samba1z."
 
-#: src/multichain/address.js:75
+#: src/multichain/address.js:80
 msgid "Nobody can spend from this Hathor Next address, so it can't be paid."
 msgstr ""
 "Ninguém consegue gastar a partir deste endereço da Hathor Next, então ele "
 "não pode receber pagamentos."
 
-#: src/multichain/address.js:132
+#: src/multichain/address.js:137
 msgid ""
 "Payment request QR codes are not supported. Please use a simple address QR "
 "code."
@@ -2484,12 +2484,12 @@ msgstr ""
 "QR codes de solicitação de pagamento não são suportados. Use um QR code só "
 "com o endereço."
 
-#: src/multichain/address.js:190
+#: src/multichain/address.js:195
 msgid "This is a Hathor Network address. Enter a Hathor Next address."
 msgstr ""
 "Este é um endereço da Hathor Network. Digite um endereço da Hathor Next."
 
-#: src/multichain/address.js:196
+#: src/multichain/address.js:201
 msgid "This is a Hathor Next address. Enter a Hathor Network address."
 msgstr ""
 "Este é um endereço da Hathor Next. Digite um endereço da Hathor Network."
