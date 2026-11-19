@@ -93,6 +93,7 @@ import {
   CONNECT_STATUS,
   NEXT_STATUS,
   OPERATION_STATUS,
+  SEND_IN_FLIGHT,
   TRANSFER_STATUS,
 } from '../../src/multichain/state';
 import * as bridgeModule from '../../src/multichain/bridge';
@@ -1922,6 +1923,47 @@ describe('a Hathor Next payment, without an outcome', () => {
     expect(env.getState().multichain.send).toMatchObject({
       status: OPERATION_STATUS.UNCONFIRMED,
       sendId: 'lost',
+    });
+  });
+
+  // The wallet still submits it again now and then, and the backend says submitted each time.
+  test.each([
+    ['after the wait', null],
+    ['from the client', 'unconfirmed'],
+  ])('shown as not settled yet %s, stays so while it goes out again, until it settles', async (_, told) => {
+    const env = setup();
+    const client = ensureNextClient();
+    const listeners = [];
+    const on = client.on.bind(client);
+    jest.spyOn(client, 'on').mockImplementation((event, listener) => {
+      listeners.push({ event, listener });
+      return on(event, listener);
+    });
+    await connect(env);
+    const tell = (status) => listeners
+      .filter((l) => l.event === NEXT_CLIENT_EVENT.SEND)
+      .forEach((l) => l.listener({ sendId: 'held', status, reason: null, txId: 'aa'.repeat(32) }));
+    jest.spyOn(client, 'send').mockResolvedValue({ sendId: 'held' });
+    env.dispatch(draft('draft-held'));
+    await wait(1000);
+    tell('pending');
+    await wait(10);
+    if (told) {
+      tell(told);
+      await wait(10);
+    } else {
+      await wait(SEND_SETTLE_MS);
+    }
+    expect(env.getState().multichain.send.status).toBe(OPERATION_STATUS.UNCONFIRMED);
+    tell('pending');
+    await wait(10);
+    // Not on its way again: its screen lets the user leave.
+    expect(env.getState().multichain.send.status).toBe(OPERATION_STATUS.UNCONFIRMED);
+    expect(SEND_IN_FLIGHT).not.toContain(env.getState().multichain.send.status);
+    tell('recorded');
+    await wait(10);
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.RECORDED, sendId: 'held',
     });
   });
 

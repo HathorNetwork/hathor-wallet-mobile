@@ -743,7 +743,14 @@ export function createBackendNextClient({
           send.status = next;
           send.reason = status.reason ?? null;
           if (next === 'recorded') {
-            await ledger.markRecorded(send.txId);
+            // The outcome is told whatever this write does: the next tick sees it settled and
+            // stops. An entry left unmarked goes out again at the next connect, and the
+            // backend's answer, recorded, marks it then.
+            try {
+              await ledger.markRecorded(send.txId);
+            } catch (e) {
+              log.error('Could not save a recorded payment.', e);
+            }
           }
           emit(NEXT_CLIENT_EVENT.SEND, {
             sendId: send.sendId, status: next, reason: send.reason, txId: send.txId,
@@ -1145,6 +1152,11 @@ export function createBackendNextClient({
                 : NEXT_CLIENT_ERROR.REFUSED,
             );
           } else {
+            // Not signed, or its signatures not saved (the ledger's write failed): nothing was
+            // submitted, which comes after signing returns. The backend lets the payment's
+            // outputs go now rather than when it expires.
+            // eslint-disable-next-line no-await-in-loop
+            await cancel();
             throw e;
           }
         }
