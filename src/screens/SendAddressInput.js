@@ -266,29 +266,39 @@ export const SendAddressInput = () => {
     return validateAddress(address, network, { allowShielded });
   };
 
+  // Whoever owns a name chooses the address it points to, so the address a name resolved to
+  // goes through the same recipient checks as one typed in: the chain transfer's address, which
+  // burns what pays it directly, is refused behind a name too.
+  const resolvedAddressError = activeResolution.status === NAME_RESOLUTION_STATUS.RESOLVED
+    ? transferAddressError(activeResolution.address)
+    : null;
+  const canSendToName = activeResolution.status === NAME_RESOLUTION_STATUS.RESOLVED
+    && !resolvedAddressError;
+
   const isAddressValid = () => {
     if (!typedAddress) return false;
-    // A name can be sent to once it resolved; its address was validated by the resolution
-    if (isName) return activeResolution.status === NAME_RESOLUTION_STATUS.RESOLVED;
+    // A name can be sent to once it resolved to an address the wallet may pay; the resolution
+    // already checked the address is valid on this network
+    if (isName) return canSendToName;
     return validate().isValid;
   };
 
   const onButtonPress = () => {
     if (isName) {
-      if (activeResolution.status === NAME_RESOLUTION_STATUS.RESOLVED) {
+      if (canSendToName) {
         navigation.navigate('SendAmountInput', {
           address: activeResolution.address,
           name: activeResolution.name,
         });
         return;
       }
-      // Nothing to send to yet: the name is still being resolved, or it failed
-      setFormModel((prev) => ({
-        ...prev,
-        error: activeResolution.status === NAME_RESOLUTION_STATUS.LOADING
-          ? t`Resolving the name, please wait.`
-          : activeResolution.error,
-      }));
+      // Nothing to send to: the name is still being resolved, it failed, or it points to an
+      // address the wallet won't pay
+      let error = resolvedAddressError || activeResolution.error;
+      if (activeResolution.status === NAME_RESOLUTION_STATUS.LOADING) {
+        error = t`Resolving the name, please wait.`;
+      }
+      setFormModel((prev) => ({ ...prev, error }));
       return;
     }
 
@@ -330,6 +340,7 @@ export const SendAddressInput = () => {
   };
 
   const errorMessage = formModel.error
+    || resolvedAddressError
     || (activeResolution.status === NAME_RESOLUTION_STATUS.ERROR ? activeResolution.error : null);
   const nameSubtitle = getNameSubtitle();
 

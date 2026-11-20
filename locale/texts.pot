@@ -481,7 +481,7 @@ msgstr ""
 #: src/screens/InitWallet.js:421
 #: src/screens/Multichain/NextCreateTokenScreen.js:223
 #: src/screens/Multichain/NextSendAmountInput.js:231
-#: src/screens/SendAddressInput.js:401
+#: src/screens/SendAddressInput.js:412
 #: src/screens/SendAmountInput.js:290
 msgid "Next"
 msgstr ""
@@ -1264,37 +1264,37 @@ msgid ""
 "directly is lost. Use Transfer between chains instead."
 msgstr ""
 
-#: src/screens/SendAddressInput.js:289
+#: src/screens/SendAddressInput.js:299
 msgid "Resolving the name, please wait."
 msgstr ""
 
-#: src/screens/SendAddressInput.js:315
+#: src/screens/SendAddressInput.js:325
 msgid "Scan QR code"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:324
+#: src/screens/SendAddressInput.js:334
 #, javascript-format
 msgid "Resolving ${ name }..."
 msgstr ""
 
-#: src/screens/SendAddressInput.js:347
+#: src/screens/SendAddressInput.js:358
 msgid "SEND TOKENS"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:360
+#: src/screens/SendAddressInput.js:371
 msgid "Address or name to send"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:360
+#: src/screens/SendAddressInput.js:371
 msgid "Address to send"
 msgstr ""
 
-#: src/screens/SendAddressInput.js:375
+#: src/screens/SendAddressInput.js:386
 msgid "Paste or type address"
 msgstr ""
 
 #: src/screens/Multichain/NextSendAmountInput.js:221
-#: src/screens/SendAddressInput.js:408
+#: src/screens/SendAddressInput.js:419
 msgid "Transfer between chains"
 msgstr ""
 

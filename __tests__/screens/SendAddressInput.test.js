@@ -32,7 +32,12 @@ import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
 import { reducer } from '../../src/reducers/reducer';
 import { networkSettingsUpdateState } from '../../src/actions';
-import { PRE_SETTINGS_TESTNET } from '../../src/constants';
+import {
+  FEATURE_TOGGLE_DEFAULTS,
+  MULTICHAIN_FEATURE_TOGGLE,
+  PRE_SETTINGS_TESTNET,
+} from '../../src/constants';
+import { KNOWN_TRANSFER_ADDRESSES } from '../../src/multichain/chains';
 import { STYLE } from '../../src/styles/themes';
 import HathorHeader from '../../src/components/HathorHeader';
 import SendAddressInput from '../../src/screens/SendAddressInput';
@@ -56,9 +61,17 @@ afterEach(async () => {
 
 /**
  * Renders the send address input of a wallet on the testnet.
+ *
+ * @param {{ multichain?: boolean }} options `multichain` turns the multichain flag on
  */
-async function render() {
-  const store = createStore(reducer);
+async function render({ multichain = false } = {}) {
+  const initial = reducer(undefined, { type: '@@INIT' });
+  const store = createStore(reducer, multichain
+    ? {
+      ...initial,
+      featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [MULTICHAIN_FEATURE_TOGGLE]: true },
+    }
+    : initial);
   store.dispatch(networkSettingsUpdateState(PRE_SETTINGS_TESTNET));
   const element = () => <Provider store={store}><SendAddressInput /></Provider>;
 
@@ -203,6 +216,21 @@ describe('SendAddressInput', () => {
         'SendAmountInput',
         { address: OTHER_ADDRESS, name: 'alice.htr' },
       );
+    });
+
+    test('refuses a name that points to the chain transfer address', async () => {
+      // The owner of a name picks its address: one pointing to the transfer address would burn
+      // what is sent to it, as the transfer address typed in would.
+      resolveThothName.mockResolvedValue({ address: KNOWN_TRANSFER_ADDRESSES[0] });
+      const { type, nextButton, texts } = await render({ multichain: true });
+
+      await type('alice.htr');
+      await settle();
+      expect(texts().join(' ')).toContain('anything sent to it directly is lost');
+      expect(nextButton().props.disabled).toBe(true);
+
+      await act(async () => { nextButton().props.onPress(); });
+      expect(mockNavigation.navigate).not.toHaveBeenCalled();
     });
 
     test('shows why a name could not be resolved', async () => {
