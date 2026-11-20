@@ -14,6 +14,8 @@ import { reducer } from '../../src/reducers/reducer';
 import { setFeatureToggles, types } from '../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
+  MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
+  PRE_SETTINGS_NEXT_DEVNET,
   PRE_SETTINGS_SHIELDED_TESTNET,
   SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
@@ -33,7 +35,7 @@ afterEach(async () => {
   }
 });
 
-async function render({ presetFlag = false, shieldedFlag = false }) {
+async function render({ presetFlag = false, shieldedFlag = false, nextPresetFlag = false }) {
   const actions = [];
   const recordActions = () => (next) => (action) => {
     actions.push(action);
@@ -44,6 +46,7 @@ async function render({ presetFlag = false, shieldedFlag = false }) {
     ...FEATURE_TOGGLE_DEFAULTS,
     [SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE]: presetFlag,
     [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: shieldedFlag,
+    [MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]: nextPresetFlag,
   }));
   const navigation = { goBack: jest.fn(), push: jest.fn() };
 
@@ -96,6 +99,33 @@ describe('NetworkPreSettingsScreen', () => {
     expect(persisted).toEqual([{
       type: types.NETWORKSETTINGS_PERSIST_STORE,
       payload: PRE_SETTINGS_SHIELDED_TESTNET,
+    }]);
+  });
+});
+
+describe('the Hathor Next Devnet preset', () => {
+  test('shows only while its flag is on', async () => {
+    const off = await render({});
+    expect(off.presetTitles).not.toContain('Hathor Next Devnet');
+    await act(async () => { mounted.unmount(); });
+    mounted = null;
+    const on = await render({ nextPresetFlag: true });
+    expect(on.presetTitles).toEqual(['Mainnet', 'Testnet', 'Hathor Next Devnet']);
+  });
+
+  test('saves the devnet, its node and tx mining set, when it is pressed', async () => {
+    const { actions, findPreset } = await render({ nextPresetFlag: true });
+
+    await act(async () => {
+      findPreset('Hathor Next Devnet').props.onPress();
+    });
+
+    const persisted = actions.filter(
+      (action) => action.type === types.NETWORKSETTINGS_PERSIST_STORE,
+    );
+    expect(persisted).toEqual([{
+      type: types.NETWORKSETTINGS_PERSIST_STORE,
+      payload: PRE_SETTINGS_NEXT_DEVNET,
     }]);
   });
 });

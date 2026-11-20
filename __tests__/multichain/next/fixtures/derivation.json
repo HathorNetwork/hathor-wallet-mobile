@@ -1,0 +1,55 @@
+{
+  "_comment": "ARTIFACT of the derivation-scheme owner ruling (2026-08-18: Hathor-compatible BIP44 m/44'/280'/account', hardened-only, spend key at account 0' — samba-hathor-bip44-v1). Keys are pure functions of (mnemonic, passphrase, account_index): CHANGING THIS FILE, or changing the code until it disagrees with this file, STRANDS every wallet derived under the committed scheme. Regenerate only under an explicit new owner ruling, before any real funds exist.",
+  "scheme": "samba-hathor-bip44-v1",
+  "mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+  "vectors": [
+    {
+      "passphrase": "",
+      "account_index": 0,
+      "a": "92f299a3382e5d97c74613d32beaa89b5b251a5c336b8be995655b4009333909",
+      "b": "c941ef879d00bf33574395ddb416b06c813c2df23b39ca7cea6301558e064f00",
+      "pub_a": "82e25ce292fb70715c78f966d1f9a55053777b6635cb1351143df3a81d2b4e0c",
+      "pub_b": "1ca458f11909319c891c9c22bcec72f4f3d43a9a7d196d59d1cd660730d2a10d"
+    },
+    {
+      "passphrase": "",
+      "account_index": 1,
+      "a": "26a1638d1d63d92f8ac1247e59ccef2d7033f2fdfb7979f520be46c7a3dcdf0a",
+      "b": "64a790cfe6eb8abf9f73f9c02edd71a2e042e179a6fb2f7893de89c6042d6a0e",
+      "pub_a": "8e7c8104a5c051455776fa552e04f757f66272da1288e67f4a973c73e1a4e959",
+      "pub_b": "b4baf7665a01a2822082f82f4fedfa510d8b6d1a25e4bcf1b9f41065e08c0948"
+    },
+    {
+      "passphrase": "",
+      "account_index": 2,
+      "a": "69789f1f15aace7041daf3f4046848621c44611bf5be83e2bf0c6f52f4f18409",
+      "b": "e0df1e0f30a0826ae66d80569689551bcfd3b8b31e9eb4cdfffcfd41a411ba0e",
+      "pub_a": "fa0f00a670b59a04934d2bbbf655326c3e74c81d11dd2cf72e015065c063cc1f",
+      "pub_b": "0a9866a19bff4d809a542dc4db55d64a036946043880b50c1aa336ac82fe8a36"
+    },
+    {
+      "passphrase": "trezor",
+      "account_index": 0,
+      "a": "952d330d36a2a4bb229accb2e6f62451a3234beae20612ec210f2395de80890d",
+      "b": "2122fa25bd4a656c08bf16c5b5a8fc354d314753d2cc9f62e90b855aeee2cb0d",
+      "pub_a": "c052fa09a8a3cb30b2177b0cbf57b4081dfd13dbd00866760ff2709a8497be06",
+      "pub_b": "a04826ab5e60f0bcaa45c64b91cf807d9aa6b4fe6c6013db542d6032b9914c4c"
+    },
+    {
+      "passphrase": "trezor",
+      "account_index": 1,
+      "a": "d4fd9130ac52906a21f0a730e26fd5594a00e575c0edf6ed3ec5a97d17a4ad0c",
+      "b": "f477cf1bca2eac9b27994a07146e6c6de29ee58df14471979d8bea3914d29607",
+      "pub_a": "c4706535105e2d46a0542dad86941cf88dfd6db5e9025471ad2188cfed312b3d",
+      "pub_b": "72139534c441156038297e57c591acbdbb3074f39ca118c89d581ba576143746"
+    },
+    {
+      "passphrase": "trezor",
+      "account_index": 2,
+      "a": "d60c8af30e1c416332ed840fb8f391a07d1552c7a3a016eaf2d1f99d648def0a",
+      "b": "777841f4226e2f2e24d955e82b7deb55c6632afc4043b560ca3deb681355d700",
+      "pub_a": "fac66365c38e61e423cd9c01936343ac4bd52e0ad7f54fb948267805b48b272d",
+      "pub_b": "701ecdd29d562d4365dbf58f46fc54a258c4ca017d822fbf24d1d4f917dc6420"
+    }
+  ]
+}

@@ -31,6 +31,11 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
 import { SHIELDED_RECEIVE_INITIAL_STATE } from '../shielded/receiveState';
 import { SHIELDED_UNLOCK_INITIAL_STATE } from '../shielded/unlockState';
+import {
+  MULTICHAIN_INITIAL_STATE,
+  isMultichainAction,
+  multichainReducer,
+} from '../multichain/state';
 
 /**
  * The shielded state of the running wallet: whether its shielded crypto provider was
@@ -593,6 +598,11 @@ const initialState = {
    */
   fullNodeNetworkName: null,
   shielded: SHIELDED_INITIAL_STATE,
+  /**
+   * The side chain: the "Connect to side chain" setting, the selected chain and Hathor Next's
+   * data. See src/multichain/state.js.
+   */
+  multichain: MULTICHAIN_INITIAL_STATE,
   /** @type {TOKEN_SWAP_ALLOWED_TOKEN_STATUS} Status of the allowed tokens request */
   tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
   /** @type {Object|null} Token swap allowed tokens configuration file for all networks. */
@@ -619,6 +629,9 @@ const initialState = {
 };
 
 export const reducer = (state = initialState, action) => {
+  if (isMultichainAction(action)) {
+    return { ...state, multichain: multichainReducer(state.multichain, action) };
+  }
   switch (action.type) {
     case types.RESET_DATA:
       return initialState;

@@ -53,6 +53,16 @@ import PinScreen from './screens/PinScreen';
 import PasskeyLockScreen from './screens/PasskeyLockScreen';
 import ResetWallet from './screens/ResetWallet';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
+import { MultichainLoadScreen } from './components/Multichain/MultichainLoadScreen';
+import NextTokenScreen from './screens/Multichain/NextTokenScreen';
+import DevBackendScreen from './screens/Multichain/DevBackendScreen';
+import ChainTransferScreen from './screens/Multichain/ChainTransferScreen';
+import ChainTransferConfirmScreen from './screens/Multichain/ChainTransferConfirmScreen';
+import NextSendAmountInput from './screens/Multichain/NextSendAmountInput';
+import NextSendConfirmScreen from './screens/Multichain/NextSendConfirmScreen';
+import NextCreateTokenScreen from './screens/Multichain/NextCreateTokenScreen';
+import NextCreateTokenConfirmScreen from './screens/Multichain/NextCreateTokenConfirmScreen';
+import { isWaitingForNext } from './multichain/gating';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
 
@@ -206,6 +216,8 @@ const SendStack = () => {
       <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
       <Stack.Screen name='SendAmountInput' component={SendAmountInput} />
       <Stack.Screen name='SendConfirmScreen' component={SendConfirmScreen} />
+      <Stack.Screen name='NextSendAmountInput' component={NextSendAmountInput} />
+      <Stack.Screen name='NextSendConfirmScreen' component={NextSendConfirmScreen} />
     </Stack.Navigator>
   );
 };
@@ -445,6 +457,8 @@ const AppStack = () => {
     switch (lastRouteName) {
       case 'RegisterToken':
       case 'CreateTokenStack':
+      case 'NextCreateToken':
+      case 'NextCreateTokenConfirm':
       case 'About':
       case 'ResetWallet':
       case 'UnifiedQRScanner':
@@ -522,6 +536,12 @@ const AppStack = () => {
         />
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
+        <Stack.Screen name='NextTokenScreen' component={NextTokenScreen} />
+        <Stack.Screen name='MultichainDevBackend' component={DevBackendScreen} />
+        <Stack.Screen name='NextCreateToken' component={NextCreateTokenScreen} />
+        <Stack.Screen name='NextCreateTokenConfirm' component={NextCreateTokenConfirmScreen} />
+        <Stack.Screen name='ChainTransfer' component={ChainTransferScreen} />
+        <Stack.Screen name='ChainTransferConfirm' component={ChainTransferConfirmScreen} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
         <Stack.Screen name='ImportTokensScreen' component={ImportTokensScreen} />
         <Stack.Screen name='ConfirmImportScreen' component={ConfirmImportScreen} />
@@ -544,6 +564,8 @@ const mapStateToProps = (state) => ({
   isResetOnScreenLocked: state.resetOnLockScreen,
   walletStartState: state.walletStartState,
   wallet: state.wallet,
+  // With the side chain connected, the app opens once Hathor Next has loaded too.
+  waitingForNext: state.walletStartState === WALLET_STATUS.READY && isWaitingForNext(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -750,11 +772,17 @@ class _AppStackWrapper extends React.Component {
         } else {
           screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
         }
+      } else if (this.props.waitingForNext) {
+        screen = <MultichainLoadScreen />;
       } else {
         screen = <LoadHistoryScreen />;
       }
 
-      if (this.props.walletStartState === WALLET_STATUS.LOADING || this.props.isScreenLocked) {
+      if (
+        this.props.walletStartState === WALLET_STATUS.LOADING
+        || this.props.isScreenLocked
+        || this.props.waitingForNext
+      ) {
         return (
           <View style={this.style.auxView}>
             { screen }

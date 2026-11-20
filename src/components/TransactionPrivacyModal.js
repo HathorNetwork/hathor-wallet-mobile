@@ -17,18 +17,16 @@ import { COLORS } from '../styles/themes';
 
 /**
  * Bottom sheet that picks the privacy mode of one send, and says the default can be changed in
- * the advanced settings. The choice applies when the user taps DONE; until then it stays in the
- * sheet.
+ * the advanced settings. The choice applies however the sheet closes (DONE, a tap outside it or a
+ * swipe down): the switches look applied as soon as they flip, so a close must not drop them.
  *
  * @param {Object} props
  * @param {boolean} props.visible Whether the sheet shows
- * @param {function(): void} props.onDismiss Called when the user dismisses it
  * @param {string} props.selectedMode The send's mode, one of PRIVACY_MODE
- * @param {function(string): void} props.onConfirm Called with the chosen mode on DONE
+ * @param {function(string): void} props.onConfirm Called with the chosen mode when the sheet closes
  */
 const TransactionPrivacyModal = ({
   visible,
-  onDismiss,
   selectedMode,
   onConfirm,
 }) => {
@@ -41,10 +39,12 @@ const TransactionPrivacyModal = ({
     }
   }, [visible, selectedMode]);
 
+  const close = () => onConfirm(localMode);
+
   return (
     <BackdropModal
       visible={visible}
-      onDismiss={onDismiss}
+      onDismiss={close}
       animationType='slide'
       position='bottom'
       // A floating sheet, closer to the screen edges than the default padding.
@@ -68,7 +68,7 @@ const TransactionPrivacyModal = ({
 
         <NewHathorButton
           title={t`DONE`}
-          onPress={() => onConfirm(localMode)}
+          onPress={close}
         />
       </View>
     </BackdropModal>

@@ -11,12 +11,18 @@ import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
 import { COLORS } from '../styles/themes';
+import { isSideChainConnected } from '../multichain/gating';
+import { NEXT_STATUS } from '../multichain/state';
 
 /**
  * isOnline {bool} Indicates whether the wallet is connected.
+ * nextOffline {bool} Indicates whether Hathor Next, loaded beside it, lost its connection.
  * */
 const mapStateToProps = (state) => ({
   isOnline: state.isOnline,
+  nextOffline: isSideChainConnected(state)
+    && state.multichain.next.status === NEXT_STATUS.READY
+    && !state.multichain.next.online,
 });
 
 class OfflineBar extends React.Component {
@@ -39,7 +45,7 @@ class OfflineBar extends React.Component {
   });
 
   render() {
-    if (this.props.isOnline) {
+    if (this.props.isOnline && !this.props.nextOffline) {
       return null;
     }
     const style = [this.style.view];
@@ -50,7 +56,9 @@ class OfflineBar extends React.Component {
     }
     return (
       <View style={[...style, this.props.style]}>
-        <Text style={this.style.text}>{t`No internet connection`}</Text>
+        <Text style={this.style.text}>
+          {this.props.isOnline ? t`No connection to Hathor Next` : t`No internet connection`}
+        </Text>
       </View>
     );
   }

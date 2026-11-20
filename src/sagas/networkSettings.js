@@ -352,8 +352,14 @@ export function* persistNetworkSettings(action) {
   yield call([storage, storage.cleanStorage], true, true, true);
 
   // The status stays LOADING until here, so the network settings screens keep their spinner while
-  // a passkey wallet registers, and no other network can be picked meanwhile.
-  yield call(registerPasskeyWalletOnNetworkChange, networkSettings);
+  // a passkey wallet registers, and no other network can be picked meanwhile. A failed
+  // registration must not block the switch: the storage is already wiped, and the spinner would
+  // stay on. The wallet then starts on the fullnode facade, and the next unlock registers it.
+  try {
+    yield call(registerPasskeyWalletOnNetworkChange, networkSettings);
+  } catch (err) {
+    log.error('Error while registering the passkey wallet on the new network.', err);
+  }
   yield put(networkSettingsUpdateWaiting());
 
   // This action should clean the tokens history on redux.

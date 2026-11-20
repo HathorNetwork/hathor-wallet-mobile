@@ -1,0 +1,205 @@
+/**
+ * Copyright (c) Hathor Labs and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { t } from 'ttag';
+import { validateAddress } from '../utils';
+import { CHAIN } from './chains';
+import { bytesToHex } from './next/kit/scalar';
+
+// The Hathor Next kit's address codec, required on first use rather than imported at the top:
+// the kit, and the crypto library it alone uses, run only once a Hathor Next address is read or
+// written, never at the app's start with its flags off.
+// eslint-disable-next-line global-require
+const kitAddress = () => require('./next/kit/address');
+
+/**
+ * A Hathor Next address is read by the kit's codec (next/kit/address.js), a copy of Hathor Next's
+ * own: the bech32m form `samba1z…` (116 characters, all lowercase or all uppercase), and the
+ * legacy `samba:` + 128 hex on input. Both keys must be curve points. The codec is the only place
+ * that decides what counts as an address.
+ */
+// A payment request: an address, optionally behind the `samba:` scheme, and an optional query.
+const SCHEME_RE = /^samba:(\/\/)?/i;
+
+/**
+ * The keys of a Hathor Next address, or null when the text isn't one.
+ *
+ * @param {string|null|undefined} text
+ * @returns {{ view: Uint8Array, spend: Uint8Array }|null}
+ */
+export function nextAddressKeys(text) {
+  const value = (text ?? '').trim();
+  if (!value) {
+    return null;
+  }
+  try {
+    const { view, spend } = kitAddress().decodeAddressKeys(value);
+    return { view, spend };
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Whether a text is a Hathor Next address.
+ *
+ * @param {string|null|undefined} text
+ * @returns {boolean}
+ */
+export function isNextAddress(text) {
+  return nextAddressKeys(text) !== null;
+}
+
+const isIdentity = (key) => key.every((byte) => byte === 0);
+
+/**
+ * Why a Hathor Next address can't be paid where a person typed or scanned it, or null when it
+ * can (or isn't a Hathor Next address at all). The legacy form `samba:` + hex has no checksum, so
+ * a typo in it still reads as two other keys, and the app would show and pay a well-formed
+ * address nobody holds; the backend refuses it for a transfer for that reason, and only ever
+ * sees the canonical form. A key that is the identity is one nobody can spend from.
+ *
+ * @param {string|null|undefined} text
+ * @returns {string|null}
+ */
+export function nextAddressError(text) {
+  let decoded;
+  try {
+    decoded = kitAddress().decodeAddressKeys((text ?? '').trim());
+  } catch (e) {
+    return null;
+  }
+  if (decoded.form === 'legacy') {
+    return t`This is an old Hathor Next address, with no checksum to catch a typo. Ask for the address that starts with samba1z.`;
+  }
+  if (isIdentity(decoded.view) || isIdentity(decoded.spend)) {
+    return t`Nobody can spend from this Hathor Next address, so it can't be paid.`;
+  }
+  return null;
+}
+
+/**
+ * The canonical form of a Hathor Next address: the lowercase `samba1z…` of its keys, whichever
+ * form was typed or scanned.
+ *
+ * @param {string|null|undefined} text
+ * @returns {string|null} null when the text isn't an address
+ */
+export function normalizeNextAddress(text) {
+  const keys = nextAddressKeys(text);
+  return keys ? kitAddress().encodeAddress(bytesToHex(keys.view), bytesToHex(keys.spend)) : null;
+}
+
+/**
+ * Whether two texts are the same Hathor Next address: the same keys, in any form or case.
+ *
+ * @param {string|null|undefined} a
+ * @param {string|null|undefined} b
+ * @returns {boolean}
+ */
+export function sameNextAddress(a, b) {
+  const one = normalizeNextAddress(a);
+  return one !== null && one === normalizeNextAddress(b);
+}
+
+/**
+ * What a scanned QR code holds for Hathor Next: `{ address }` for an address alone, in its
+ * canonical form, `{ error }` for a payment request on one (`samba:<address>?amount=…`), or null
+ * when it holds no Hathor Next address. A payment request is refused, as Hathor Network's scanner
+ * refuses one: taking only its address would drop the amount and the token it asks for without a
+ * word.
+ *
+ * @param {string|null|undefined} data
+ * @returns {{ address: string }|{ error: string }|null}
+ */
+export function parseNextQrCode(data) {
+  const value = (data ?? '').trim();
+  const [head, ...rest] = value.split('?');
+  // The legacy form starts with the scheme's own letters: it is an address as it stands.
+  const address = normalizeNextAddress(head)
+    ?? (SCHEME_RE.test(head) ? normalizeNextAddress(head.replace(SCHEME_RE, '')) : null);
+  if (!address) {
+    return null;
+  }
+  const refused = nextAddressError(head) ?? nextAddressError(head.replace(SCHEME_RE, ''));
+  if (refused) {
+    return { error: refused };
+  }
+  // A bare `?` asks for nothing.
+  return rest.join('?') ? { error: paymentRequestText() } : { address };
+}
+
+/** Why a payment request's QR code is refused. */
+export const paymentRequestText = () => t`Payment request QR codes are not supported. Please use a simple address QR code.`;
+
+/**
+ * Whether a text is a valid Hathor Network address of the network the wallet runs on.
+ *
+ * @param {string|null|undefined} text
+ * @param {Object} network wallet-lib Network
+ * @returns {boolean}
+ */
+export function isHathorAddress(text, network) {
+  if (!text) {
+    return false;
+  }
+  return validateAddress(text.trim(), network, { allowShielded: true }).isValid;
+}
+
+/**
+ * The chain an address belongs to: Hathor Network's (of the network the wallet runs on) or Hathor
+ * Next's. The two formats can't be confused, so the address alone picks the chain a send is on.
+ *
+ * @param {string|null|undefined} address
+ * @param {Object} network wallet-lib Network
+ * @param {Object} [options]
+ * @param {boolean} [options.allowShielded] Whether a shielded Hathor Network address counts
+ * @returns {string|null} One of CHAIN, or null when it is neither
+ */
+export function addressChain(address, network, { allowShielded = true } = {}) {
+  const value = (address ?? '').trim();
+  if (!value) {
+    return null;
+  }
+  if (isNextAddress(value)) {
+    return CHAIN.HATHOR_NEXT;
+  }
+  return validateAddress(value, network, { allowShielded }).isValid ? CHAIN.HATHOR : null;
+}
+
+/**
+ * Validates the address a transfer between chains goes to: an address of the destination chain.
+ * An address of the other chain gets words of its own, since it looks right and isn't.
+ *
+ * @param {string|null|undefined} address
+ * @param {Object} network wallet-lib Network
+ * @param {string} [toChain] One of CHAIN: the destination
+ * @returns {{ isValid: boolean, message?: string }}
+ */
+export function validateTransferAddress(address, network, toChain = CHAIN.HATHOR_NEXT) {
+  const chain = addressChain(address, network);
+  const refused = chain === CHAIN.HATHOR_NEXT ? nextAddressError(address) : null;
+  if (refused) {
+    return { isValid: false, message: refused };
+  }
+  if (chain === toChain) {
+    return { isValid: true };
+  }
+  if (chain === CHAIN.HATHOR) {
+    return {
+      isValid: false,
+      message: t`This is a Hathor Network address. Enter a Hathor Next address.`,
+    };
+  }
+  if (chain === CHAIN.HATHOR_NEXT) {
+    return {
+      isValid: false,
+      message: t`This is a Hathor Next address. Enter a Hathor Network address.`,
+    };
+  }
+  return { isValid: false, message: t`Invalid address` };
+}
