@@ -10,6 +10,7 @@ import hathorLib, { Network } from '@hathor/wallet-lib';
 import { STORE } from '../store';
 import {
   THOTH_ID_NETWORKS,
+  THOTH_ID_PINNED_CONTRACTS,
   THOTH_ID_DISCOVERY_TTL,
   THOTH_ID_RESOLUTION_TTL,
   THOTH_ID_CONTRACTS_CACHE_KEY,
@@ -18,13 +19,13 @@ import {
 /**
  * thoth.id resolution: a name such as `alice.htr` stands for an address, the
  * same way a domain name stands for an IP. Each domain suffix is a nano
- * contract created from the ThothNamer blueprint, and the Sdk collects the
- * `suffix -> contract` map from the node itself, so nothing here is hardcoded
- * beyond the blueprint the Sdk already knows.
+ * contract running the ThothNamer blueprint. On testnet the Sdk collects the
+ * `suffix -> contract` map from the node itself; on mainnet the map is pinned
+ * in THOTH_ID_PINNED_CONTRACTS and no discovery runs.
  *
- * The registries only exist on testnet, so every entry point in this module
- * refuses to resolve on any other network instead of silently querying a node
- * that has no ThothNamer contract at all.
+ * The registries only exist on THOTH_ID_NETWORKS, so every entry point in this
+ * module refuses to resolve on any other network instead of silently querying a
+ * node that has no ThothNamer contract at all.
  */
 
 /** Reasons a resolution can fail. The UI turns these into readable messages. */
@@ -143,8 +144,8 @@ export async function resolveThothName(rawName, options = {}) {
     return { name, address: cached };
   }
 
-  const sdk = getSdk(contextKey, nodeUrl);
-  await ensureDomainIsKnown(sdk, contextKey, getThothDomainSuffix(name));
+  const sdk = getSdk(contextKey, network, nodeUrl);
+  await ensureDomainIsKnown(sdk, contextKey, network, getThothDomainSuffix(name));
 
   let address;
   try {
@@ -241,18 +242,20 @@ function isValidAddress(address, network) {
 }
 
 /**
- * The Sdk instance for the current network/node, seeded with the map cached in
- * storage so a wallet that already collected it makes zero discovery requests.
+ * The Sdk instance for the current network/node. A pinned network is seeded
+ * with its fixed map; any other with the map cached in storage, so a wallet that
+ * already collected it makes zero discovery requests.
  */
-function getSdk(contextKey, nodeUrl) {
+function getSdk(contextKey, network, nodeUrl) {
   if (sdkInstance && sdkContextKey === contextKey) {
     return sdkInstance;
   }
 
-  const cached = readContractCache(contextKey);
+  const contractIds = THOTH_ID_PINNED_CONTRACTS[network]
+    || readContractCache(contextKey)?.contractIds;
   sdkInstance = new ThothIdSDK({
     nodeUrl: toThothNodeUrl(nodeUrl),
-    ...(cached ? { contractIds: cached.contractIds } : {}),
+    ...(contractIds ? { contractIds } : {}),
   });
   sdkContextKey = contextKey;
   discoveryPromise = null;
@@ -268,10 +271,17 @@ function getSdk(contextKey, nodeUrl) {
  * otherwise stay invisible forever. The collected map is trusted for
  * THOTH_ID_DISCOVERY_TTL so typing an unknown domain cannot make every
  * keystroke re-collect it.
+ *
+ * A pinned network never collects: its map is the whole truth, so a domain
+ * outside it is unknown right away.
  */
-async function ensureDomainIsKnown(sdk, contextKey, suffix) {
+async function ensureDomainIsKnown(sdk, contextKey, network, suffix) {
   if (sdk.getContractIdForDomain(suffix)) {
     return;
+  }
+
+  if (THOTH_ID_PINNED_CONTRACTS[network]) {
+    throw unknownDomainError(sdk, suffix);
   }
 
   const cached = readContractCache(contextKey);

@@ -154,9 +154,9 @@ describe('isThothIdName', () => {
 });
 
 describe('isThothIdEnabled', () => {
-  it('is enabled on testnet only', () => {
+  it('is enabled on testnet and mainnet only', () => {
     expect(thothId.isThothIdEnabled('testnet')).toBe(true);
-    expect(thothId.isThothIdEnabled('mainnet')).toBe(false);
+    expect(thothId.isThothIdEnabled('mainnet')).toBe(true);
     expect(thothId.isThothIdEnabled('privatenet')).toBe(false);
   });
 
@@ -183,8 +183,8 @@ describe('resolveThothName', () => {
       .resolves.toEqual({ name: 'alice.htr', address: ADDRESS });
   });
 
-  it('refuses to resolve outside testnet', async () => {
-    await expect(thothId.resolveThothName('alice.htr', { network: 'mainnet', nodeUrl: 'https://node' }))
+  it('refuses to resolve on a network without registries', async () => {
+    await expect(thothId.resolveThothName('alice.htr', { network: 'privatenet', nodeUrl: 'https://node' }))
       .rejects.toMatchObject({ code: thothId.THOTH_ID_ERROR.UNSUPPORTED_NETWORK });
     expect(mockSdkState.resolveCount).toBe(0);
   });
@@ -287,5 +287,33 @@ describe('resolveThothName', () => {
       thothId.resolveThothName('bob.htr', TESTNET),
     ]);
     expect(mockSdkState.refreshCount).toBe(1);
+  });
+});
+
+describe('resolveThothName on mainnet', () => {
+  const MAINNET = { network: 'mainnet', nodeUrl: 'https://node1.mainnet.hathor.network/v1a/' };
+  const MAINNET_HTR_CONTRACT = '000039f3a89ff6679b09f1ec89d430ff8bf0eea624daf97a877994e73fd62856';
+
+  it('resolves against the pinned registry without any discovery', async () => {
+    await expect(thothId.resolveThothName('alice.htr', MAINNET))
+      .resolves.toEqual({ name: 'alice.htr', address: ADDRESS });
+    expect(mockSdkState.lastOptions.contractIds).toEqual({ htr: MAINNET_HTR_CONTRACT });
+    expect(mockSdkState.refreshCount).toBe(0);
+  });
+
+  it('answers an unknown domain at once, without collecting a map', async () => {
+    await expect(thothId.resolveThothName('alice.nope', MAINNET))
+      .rejects.toMatchObject({ code: thothId.THOTH_ID_ERROR.UNKNOWN_DOMAIN });
+    expect(mockSdkState.refreshCount).toBe(0);
+    expect(mockSdkState.resolveCount).toBe(0);
+  });
+
+  it('ignores a cached map, so nothing stored can redirect a name', async () => {
+    const contextKey = 'mainnet|https://node1.mainnet.hathor.network';
+    mockStorage[CONTRACTS_CACHE_KEY] = {
+      [contextKey]: { contractIds: { htr: 'some-other-contract' }, updatedAt: Date.now() },
+    };
+    await thothId.resolveThothName('alice.htr', MAINNET);
+    expect(mockSdkState.lastOptions.contractIds).toEqual({ htr: MAINNET_HTR_CONTRACT });
   });
 });
