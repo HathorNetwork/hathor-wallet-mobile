@@ -64,6 +64,39 @@ jest.mock('@sentry/react-native');
 
 jest.mock('react-native-version-number');
 
+// The app moved from `unleash-proxy-client` to `@hathor/unleash-client`, which
+// exports the client as its default. Mocking the package that is no longer
+// installed made every suite fail to boot on the missing module.
+jest.mock('@hathor/unleash-client', () => ({
+  __esModule: true,
+  ...jest.requireActual('@hathor/unleash-client'),
+  default: jest.fn(() => ({
+    getAllToggles: () => ({}),
+    isEnabled: () => false,
+    getVariant: () => ({}),
+    updateContext: () => {},
+    getContext: () => ({
+      appName: 'hathor-wallet-mobile',
+      environment: 'test',
+      userId: 'test-user',
+      sessionId: 'test-session',
+      remoteAddress: undefined,
+      properties: {},
+    }),
+    setContextField: () => {},
+    start: () => {},
+    stop: () => {},
+    on: () => {},
+  })),
+  EVENTS: {
+    INIT: 'INIT',
+    ERROR: 'ERROR',
+    READY: 'READY',
+    UPDATE: 'UPDATE',
+    IMPRESSION: 'IMPRESSION',
+  },
+}));
+
 const RNPermissionsModule = {};
 jest.mock('react-native-permissions', () => ({
   default: {

@@ -5,7 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { jest, describe, test, expect, afterEach } from '@jest/globals';
+import {
+  jest, describe, test, expect, afterEach, beforeEach,
+} from '@jest/globals';
 
 const mockNavigation = { navigate: jest.fn(), goBack: jest.fn() };
 let mockRouteParams = {};
@@ -16,6 +18,11 @@ jest.mock('@react-navigation/native', () => ({
 }));
 // The status bar's height, which the keyboard offset of the screen counts.
 jest.mock('react-native-status-bar-height', () => ({ getStatusBarHeight: () => 20 }));
+// thoth.id names are resolved against the network; the tests decide the answer.
+jest.mock('../../src/utils/thothId', () => ({
+  ...jest.requireActual('../../src/utils/thothId'),
+  resolveThothName: jest.fn(),
+}));
 
 /* eslint-disable import/first */
 import React from 'react';
@@ -25,10 +32,16 @@ import { Provider } from 'react-redux';
 import { legacy_createStore as createStore } from 'redux';
 import { reducer } from '../../src/reducers/reducer';
 import { networkSettingsUpdateState } from '../../src/actions';
-import { PRE_SETTINGS_TESTNET } from '../../src/constants';
+import {
+  FEATURE_TOGGLE_DEFAULTS,
+  MULTICHAIN_FEATURE_TOGGLE,
+  PRE_SETTINGS_TESTNET,
+} from '../../src/constants';
+import { KNOWN_TRANSFER_ADDRESSES } from '../../src/multichain/chains';
 import { STYLE } from '../../src/styles/themes';
 import HathorHeader from '../../src/components/HathorHeader';
 import SendAddressInput from '../../src/screens/SendAddressInput';
+import { THOTH_ID_ERROR, ThothIdError, resolveThothName } from '../../src/utils/thothId';
 /* eslint-enable import/first */
 
 // Testnet addresses built with wallet-lib's address encoders from fixed keys.
@@ -48,9 +61,17 @@ afterEach(async () => {
 
 /**
  * Renders the send address input of a wallet on the testnet.
+ *
+ * @param {{ multichain?: boolean }} options `multichain` turns the multichain flag on
  */
-async function render() {
-  const store = createStore(reducer);
+async function render({ multichain = false } = {}) {
+  const initial = reducer(undefined, { type: '@@INIT' });
+  const store = createStore(reducer, multichain
+    ? {
+      ...initial,
+      featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [MULTICHAIN_FEATURE_TOGGLE]: true },
+    }
+    : initial);
   store.dispatch(networkSettingsUpdateState(PRE_SETTINGS_TESTNET));
   const element = () => <Provider store={store}><SendAddressInput /></Provider>;
 
@@ -72,6 +93,7 @@ async function render() {
     .map((node) => [].concat(node.props.children).join(''));
   return {
     renderer,
+    store,
     input,
     type,
     nextButton,
@@ -99,7 +121,8 @@ describe('SendAddressInput', () => {
   test('takes the address in a field that wraps it, to paste or type', async () => {
     const { input, texts } = await render();
 
-    expect(texts()).toContain('Address to send');
+    // thoth.id runs on the testnet, so a name is accepted there too.
+    expect(texts()).toContain('Address or name to send');
     expect(input().props).toEqual(expect.objectContaining({
       placeholder: 'Paste or type address',
       multiline: true,
@@ -132,6 +155,95 @@ describe('SendAddressInput', () => {
     await rerender();
     expect(input().props.value).toBe(P2SH);
     expect(nextButton().props.disabled).toBe(false);
+  });
+
+  describe('thoth.id names', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      // Answers a test queued but did not use must not reach the next one
+      resolveThothName.mockReset();
+    });
+    afterEach(() => { jest.useRealTimers(); });
+
+    // Lets the debounce run out and the resolution settle.
+    const settle = () => act(async () => { await jest.runOnlyPendingTimersAsync(); });
+
+    test('sends to the address a name resolves to, with the name beside it', async () => {
+      resolveThothName.mockResolvedValue({ address: P2PKH });
+      const { type, nextButton, texts } = await render();
+
+      await type('Alice.htr');
+      // Nothing to send to while the name is being resolved.
+      expect(nextButton().props.disabled).toBe(true);
+      expect(texts()).toContain('Resolving alice.htr...');
+
+      await settle();
+      expect(resolveThothName).toHaveBeenCalledWith('alice.htr', expect.objectContaining({ network: 'testnet' }));
+      expect(texts()).toContain(`alice.htr → ${P2PKH}`);
+      expect(nextButton().props.disabled).toBe(false);
+
+      await act(async () => { nextButton().props.onPress(); });
+      expect(mockNavigation.navigate).toHaveBeenCalledWith(
+        'SendAmountInput',
+        { address: P2PKH, name: 'alice.htr' },
+      );
+    });
+
+    test('resolves the name again when the wallet switches node', async () => {
+      const OTHER_ADDRESS = P2SH;
+      resolveThothName.mockResolvedValueOnce({ address: P2PKH });
+      resolveThothName.mockResolvedValueOnce({ address: OTHER_ADDRESS });
+      const { store, type, nextButton } = await render();
+
+      await type('alice.htr');
+      await settle();
+      expect(nextButton().props.disabled).toBe(false);
+
+      // Another node may serve another chain, where the name points elsewhere
+      const otherNode = 'https://node.other.example/v1a/';
+      await act(async () => {
+        store.dispatch(networkSettingsUpdateState({ ...PRE_SETTINGS_TESTNET, nodeUrl: otherNode }));
+      });
+      expect(nextButton().props.disabled).toBe(true);
+
+      await settle();
+      expect(resolveThothName).toHaveBeenLastCalledWith(
+        'alice.htr',
+        expect.objectContaining({ nodeUrl: otherNode }),
+      );
+      await act(async () => { nextButton().props.onPress(); });
+      expect(mockNavigation.navigate).toHaveBeenCalledWith(
+        'SendAmountInput',
+        { address: OTHER_ADDRESS, name: 'alice.htr' },
+      );
+    });
+
+    test('refuses a name that points to the chain transfer address', async () => {
+      // The owner of a name picks its address: one pointing to the transfer address would burn
+      // what is sent to it, as the transfer address typed in would.
+      resolveThothName.mockResolvedValue({ address: KNOWN_TRANSFER_ADDRESSES[0] });
+      const { type, nextButton, texts } = await render({ multichain: true });
+
+      await type('alice.htr');
+      await settle();
+      expect(texts().join(' ')).toContain('anything sent to it directly is lost');
+      expect(nextButton().props.disabled).toBe(true);
+
+      await act(async () => { nextButton().props.onPress(); });
+      expect(mockNavigation.navigate).not.toHaveBeenCalled();
+    });
+
+    test('shows why a name could not be resolved', async () => {
+      resolveThothName.mockRejectedValue(
+        new ThothIdError(THOTH_ID_ERROR.NAME_NOT_FOUND, 'not found'),
+      );
+      const { type, nextButton, texts } = await render();
+
+      await type('nobody.htr');
+      await settle();
+      expect(texts()).toContain('nobody.htr is not registered.');
+      expect(nextButton().props.disabled).toBe(true);
+    });
   });
 
   test('keeps the button above the keyboard, under the header', async () => {

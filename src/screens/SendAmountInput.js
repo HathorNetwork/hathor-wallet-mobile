@@ -194,9 +194,12 @@ const SendAmountInput = () => {
       return;
     }
 
-    const { address } = params;
+    // `name` is set only when the user typed a thoth.id name instead of an
+    // address, and travels along so the confirmation screen can show it
+    const { address, name } = params;
     navigation.navigate('SendConfirmScreen', {
       address,
+      name,
       amount: amountValue,
       token,
       privacyMode,

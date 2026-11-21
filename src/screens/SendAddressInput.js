@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -37,6 +37,53 @@ import {
 import { addressChain, nextAddressError, normalizeNextAddress } from '../multichain/address';
 import { CHAIN, isTransferAddress } from '../multichain/chains';
 import { ChainTag } from '../components/Multichain/ChainTag';
+import { THOTH_ID_RESOLUTION_DEBOUNCE } from '../constants';
+import {
+  THOTH_ID_ERROR,
+  isThothIdEnabled,
+  isThothIdName,
+  normalizeThothName,
+  resolveThothName,
+} from '../utils/thothId';
+
+/** Status of the thoth.id name typed in the address field. */
+export const NAME_RESOLUTION_STATUS = {
+  /** The field holds an address, or nothing that looks like a name. */
+  NONE: 'none',
+  LOADING: 'loading',
+  RESOLVED: 'resolved',
+  ERROR: 'error',
+};
+
+const NO_RESOLUTION = {
+  status: NAME_RESOLUTION_STATUS.NONE,
+  name: '',
+  address: null,
+  error: null,
+  networkName: null,
+  nodeUrl: null,
+};
+
+/**
+ * User facing message for a failed resolution.
+ *
+ * @param {Error} e Error thrown by the resolution
+ * @param {string} name Name being resolved
+ */
+const getResolutionErrorMessage = (e, name) => {
+  switch (e.code) {
+    case THOTH_ID_ERROR.NAME_NOT_FOUND:
+      return t`${name} is not registered.`;
+    case THOTH_ID_ERROR.UNKNOWN_DOMAIN:
+      return t`There is no thoth.id registry for this domain on the connected network.`;
+    case THOTH_ID_ERROR.UNSUPPORTED_NETWORK:
+      return t`thoth.id names can only be used on testnet.`;
+    case THOTH_ID_ERROR.INVALID_ADDRESS:
+      return t`${name} resolved to an invalid address.`;
+    default:
+      return t`Could not resolve ${name}. Please check your connection and try again.`;
+  }
+};
 
 /**
  * First screen of the Send flow. The address is typed or pasted here; the QR code scanner, which
@@ -45,6 +92,10 @@ import { ChainTag } from '../components/Multichain/ChainTag';
  * With the side chain connected, the address says which chain the send is on: a Hathor Next
  * address sends on Hathor Next, and its chain shows under it. "Transfer between chains" at the
  * bottom opens the transfer.
+ *
+ * The field also accepts a thoth.id name (`alice.htr`), which is resolved to an address against
+ * the naming service's nano contracts. Only the resolved address moves on to the next screen:
+ * the name travels beside it purely so the confirmation screen can show what was typed.
  */
 export const SendAddressInput = () => {
   const route = useRoute();
@@ -58,7 +109,9 @@ export const SendAddressInput = () => {
     address: route.params?.address ?? null,
     error: null,
   });
-  const network = useSelector((state) => new Network(state.networkSettings.network));
+  const networkName = useSelector((state) => state.networkSettings.network);
+  const nodeUrl = useSelector((state) => state.networkSettings.nodeUrl);
+  const network = useMemo(() => new Network(networkName), [networkName]);
   // A private address, typed or scanned, can be paid in the shielded environment: privately
   // where the wallet sends privately, and in public, to the address of its spend key, anywhere
   // there.
@@ -103,6 +156,89 @@ export const SendAddressInput = () => {
     }
   }, [route.params?.address, route.params?.scan]);
 
+  /**
+   * status {string} One of NAME_RESOLUTION_STATUS
+   * name {string} The name the current status refers to
+   * address {string|null} Address the name resolved to
+   * error {string|null} Message to show when the resolution failed
+   * networkName {string|null} Network the name was resolved on
+   * nodeUrl {string|null} Node the name was resolved against
+   */
+  const [resolution, setResolution] = useState(NO_RESOLUTION);
+
+  const typedAddress = (formModel.address || '').trim();
+  // Off the supported networks nothing is a name, so the text goes through as
+  // an address and fails the usual address validation.
+  const isName = isThothIdEnabled(networkName) && isThothIdName(typedAddress);
+
+  /**
+   * Resolves the typed name once typing pauses. The cleanup covers both halves
+   * of the race: it drops the pending lookup when the field changes again, and
+   * ignores an answer that arrives for a name no longer typed.
+   */
+  useEffect(() => {
+    if (!isName) {
+      setResolution((prev) => (prev.status === NAME_RESOLUTION_STATUS.NONE ? prev : NO_RESOLUTION));
+      return undefined;
+    }
+
+    const name = normalizeThothName(typedAddress);
+    const context = { networkName, nodeUrl };
+    setResolution((prev) => (
+      // An address already found for this exact name, on this same network and
+      // node, stays on screen, so retyping the same text does not flash the
+      // spinner over it
+      prev.status === NAME_RESOLUTION_STATUS.RESOLVED && prev.name === name
+        && prev.networkName === networkName && prev.nodeUrl === nodeUrl
+        ? prev
+        : {
+          status: NAME_RESOLUTION_STATUS.LOADING, name, address: null, error: null, ...context,
+        }
+    ));
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const { address } = await resolveThothName(name, { network: networkName, nodeUrl });
+        if (!cancelled) {
+          setResolution({
+            status: NAME_RESOLUTION_STATUS.RESOLVED, name, address, error: null, ...context,
+          });
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setResolution({
+            status: NAME_RESOLUTION_STATUS.ERROR,
+            name,
+            address: null,
+            error: getResolutionErrorMessage(e, name),
+            ...context,
+          });
+        }
+      }
+    }, THOTH_ID_RESOLUTION_DEBOUNCE);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [typedAddress, isName, networkName, nodeUrl]);
+
+  // The resolution counts only for the name in the field and the network and
+  // node the wallet is on now. Until the effect catches up with a change, the
+  // name is treated as still being resolved, so Next never sends to an address
+  // found for another name, or on another chain.
+  const currentName = isName ? normalizeThothName(typedAddress) : '';
+  const isCurrentResolution = resolution.name === currentName
+    && resolution.networkName === networkName
+    && resolution.nodeUrl === nodeUrl;
+  let activeResolution = NO_RESOLUTION;
+  if (isName) {
+    activeResolution = isCurrentResolution
+      ? resolution
+      : { ...NO_RESOLUTION, status: NAME_RESOLUTION_STATUS.LOADING, name: currentName };
+  }
+
   const onAddressChange = (text) => {
     setFormModel({ address: text, error: typedAddressError(text) });
   };
@@ -130,12 +266,42 @@ export const SendAddressInput = () => {
     return validateAddress(address, network, { allowShielded });
   };
 
+  // Whoever owns a name chooses the address it points to, so the address a name resolved to
+  // goes through the same recipient checks as one typed in: the chain transfer's address, which
+  // burns what pays it directly, is refused behind a name too.
+  const resolvedAddressError = activeResolution.status === NAME_RESOLUTION_STATUS.RESOLVED
+    ? transferAddressError(activeResolution.address)
+    : null;
+  const canSendToName = activeResolution.status === NAME_RESOLUTION_STATUS.RESOLVED
+    && !resolvedAddressError;
+
   const isAddressValid = () => {
-    if (!formModel.address) return false;
+    if (!typedAddress) return false;
+    // A name can be sent to once it resolved to an address the wallet may pay; the resolution
+    // already checked the address is valid on this network
+    if (isName) return canSendToName;
     return validate().isValid;
   };
 
   const onButtonPress = () => {
+    if (isName) {
+      if (canSendToName) {
+        navigation.navigate('SendAmountInput', {
+          address: activeResolution.address,
+          name: activeResolution.name,
+        });
+        return;
+      }
+      // Nothing to send to: the name is still being resolved, it failed, or it points to an
+      // address the wallet won't pay
+      let error = resolvedAddressError || activeResolution.error;
+      if (activeResolution.status === NAME_RESOLUTION_STATUS.LOADING) {
+        error = t`Resolving the name, please wait.`;
+      }
+      setFormModel((prev) => ({ ...prev, error }));
+      return;
+    }
+
     const validation = validate();
     if (!validation.isValid) {
       setFormModel((prev) => ({ ...prev, error: validation.message }));
@@ -161,6 +327,23 @@ export const SendAddressInput = () => {
     </TouchableOpacity>
   );
 
+  /** Feedback shown under the field while a thoth.id name is typed there. */
+  const getNameSubtitle = () => {
+    const { status, name, address } = activeResolution;
+    if (status === NAME_RESOLUTION_STATUS.LOADING) {
+      return t`Resolving ${name}...`;
+    }
+    if (status === NAME_RESOLUTION_STATUS.RESOLVED) {
+      return `${name} → ${address}`;
+    }
+    return null;
+  };
+
+  const errorMessage = formModel.error
+    || resolvedAddressError
+    || (activeResolution.status === NAME_RESOLUTION_STATUS.ERROR ? activeResolution.error : null);
+  const nameSubtitle = getNameSubtitle();
+
   return (
     <View style={{ flex: 1 }}>
       {/* It dismisses the keyboard, and wraps the header and the KeyboardAvoidingView, as on
@@ -184,12 +367,14 @@ export const SendAddressInput = () => {
         >
           <View style={styles.body}>
             <View>
-              <Text style={styles.label}>{t`Address to send`}</Text>
+              <Text style={styles.label}>
+                {isThothIdEnabled(networkName) ? t`Address or name to send` : t`Address to send`}
+              </Text>
               <Pressable
                 onPress={() => inputRef.current?.focus()}
                 style={[
                   styles.inputCard,
-                  formModel.error ? styles.inputCardError : null,
+                  errorMessage ? styles.inputCardError : null,
                 ]}
               >
                 <TextInput
@@ -212,10 +397,13 @@ export const SendAddressInput = () => {
                   scrollEnabled={false}
                 />
               </Pressable>
-              {formModel.error ? (
-                <Text style={styles.errorText}>{formModel.error}</Text>
+              {errorMessage ? (
+                <Text style={styles.errorText}>{errorMessage}</Text>
               ) : null}
-              {chain && !formModel.error ? (
+              {!errorMessage && nameSubtitle ? (
+                <Text style={styles.subtitleText}>{nameSubtitle}</Text>
+              ) : null}
+              {chain && !errorMessage ? (
                 <ChainTag chain={chain} style={styles.chain} />
               ) : null}
             </View>
@@ -289,6 +477,12 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     // Android adds room around the glyphs; without it, the text lines up with the placeholder.
     includeFontPadding: false,
+  },
+  subtitleText: {
+    color: COLORS.textColorShadow,
+    fontSize: 12,
+    marginTop: 6,
+    paddingHorizontal: 4,
   },
   errorText: {
     color: '#E55B5B',

@@ -140,10 +140,12 @@ const SendConfirmScreen = () => {
   const navigation = useNavigation();
   const params = useParams();
 
-  // Parse and store navigation params
+  // Parse and store navigation params. `name` is present only when the address
+  // was resolved from a thoth.id name.
   const {
     amount,
     address,
+    name,
     token,
     privacyMode = PRIVACY_MODE.PUBLIC,
   } = params;
@@ -642,12 +644,16 @@ const SendConfirmScreen = () => {
             <View>
               <Text style={styles.summaryHeading}>{t`Transaction summary`}</Text>
               <View style={styles.summaryContainer}>
-                {/* A hairline divides the recipient from the fees. */}
+                {/* A hairline divides the recipient from the fees. The name goes above the
+                    address it resolved to, so the user confirms where the tokens really go. */}
                 <View style={[styles.summaryItem, styles.summaryItemDivider]}>
                   <Text style={styles.summaryLabel}>{t`To`}</Text>
-                  <Text style={styles.summaryValue}>
-                    {address.substr(0, 7)}...{address.substr(-7)}
-                  </Text>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    {name ? <Text style={styles.recipientName}>{name}</Text> : null}
+                    <Text style={name ? styles.recipientAddress : styles.summaryValue}>
+                      {address.substr(0, 7)}...{address.substr(-7)}
+                    </Text>
+                  </View>
                 </View>
 
                 {/* A send with fees has a Fees row: a tap anywhere on it expands it into the
@@ -810,6 +816,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: COLORS.textColor,
+  },
+  recipientName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.textColor,
+  },
+  recipientAddress: {
+    fontSize: 12,
+    color: COLORS.textColorShadow,
   },
   nofee: {
     flexDirection: 'row',

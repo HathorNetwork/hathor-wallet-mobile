@@ -453,6 +453,46 @@ export const networkSettingsKeyMap = {
 /** Storage key for the cached token icon URLs. */
 export const TOKEN_ICONS_CACHE_KEY = 'tokenIcons:cache';
 
+/**
+ * thoth.id is a naming service running on nano contracts, so a name like
+ * `alice.htr` can be typed wherever an address is expected. Its registries are
+ * deployed on testnet and mainnet, so the feature stays off on every other network.
+ */
+export const THOTH_ID_NETWORKS = [NETWORK_TESTNET, NETWORK_MAINNET];
+
+/**
+ * Registries the wallet knows up front, per network, as `domain suffix -> nano
+ * contract`. A network listed here never runs discovery: names resolve only
+ * against these contracts. Mainnet is pinned because discovery searches by the
+ * blueprint a contract was created from, and its registry has since been
+ * upgraded to another blueprint. Upgrades keep the contract ID, so the pin
+ * stays valid across them.
+ */
+export const THOTH_ID_PINNED_CONTRACTS = {
+  [NETWORK_MAINNET]: {
+    htr: '000039f3a89ff6679b09f1ec89d430ff8bf0eea624daf97a877994e73fd62856',
+  },
+};
+
+/**
+ * Time a collected `domain suffix -> nano contract` map is trusted before a name
+ * under an unknown domain makes the wallet collect it again. Registries are
+ * created rarely, and collecting the map costs one node request per registry.
+ */
+export const THOTH_ID_DISCOVERY_TTL = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Time a resolved name is reused before asking the node again, so retyping a
+ * name the user already entered does not hit the node repeatedly.
+ */
+export const THOTH_ID_RESOLUTION_TTL = 60 * 1000; // 1 minute
+
+/** Idle time after the last keystroke before a typed name is resolved. */
+export const THOTH_ID_RESOLUTION_DEBOUNCE = 500; // 500ms
+
+/** Storage key for the cached thoth.id `domain suffix -> contract` map. */
+export const THOTH_ID_CONTRACTS_CACHE_KEY = 'thothId:contracts';
+
 export const BASE_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
