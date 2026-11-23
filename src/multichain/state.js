@@ -88,6 +88,8 @@ const SEND_INITIAL_STATE = {
   txId: null,
   reason: null,
   error: null,
+  // The refusal's NEXT_CLIENT_ERROR code: the confirm screen offers a way on by it.
+  errorCode: null,
 };
 
 /**

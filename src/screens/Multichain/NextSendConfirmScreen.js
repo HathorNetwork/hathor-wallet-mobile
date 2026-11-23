@@ -15,6 +15,7 @@ import FeedbackModal from '../../components/FeedbackModal';
 import Spinner from '../../components/Spinner';
 import OfflineBar from '../../components/OfflineBar';
 import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
+import { PrivacyWarningIcon } from '../../components/Multichain/PrivacyWarningIcon';
 import { multichainNextSendRequested, multichainNextSendReset } from '../../actions';
 import { renderNextValue } from '../../multichain/amount';
 import {
@@ -31,6 +32,7 @@ import {
   verdictLead,
 } from '../../multichain/content';
 import { selectSideChainConfig } from '../../multichain/gating';
+import { NEXT_CLIENT_ERROR } from '../../multichain/nextClientErrors';
 import { OPERATION_STATUS, SEND_IN_FLIGHT } from '../../multichain/state';
 import { authorizeTransaction } from '../../passkey/authorizeTransaction';
 import {
@@ -48,6 +50,18 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 import { useHoldScreen } from '../../multichain/hooks';
 
 const log = logger('next-send');
+
+/**
+ * Refusals another amount fixes. The client makes them before anything is signed (the backend
+ * wouldn't prepare the payment, or the balance is short), so the user goes back to the amount, as
+ * typed, and the payment starts again from there as a new draft.
+ */
+const AMOUNT_REFUSALS = [NEXT_CLIENT_ERROR.AMOUNT_VISIBLE, NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS];
+
+/**
+ * Refusals that keep an amount from going public: shown as a privacy warning, not an error.
+ */
+const PRIVACY_REFUSALS = [NEXT_CLIENT_ERROR.AMOUNT_VISIBLE, NEXT_CLIENT_ERROR.FEE_AMOUNT_VISIBLE];
 
 let draftCount = 0;
 
@@ -68,7 +82,8 @@ const newDraftId = () => {
  * at most once. Once the PIN (or the passkey) authorizes it, Send never turns back on: whatever
  * the outcome, the flow closes, and a new payment starts from a new draft. There is no retry, no
  * cancel and no speed-up. Hathor Network's SendConfirmScreen turns Send back on after an error;
- * this screen must not.
+ * this screen must not. A refusal another amount fixes, made before anything was signed, closes
+ * it back to the amount step instead of the Dashboard: the next confirmation is a new draft.
  *
  * Authorizing comes first: the PIN, or a passkey ceremony. Hathor Network's passkey sends run their
  * ceremony when the lib signs, but Hathor Next signs with keys already in memory, so this screen
@@ -170,13 +185,24 @@ export default function NextSendConfirmScreen() {
     }, 500);
   };
 
+  // Back to the amount step, which keeps the amount as typed. The modal closes at once: it is
+  // drawn above the screens, and would stay up while this one leaves.
+  const goingBack = useRef(false);
+  const backToAmount = () => {
+    goingBack.current = true;
+    dispatch(multichainNextSendReset());
+    navigation.goBack();
+  };
+
   // Leaving Hathor Next (the setting turned off, the network changed) drops the payment's state:
   // this screen has nothing left to show, so it closes.
   const sawDraft = useRef(false);
   useEffect(() => {
     if (send.draftId === draftId) {
       sawDraft.current = true;
-    } else if (authorized && sawDraft.current) {
+    } else if (authorized && sawDraft.current && !goingBack.current) {
+      // Not this screen's own reset on its way back to the amount: that one isn't Hathor Next
+      // leaving.
       exit();
     }
   }, [send.draftId]);
@@ -238,15 +264,22 @@ export default function NextSendConfirmScreen() {
             action={<NewHathorButton title={t`Done`} onPress={exit} />}
           />
         );
-      case OPERATION_STATUS.ERROR:
+      case OPERATION_STATUS.ERROR: {
+        const changeAmount = AMOUNT_REFUSALS.includes(send.errorCode);
+        const close = changeAmount ? backToAmount : exit;
         return (
           <FeedbackModal
-            icon={icon(errorIcon)}
+            icon={PRIVACY_REFUSALS.includes(send.errorCode)
+              ? <PrivacyWarningIcon />
+              : icon(errorIcon)}
             text={send.error ?? t`The payment couldn't be sent.`}
-            onDismiss={exit}
-            action={<NewHathorButton title={t`Done`} onPress={exit} />}
+            onDismiss={close}
+            action={(
+              <NewHathorButton title={changeAmount ? t`Change amount` : t`Done`} onPress={close} />
+            )}
           />
         );
+      }
       default:
         return null;
     }

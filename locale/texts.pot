@@ -557,7 +557,7 @@ msgstr ""
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:245
 #: src/screens/Multichain/ChainTransferScreen.js:274
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:291
-#: src/screens/Multichain/NextSendConfirmScreen.js:277
+#: src/screens/Multichain/NextSendConfirmScreen.js:310
 #: src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
 msgstr ""
@@ -1445,12 +1445,12 @@ msgstr[1] ""
 msgid "Network Fee"
 msgstr ""
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:278
+#: src/screens/Multichain/NextSendConfirmScreen.js:311
 #: src/screens/SendConfirmScreen.js:724
 msgid "Total"
 msgstr ""
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:294
+#: src/screens/Multichain/NextSendConfirmScreen.js:327
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:302
 #: src/screens/SendConfirmScreen.js:733
 msgid "Send"
@@ -2034,11 +2034,11 @@ msgstr ""
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:247
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:259
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:268
-#: src/screens/Multichain/NextSendConfirmScreen.js:208
-#: src/screens/Multichain/NextSendConfirmScreen.js:217
-#: src/screens/Multichain/NextSendConfirmScreen.js:226
-#: src/screens/Multichain/NextSendConfirmScreen.js:238
-#: src/screens/Multichain/NextSendConfirmScreen.js:247
+#: src/screens/Multichain/NextSendConfirmScreen.js:234
+#: src/screens/Multichain/NextSendConfirmScreen.js:243
+#: src/screens/Multichain/NextSendConfirmScreen.js:252
+#: src/screens/Multichain/NextSendConfirmScreen.js:264
+#: src/screens/Multichain/NextSendConfirmScreen.js:278
 msgid "Done"
 msgstr ""
 
@@ -2136,7 +2136,7 @@ msgstr ""
 #: src/components/Reown/CreateTokenRequest.js:103
 #: src/screens/Multichain/ChainTransferScreen.js:255
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:288
-#: src/screens/Multichain/NextSendConfirmScreen.js:263
+#: src/screens/Multichain/NextSendConfirmScreen.js:296
 msgid "Amount"
 msgstr ""
 
@@ -2299,7 +2299,7 @@ msgid ""
 msgstr ""
 
 #: src/screens/Multichain/NextSendAmountInput.js:179
-#: src/screens/Multichain/NextSendConfirmScreen.js:259
+#: src/screens/Multichain/NextSendConfirmScreen.js:292
 #, javascript-format
 msgid "SEND ${ symbol }"
 msgstr ""
@@ -2309,20 +2309,24 @@ msgstr ""
 msgid "${ availableText } ${ symbol } available"
 msgstr ""
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:140
+#: src/screens/Multichain/NextSendConfirmScreen.js:155
 msgid "The passkey couldn't authorize the payment."
 msgstr ""
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:156
+#: src/screens/Multichain/NextSendConfirmScreen.js:171
 msgid "Enter your 6-digit pin to authorize the payment"
 msgstr ""
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:157
+#: src/screens/Multichain/NextSendConfirmScreen.js:172
 msgid "Authorize the payment"
 msgstr ""
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:245
+#: src/screens/Multichain/NextSendConfirmScreen.js:275
 msgid "The payment couldn't be sent."
+msgstr ""
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:278
+msgid "Change amount"
 msgstr ""
 
 #: src/components/Multichain/NextTxDetailsModal.js:101
@@ -2332,20 +2336,20 @@ msgstr ""
 #: src/components/Reown/SendTransactionRequest.js:343
 #: src/components/Reown/SignMessageRequest.js:40
 #: src/components/Reown/SignOracleDataRequest.js:59
-#: src/screens/Multichain/NextSendConfirmScreen.js:265
+#: src/screens/Multichain/NextSendConfirmScreen.js:298
 msgid "Address"
 msgstr ""
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:270
+#: src/screens/Multichain/NextSendConfirmScreen.js:303
 msgid "Token id"
 msgstr ""
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:283
+#: src/screens/Multichain/NextSendConfirmScreen.js:316
 msgid "An earlier payment is still on its way. You can send once it settles."
 msgstr ""
 
 #: src/components/PrivacyModeCard.js:50
-#: src/screens/Multichain/NextSendConfirmScreen.js:288
+#: src/screens/Multichain/NextSendConfirmScreen.js:321
 msgid "Private"
 msgstr ""
 

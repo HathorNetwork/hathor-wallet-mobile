@@ -47,13 +47,17 @@ import { STORE } from '../../../src/store';
 import NavigationService from '../../../src/NavigationService';
 import ChainTransferConfirmScreen from '../../../src/screens/Multichain/ChainTransferConfirmScreen';
 import NextCreateTokenConfirmScreen from '../../../src/screens/Multichain/NextCreateTokenConfirmScreen';
+import NextSendAmountInput from '../../../src/screens/Multichain/NextSendAmountInput';
+import NextSendConfirmScreen from '../../../src/screens/Multichain/NextSendConfirmScreen';
 import UnifiedQRScanner from '../../../src/screens/UnifiedQRScanner';
 import { SendAddressInput } from '../../../src/screens/SendAddressInput';
 import QRCodeReader from '../../../src/components/QRCodeReader';
 import FeedbackModal from '../../../src/components/FeedbackModal';
+import AmountTextInput from '../../../src/components/AmountTextInput';
 import NewHathorButton from '../../../src/components/NewHathorButton';
 import { PortalProvider } from '../../../src/components/Portal';
 import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { NEXT_CLIENT_ERROR } from '../../../src/multichain/nextClientErrors';
 import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
 import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 /* eslint-enable import/first */
@@ -67,6 +71,7 @@ beforeEach(() => {
   jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(false);
   pinCallback = null;
   addressStep = SendAddressInputStub;
+  nextAmountStep = SendAmountInputStub;
 });
 
 afterEach(async () => {
@@ -77,7 +82,7 @@ afterEach(async () => {
   jest.restoreAllMocks();
 });
 
-function makeStore() {
+function makeStore({ next = {} } = {}) {
   const initial = reducer(undefined, { type: '@@INIT' });
   const actions = [];
   const record = () => (nextFn) => (action) => {
@@ -94,7 +99,9 @@ function makeStore() {
     multichain: {
       ...initial.multichain,
       connectedNetworks: { [FAKE_NETWORK]: true },
-      next: { ...initial.multichain.next, status: NEXT_STATUS.READY, address: OWN_ADDRESS },
+      next: {
+        ...initial.multichain.next, status: NEXT_STATUS.READY, address: OWN_ADDRESS, ...next,
+      },
     },
   }, applyMiddleware(record));
   return { store, actions };
@@ -114,6 +121,9 @@ const SendAmountInputStub = () => <Text>AMOUNT</Text>;
 // Send's address step: the stub, or the app's own where a test needs what it keeps typed.
 let addressStep = SendAddressInputStub;
 const AddressStep = (props) => React.createElement(addressStep, props);
+// Hathor Next's amount step: the stub, or the app's own where a test needs what it keeps typed.
+let nextAmountStep = SendAmountInputStub;
+const NextAmountStep = (props) => React.createElement(nextAmountStep, props);
 
 // The app's shape: a root stack whose 'App' holds Main (a navigator of its own, with Home and
 // Send, itself a stack) and the screens opened above it. NavigationService.resetToMain resets to
@@ -123,7 +133,8 @@ const Send = () => (
   <SendStack.Navigator screenOptions={{ headerShown: false }}>
     <SendStack.Screen name='SendAddressInput' component={AddressStep} />
     <SendStack.Screen name='SendAmountInput' component={SendAmountInputStub} />
-    <SendStack.Screen name='NextSendAmountInput' component={SendAmountInputStub} />
+    <SendStack.Screen name='NextSendAmountInput' component={NextAmountStep} />
+    <SendStack.Screen name='NextSendConfirmScreen' component={NextSendConfirmScreen} />
   </SendStack.Navigator>
 );
 const MainStack = createStackNavigator();
@@ -170,6 +181,12 @@ async function mountApp(store) {
 const appRoutes = () => {
   const root = navigationRef.current.getRootState();
   return root.routes[root.index].state.routes.map((route) => route.name);
+};
+// The screens Main holds, bottom to top.
+const mainRoutes = () => {
+  const root = navigationRef.current.getRootState();
+  const app = root.routes[root.index].state;
+  return app.routes.find((route) => route.name === 'Main').state.routes.map((route) => route.name);
 };
 // The screens Send holds, bottom to top.
 const sendRoutes = () => {
@@ -349,5 +366,70 @@ describe('leaving a token creation', () => {
     await act(async () => { done.props.action.props.onPress(); });
     // One Main, and no confirm screen left under it to create the token again.
     expect(appRoutes()).toEqual(['Main']);
+  });
+});
+
+describe('a Hathor Next payment another amount fixes', () => {
+  test('goes back to the amount step, as typed, not to the Dashboard', async () => {
+    nextAmountStep = NextSendAmountInput;
+    const { store, actions } = makeStore({
+      next: {
+        online: true,
+        sendFee: 5000000n,
+        tokens: { '00': { id: '00', name: 'Hathor', symbol: 'HTR' } },
+        balances: { '00': { status: 'ready', data: { available: 300000000n } } },
+      },
+    });
+    const renderer = await mountApp(store);
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'Main',
+        params: { screen: 'Send', params: { screen: 'SendAddressInput', params: { address: OWN_ADDRESS } } },
+      });
+    });
+    await act(async () => {
+      navigationRef.current.navigate('App', {
+        screen: 'Main',
+        params: { screen: 'Send', params: { screen: 'NextSendAmountInput', params: { address: OWN_ADDRESS } } },
+      });
+    });
+    // All of it, but the fee.
+    await act(async () => {
+      renderer.root.findByType(AmountTextInput).props.onAmountUpdate('2.95', 295000000n);
+    });
+    await act(async () => { buttons(renderer, 'Next')[0].props.onPress(); });
+    expect(sendRoutes()).toEqual(['SendAddressInput', 'NextSendAmountInput', 'NextSendConfirmScreen']);
+    await act(async () => { buttons(renderer, 'Send')[0].props.onPress(); });
+    await act(async () => { pinCallback('123456'); });
+    const { draftId } = actions
+      .find((a) => a.type === types.MULTICHAIN_NEXT_SEND_REQUESTED).payload;
+    // The backend wouldn't prepare it: its one output's amount would be public. Nothing signed.
+    await act(async () => {
+      store.dispatch(multichainNextSendUpdate({
+        status: OPERATION_STATUS.ERROR,
+        draftId,
+        error: 'Send a little less',
+        errorCode: NEXT_CLIENT_ERROR.AMOUNT_VISIBLE,
+      }));
+    });
+    const [refusal] = renderer.root.findAllByType(FeedbackModal);
+    await act(async () => { refusal.props.action.props.onPress(); });
+
+    // Still in Send, one step back, with the amount as typed and the address under it.
+    expect(mainRoutes()).toEqual(['Home', 'Send']);
+    expect(sendRoutes()).toEqual(['SendAddressInput', 'NextSendAmountInput']);
+    expect(renderer.root.findByType(AmountTextInput).props.value).toBe('2.95');
+    // Another amount is a new draft: the refused one is never sent again.
+    await act(async () => {
+      renderer.root.findByType(AmountTextInput).props.onAmountUpdate('2.90', 290000000n);
+    });
+    await act(async () => { buttons(renderer, 'Next')[0].props.onPress(); });
+    expect(sendRoutes()).toEqual(['SendAddressInput', 'NextSendAmountInput', 'NextSendConfirmScreen']);
+    const sendButtons = buttons(renderer, 'Send');
+    await act(async () => { sendButtons[sendButtons.length - 1].props.onPress(); });
+    await act(async () => { pinCallback('123456'); });
+    const requests = actions.filter((a) => a.type === types.MULTICHAIN_NEXT_SEND_REQUESTED);
+    expect(requests.map((a) => a.payload.amount)).toEqual([295000000n, 290000000n]);
+    expect(requests[1].payload.draftId).not.toBe(draftId);
   });
 });

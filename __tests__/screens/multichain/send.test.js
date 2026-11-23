@@ -61,6 +61,9 @@ import QRCodeReader from '../../../src/components/QRCodeReader';
 import { PortalProvider } from '../../../src/components/Portal';
 import { ChainTag } from '../../../src/components/Multichain/ChainTag';
 import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
+import { NEXT_CLIENT_ERROR } from '../../../src/multichain/nextClientErrors';
+import NavigationService from '../../../src/NavigationService';
+import { PrivacyWarningIcon } from '../../../src/components/Multichain/PrivacyWarningIcon';
 import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
 import { FAKE_NETWORK } from '../../multichain/fakes/sideChain';
 import addressVectors from '../../multichain/next/fixtures/address-v2.json';
@@ -416,6 +419,7 @@ describe('the Hathor Next send confirmation (sign-once)', () => {
       navigate: jest.fn(),
       goBack: jest.fn(),
       popToTop: jest.fn(),
+      reset: jest.fn(),
       setOptions: jest.fn(),
       addListener: jest.fn((event, listener) => {
         listeners[event] = listener;
@@ -548,6 +552,64 @@ describe('the Hathor Next send confirmation (sign-once)', () => {
       store.dispatch(multichainNextSendUpdate({ status: OPERATION_STATUS.RECORDED }));
     });
     expect(held()).toBe(false);
+  });
+
+  describe('refused before anything was signed', () => {
+    // The screen's own draft, sent and refused with `errorCode`.
+    async function refused(errorCode) {
+      NavigationService.navigate.mockClear();
+      const screen = await renderConfirm();
+      await act(async () => { screen.sendButton().props.onPress(); });
+      const { draftId } = screen.sends()[0].payload;
+      await act(async () => {
+        screen.store.dispatch(multichainNextSendUpdate({
+          status: OPERATION_STATUS.ERROR, draftId, error: 'refused', errorCode,
+        }));
+      });
+      const modals = () => screen.renderer.root.findAllByType(FeedbackModal);
+      return { ...screen, modals };
+    }
+
+    test.each([
+      ['press', (modal) => modal.props.action.props.onPress()],
+      ['dismiss', (modal) => modal.props.onDismiss()],
+    ])('for an amount that would go public, goes back to the amount on %s', async (_how, close) => {
+      const { navigation, modals, sends } = await refused(NEXT_CLIENT_ERROR.AMOUNT_VISIBLE);
+      const [modal] = modals();
+      // A privacy warning, not an error.
+      expect(modal.props.icon.type).toBe(PrivacyWarningIcon);
+      expect(modal.props.action.props.title).toBe('Change amount');
+      await act(async () => { close(modal); });
+      // Back one step, to the amount as typed: not to the Dashboard, the address gone.
+      expect(navigation.goBack).toHaveBeenCalledTimes(1);
+      expect(NavigationService.navigate).not.toHaveBeenCalled();
+      expect(navigation.reset).not.toHaveBeenCalled();
+      // The modal closes at once, and this draft is never sent again.
+      expect(modals()).toHaveLength(0);
+      expect(sends()).toHaveLength(1);
+    });
+
+    test.each([
+      [NEXT_CLIENT_ERROR.AMOUNT_VISIBLE, 'Change amount', true],
+      [NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS, 'Change amount', false],
+      // Another amount doesn't help: the fee would come from public HTR.
+      [NEXT_CLIENT_ERROR.FEE_AMOUNT_VISIBLE, 'Done', true],
+      [NEXT_CLIENT_ERROR.PREPARE_FAILED, 'Done', false],
+      [null, 'Done', false],
+    ])('%s offers %s (a privacy warning: %s)', async (errorCode, title, privacy) => {
+      const { navigation, modals } = await refused(errorCode);
+      const [modal] = modals();
+      expect(modal.props.action.props.title).toBe(title);
+      expect(modal.props.icon.type === PrivacyWarningIcon).toBe(privacy);
+      await act(async () => { modal.props.action.props.onPress(); });
+      if (title === 'Done') {
+        expect(NavigationService.navigate).toHaveBeenCalledWith('Main', { screen: 'Home' });
+        expect(navigation.goBack).not.toHaveBeenCalled();
+      } else {
+        expect(NavigationService.navigate).not.toHaveBeenCalled();
+        expect(navigation.goBack).toHaveBeenCalledTimes(1);
+      }
+    });
   });
 
   test('Send waits for an earlier payment still on its way', async () => {
