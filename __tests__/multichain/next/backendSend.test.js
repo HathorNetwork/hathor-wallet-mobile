@@ -86,6 +86,8 @@ function fakeBackend({
   const calls = [];
   let sendStatus = initialSendStatus;
   let earlier = earlierStatus;
+  // Once true, a login is answered 404, as a backend that lost the wallet answers it.
+  let loginGone = false;
   const resubmitted = [];
   let signatures = null;
   const json = (status, body) => ({
@@ -123,6 +125,7 @@ function fakeBackend({
       });
     }
     if (path.endsWith('/session')) {
+      if (loginGone) return json(404, { error: 'unknown wallet' });
       return json(200, { token: 't', scope: 'full', expires_at: 4000000000 });
     }
     if (path.endsWith('/balance')) {
@@ -159,6 +162,15 @@ function fakeBackend({
     }
     if (path === `/v1/sends/${SEND_0}` && method === 'GET') {
       if (earlier?.status === 'unreadable') return json(500, { error: 'try again' });
+      // A 404 that isn't the backend's: a proxy's page, no JSON in it.
+      if (earlier?.status === 'proxy-404') {
+        return { ok: false, status: 404, text: async () => '<html><body>404 Not Found</body></html>' };
+      }
+      // The session ran out, and the login to renew it answers 404.
+      if (earlier?.status === 'login-404') {
+        loginGone = true;
+        return json(401, { error: 'session expired' });
+      }
       return earlier ? json(200, { id: SEND_0, ...earlier }) : json(404, { error: 'unknown send' });
     }
     if (path === `/v1/sends/${SEND_1}`) {
@@ -494,8 +506,9 @@ describe('outputs an earlier payment signed', () => {
     // The new payment is cancelled before the earlier one goes out again: the backend refuses
     // to submit it while another payment holds its outputs.
     const order = backend.calls.map((c) => `${c.method} ${c.path}`);
-    expect(order.indexOf(`DELETE /v1/sends/${SEND_1}`))
-      .toBeLessThan(order.lastIndexOf(`POST /v1/sends/${SEND_0}/resubmit`));
+    const cancelled = order.indexOf(`DELETE /v1/sends/${SEND_1}`);
+    expect(cancelled).toBeGreaterThanOrEqual(0);
+    expect(cancelled).toBeLessThan(order.lastIndexOf(`POST /v1/sends/${SEND_0}/resubmit`));
   });
 });
 
@@ -1064,6 +1077,14 @@ describe('a payment from before a restart', () => {
     await expect(pay()).resolves.toMatchObject({ sendId: SEND_1 });
   });
 
+  // The backend's URL as it was written when the payment was signed: the API drops a trailing
+  // slash, and so does the comparison.
+  it('is let go too when its backend was written with a trailing slash', async () => {
+    const backend = fakeBackend();
+    const entry = await restartWith(backend, earlierEntry({ backend: `${CONFIG.backendUrl}/` }));
+    expect(entry).toMatchObject({ rejected: true, reason: 'forgotten' });
+  });
+
   // Another backend (the one for local testing) knows nothing of a send it never made.
   it.each([
     ['of another backend', { backend: 'http://other.test' }],
@@ -1074,6 +1095,41 @@ describe('a payment from before a restart', () => {
     expect(entry.rejected).toBeUndefined();
     await expect(pay()).rejects.toMatchObject({ code: 'earlier-pending' });
     expect(backend.signatures()).toBeNull();
+  });
+
+  // Only the backend's own answer for the send, "unknown send", says it no longer has it. A 404
+  // for anything else says nothing of the payment, which may still land.
+  it.each([
+    ['the login to read it', 'login-404'],
+    ['a proxy in front of the backend', 'proxy-404'],
+  ])('holds its outputs when %s answers 404', async (_label, status) => {
+    const backend = fakeBackend({ earlierStatus: { status } });
+    const entry = await restartWith(backend, earlierEntry({ backend: CONFIG.backendUrl }));
+    expect(entry.rejected).toBeUndefined();
+    expect(entry.signedTx).toBe('cafe');
+    expect(backend.resubmitted).toEqual([]);
+  });
+
+  // A new payment over its outputs asks about it again, and sends it again only while the backend
+  // says it is on its way: one whose state can't be read may have expired.
+  it('is not sent again blind when a new payment over its outputs finds it unread', async () => {
+    const backend = fakeBackend({ earlierStatus: { status: 'unreadable' } });
+    await restartWith(backend, earlierEntry({ backend: CONFIG.backendUrl }));
+    await expect(pay()).rejects.toMatchObject({ code: 'earlier-pending' });
+    expect(backend.resubmitted).toEqual([]);
+    expect(backend.signatures()).toBeNull();
+  });
+
+  // Only a state the app knows to be on its way sends the payment again.
+  it.each([
+    ['a state the app doesn\'t know', { status: 'held' }],
+    ['no state at all', {}],
+  ])('waits, sending nothing, when the backend answers %s', async (_label, answer) => {
+    const backend = fakeBackend({ earlierStatus: answer });
+    const entry = await restartWith(backend, earlierEntry({ backend: CONFIG.backendUrl }));
+    expect(backend.resubmitted).toEqual([]);
+    expect(entry.rejected).toBeUndefined();
+    expect(entry.recorded).toBeUndefined();
   });
 });
 

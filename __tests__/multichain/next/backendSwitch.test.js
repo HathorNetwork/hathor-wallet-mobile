@@ -138,6 +138,51 @@ function twoBackends() {
   return { fetchImpl, toA, toB, configOfB };
 }
 
+/**
+ * Two backends in front of the same Hathor Next and wallet service: the same pins, the same wallet,
+ * so one sign-once ledger. A has the payment; B never had it, and answers "unknown send" for it, as
+ * the backend does. `holdConfigOfB` keeps B's config answer until the test releases it;
+ * `holdReadsOfA` keeps A's next read of the payment until the test answers it.
+ */
+function sameNetworkBackends({ holdConfigOfB = false, holdReadsOfA = false } = {}) {
+  const toA = [];
+  const toB = [];
+  const configOfB = deferred();
+  if (!holdConfigOfB) configOfB.resolve();
+  let readOfA = null;
+  const readsOfA = { reached: deferred(), answer: deferred() };
+  const backendA = twoBackends();
+  const fetchImpl = async (url, options = {}) => {
+    const { method = 'GET', body } = options;
+    if (!url.startsWith(B)) {
+      const path = url.slice(A.length);
+      if (holdReadsOfA && method === 'GET' && path === `/v1/sends/${SEND_1}` && !readOfA) {
+        readOfA = path;
+        toA.push({ method, path });
+        readsOfA.reached.resolve();
+        return readsOfA.answer.promise;
+      }
+      toA.push({ method, path });
+      return backendA.fetchImpl(url, options);
+    }
+    const path = url.slice(B.length);
+    toB.push({ method, path });
+    if (path === '/v1/config') {
+      await configOfB.promise;
+    }
+    if (path.includes(SEND_1)) {
+      return json(404, { error: 'unknown send' });
+    }
+    // Everything else as A answers it: the same network, the same wallet.
+    return backendA.fetchImpl(`${A}${path}`, { method, body, headers: options.headers });
+  };
+  return {
+    fetchImpl, toA, toB, configOfB, readsOfA,
+  };
+}
+
+const CONFIG_SAME_NETWORK = { ...CONFIG_A, backendUrl: B };
+
 describe('a client switching to another backend', () => {
   let client = null;
   afterEach(() => {
@@ -240,5 +285,96 @@ describe('a client switching to another backend', () => {
     sockets[1].onmessage({ data: JSON.stringify({ type: 'entry' }) });
     await settle();
     expect(reads()).toBe(before + 1);
+  });
+
+  // A payment signed for A, saved while the app goes to B in front of the same network: B must not
+  // decide anything about it. B never had it and says "unknown send", which from A would free it.
+  it('asks another backend of the same network nothing about a payment signed for its own', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const backends = sameNetworkBackends({ holdConfigOfB: true });
+    const data = {};
+    const ledgerWrite = deferred();
+    const reachedLedgerWrite = deferred();
+    const storage = {
+      getItem: (key) => (key in data ? JSON.parse(data[key]) : null),
+      setItemAsync: async (key, value) => {
+        if (key.startsWith('wallet:multichain:nextSigned:') && !reachedLedgerWrite.done) {
+          reachedLedgerWrite.done = true;
+          reachedLedgerWrite.resolve();
+          await ledgerWrite.promise;
+        }
+        data[key] = JSON.stringify(value);
+      },
+      removeItem: (key) => { delete data[key]; },
+    };
+    client = createBackendNextClient({
+      fetchImpl: backends.fetchImpl,
+      WebSocketImpl: null,
+      storage,
+      sendPollMs: 5,
+      unconfirmedPollMs: 5,
+    });
+    await client.prepareKeys({ words: derivation.mnemonic });
+    await client.connect({ network: 'privatenet', config: CONFIG_A, birthday: 'genesis' });
+    const sending = client.send({
+      tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount),
+    });
+    sending.catch(() => {});
+    await reachedLedgerWrite.promise;
+
+    // The app goes to B; the signatures are saved meanwhile; then B answers and connects.
+    const connecting = client.connect({
+      network: 'privatenet', config: CONFIG_SAME_NETWORK, birthday: 'genesis',
+    });
+    await settle();
+    ledgerWrite.resolve();
+    await sending.catch(() => {});
+    backends.configOfB.resolve();
+    await connecting;
+    await settle();
+
+    // B was asked nothing about it, and the payment still holds its outputs, signed for A.
+    expect(backends.toB.filter((c) => c.path.includes(SEND_1))).toEqual([]);
+    const ledgerKey = Object.keys(data).find((key) => key.startsWith('wallet:multichain:nextSigned:'));
+    const [entry] = JSON.parse(data[ledgerKey]).entries;
+    expect(entry).toMatchObject({ sendId: SEND_1, backend: A });
+    expect(entry.rejected).toBeUndefined();
+
+    // Back on A, it goes out again there.
+    await client.connect({ network: 'privatenet', config: CONFIG_A, birthday: 'genesis' });
+    expect(backends.toA.filter((c) => c.path === `/v1/sends/${SEND_1}/resubmit`)).toHaveLength(1);
+  });
+
+  // The backend that answers is the one that was asked: an answer A gives about its own payment
+  // holds after the app has gone to B.
+  it('acts on its own backend\'s answer that comes after the app went to another', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const backends = sameNetworkBackends({ holdReadsOfA: true });
+    const data = {};
+    const storage = {
+      getItem: (key) => (key in data ? JSON.parse(data[key]) : null),
+      setItemAsync: async (key, value) => { data[key] = JSON.stringify(value); },
+      removeItem: (key) => { delete data[key]; },
+    };
+    client = createBackendNextClient({
+      fetchImpl: backends.fetchImpl,
+      WebSocketImpl: null,
+      storage,
+      sendPollMs: 5,
+      unconfirmedPollMs: 5,
+    });
+    await client.prepareKeys({ words: derivation.mnemonic });
+    await client.connect({ network: 'privatenet', config: CONFIG_A, birthday: 'genesis' });
+    await client.send({ tokenId: NATIVE, to: PAYMENT.address, amount: BigInt(PAYMENT.amount) });
+    await backends.readsOfA.reached.promise;
+
+    // While A's read is on its way, the app goes to B; then A answers that it doesn't have it.
+    await client.connect({ network: 'privatenet', config: CONFIG_SAME_NETWORK, birthday: 'genesis' });
+    backends.readsOfA.answer.resolve(json(404, { error: 'unknown send' }));
+    await settle();
+
+    const ledgerKey = Object.keys(data).find((key) => key.startsWith('wallet:multichain:nextSigned:'));
+    expect(JSON.parse(data[ledgerKey]).entries)
+      .toMatchObject([{ sendId: SEND_1, rejected: true, reason: 'forgotten' }]);
   });
 });

@@ -38,7 +38,7 @@ import {
   bytesToHex,
   hexToBytes,
 } from '../../../src/multichain/next/kit/scalar';
-import { CREATE_1 } from '../fakes/sendIds';
+import { CREATE_1, SEND_0 } from '../fakes/sendIds';
 import { loggedRefusals } from '../fakes/signing';
 
 // The vectors' wallet is account 3 of the test mnemonic, this client's, and its creation names
@@ -123,6 +123,10 @@ function fakeBackend({
   // The fee the backend quotes, and the native token the wallet holds.
   sendFee = CASE.fee,
   balance = '10000000',
+  // What the backend says of an earlier payment the ledger holds (SEND_0): unreadable, unless told.
+  earlierStatus = null,
+  // A promise the other backend's config answer waits for.
+  otherConfigGate = null,
 } = {}) {
   const calls = [];
   let signatures = null;
@@ -138,6 +142,9 @@ function fakeBackend({
     const [, host, path] = /^http:\/\/(backend|other)\.test(.*)$/.exec(url);
     const data = body ? JSON.parse(body) : null;
     calls.push({ method, host, path, data });
+    if (path === '/v1/config' && host === 'other' && otherConfigGate) {
+      await otherConfigGate;
+    }
     if (path === '/v1/config') {
       return json(200, {
         next: {
@@ -185,6 +192,9 @@ function fakeBackend({
     if (path === `/v1/sends/${CREATE_1}/signatures`) {
       ({ signatures } = data);
       return json(200, { id: CREATE_1, tx_id: CASE.tx_id, status: 'submitted' });
+    }
+    if (path === `/v1/sends/${SEND_0}` && method === 'GET') {
+      return earlierStatus ? json(200, { id: SEND_0, status: earlierStatus }) : json(500, { error: 'try again' });
     }
     if (path === `/v1/sends/${CREATE_1}` && method === 'GET') {
       return json(200, signatures
@@ -515,6 +525,49 @@ describe('a token created on Hathor Next through the backend', () => {
     expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
   });
 
+  // A creation signed for this backend, saved while the app goes to another one in front of the
+  // same network: the other is asked nothing about it, and it goes out here at the next connect.
+  it('leaves a creation saved as the app goes to another backend to its own', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const ledgerWrite = { reach: null, release: null };
+    const reached = new Promise((resolve) => { ledgerWrite.reach = resolve; });
+    const released = new Promise((resolve) => { ledgerWrite.release = resolve; });
+    const base = memoryStorage();
+    let held = false;
+    const storage = {
+      ...base,
+      setItemAsync: async (key, value) => {
+        if (!held && key.startsWith('wallet:multichain:nextSigned:')) {
+          held = true;
+          ledgerWrite.reach();
+          await released;
+        }
+        return base.setItemAsync(key, value);
+      },
+    };
+    let openOther;
+    const otherConfigGate = new Promise((resolve) => { openOther = resolve; });
+    const backend = fakeBackend({ otherConfigGate });
+    client = await connected(backend, storage);
+    const creating = client.createToken({ words: derivation.mnemonic, ...CREATION });
+    creating.catch(() => {});
+    await reached;
+
+    const reconnecting = client.connect({
+      network: 'privatenet',
+      config: { ...CONFIG, backendUrl: 'http://other.test' },
+      birthday: 'genesis',
+    });
+    await new Promise((resolve) => { setTimeout(resolve, 10); });
+    ledgerWrite.release();
+    await creating.catch(() => {});
+    openOther();
+    await reconnecting;
+    await new Promise((resolve) => { setTimeout(resolve, 20); });
+
+    expect(backend.calls.filter((c) => c.host === 'other' && c.path.includes(CREATE_1))).toEqual([]);
+  });
+
   it('signs nothing when the app leaves Hathor Next while the backend builds the token', async () => {
     const storage = memoryStorage();
     const backend = fakeBackend();
@@ -656,6 +709,36 @@ describe('a token created on Hathor Next through the backend', () => {
         outcome: NEXT_CLIENT_ERROR.NOT_CONNECTED, sent: false, reserved: [],
       });
     }
+  });
+
+  // An earlier payment holds the creation's outputs: the creation waits, and the earlier one goes
+  // out again only while the backend says it is on its way. One whose state can't be read may have
+  // expired, and is not sent again on a guess.
+  it.each([
+    ['whose state can\'t be read, sending it nothing', null, 0],
+    ['on its way, sending it again', 'submitted', 1],
+  ])('waits for an earlier payment over its outputs %s', async (_label, earlierStatus, resubmits) => {
+    const walletId = bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), hexToBytes(CASE.pub_b)));
+    const earlier = {
+      sendId: SEND_0,
+      signingHash: 'ab'.repeat(32),
+      inputs: CASE.inputs.map((i) => i.one_time_key),
+      signatures: [],
+      signedTx: 'cafe',
+      txId: 'cd'.repeat(32),
+    };
+    const storage = memoryStorage({
+      [`wallet:multichain:nextSigned:1777:0:${walletId}`]: JSON.stringify({ entries: [earlier] }),
+    });
+    const backend = fakeBackend({ earlierStatus });
+    client = await connected(backend, storage);
+    // The connect reads it, and leaves it as it is.
+    backend.calls.length = 0;
+
+    await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
+      .rejects.toMatchObject({ code: 'earlier-pending' });
+    expect(backend.signatures()).toBeNull();
+    expect(backend.calls.filter((c) => c.path === `/v1/sends/${SEND_0}/resubmit`)).toHaveLength(resubmits);
   });
 
   it('names the token the registry lists with this wallet\'s keys, once recorded', async () => {
