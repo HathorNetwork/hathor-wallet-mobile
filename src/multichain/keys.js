@@ -95,8 +95,10 @@ export function nextAccountNodeOfRoot(root) {
  * @returns {Promise<string|null>} The Hathor Next address, when already known
  */
 export async function prepareNextKeys(words, root = null) {
+  // The client first: a node derived for a client that can't load would be dropped unwiped.
+  const client = ensureNextClient();
   const accountNode = root ? nextAccountNodeOfRoot(root) : undefined;
-  const { address = null, pubB = null } = await ensureNextClient().prepareKeys({
+  const { address = null, pubB = null } = await client.prepareKeys({
     words,
     ...(accountNode ? { accountNode } : {}),
   });

@@ -901,6 +901,7 @@ export function createBackendNextClient({
      * @throws {NextClientError} NO_KEYS when the app locked meanwhile
      */
     async prepareKeys({ words, accountNode }) {
+      const started = lockCount;
       let b;
       if (accountNode) {
         try {
@@ -909,7 +910,6 @@ export function createBackendNextClient({
           accountNode.fill(0);
         }
       } else {
-        const started = lockCount;
         const seed = await mnemonicToSeed(words);
         if (lockCount !== started) {
           seed.fill(0);
@@ -917,6 +917,10 @@ export function createBackendNextClient({
         }
         ({ b } = deriveAccount(seed));
         seed.fill(0);
+      }
+      // From the node or the words: a lock since this call began keeps no keys.
+      if (lockCount !== started) {
+        throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
       }
       keys = keysOf(b);
       // The spend secret goes back to the unlock alone, which keeps it encrypted with the PIN on

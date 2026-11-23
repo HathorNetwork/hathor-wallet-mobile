@@ -36,7 +36,7 @@ import {
 } from '../../src/actions';
 import { MULTICHAIN_FEATURE_TOGGLE, SHIELDED_UNLOCK_SOURCE } from '../../src/constants';
 import * as multichainKeys from '../../src/multichain/keys';
-import { STORE } from '../../src/store';
+import { FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, STORE } from '../../src/store';
 import PasskeyLockScreen from '../../src/screens/PasskeyLockScreen';
 import { verifyPasskeyForUnlock } from '../../src/passkey/passkeySigner';
 import { rememberPasskeyShieldedKeys } from '../../src/passkey/shieldedKeys';
@@ -54,9 +54,10 @@ let mounted = null;
 
 /**
  * Renders the lock screen, which runs the unlock ceremony as it mounts. `toggles`: what Unleash
- * answered before the unlock.
+ * answered before the unlock; left out, it has not answered yet. `during`: what Unleash answers
+ * while the passkey sheet is up, before the words arrive.
  */
-async function render({ wallet = null, toggles = null } = {}) {
+async function render({ wallet = null, toggles = null, during = null } = {}) {
   const actions = [];
   const recordActions = () => (next) => (action) => {
     actions.push(action);
@@ -66,9 +67,19 @@ async function render({ wallet = null, toggles = null } = {}) {
   if (wallet) {
     store.dispatch(setWallet(wallet));
   }
-  if (toggles) {
-    store.dispatch(setFeatureToggles(toggles));
+  const answer = (flags) => {
+    store.dispatch(setFeatureToggles(flags));
     store.dispatch(featureToggleInitialized());
+  };
+  if (toggles) {
+    answer(toggles);
+  }
+  if (during) {
+    const ceremony = verifyPasskeyForUnlock.getMockImplementation();
+    verifyPasskeyForUnlock.mockImplementation(async (params) => {
+      answer(during);
+      return ceremony(params);
+    });
   }
   actions.length = 0;
   await act(async () => {
@@ -92,6 +103,7 @@ describe('PasskeyLockScreen', () => {
       await act(async () => { mounted.unmount(); });
       mounted = null;
     }
+    STORE.removeItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY);
     jest.restoreAllMocks();
     jest.clearAllMocks();
   });
@@ -150,6 +162,75 @@ describe('PasskeyLockScreen', () => {
     if (on) {
       expect(multichainKeys.prepareNextKeysAtUnlock).toHaveBeenCalledWith(WORDS, true, ROOT);
     }
+  });
+
+  // The usual start of the app: the lock screen comes before Unleash answers, and the flag is the
+  // one this device saved from Unleash's last answer. The ceremony shares its root by it.
+  test.each([
+    ['on', { [MULTICHAIN_FEATURE_TOGGLE]: true }, true],
+    ['off', { [MULTICHAIN_FEATURE_TOGGLE]: false }, false],
+    ['of another flag alone', { 'another.rollout': true }, false],
+  ])('before Unleash answers, shares the root by the flag this device saved (%s)', async (name, saved, on) => {
+    STORE.setItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, saved);
+    jest.spyOn(multichainKeys, 'prepareNextKeysAtUnlock').mockResolvedValue(null);
+
+    const { typesOf } = await render();
+
+    expect(verifyPasskeyForUnlock).toHaveBeenCalledTimes(1);
+    expect(verifyPasskeyForUnlock.mock.calls[0][0].shareRoot).toBe(on);
+    expect(rememberPasskeyShieldedKeys).toHaveBeenCalledWith(WORDS, on ? ROOT : undefined);
+    if (on) {
+      expect(multichainKeys.prepareNextKeysAtUnlock).toHaveBeenCalledWith(WORDS, true, ROOT);
+    } else {
+      expect(multichainKeys.prepareNextKeysAtUnlock).not.toHaveBeenCalled();
+    }
+    expect(typesOf().includes(types.MULTICHAIN_NEXT_KEYS_DERIVED)).toBe(on);
+  });
+
+  // The unlock reads the flag twice: as the ceremony starts, to share its root, and as the words
+  // arrive, to derive the Hathor Next keys. Unleash can answer in between, and the keys follow the
+  // flag as the app knows it when the words arrive.
+  test('with the flag turned off during the ceremony: no Hathor Next keys, though the root was shared', async () => {
+    jest.spyOn(multichainKeys, 'prepareNextKeysAtUnlock').mockResolvedValue(null);
+
+    const { typesOf } = await render({
+      toggles: { [MULTICHAIN_FEATURE_TOGGLE]: true },
+      during: { [MULTICHAIN_FEATURE_TOGGLE]: false },
+    });
+
+    expect(verifyPasskeyForUnlock.mock.calls[0][0].shareRoot).toBe(true);
+    // The root was derived, so the shielded keys still come from it.
+    expect(rememberPasskeyShieldedKeys).toHaveBeenCalledWith(WORDS, ROOT);
+    expect(multichainKeys.prepareNextKeysAtUnlock).not.toHaveBeenCalled();
+    expect(typesOf()).not.toContain(types.MULTICHAIN_NEXT_KEYS_DERIVED);
+    expect(typesOf()).toContain(types.START_WALLET_REQUESTED);
+  });
+
+  test('with the flag turned on during the ceremony: the Hathor Next keys derive from the words, with no root', async () => {
+    jest.spyOn(multichainKeys, 'prepareNextKeysAtUnlock').mockResolvedValue(null);
+
+    const { typesOf } = await render({
+      toggles: { [MULTICHAIN_FEATURE_TOGGLE]: false },
+      during: { [MULTICHAIN_FEATURE_TOGGLE]: true },
+    });
+
+    expect(verifyPasskeyForUnlock.mock.calls[0][0].shareRoot).toBe(false);
+    expect(rememberPasskeyShieldedKeys).toHaveBeenCalledWith(WORDS, undefined);
+    expect(multichainKeys.prepareNextKeysAtUnlock).toHaveBeenCalledTimes(1);
+    expect(multichainKeys.prepareNextKeysAtUnlock).toHaveBeenCalledWith(WORDS, true, undefined);
+    expect(typesOf()).toContain(types.MULTICHAIN_NEXT_KEYS_DERIVED);
+  });
+
+  // Unleash's first answer comes while the sheet is up: until then the flag was the saved one.
+  test('with Unleash answering off during the ceremony, over a flag saved on: no Hathor Next keys', async () => {
+    STORE.setItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, { [MULTICHAIN_FEATURE_TOGGLE]: true });
+    jest.spyOn(multichainKeys, 'prepareNextKeysAtUnlock').mockResolvedValue(null);
+
+    const { typesOf } = await render({ during: { [MULTICHAIN_FEATURE_TOGGLE]: false } });
+
+    expect(verifyPasskeyForUnlock.mock.calls[0][0].shareRoot).toBe(true);
+    expect(multichainKeys.prepareNextKeysAtUnlock).not.toHaveBeenCalled();
+    expect(typesOf()).not.toContain(types.MULTICHAIN_NEXT_KEYS_DERIVED);
   });
 
   test('starts the wallet when none runs', async () => {

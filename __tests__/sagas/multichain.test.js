@@ -1895,25 +1895,30 @@ describe('the backend for local testing', () => {
 // checked the passkey.
 describe('the keys a passkey ceremony derives for Hathor Next', () => {
   test('come from the root the ceremony checked the passkey with', async () => {
+    // One wallet: the ceremony's words and the root it derived from them.
+    const words = `${'abandon '.repeat(23)}art`;
+    const root = walletUtils.getXPrivKeyFromSeed(words, { networkName: 'mainnet' });
+    const expectedNode = Buffer.from(nextAccountNodeOfRoot(root)).toString('hex');
     STORE.isPasskeyWallet.mockReturnValue(true);
-    const root = walletUtils.getXPrivKeyFromSeed(`${'abandon '.repeat(23)}art`, {
-      networkName: 'mainnet',
-    });
-    withPasskeyWords.mockImplementation(async (fn) => fn(WORDS, root));
+    withPasskeyWords.mockImplementation(async (fn) => fn(words, root));
     const env = setup();
-    const prepareKeys = jest.spyOn(ensureNextClient(), 'prepareKeys');
+    // What the client is handed, read before it wipes the node.
+    const client = ensureNextClient();
+    const prepareKeys = client.prepareKeys.bind(client);
+    const handed = [];
+    jest.spyOn(client, 'prepareKeys').mockImplementation((params) => {
+      handed.push({ ...params, accountNode: Buffer.from(params.accountNode).toString('hex') });
+      return prepareKeys(params);
+    });
     env.dispatch(multichainConnectSettingChanged(true));
     await wait(2000);
 
     expect(withPasskeyWords).toHaveBeenCalledTimes(1);
     expect(withPasskeyWords).toHaveBeenCalledWith(expect.any(Function), { shareRoot: true });
-    expect(prepareKeys).toHaveBeenCalledTimes(1);
-    const [{ words, accountNode }] = prepareKeys.mock.calls[0];
-    expect(words).toBe(WORDS);
-    expect(Buffer.from(accountNode).toString('hex'))
-      .toBe(Buffer.from(nextAccountNodeOfRoot(root)).toString('hex'));
+    expect(handed).toEqual([{ words, accountNode: expectedNode }]);
+    // The keys are the wallet's: its address, derived from the node.
     expect(env.getState().multichain.next).toMatchObject({
-      status: NEXT_STATUS.READY, address: ADDRESS,
+      status: NEXT_STATUS.READY, address: await deriveFakeNextAddress(words),
     });
   });
 });
