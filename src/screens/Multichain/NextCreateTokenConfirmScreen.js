@@ -15,6 +15,7 @@ import FeedbackModal from '../../components/FeedbackModal';
 import Spinner from '../../components/Spinner';
 import OfflineBar from '../../components/OfflineBar';
 import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
+import { PrivacyWarningIcon } from '../../components/Multichain/PrivacyWarningIcon';
 import {
   multichainNextCreateTokenRequested,
   multichainNextCreateTokenReset,
@@ -54,12 +55,12 @@ export const creationLostText = () => t`The token creation was sent, but this sc
 export const creationUnknownText = () => t`This screen lost track of the token creation before it knew whether it was signed. Check your tokens on Hathor Next before you create this one again.`;
 
 /**
- * What the user is asked before a creation that pays some of their HTR back in the open is signed.
+ * What the user is warned of before a creation that pays some of their HTR back in the open is
+ * signed: a creation's outputs are all public, its change too.
  *
- * @param {string} symbol The token's
  * @param {string} shown The HTR that goes public, as shown
  */
-export const publicChangeText = (symbol, shown) => t`Creating ${symbol} makes ${shown} public. The fee is paid from your HTR, and what comes back to you as change is paid openly to your Hathor Next address, where anyone who knows that address can see it.`;
+export const publicChangeText = (shown) => t`Your change of ${shown} will be public.`;
 
 let draftCount = 0;
 
@@ -184,8 +185,8 @@ export default function NextCreateTokenConfirmScreen() {
     if (review) {
       return (
         <FeedbackModal
-          icon={icon(errorIcon)}
-          text={publicChangeText(symbol, render(review.publicChange, nativeSymbol))}
+          icon={<PrivacyWarningIcon />}
+          text={publicChangeText(render(review.publicChange, nativeSymbol))}
           onDismiss={() => answer(false)}
           action={(
             <View style={styles.reviewActions}>
