@@ -125,7 +125,20 @@ export function publicKeyOf(secret) {
  * @returns {{ a: bigint, b: bigint }}
  */
 export function deriveAccount(seed64, accountIndex = HATHOR_NEXT_ACCOUNT_INDEX) {
-  const node64 = accountNode64(seed64, accountIndex);
+  return deriveAccountFromNode(accountNode64(seed64, accountIndex));
+}
+
+/**
+ * An account's two Hathor Next secrets from its node (accountNode64), for a caller that derived
+ * the node from a BIP32 root it already holds, without stretching the words again.
+ *
+ * @param {Uint8Array} node64 The account node, `key ‖ chain code`
+ * @returns {{ a: bigint, b: bigint }}
+ */
+export function deriveAccountFromNode(node64) {
+  if (!(node64 instanceof Uint8Array) || node64.length !== 64) {
+    throw new Error('An account node is 64 bytes.');
+  }
   return {
     a: hashToScalar('samba/walletd/view/v1', [node64]),
     b: hashToScalar('samba/walletd/spend/v1', [node64]),

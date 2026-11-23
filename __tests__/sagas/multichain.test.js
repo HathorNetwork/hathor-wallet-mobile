@@ -86,7 +86,7 @@ import {
   saga,
   SEND_SETTLE_MS,
 } from '../../src/sagas/multichain';
-import { prepareNextKeysAtUnlock } from '../../src/multichain/keys';
+import { nextAccountNodeOfRoot, prepareNextKeysAtUnlock } from '../../src/multichain/keys';
 import { ensureNextClient, getNextClient, setNextClient } from '../../src/multichain/nextClient';
 import { deriveFakeNextAddress, fakePeerAddress } from '../multichain/fakes/fakeAddress';
 import {
@@ -1885,6 +1885,33 @@ describe('the backend for local testing', () => {
     env.dispatch(multichainDevBackendSet(null));
     await wait(2000);
     expect(withPasskeyWords).toHaveBeenCalledTimes(1);
+    expect(env.getState().multichain.next).toMatchObject({
+      status: NEXT_STATUS.READY, address: ADDRESS,
+    });
+  });
+});
+
+// Hathor Next's own passkey ceremony stretches the words once: its keys come from the root that
+// checked the passkey.
+describe('the keys a passkey ceremony derives for Hathor Next', () => {
+  test('come from the root the ceremony checked the passkey with', async () => {
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    const root = walletUtils.getXPrivKeyFromSeed(`${'abandon '.repeat(23)}art`, {
+      networkName: 'mainnet',
+    });
+    withPasskeyWords.mockImplementation(async (fn) => fn(WORDS, root));
+    const env = setup();
+    const prepareKeys = jest.spyOn(ensureNextClient(), 'prepareKeys');
+    env.dispatch(multichainConnectSettingChanged(true));
+    await wait(2000);
+
+    expect(withPasskeyWords).toHaveBeenCalledTimes(1);
+    expect(withPasskeyWords).toHaveBeenCalledWith(expect.any(Function), { shareRoot: true });
+    expect(prepareKeys).toHaveBeenCalledTimes(1);
+    const [{ words, accountNode }] = prepareKeys.mock.calls[0];
+    expect(words).toBe(WORDS);
+    expect(Buffer.from(accountNode).toString('hex'))
+      .toBe(Buffer.from(nextAccountNodeOfRoot(root)).toString('hex'));
     expect(env.getState().multichain.next).toMatchObject({
       status: NEXT_STATUS.READY, address: ADDRESS,
     });

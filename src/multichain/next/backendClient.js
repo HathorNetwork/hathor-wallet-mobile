@@ -22,6 +22,7 @@ import {
 import {
   HATHOR_NEXT_ACCOUNT_INDEX,
   deriveAccount,
+  deriveAccountFromNode,
   mnemonicToSeed,
   publicKeyOf,
   walletIdOf,
@@ -892,19 +893,31 @@ export function createBackendNextClient({
      * Derives the wallet's Hathor Next keys from its words. No network. The keys live from an
      * unlock to the next lock: if the app locks while they are derived, they are never kept.
      *
-     * @param {{ words: string }} params
+     * With `accountNode` (the account's BIP32 node, from a root the caller already derived from
+     * these words) the words are not stretched again. The node is wiped once used.
+     *
+     * @param {{ words: string, accountNode?: Uint8Array }} params
      * @returns {Promise<{ pubB: string }>}
      * @throws {NextClientError} NO_KEYS when the app locked meanwhile
      */
-    async prepareKeys({ words }) {
-      const started = lockCount;
-      const seed = await mnemonicToSeed(words);
-      if (lockCount !== started) {
+    async prepareKeys({ words, accountNode }) {
+      let b;
+      if (accountNode) {
+        try {
+          ({ b } = deriveAccountFromNode(accountNode));
+        } finally {
+          accountNode.fill(0);
+        }
+      } else {
+        const started = lockCount;
+        const seed = await mnemonicToSeed(words);
+        if (lockCount !== started) {
+          seed.fill(0);
+          throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
+        }
+        ({ b } = deriveAccount(seed));
         seed.fill(0);
-        throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
       }
-      const { b } = deriveAccount(seed);
-      seed.fill(0);
       keys = keysOf(b);
       // The spend secret goes back to the unlock alone, which keeps it encrypted with the PIN on
       // this device (multichain/keys.js): every other key derives from it.

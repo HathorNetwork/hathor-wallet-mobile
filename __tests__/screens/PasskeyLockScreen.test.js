@@ -47,6 +47,8 @@ import {
 /* eslint-enable import/first */
 
 const WORDS = 'passkey words';
+// The root the ceremony derives from the words when it is asked to share it.
+const ROOT = { root: 'of the passkey words' };
 
 let mounted = null;
 
@@ -78,7 +80,10 @@ async function render({ wallet = null, toggles = null } = {}) {
 describe('PasskeyLockScreen', () => {
   beforeEach(() => {
     jest.spyOn(STORE, 'getWalletMeta').mockReturnValue({ walletType: 'passkey', xpub: 'xpub' });
-    verifyPasskeyForUnlock.mockImplementation(async ({ onWords }) => onWords(WORDS));
+    // As the real ceremony: the root goes to onWords only when the unlock asks for it.
+    verifyPasskeyForUnlock.mockImplementation(async ({ onWords, shareRoot }) => (
+      shareRoot ? onWords(WORDS, ROOT) : onWords(WORDS)
+    ));
     walletServiceRegistrationForUnlock.mockReturnValue(undefined);
   });
 
@@ -99,7 +104,8 @@ describe('PasskeyLockScreen', () => {
 
     await render();
 
-    expect(rememberPasskeyShieldedKeys).toHaveBeenCalledWith(WORDS);
+    // No root with the multichain flag off: they derive their own, as before.
+    expect(rememberPasskeyShieldedKeys).toHaveBeenCalledWith(WORDS, undefined);
     expect(register).toHaveBeenCalledWith(WORDS);
     expect(finishWalletServiceRegistration).toHaveBeenCalledWith(registration);
   });
@@ -107,7 +113,7 @@ describe('PasskeyLockScreen', () => {
   test('derives them when the wallet registers nothing too', async () => {
     await render();
 
-    expect(rememberPasskeyShieldedKeys).toHaveBeenCalledWith(WORDS);
+    expect(rememberPasskeyShieldedKeys).toHaveBeenCalledWith(WORDS, undefined);
     expect(finishWalletServiceRegistration).toHaveBeenCalledWith(undefined);
   });
 
@@ -121,11 +127,29 @@ describe('PasskeyLockScreen', () => {
     const { typesOf } = await render({ toggles });
     // With the flag off, nothing is derived and no "keys derived" action goes out.
     if (on) {
-      expect(derive).toHaveBeenCalledWith(WORDS, true);
+      expect(derive).toHaveBeenCalledWith(WORDS, true, ROOT);
     } else {
       expect(derive).not.toHaveBeenCalled();
     }
     expect(typesOf().includes(types.MULTICHAIN_NEXT_KEYS_DERIVED)).toBe(on);
+  });
+
+  // With the flag on, the words are stretched once: the root that checks the passkey also gives
+  // the shielded keys and Hathor Next's. With it off, the ceremony shares nothing.
+  test.each([
+    ['on', { [MULTICHAIN_FEATURE_TOGGLE]: true }, true],
+    ['off', { [MULTICHAIN_FEATURE_TOGGLE]: false }, false],
+    ['unknown', null, false],
+  ])('shares the ceremony\'s root only with the multichain flag on (%s)', async (name, toggles, on) => {
+    jest.spyOn(multichainKeys, 'prepareNextKeysAtUnlock').mockResolvedValue(null);
+    await render({ toggles });
+
+    expect(verifyPasskeyForUnlock).toHaveBeenCalledTimes(1);
+    expect(verifyPasskeyForUnlock.mock.calls[0][0].shareRoot).toBe(on);
+    expect(rememberPasskeyShieldedKeys).toHaveBeenCalledWith(WORDS, on ? ROOT : undefined);
+    if (on) {
+      expect(multichainKeys.prepareNextKeysAtUnlock).toHaveBeenCalledWith(WORDS, true, ROOT);
+    }
   });
 
   test('starts the wallet when none runs', async () => {

@@ -118,6 +118,27 @@ export function derivePasskeyXpub(words) {
 }
 
 /**
+ * The root key of the passkey's words, as derivePasskeyXpub and the signers derive it.
+ *
+ * @param {string} words BIP39 seed phrase derived from the passkey PRF secret
+ * @returns {Object} root HDPrivateKey
+ */
+function derivePasskeyRoot(words) {
+  return walletUtils.getXPrivKeyFromSeed(words, { networkName: NETWORK_MAINNET });
+}
+
+/**
+ * derivePasskeyXpub from the root of the same words: wallet-lib's getXPubKeyFromSeed derives that
+ * root and then exactly this, so the identity check holds whichever one runs.
+ *
+ * @param {Object} root root HDPrivateKey (derivePasskeyRoot)
+ * @returns {string} account-path xpubkey
+ */
+export function passkeyXpubOfRoot(root) {
+  return walletUtils.deriveXpriv(root, "0'").xpubkey;
+}
+
+/**
  * The legacy P2PKH change-level key (m/44'/280'/0'/0) from the account root xpriv, derived
  * non-compliantly like wallet-lib derives the wallet's legacy addresses. Its children are the
  * address keys.
@@ -172,12 +193,21 @@ async function withPasskeyLock(fn) {
  * checks: the single-flight lock, the stored credentialId (no OS picker), cancel mapping, the
  * missing-metadata and xpub-identity checks, and the best-effort credentialId backfill.
  *
+ * Every key a ceremony derives comes from the words through one BIP39 stretch (PBKDF2, seconds of
+ * JS on a phone), and each consumer that derives its own root stretches them again. With
+ * `shareRoot` the ceremony derives the root once, checks the passkey with it, and hands it to
+ * `fn` as a second argument, so its consumers derive from it instead. Without it, the ceremony
+ * runs as it always did and `fn` gets the words alone.
+ *
  * @template T
- * @param {(words: string) => Promise<T>} fn Runs while the words are in memory.
- * @param {{ onCancel?: () => void }} [options] `onCancel` runs when the user dismisses the sheet.
+ * @param {(words: string, root?: Object) => Promise<T>} fn Runs while the words (and the root,
+ *   with `shareRoot`) are in memory.
+ * @param {{ onCancel?: () => void, shareRoot?: boolean }} [options] `onCancel` runs when the user
+ *   dismisses the sheet. `shareRoot`: derive the root once and hand it to `fn` (only while the
+ *   multichain flag is on).
  * @returns {Promise<T>}
  */
-export function withPasskeyWords(fn, { onCancel } = {}) {
+export function withPasskeyWords(fn, { onCancel, shareRoot = false } = {}) {
   return withPasskeyLock(async () => {
     const meta = STORE.getWalletMeta();
     // Check the stored identity BEFORE the ceremony: without it the result can't be verified, so
@@ -200,8 +230,13 @@ export function withPasskeyWords(fn, { onCancel } = {}) {
       }
       throw e;
     }
+    let root = null;
     try {
-      if (derivePasskeyXpub(words) !== meta.xpub) {
+      if (shareRoot) {
+        root = derivePasskeyRoot(words);
+      }
+      const xpub = root ? passkeyXpubOfRoot(root) : derivePasskeyXpub(words);
+      if (xpub !== meta.xpub) {
         throw new PasskeyXpubMismatchError(meta.passkeyLabel);
       }
       // Wallets signed in before credentialId was captured (or on another device) learn it here,
@@ -210,11 +245,12 @@ export function withPasskeyWords(fn, { onCancel } = {}) {
       if (credentialId && credentialId !== meta.credentialId) {
         STORE.updateWalletMeta({ credentialId }).catch((e) => log.error('credentialId backfill failed', e));
       }
-      return await fn(words);
+      return await (root ? fn(words, root) : fn(words));
     } finally {
       // JS cannot zero string memory; dropping the reference as soon as possible is the best
       // available hygiene.
       words = null;
+      root = null;
     }
   });
 }
@@ -365,10 +401,15 @@ export function makePasskeyPrivateKeyProvider() {
  * wallet, and discards the derived material. Runs under the same single-flight guard as signing.
  * Resolves on success, with what `onWords` returned (if given); throws PasskeyCancelledError /
  * PasskeyXpubMismatchError / PasskeyBusyError.
+ *
+ * `shareRoot` (withPasskeyWords): the root the check derived goes to `onWords` too.
  */
-export function verifyPasskeyForUnlock({ onWords } = {}) {
+export function verifyPasskeyForUnlock({ onWords, shareRoot = false } = {}) {
   // `onWords` lets the unlock ceremony do work that needs the words (preparing the wallet-service
   // registration) without a second Face ID prompt. It runs inside the passkey lock, so it must be
   // quick; its result is returned so slow follow-up work can run after the lock is released.
-  return withPasskeyWords(async (words) => (onWords ? onWords(words) : undefined));
+  return withPasskeyWords(
+    async (...derived) => (onWords ? onWords(...derived) : undefined),
+    { shareRoot },
+  );
 }
