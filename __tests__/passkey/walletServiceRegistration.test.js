@@ -37,10 +37,11 @@ jest.mock('../../src/shielded/cryptoProvider', () => ({
   loadShieldedCryptoProvider: jest.fn(async () => ({ provider: {} })),
 }));
 
+// The real logger's methods, each one a mock: a call to a method the logger lacks fails here as it
+// fails in the app.
 jest.mock('../../src/logger', () => {
-  const log = {
-    error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn(), log: jest.fn(),
-  };
+  const { logger: real } = jest.requireActual('../../src/logger');
+  const log = Object.fromEntries(Object.keys(real('test')).map((method) => [method, jest.fn()]));
   return { logger: () => log };
 });
 
