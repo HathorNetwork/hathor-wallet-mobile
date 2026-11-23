@@ -71,16 +71,18 @@ export function supportsPasskeyShieldedWalletService() {
  * Derive the shielded xpubs and the scan private key from the passkey's words.
  *
  * @param {string} words BIP39 seed phrase derived from the passkey PRF secret
+ * @param {Object} [sharedRoot] The root key of these words, when the ceremony already derived it
+ *   (withPasskeyWords' shareRoot): the words are not stretched again
  * @returns {{
  *   shieldedXpubs: { scanXpubkey: string, spendXpubkey: string },
  *   scanXPrivKey: string,
  * }|null} null when the bundled wallet-lib can't derive them
  */
-export function derivePasskeyShieldedKeys(words) {
+export function derivePasskeyShieldedKeys(words, sharedRoot = null) {
   if (!supportsPasskeyShielded()) {
     return null;
   }
-  let root = walletUtils.getXPrivKeyFromSeed(words, { networkName: NETWORK_MAINNET });
+  let root = sharedRoot ?? walletUtils.getXPrivKeyFromSeed(words, { networkName: NETWORK_MAINNET });
   try {
     return {
       shieldedXpubs: walletUtils.deriveShieldedXpubs(root),
@@ -120,11 +122,13 @@ export function getPasskeyShieldedXpubs(walletMeta = STORE.getWalletMeta()) {
  * after sees the xpubs; the durable write is only logged when it fails.
  *
  * @param {string} words The words of the loaded wallet, already checked against its xpub
+ * @param {Object} [sharedRoot] Their root key, when the ceremony already derived it
+ *   (derivePasskeyShieldedKeys)
  * @returns {string|null} The scan private key, or null when none was derived
  */
-export function rememberPasskeyShieldedKeys(words) {
+export function rememberPasskeyShieldedKeys(words, sharedRoot = null) {
   try {
-    const keys = derivePasskeyShieldedKeys(words);
+    const keys = derivePasskeyShieldedKeys(words, sharedRoot);
     if (!keys) {
       return null;
     }

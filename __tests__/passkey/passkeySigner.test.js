@@ -422,6 +422,65 @@ describe('withPasskeyWords', () => {
   });
 });
 
+// With the multichain flag on, a ceremony stretches the words once: the root it derives checks the
+// passkey and goes to its consumers. Without it, the ceremony is the one above.
+describe('withPasskeyWords sharing its root', () => {
+  // A root whose account-path xpub (wallet-lib's deriveXpriv, mocked above) is `xpub`.
+  const rootWithXpub = (xpub) => ({
+    deriveNonCompliantChild: jest.fn(() => ({ xpubkey: xpub })),
+  });
+
+  test('checks the passkey with the root and hands it to fn: one derivation from the words', async () => {
+    const root = rootWithXpub(STORED_XPUB);
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(root);
+    const fn = jest.fn(async () => 'used');
+
+    await expect(withPasskeyWords(fn, { shareRoot: true })).resolves.toBe('used');
+
+    expect(fn.mock.calls).toEqual([[WORDS, root]]);
+    expect(walletUtils.getXPrivKeyFromSeed.mock.calls).toEqual([[WORDS, { networkName: 'mainnet' }]]);
+    expect(walletUtils.getXPubKeyFromSeed).not.toHaveBeenCalled();
+    expect(walletUtils.deriveXpriv).toHaveBeenCalledWith(root, "0'");
+  });
+
+  // The identity check stays whichever way it is computed: the shared root opens nothing else.
+  test('a passkey of another wallet is refused before fn, as without it', async () => {
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(rootWithXpub(OTHER_XPUB));
+    const fn = jest.fn();
+
+    await expect(withPasskeyWords(fn, { shareRoot: true }))
+      .rejects.toBeInstanceOf(PasskeyXpubMismatchError);
+
+    expect(fn).not.toHaveBeenCalled();
+    expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
+  });
+
+  test('without it, the ceremony derives what it always did and fn gets the words alone', async () => {
+    const fn = jest.fn(async () => 'used');
+
+    await expect(withPasskeyWords(fn)).resolves.toBe('used');
+    await expect(withPasskeyWords(fn, { shareRoot: false })).resolves.toBe('used');
+
+    expect(fn.mock.calls).toEqual([[WORDS], [WORDS]]);
+    expect(walletUtils.getXPubKeyFromSeed.mock.calls).toEqual([
+      [WORDS, { networkName: 'mainnet', accountDerivationIndex: "0'" }],
+      [WORDS, { networkName: 'mainnet', accountDerivationIndex: "0'" }],
+    ]);
+    expect(walletUtils.getXPrivKeyFromSeed).not.toHaveBeenCalled();
+  });
+
+  test('verifyPasskeyForUnlock hands the shared root to onWords, and only when asked', async () => {
+    const root = rootWithXpub(STORED_XPUB);
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(root);
+    const onWords = jest.fn(() => 'prepared');
+
+    await expect(verifyPasskeyForUnlock({ onWords, shareRoot: true })).resolves.toBe('prepared');
+    await expect(verifyPasskeyForUnlock({ onWords })).resolves.toBe('prepared');
+
+    expect(onWords.mock.calls).toEqual([[WORDS, root], [WORDS]]);
+  });
+});
+
 describe('Phase 2 hooks', () => {
   test('makePasskeyTxSigner runs onRootKey with the root inside the ceremony, before signing', async () => {
     const order = [];

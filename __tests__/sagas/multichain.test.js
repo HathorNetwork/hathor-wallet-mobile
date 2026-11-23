@@ -86,7 +86,7 @@ import {
   saga,
   SEND_SETTLE_MS,
 } from '../../src/sagas/multichain';
-import { prepareNextKeysAtUnlock } from '../../src/multichain/keys';
+import { nextAccountNodeOfRoot, prepareNextKeysAtUnlock } from '../../src/multichain/keys';
 import { ensureNextClient, getNextClient, setNextClient } from '../../src/multichain/nextClient';
 import { deriveFakeNextAddress, fakePeerAddress } from '../multichain/fakes/fakeAddress';
 import {
@@ -1887,6 +1887,38 @@ describe('the backend for local testing', () => {
     expect(withPasskeyWords).toHaveBeenCalledTimes(1);
     expect(env.getState().multichain.next).toMatchObject({
       status: NEXT_STATUS.READY, address: ADDRESS,
+    });
+  });
+});
+
+// Hathor Next's own passkey ceremony stretches the words once: its keys come from the root that
+// checked the passkey.
+describe('the keys a passkey ceremony derives for Hathor Next', () => {
+  test('come from the root the ceremony checked the passkey with', async () => {
+    // One wallet: the ceremony's words and the root it derived from them.
+    const words = `${'abandon '.repeat(23)}art`;
+    const root = walletUtils.getXPrivKeyFromSeed(words, { networkName: 'mainnet' });
+    const expectedNode = Buffer.from(nextAccountNodeOfRoot(root)).toString('hex');
+    STORE.isPasskeyWallet.mockReturnValue(true);
+    withPasskeyWords.mockImplementation(async (fn) => fn(words, root));
+    const env = setup();
+    // What the client is handed, read before it wipes the node.
+    const client = ensureNextClient();
+    const prepareKeys = client.prepareKeys.bind(client);
+    const handed = [];
+    jest.spyOn(client, 'prepareKeys').mockImplementation((params) => {
+      handed.push({ ...params, accountNode: Buffer.from(params.accountNode).toString('hex') });
+      return prepareKeys(params);
+    });
+    env.dispatch(multichainConnectSettingChanged(true));
+    await wait(2000);
+
+    expect(withPasskeyWords).toHaveBeenCalledTimes(1);
+    expect(withPasskeyWords).toHaveBeenCalledWith(expect.any(Function), { shareRoot: true });
+    expect(handed).toEqual([{ words, accountNode: expectedNode }]);
+    // The keys are the wallet's: its address, derived from the node.
+    expect(env.getState().multichain.next).toMatchObject({
+      status: NEXT_STATUS.READY, address: await deriveFakeNextAddress(words),
     });
   });
 });

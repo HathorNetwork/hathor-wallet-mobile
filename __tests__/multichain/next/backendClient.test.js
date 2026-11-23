@@ -16,6 +16,7 @@ import derivation from './fixtures/derivation.json';
 import { createBackendNextClient, rowsOfLine } from '../../../src/multichain/next/backendClient';
 import { NEXT_CLIENT_ERROR, NEXT_CLIENT_EVENT } from '../../../src/multichain/nextClientErrors';
 import { encodeAddress } from '../../../src/multichain/next/kit/address';
+import * as kitKeys from '../../../src/multichain/next/kit/keys';
 import {
   deriveAccount,
   mnemonicToSeed,
@@ -198,6 +199,7 @@ describe('the Hathor Next backend client', () => {
   afterEach(() => {
     client?.disconnect();
     client = null;
+    jest.restoreAllMocks();
   });
 
   it('registers, logs in with its own signatures and reads the wallet', async () => {
@@ -256,6 +258,34 @@ describe('the Hathor Next backend client', () => {
     // The next unlock derives them as usual.
     await client.prepareKeys({ words: WORDS });
     expect(client.hasKeys()).toBe(true);
+  });
+
+  // The seed gives every key of the wallet: the client keeps it only while it derives, a PIN
+  // wallet's first unlock or a passkey ceremony that shares no root.
+  it('wipes the seed it stretched once the keys are derived', async () => {
+    const stretch = jest.spyOn(kitKeys, 'mnemonicToSeed');
+    client = createBackendNextClient({ fetchImpl: fakeBackend().fetchImpl, WebSocketImpl: null });
+
+    await client.prepareKeys({ words: WORDS });
+
+    const seed = await stretch.mock.results[0].value;
+    expect(seed).toHaveLength(64);
+    expect(seed.every((byte) => byte === 0)).toBe(true);
+    expect(client.hasKeys()).toBe(true);
+  });
+
+  it('wipes the seed when the app locked during the stretch too', async () => {
+    const stretch = jest.spyOn(kitKeys, 'mnemonicToSeed');
+    client = createBackendNextClient({ fetchImpl: fakeBackend().fetchImpl, WebSocketImpl: null });
+
+    const deriving = client.prepareKeys({ words: WORDS });
+    client.forgetKeys();
+    await expect(deriving).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NO_KEYS });
+
+    const seed = await stretch.mock.results[0].value;
+    expect(seed).toHaveLength(64);
+    expect(seed.every((byte) => byte === 0)).toBe(true);
+    expect(client.hasKeys()).toBe(false);
   });
 
   it('refuses a backend on another network before registering', async () => {

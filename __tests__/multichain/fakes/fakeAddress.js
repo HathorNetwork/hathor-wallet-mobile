@@ -7,7 +7,12 @@
 
 import { encodeAddress } from '../../../src/multichain/next/kit/address';
 import { hashToScalar } from '../../../src/multichain/next/kit/hash';
-import { deriveAccount, mnemonicToSeed, publicKeyOf } from '../../../src/multichain/next/kit/keys';
+import {
+  deriveAccount,
+  deriveAccountFromNode,
+  mnemonicToSeed,
+  publicKeyOf,
+} from '../../../src/multichain/next/kit/keys';
 import { asciiBytes, bytesToHex } from '../../../src/multichain/next/kit/scalar';
 
 // The fake wallet service's view key. Its secret is a fixed label's hash, public as befits a
@@ -54,4 +59,19 @@ export function fakePeerAddress(label) {
   return fakeNextAddressOf(
     publicKeyOf(hashToScalar('hathor-wallet/fake-peer/v1', [asciiBytes(label)])),
   );
+}
+
+/**
+ * The fake address of the wallet an account node is of, as the real client derives the keys
+ * from a node: the node is wiped once read.
+ *
+ * @param {Uint8Array} accountNode
+ * @returns {string}
+ */
+export function fakeNextAddressOfNode(accountNode) {
+  try {
+    return fakeNextAddressOf(publicKeyOf(deriveAccountFromNode(accountNode).b));
+  } finally {
+    accountNode.fill(0);
+  }
 }

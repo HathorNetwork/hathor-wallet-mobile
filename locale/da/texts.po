@@ -928,7 +928,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/components/Multichain/MultichainLoadScreen.js:101
-#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:227
+#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:231
 #: src/screens/PinScreen.js:350 src/screens/Settings.js:312
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
@@ -983,24 +983,24 @@ msgstr ""
 msgid "Scan the nano contract ID QR code"
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:122
+#: src/screens/PasskeyLockScreen.js:126
 msgid "Unlock cancelled."
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:138
+#: src/screens/PasskeyLockScreen.js:142
 msgid "Could not verify your passkey. Please try again."
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:191
+#: src/screens/PasskeyLockScreen.js:195
 #, javascript-format
 msgid "Unlock with the passkey \"${ passkeyLabel }\""
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:192
+#: src/screens/PasskeyLockScreen.js:196
 msgid "Unlock with your passkey"
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:212
+#: src/screens/PasskeyLockScreen.js:216
 msgid "Unlock"
 msgstr ""
 

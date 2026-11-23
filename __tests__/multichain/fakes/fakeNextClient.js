@@ -19,7 +19,7 @@ import {
   saveLedger,
 } from './fakeLedger';
 import { FAKE_SCENARIO } from './scenarios';
-import { deriveFakeNextAddress } from './fakeAddress';
+import { deriveFakeNextAddress, fakeNextAddressOfNode } from './fakeAddress';
 import {
   CONNECT_DELAY_MS,
   NEXT_SEND_FEE,
@@ -101,13 +101,16 @@ export function createFakeNextClient() {
     fake: true,
 
     /**
-     * Derives the wallet's Hathor Next keys from its words. No network.
+     * Derives the wallet's Hathor Next keys from its words, or from the account node a passkey
+     * ceremony's root gave, which it wipes, as the real client does. No network.
      *
-     * @param {{ words: string }} params
+     * @param {{ words: string, accountNode?: Uint8Array }} params
      * @returns {Promise<{ address: string }>}
      */
-    async prepareKeys({ words }) {
-      address = await deriveFakeNextAddress(words);
+    async prepareKeys({ words, accountNode }) {
+      address = accountNode
+        ? fakeNextAddressOfNode(accountNode)
+        : await deriveFakeNextAddress(words);
       return { address };
     },
 

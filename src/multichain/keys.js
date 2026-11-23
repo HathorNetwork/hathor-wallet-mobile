@@ -20,6 +20,13 @@ import {
 const log = logger('multichain-keys');
 
 /**
+ * The Hathor Next account's BIP32 path: account HATHOR_NEXT_ACCOUNT_INDEX of the kit (3), which a
+ * test holds equal. Written out here because this module loads at start, and the kit's keys
+ * module would bring the Hathor Next crypto library with it.
+ */
+export const NEXT_ACCOUNT_PATH = "m/44'/280'/3'";
+
+/**
  * What the wallet saved about Hathor Next. All of it is public: the address, the public spend key,
  * and the networks the wallet was registered on. The spend secret is saved apart, encrypted with
  * the PIN (prepareNextKeysWithPin).
@@ -59,15 +66,42 @@ export function hasUsedNext() {
 }
 
 /**
+ * The Hathor Next account node of a wallet's BIP32 root (wallet-lib's HDPrivateKey of these
+ * words): `m/44'/280'/3'`, derived as BIP32 says (compliant, as the kit derives it from the seed),
+ * as `key ‖ chain code`. A passkey ceremony that already derived the root gives it, so the words
+ * are not stretched a second time.
+ *
+ * @param {Object} root The wallet's root HDPrivateKey (depth 0)
+ * @returns {Uint8Array} 64 bytes
+ */
+export function nextAccountNodeOfRoot(root) {
+  if (root?.depth !== 0) {
+    throw new Error('The Hathor Next keys derive from the wallet\'s root key.');
+  }
+  // bitcore serializes the key as 32 bytes, leading zeros included, as BIP32 does: a test pins it
+  // with a wallet whose key starts with a zero byte (and a shorter node is refused by the kit).
+  const { privateKey, chainCode } = root.deriveChild(NEXT_ACCOUNT_PATH).toObject();
+  return hexToBytes(`${privateKey}${chainCode}`);
+}
+
+/**
  * Derives the wallet's Hathor Next keys from its words into the running client, and saves what
  * public they give: the address, or the public spend key of a client that knows its address only
  * once connected. The caller drops the words.
  *
  * @param {string} words
+ * @param {Object} [root] The wallet's root key, when a passkey ceremony already derived it from
+ *   these words: the keys then come from it, with no second stretch of the words
  * @returns {Promise<string|null>} The Hathor Next address, when already known
  */
-export async function prepareNextKeys(words) {
-  const { address = null, pubB = null } = await ensureNextClient().prepareKeys({ words });
+export async function prepareNextKeys(words, root = null) {
+  // The client first: a node derived for a client that can't load would be dropped unwiped.
+  const client = ensureNextClient();
+  const accountNode = root ? nextAccountNodeOfRoot(root) : undefined;
+  const { address = null, pubB = null } = await client.prepareKeys({
+    words,
+    ...(accountNode ? { accountNode } : {}),
+  });
   saveNext(address ? { address } : { pubB });
   return address;
 }
@@ -151,15 +185,17 @@ let unlockDerivation = null;
  * @param {string} words
  * @param {boolean} multichainOn The multichain flag, as the unlock knows it
  *   (getMultichainFeatureToggleAtUnlock)
+ * @param {Object} [root] The wallet's root key, which a passkey ceremony derived from these words
+ *   (prepareNextKeys)
  * @returns {Promise<string|null>} The Hathor Next address, or null when none is known yet
  */
-export function prepareNextKeysAtUnlock(words, multichainOn) {
+export function prepareNextKeysAtUnlock(words, multichainOn, root = null) {
   if (!multichainOn || !hasUsedNext()) {
     return Promise.resolve(null);
   }
   const derivation = (async () => {
     try {
-      return await prepareNextKeys(words);
+      return await prepareNextKeys(words, root);
     } catch (e) {
       log.error('Could not derive the Hathor Next keys at unlock.', e);
       return null;

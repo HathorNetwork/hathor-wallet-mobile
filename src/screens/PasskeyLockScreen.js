@@ -91,15 +91,19 @@ const PasskeyLockScreen = () => {
       // wallet decodes its private outputs as a seed wallet does after its PIN. It never throws.
       const register = walletServiceRegistrationForUnlock(featureToggles, networkSettings);
       const registration = await verifyPasskeyForUnlock({
-        onWords: (words) => {
-          rememberPasskeyShieldedKeys(words);
+        // With the multichain flag on, the ceremony stretches the words once: the root it checks
+        // the passkey with also gives the shielded keys and Hathor Next's. With it off, each
+        // derives its own, as before.
+        shareRoot: getMultichainFeatureToggleAtUnlock(store.getState()),
+        onWords: (words, root) => {
+          rememberPasskeyShieldedKeys(words, root);
           // A wallet that used Hathor Next derives its keys in the same ceremony, so switching to
           // it needs no second passkey prompt; only while the multichain flag is on, as far as
           // the app knows when the words arrive. It never throws, and the unlock doesn't wait: a
           // load that comes first waits for it, and one that failed runs again once it's done.
           const multichainOn = getMultichainFeatureToggleAtUnlock(store.getState());
           if (multichainOn) {
-            prepareNextKeysAtUnlock(words, multichainOn)
+            prepareNextKeysAtUnlock(words, multichainOn, root)
               .then(() => dispatch(multichainNextKeysDerived()))
               .catch((e) => log.error('Could not tell the app the Hathor Next keys are ready.', e));
           }

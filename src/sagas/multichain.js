@@ -355,12 +355,17 @@ export function* deriveKeysWithPin(pinCode) {
 }
 
 /**
- * Derives the Hathor Next keys in one passkey ceremony.
+ * Derives the Hathor Next keys in one passkey ceremony, from the root it checks the passkey with:
+ * the words are stretched once.
  *
  * @throws PasskeyCancelledError when the user dismisses it
  */
 export function* deriveKeysWithPasskey() {
-  const address = yield call(withPasskeyWords, async (words) => prepareNextKeys(words));
+  const address = yield call(
+    withPasskeyWords,
+    async (words, root) => prepareNextKeys(words, root),
+    { shareRoot: true },
+  );
   yield put(multichainNextUpdate({ keysReady: true, ...(address ? { address } : {}) }));
   return address;
 }

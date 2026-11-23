@@ -10,11 +10,13 @@
  * Next backend, which reads Hathor Next and builds transactions while the client keeps the keys
  * and signs (next/backendClient.js). Its interface:
  *
- * - prepareKeys({ words }) → Promise<{ address } | { pubB }>: derives the keys from the seed; no
- *   network. The client keeps them in memory until the next lock, and they are the same on every
- *   network. (The app keeps the spend secret encrypted with the PIN, as it keeps the words, so an
- *   unlock needn't derive it again: src/multichain/keys.js.) The client knows its address only
- *   once connected: the address carries the network's view key.
+ * - prepareKeys({ words, accountNode? }) → Promise<{ address } | { pubB }>: derives the keys from
+ *   the seed, or from `accountNode`, the account's BIP32 node from a root a passkey ceremony
+ *   already derived from these words (wiped once used); no network. The client keeps them in
+ *   memory until the next lock, and they are the same on every network. (The app keeps the spend
+ *   secret encrypted with the PIN, as it keeps the words, so an unlock needn't derive it again:
+ *   src/multichain/keys.js.) The client knows its address only once connected: the address
+ *   carries the network's view key.
  * - hasKeys() → boolean
  * - forgetKeys() → boolean: drops the keys when the app locks; whether it dropped any
  * - connect({ network, config, birthday: 'genesis' }): registers the wallet on the network's
