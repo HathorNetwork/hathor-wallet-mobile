@@ -27,6 +27,7 @@ import {
   txIdOf,
   withInputSignatures,
 } from './kit/tx';
+import { reasonText } from './reasonText';
 
 /**
  * Checks a transaction the Hathor Next backend built against what the user asked for, then signs
@@ -70,6 +71,21 @@ export class LedgerConflictError extends SignRefusedError {
 
 const refuse = (message) => {
   throw new SignRefusedError(message);
+};
+
+// A send's id, as the backend makes it: 16 bytes in lowercase hex. The ledger keeps it with what
+// was signed, the app stores the ledger whole and reads it at every start, and the id names the
+// send in the backend's paths: anything else is refused before signing.
+const SEND_ID = /^[0-9a-f]{32}$/;
+
+/**
+ * @param {Object} request A sign request
+ * @param {string} what What it signs, for the refusal: 'payment' or 'token creation'
+ */
+const checkSendId = (request, what) => {
+  if (typeof request.id !== 'string' || !SEND_ID.test(request.id)) {
+    refuse(`The ${what} has no valid id.`);
+  }
 };
 
 const sameKeys = (a, b) => bytesToHex(a.view) === bytesToHex(b.view)
@@ -143,6 +159,7 @@ export function checkSignRequest(request, {
   maxFee,
   nowS = Math.floor(Date.now() / 1000),
 }) {
+  checkSendId(request, 'payment');
   // A request past its time holds outputs the wallet service may have handed to another payment:
   // signed, it could only fail, or conflict.
   if (!Number.isSafeInteger(request.expires_at) || request.expires_at <= nowS) {
@@ -285,6 +302,7 @@ export function checkCreateRequest(request, {
   amountWidth,
   nowS = Math.floor(Date.now() / 1000),
 }) {
+  checkSendId(request, 'token creation');
   if (!Number.isSafeInteger(request.expires_at) || request.expires_at <= nowS) {
     refuse('The token creation expired before it was signed.');
   }
@@ -378,8 +396,13 @@ export function checkCreateRequest(request, {
     }
     if (o.token === created) {
       // The created token is held by transparent outputs only: the opening has already matched
-      // each claim to its output.
-      supply += BigInt(o.amount);
+      // each claim to its output. The network refuses a supply output that holds nothing, and
+      // the creation's coin would stay held until then.
+      const amount = BigInt(o.amount);
+      if (amount <= 0n) {
+        refuse('A supply output of the token creation holds nothing.');
+      }
+      supply += amount;
     } else if (o.token === nativeTokenId) {
       change += BigInt(o.amount);
     } else {
@@ -561,7 +584,8 @@ export function createSignLedger(storage, key) {
      * @param {string|null} reason
      */
     async markRejected(txId, reason) {
-      await settle(txId, { rejected: true, rejectedAt: Date.now(), reason: reason ?? null });
+      // Kept with the entry, which the app reads whole at every start: a sentence at most.
+      await settle(txId, { rejected: true, rejectedAt: Date.now(), reason: reasonText(reason) });
     },
 
     /** @returns {Object[]} Entries that still hold their inputs: neither recorded nor rejected */
@@ -628,6 +652,9 @@ export async function verifyAndSign(request, context, check = checkSignRequest) 
   };
   await context.ledger.record({
     sendId: request.id,
+    // The backend it was signed for: only that backend's word that it no longer keeps the send
+    // frees its inputs.
+    ...(context.backend ? { backend: context.backend } : {}),
     signingHash: bytesToHex(signingHash),
     outputs,
     inputs: keys.map(bytesToHex),

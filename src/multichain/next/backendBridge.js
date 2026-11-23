@@ -22,6 +22,7 @@ import {
 import { encodeAddress } from './kit/address';
 import { SignRefusedError } from './signer';
 import { BackendError } from './backendApi';
+import { reasonText } from './reasonText';
 
 const log = logger('multichain-backend-bridge');
 
@@ -121,7 +122,7 @@ export function recordOf(status, config, ownAddress, own = null) {
     sourceTxId: own?.burnTxId ?? null,
     // A failed burn never left the balance; any other this wallet saw for itself did.
     debitedOnSource: Boolean(own?.burnTxId) && !failed,
-    reason: status.reason ?? null,
+    reason: reasonText(status.reason),
     progress: {
       stage: status.status,
       confirmations: status.confirmations ?? 0,

@@ -13,7 +13,11 @@ import {
   jest,
 } from '@jest/globals';
 import derivation from './fixtures/derivation.json';
-import { createBackendNextClient, rowsOfLine } from '../../../src/multichain/next/backendClient';
+import {
+  createBackendNextClient,
+  pinMismatch,
+  rowsOfLine,
+} from '../../../src/multichain/next/backendClient';
 import { NEXT_CLIENT_ERROR, NEXT_CLIENT_EVENT } from '../../../src/multichain/nextClientErrors';
 import { encodeAddress } from '../../../src/multichain/next/kit/address';
 import {
@@ -105,6 +109,8 @@ const HISTORY = [
 function fakeBackend({
   remote = REMOTE_CONFIG,
   registerAs = null,
+  // Values of the registration's answer the backend changes on its own.
+  registration = {},
   expireOnce = false,
   balances = null,
   history = null,
@@ -150,6 +156,7 @@ function fakeBackend({
         birthday: data.birthday ?? 5,
         balance_sweep: false,
         scanned_from_epoch: 0,
+        ...registration,
       });
     }
     const session = path.match(/^\/v1\/wallets\/([0-9a-f]{64})\/session$/);
@@ -289,6 +296,45 @@ describe('the Hathor Next backend client', () => {
     expect(backend.requests.some((r) => r.path.endsWith('/session'))).toBe(false);
   });
 
+  // Another spend key changes the wallet id and the address together: each value of the answer,
+  // on its own.
+  it.each([
+    ['another wallet id', { wallet_id: 'ab'.repeat(32) }],
+    ['another view key', { pub_a: 'cd'.repeat(32) }],
+    ['another address', { address: encodeAddress(SERVICE_VIEW_PUB, bytesToHex(publicKeyOf(5n))) }],
+  ])('refuses a registration that answers %s, before logging in', async (name, registration) => {
+    const backend = fakeBackend({ registration });
+    client = createBackendNextClient({
+      fetchImpl: backend.fetchImpl, WebSocketImpl: null, nowMs: () => 1788000000 * 1000,
+    });
+    await client.prepareKeys({ words: WORDS });
+    await expect(client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.CONNECT_FAILED });
+    expect(backend.requests.some((r) => r.path.endsWith('/session'))).toBe(false);
+  });
+
+  // The feed's token travels in its URL, where a proxy may log it: a read session's, which can
+  // only read, never the full one that signs in.
+  it('gives the feed a read session\'s token only', async () => {
+    const backend = fakeBackend();
+    const urls = [];
+    function FakeSocket(url) {
+      urls.push(url);
+      this.close = () => {};
+    }
+    client = createBackendNextClient({
+      fetchImpl: backend.fetchImpl, WebSocketImpl: FakeSocket, nowMs: () => 1788000000 * 1000,
+    });
+    await client.prepareKeys({ words: WORDS });
+    await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
+    const scopes = backend.requests.filter((r) => r.path.endsWith('/session'))
+      .map((r) => JSON.parse(r.body).scope);
+    // The backend numbers its sessions: token-1 the full one, token-2 the read one.
+    expect(scopes).toEqual(['full', 'read']);
+    expect(urls).toHaveLength(1);
+    expect(new URL(urls[0]).searchParams.get('token')).toBe('token-2');
+  });
+
   it('logs in again once when the session expired', async () => {
     const backend = fakeBackend({ expireOnce: true });
     client = await connectedClient(backend);
@@ -301,6 +347,45 @@ describe('the Hathor Next backend client', () => {
     client = createBackendNextClient({ fetchImpl: fakeBackend().fetchImpl, WebSocketImpl: null });
     await expect(client.connect({ network: 'privatenet', config: CONFIG }))
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NO_KEYS });
+  });
+});
+
+// Each pin on its own: a backend whose one value differs from the app's, or leaves it out, is on
+// another network.
+describe('the pins a backend\'s config is held to', () => {
+  const PINNED = {
+    ...CONFIG, hathorNetwork: 'privatenet', genesisMs: 1000000, amountWidth: 'u64',
+  };
+  // REMOTE_CONFIG with one value changed, or left out (undefined).
+  const remote = ([section, field], value) => {
+    const theirs = { ...REMOTE_CONFIG[section] };
+    if (value === undefined) {
+      delete theirs[field];
+    } else {
+      theirs[field] = value;
+    }
+    return { ...REMOTE_CONFIG, [section]: theirs };
+  };
+  const PINS = [
+    ['network_id', ['next', 'network_id'], 1778],
+    ['native_token', ['next', 'native_token'], OTHER_TOKEN],
+    ['service_view_pub', ['next', 'service_view_pub'], 'cd'.repeat(32)],
+    ['wire_format', ['next', 'wire_format'], 'v3'],
+    ['hathor.network', ['hathor', 'network'], 'mainnet'],
+    ['genesis_ms', ['next', 'genesis_ms'], 1000001],
+    ['amount_width', ['next', 'amount_width'], 'u128'],
+  ];
+
+  it('takes a backend whose every pinned value is the app\'s', () => {
+    expect(pinMismatch(PINNED, REMOTE_CONFIG)).toBeNull();
+  });
+
+  it.each(PINS)('names %s when it alone differs', (name, path, value) => {
+    expect(pinMismatch(PINNED, remote(path, value))).toBe(name);
+  });
+
+  it.each(PINS)('names %s when the backend leaves it out', (name, path) => {
+    expect(pinMismatch(PINNED, remote(path, undefined))).toBe(name);
   });
 });
 

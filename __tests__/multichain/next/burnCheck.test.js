@@ -24,9 +24,10 @@ import {
   parseBurnPayload,
 } from '../../../src/multichain/next/burnCheck';
 import { SignRefusedError } from '../../../src/multichain/next/signer';
-import { encodeAddress } from '../../../src/multichain/next/kit/address';
+import { decodeAddressKeys, encodeAddress } from '../../../src/multichain/next/kit/address';
 import { publicKeyOf } from '../../../src/multichain/next/kit/keys';
 import { bytesToHex, concatBytes, hexToBytes } from '../../../src/multichain/next/kit/scalar';
+import { refusal } from '../fakes/signing';
 
 const network = new Network('privatenet');
 const TRANSFER = 'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL';
@@ -94,13 +95,12 @@ const expected = {
   destination: NEXT_ADDRESS,
 };
 
-const refusal = (fn) => {
-  try {
-    fn();
-  } catch (e) {
-    return e;
-  }
-  return null;
+// The refusal's words, so that no other check refusing the same burn can stand in for the one a
+// case is about.
+const refusedFor = (hex, exp = expected) => {
+  const e = refusal(() => checkBurn(hex, exp));
+  expect(e).toBeInstanceOf(SignRefusedError);
+  return e.message;
 };
 
 describe('the burn payload', () => {
@@ -161,17 +161,24 @@ describe('checking a burn before signing it', () => {
   });
 
   it('refuses a burn when the chosen address can\'t be read', () => {
-    const unreadable = { ...expected, destination: NEXT_ADDRESS.slice(0, -1) };
-    expect(refusal(() => checkBurn(burnHex(), unreadable))).toBeInstanceOf(SignRefusedError);
+    for (const destination of [NEXT_ADDRESS.slice(0, -1), 'not an address']) {
+      const why = refusal(() => decodeAddressKeys(destination)).message;
+      expect(refusedFor(burnHex(), { ...expected, destination }))
+        .toBe(`The chosen Hathor Next address can't be read: ${why}`);
+    }
   });
 
   it.each([
-    ['another Hathor Next network', { data: payload({ dest: '00'.repeat(32) }) }],
-    ['another Hathor Next address', { data: payload({ spend: bytesToHex(publicKeyOf(12n)) }) }],
-    ['another amount', { amount: 600n, change: 399n }],
-    ['other inputs', { inputs: [UTXOS[0], { ...UTXOS[1], index: 4 }] }],
-  ])('refuses a burn to %s', (name, patch) => {
-    expect(refusal(() => checkBurn(burnHex(patch), expected))).toBeInstanceOf(SignRefusedError);
+    ['another Hathor Next network', { data: payload({ dest: '00'.repeat(32) }) },
+      'The burn sends the HTR somewhere else than the chosen Hathor Next address.'],
+    ['another Hathor Next address', { data: payload({ spend: bytesToHex(publicKeyOf(12n)) }) },
+      'The burn sends the HTR somewhere else than the chosen Hathor Next address.'],
+    ['another amount', { amount: 600n, change: 399n },
+      'The burn moves another amount than the one chosen.'],
+    ['other inputs', { inputs: [UTXOS[0], { ...UTXOS[1], index: 4 }] },
+      'The burn spends other outputs than the ones this wallet chose.'],
+  ])('refuses a burn to %s', (name, patch, words) => {
+    expect(refusedFor(burnHex(patch))).toBe(words);
   });
 
   it('refuses a burn whose data output is not first, or that pays anyone else', () => {
@@ -211,12 +218,16 @@ describe('checking a burn before signing it', () => {
 });
 
 describe('the burn\'s shape', () => {
+  // wallet-lib reads no burn of another version: it is refused as unreadable, before its shape.
+  it('refuses a burn with another version', () => {
+    expect(refusedFor(burnHex({ version: 2 }))).toMatch(/^The burn can't be read: /);
+  });
+
   it.each([
-    ['another version', { version: 2 }],
     ['a token list', { tokens: ['cc'.repeat(32)] }],
     ['a header, which the inputs would sign', { headers: [new FeeHeader([{ tokenIndex: 0, amount: 1n }])] }],
   ])('refuses a burn with %s', (name, patch) => {
-    expect(refusal(() => checkBurn(burnHex(patch), expected))).toBeInstanceOf(SignRefusedError);
+    expect(refusedFor(burnHex(patch))).toBe('The burn is not a plain transaction.');
   });
 
   it('refuses a transfer address that is not the chain transfer\'s, whoever names it', () => {
@@ -228,8 +239,8 @@ describe('the burn\'s shape', () => {
       new Output(299n, p2pkh(CHANGE)),
     ];
     const pinnedElsewhere = { ...expected, transferAddress: own };
-    expect(refusal(() => checkBurn(burnHex({ outputs }), pinnedElsewhere)))
-      .toBeInstanceOf(SignRefusedError);
+    expect(refusedFor(burnHex({ outputs }), pinnedElsewhere))
+      .toBe('The burn pays an address that is not the chain transfer\'s.');
   });
 });
 
@@ -247,11 +258,6 @@ describe('each check of the burn, on its own', () => {
     token: 'The burn moves another token than HTR.',
     amount: 'The burn moves another amount than the one chosen.',
     sum: 'The burn\'s inputs and outputs don\'t add up.',
-  };
-  const refusedFor = (hex, exp = expected) => {
-    const e = refusal(() => checkBurn(hex, exp));
-    expect(e).toBeInstanceOf(SignRefusedError);
-    return e.message;
   };
   const data = (value = BURN_DATA_VALUE, script = dataScript(payload()), tokenData = 0) => (
     new Output(value, script, { tokenData })

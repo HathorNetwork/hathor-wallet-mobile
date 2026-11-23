@@ -11,11 +11,16 @@ import { utf8ToBytes } from '@noble/hashes/utils';
 import vectors from './fixtures/remote-issuance.json';
 import paymentVectors from './fixtures/remote-signing.json';
 import authorityVectors from './fixtures/token-authority.json';
-import { SignRefusedError, checkCreateRequest } from '../../../src/multichain/next/signer';
+import {
+  SignRefusedError,
+  checkCreateRequest,
+  createSignLedger,
+  verifyAndSign,
+} from '../../../src/multichain/next/signer';
 import { parseIssuanceTx, signingHashOf } from '../../../src/multichain/next/kit/tx';
 import { readTxV3 } from '../../../src/multichain/next/kit/txV3';
 import { rangeProofLen } from '../../../src/multichain/next/kit/txV2';
-import { EXCESS_DOMAIN } from '../../../src/multichain/next/kit/inputSig';
+import { INPUT_DOMAIN, verifyIn } from '../../../src/multichain/next/kit/inputSig';
 import { hashToScalar } from '../../../src/multichain/next/kit/hash';
 import {
   CREATED_TOKEN_ID,
@@ -41,6 +46,13 @@ import {
   scalarFromCanonical,
   u64LE,
 } from '../../../src/multichain/next/kit/scalar';
+import { SEND_1 } from '../fakes/sendIds';
+import {
+  FORGER_KEY,
+  forgerSignature,
+  memoryStorage,
+  refusal,
+} from '../fakes/signing';
 
 // Each check on its own: every case below breaks only what one check guards, and the refusal must
 // name that check, so no other check can stand in for it. Breaking any one of these checks in the
@@ -55,15 +67,6 @@ const NOW = 1788000000;
 const OWN = encodeAddress(PUBLIC.pub_a, PUBLIC.pub_b);
 const R = scalarFromCanonical(hexToBytes(PUBLIC.sender_opening));
 const OTHER_TOKEN = 'ab'.repeat(32);
-
-const refusal = (fn) => {
-  try {
-    fn();
-  } catch (e) {
-    return e;
-  }
-  return null;
-};
 
 const changed = (bytes) => {
   const out = Uint8Array.from(bytes);
@@ -99,7 +102,7 @@ function contextOf(vector, intent = {}) {
 
 function requestOf(vector, patch = {}) {
   return {
-    id: 'send-1',
+    id: SEND_1,
     unsigned_tx: vector.unsigned_tx,
     sender_opening: vector.sender_opening,
     inputs: vector.inputs,
@@ -157,7 +160,7 @@ function honest(form, { address, token, amount, index, level, tokenIndex, }) {
 // A u64 token creation written field by field, as kit/txV3.js reads it. The proofs only the
 // network checks are zeros, so a test transaction fails only the check under test. With an excess,
 // it is signed with a key the test holds: the app checks that signature, not that amounts balance.
-const FORGER = 777n;
+// The definition's authority bits say which keys its body holds: 1 the mint key, 2 the melt key.
 function creationBytes({
   fee,
   feeToken = 255,
@@ -210,16 +213,17 @@ function creationBytes({
     parts.push(o.oneTimeKey, Uint8Array.of(o.viewTag, o.tokenIndex), u64LE(o.amount));
   }
   if (excess) {
-    parts.push(publicKeyOf(FORGER));
+    parts.push(FORGER_KEY);
   }
   const symbol = utf8ToBytes(definition.symbol);
   const name = utf8ToBytes(definition.name);
+  const { bits = 3 } = definition;
   parts.push(
-    Uint8Array.of(symbol.length, name.length, 3),
+    Uint8Array.of(symbol.length, name.length, bits),
     symbol,
     name,
-    definition.mint,
-    definition.melt,
+    bits & 1 ? definition.mint : new Uint8Array(0), // eslint-disable-line no-bitwise
+    bits & 2 ? definition.melt : new Uint8Array(0), // eslint-disable-line no-bitwise
     new Uint8Array(64 * inputs.length),
     new Uint8Array(160 * committed),
     new Uint8Array((36 + 32 * inputs.length) * shielded.length),
@@ -229,14 +233,7 @@ function creationBytes({
   const bytes = concatBytes(...parts);
   if (excess) {
     const tx = readTxV3(bytes);
-    const msg = signingHashOf(bytes, tx);
-    const k = 4242n;
-    const point = publicKeyOf(FORGER);
-    const e = hashToScalar(EXCESS_DOMAIN, [point, publicKeyOf(k), msg]);
-    bytes.set(
-      concatBytes(publicKeyOf(k), bigintToBytesLE(modOrder(k + e * FORGER))),
-      tx.excess.signatureOffset,
-    );
+    bytes.set(forgerSignature(signingHashOf(bytes, tx)), tx.excess.signatureOffset);
   }
   return bytesToHex(bytes);
 }
@@ -258,9 +255,12 @@ const CLAIMS = PUBLIC.outputs.map((o) => ({
   level: 1,
 }));
 
-/** The creation request for these outputs (in the reader's order), each written honestly. */
+/**
+ * The creation request for these outputs (in the reader's order), each written honestly. An
+ * output's `claimedLevel` is the level the request names for it, as a backend could.
+ */
 function forged(outputs, options = {}) {
-  const { table = [], feeToken = 255, excess = false } = options;
+  const { table = [], feeToken = 255, excess = false, bits = 3 } = options;
   const { extraInputs = [], fee = BigInt(PUBLIC.fee), ownInput = true } = options;
   const inputs = [...(ownInput ? PUBLIC.inputs : []), ...extraInputs];
   const written = outputs.map((o, index) => honest(o.form, {
@@ -275,13 +275,17 @@ function forged(outputs, options = {}) {
       table,
       inputs: inputs.map((i) => BigInt(i.global_index)),
       outputs: written,
-      definition: DEFINITION,
+      definition: { ...DEFINITION, bits },
       excess,
     }),
     inputs,
     fee: String(fee),
     outputs: outputs.map((o) => ({
-      address: o.address, token: o.token, amount: String(o.amount), is_change: o.is_change,
+      address: o.address,
+      token: o.token,
+      amount: String(o.amount),
+      is_change: o.is_change,
+      ...(o.claimedLevel ? { level: o.claimedLevel } : {}),
     })),
   });
 }
@@ -296,6 +300,14 @@ describe('a token creation written by the tests', () => {
 describe('each check of a token creation, on its own', () => {
   const CHANGE_AT = CLAIMS.findIndex((o) => o.is_change);
   const withChange = (patch) => CLAIMS.map((o, i) => (i === CHANGE_AT ? { ...o, ...patch } : o));
+
+  it('refuses a request whose id is not a send id', () => {
+    for (const id of [undefined, '', 'create-1', SEND_1.toUpperCase(), `${SEND_1}0`,
+      `../${SEND_1.slice(3)}`, 'a'.repeat(3000000)]) {
+      expect(refusedFor(requestOf(PUBLIC, { id }))).toBe('The token creation has no valid id.');
+    }
+    expect(refusal(() => checkCreateRequest(requestOf(PUBLIC), contextOf(PUBLIC)))).toBeNull();
+  });
 
   it('refuses a request past its time, or with none', () => {
     for (const expiresAt of [NOW, undefined]) {
@@ -373,13 +385,36 @@ describe('each check of a token creation, on its own', () => {
     expect(refusedFor(requestOf(PUBLIC), contextOf(PUBLIC, intent))).toBe(message);
   });
 
+  // The user approved a token whose mint and melt keys are this wallet's. A body without one of
+  // them makes a token nobody can ever mint, or melt: not the one approved.
+  it.each([
+    ['mint key', 2],
+    ['melt key', 1],
+    ['mint and melt keys', 0],
+  ])('refuses a body without the %s', (name, bits) => {
+    expect(refusedFor(forged(CLAIMS, { bits })))
+      .toBe('The token\'s mint or melt key is not this wallet\'s.');
+    expect(refusal(() => checkCreateRequest(forged(CLAIMS, { bits: 3 }), contextOf(PUBLIC))))
+      .toBeNull();
+  });
+
   it('refuses an output that is not transparent, though the excess holds', () => {
     // The change made amount-shielded (level 2, still this wallet's), written first as the
-    // reader orders kinds.
-    const change = { ...CLAIMS[CHANGE_AT], form: 'amount-shielded', level: 2 };
+    // reader orders kinds. The request names level 2 for it, at which it would open: the bytes
+    // alone refuse it.
+    const change = {
+      ...CLAIMS[CHANGE_AT], form: 'amount-shielded', level: 2, claimedLevel: 2,
+    };
     const outputs = [change, ...CLAIMS.filter((o) => !o.is_change)];
     expect(refusedFor(forged(outputs, { excess: true })))
       .toBe('A token creation\'s outputs are transparent.');
+  });
+
+  // The protocol's level for a creation's outputs is 1, whatever the request says each is.
+  it.each([2, 3, 4])('opens every output at level 1, though the request names level %s', (level) => {
+    const outputs = PUBLIC.outputs.map((o) => ({ ...o, level }));
+    expect(refusal(() => checkCreateRequest(requestOf(PUBLIC, { outputs }), contextOf(PUBLIC))))
+      .toBeNull();
   });
 
   it('refuses claims the bytes don\'t pay, even when they are what the user approved', () => {
@@ -409,6 +444,23 @@ describe('each check of a token creation, on its own', () => {
     const outputs = withChange({ token: OTHER_TOKEN, tokenIndex: 0 });
     expect(refusedFor(forged(outputs, { table: [OTHER_TOKEN] })))
       .toBe('The creation carries a token table.');
+  });
+
+  // The network refuses a supply output of nothing: the creation could never land, and its coin
+  // would stay held until the backend says so.
+  it('refuses a supply output that holds nothing, though the supply adds up', () => {
+    const supplyAt = CLAIMS.findIndex((o) => o.token === CREATED);
+    const withEmpty = [...CLAIMS, { ...CLAIMS[supplyAt], amount: 0n }];
+    expect(refusedFor(forged(withEmpty)))
+      .toBe('A supply output of the token creation holds nothing.');
+    // The same outputs with the empty one holding the supply's last unit are taken.
+    const split = CLAIMS.map((o, i) => (
+      i === supplyAt ? { ...o, amount: BigInt(o.amount) - 1n } : o
+    ));
+    expect(refusal(() => checkCreateRequest(
+      forged([...split, { ...CLAIMS[supplyAt], amount: 1n }]),
+      contextOf(PUBLIC),
+    ))).toBeNull();
   });
 
   it('refuses a supply other than the approved amount, though every output opens', () => {
@@ -452,6 +504,12 @@ describe('each check of a token creation, on its own', () => {
       expect(refusedFor(creation({ fee: 0n }))).toBe(refused);
     });
 
+    // Nothing comes back from it either: the coin pays for nothing, and is spent all the same.
+    it('refuses a coin spent for no fee and no change', () => {
+      const supplyOnly = CLAIMS.filter((o) => !o.is_change);
+      expect(refusedFor(forged(supplyOnly, { fee: 0n }))).toBe(refused);
+    });
+
     it('takes one coin for a fee, whatever comes back from it, and no coin for no fee', () => {
       expect(accepted(creation({}))).toBeNull();
       expect(accepted(creation({ change: 10000n }))).toBeNull();
@@ -465,6 +523,26 @@ describe('each check of a token creation, on its own', () => {
       .toBe(BigInt(change));
     expect(checkCreateRequest(forged(withChange({ amount: 0n })), contextOf(PUBLIC)).publicChange)
       .toBe(0n);
+  });
+});
+
+// A creation from public funds has no excess: nothing in its bytes is signed over the hash, so only
+// the app's own computing of it ties what the inputs sign to what was checked.
+describe('what a token creation\'s inputs sign', () => {
+  it.each([PUBLIC, HIDDEN])('is the hash of the bytes of "$name", whatever signing_hash the request names', async (vector) => {
+    const other = 'ab'.repeat(32);
+    const context = { ...contextOf(vector), ledger: createSignLedger(memoryStorage(), 'ledger') };
+    const request = requestOf(vector, { signing_hash: other });
+    const result = await verifyAndSign(request, context, checkCreateRequest);
+    const unsigned = hexToBytes(vector.unsigned_tx);
+    const own = signingHashOf(unsigned, parseIssuanceTx(unsigned));
+    expect(bytesToHex(own)).toBe(vector.signing_hash);
+    result.signatures.forEach((sig, i) => {
+      const key = hexToBytes(vector.inputs[i].one_time_key);
+      expect(verifyIn(INPUT_DOMAIN, key, own, hexToBytes(sig))).toBe(true);
+      expect(verifyIn(INPUT_DOMAIN, key, hexToBytes(other), hexToBytes(sig))).toBe(false);
+    });
+    expect(context.ledger.entries()[0].signingHash).toBe(vector.signing_hash);
   });
 });
 
@@ -578,11 +656,53 @@ describe('the opening at an approved level, with a transaction keyed by the iden
 });
 
 describe('the issuance reader', () => {
+  const SHAPE = 'The transaction can\'t be read: Not a transaction this wallet signs.';
+  const SHORT = 'The transaction can\'t be read: The transaction is not as long as its header says.';
+  const withByte = (at, value) => {
+    const bytes = hexToBytes(PUBLIC.unsigned_tx);
+    bytes[at] = value;
+    return requestOf(PUBLIC, { unsigned_tx: bytesToHex(bytes) });
+  };
+  // The definition's authority bits, found from the reader's own reading of the vector: the core
+  // ends with the bits, the symbol, the name and both keys.
+  const BITS_AT = (() => {
+    const tx = parseIssuanceTx(hexToBytes(PUBLIC.unsigned_tx));
+    const { symbol, name } = tx.definition;
+    return tx.sections.coreLen - 2 * 32 - name.length - symbol.length - 1;
+  })();
+
   it('reads no payment as an issuance', () => {
     for (const vector of paymentVectors.cases) {
       expect(() => parseIssuanceTx(hexToBytes(vector.unsigned_tx)))
         .toThrow('Not a transaction this wallet signs.');
     }
+  });
+
+  it('reads the vector\'s creation as fully transparent, both keys in its body', () => {
+    const bytes = hexToBytes(PUBLIC.unsigned_tx);
+    // The flags byte is at 1 and the kind at 2: fully transparent, a creation.
+    expect([bytes[1], bytes[2], bytes[BITS_AT]]).toEqual([1, 1, 3]);
+    expect(refusal(() => checkCreateRequest(requestOf(PUBLIC), contextOf(PUBLIC)))).toBeNull();
+  });
+
+  // Each byte on its own: the vector's creation with one byte of its header or definition changed.
+  it.each([
+    ['an unknown flag beside the fully-transparent one', 1, 5],
+    ['the mints flag on a creation', 1, 3],
+    ['an unknown authority bit', BITS_AT, 7],
+    ['an unknown kind', 2, 9],
+    // The header alone says so: nothing hidden, and one shielded output.
+    ['a shielded output in a transaction that says it hides nothing', 4, 1],
+  ])('refuses %s', (name, at, value) => {
+    expect(refusedFor(withByte(at, value))).toBe(SHAPE);
+  });
+
+  // Cut anywhere, the bytes are shorter than their header says: before the fixed header ends,
+  // inside the definition's own header, or one byte from the end.
+  it.each([20, BITS_AT - 1, BITS_AT, 'last'])('refuses the bytes cut at %s', (at) => {
+    const bytes = hexToBytes(PUBLIC.unsigned_tx);
+    const cut = bytes.slice(0, at === 'last' ? bytes.length - 1 : at);
+    expect(refusedFor(requestOf(PUBLIC, { unsigned_tx: bytesToHex(cut) }))).toBe(SHORT);
   });
 });
 
@@ -609,8 +729,23 @@ describe('each check of the registry scan and the authorities, on its own', () =
     ['no token id', [row({ token_id: undefined })]],
     ['a mint flag that is not a boolean', [row({ has_mint_authority: 'true' })]],
     ['a melt flag that is not a boolean', [row({ has_melt_authority: 1 })]],
+    ['a key written 0x first', [row({ mint_authority: `0x${'ab'.repeat(31)}` })]],
+    ['a key with a space before it', [row({ mint_authority: ` ${'ab'.repeat(32)}` })]],
+    ['a key of 33 bytes', [row({ melt_authority: 'ab'.repeat(33) })]],
+    ['a key that is no text', [row({ mint_authority: 7 })]],
   ])('can\'t be read with %s', (name, registry) => {
     expect(() => scanAuthorities(derivePub, registry)).toThrow(RegistryUnreadableError);
+  });
+
+  it('finds a key the registry writes in capitals', () => {
+    const capitals = row({
+      mint_authority: bytesToHex(derivePub('mint', 0)).toUpperCase(),
+      melt_authority: bytesToHex(derivePub('melt', 0)),
+    });
+    expect(scanAuthorities(derivePub, [capitals])).toEqual({
+      highest: 0,
+      held: [{ tokenId: 'aa'.repeat(32), nonce: 0, mint: true, melt: true }],
+    });
   });
 
   it.each([

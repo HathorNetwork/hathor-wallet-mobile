@@ -35,3 +35,13 @@ jobs:
       run: npm run lint
     - name: check_i18n
       run: make check_i18n
+    - name: Apply patches
+      # npm ci runs no scripts (.npmrc), so the packages are as published until patches/ applies:
+      # the tests run against the packages the app ships, and __tests__/patches checks them.
+      run: ./node_modules/.bin/patch-package
+    - name: Tests
+      # Every suite but four, which fail on master since before Hathor Next: App (a native module
+      # the test can't load), reown (packages jest doesn't transform), the nano contract history
+      # (two copies of bitcore-lib) and registration (mocks out of date). The flags in package.json's
+      # test:ci list them; each comes back once fixed.
+      run: npm run test:ci

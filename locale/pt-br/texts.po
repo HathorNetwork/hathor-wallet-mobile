@@ -2791,32 +2791,38 @@ msgstr ""
 msgid "The network said:"
 msgstr "A rede disse:"
 
-#: src/multichain/content.js:69
+#: src/multichain/content.js:74
 msgid ""
-"Every Hathor Next payment is private: the amount, the token and who you paid "
-"never appear on the ledger. Only the exact network fee is public."
+"This payment keeps who you paid off the ledger, and the amount and token "
+"too, unless the coins it spends were public, such as HTR that arrived by "
+"transfer. The exact network fee is public, and the wallet service that "
+"prepares the payment sees all of it."
 msgstr ""
-"Todo pagamento na Hathor Next é privado: o valor, o token e para quem você "
-"pagou nunca aparecem no ledger. Apenas a taxa exata da rede é pública."
+"Este pagamento mantém fora do ledger para quem você pagou, e também o valor "
+"e o token, a menos que as moedas que ele gasta fossem públicas, como HTR que "
+"chegou por transferência. A taxa exata da rede é pública, e o wallet service "
+"que prepara o pagamento vê tudo isso."
 
-#: src/multichain/content.js:72
+#: src/multichain/content.js:82
 msgid ""
-"Share this address as often as you like. Every payment to it lands on a "
-"different one-time key, so nobody can link them together — not even by "
-"watching the ledger."
+"Share this address as often as you like. Payments sent with full privacy, as "
+"this app sends them, can't be linked to it on the ledger. Payments with less "
+"privacy, and transfers from Hathor Network, can be. The wallet service sees "
+"every payment you receive."
 msgstr ""
-"Compartilhe este endereço quantas vezes quiser. Cada pagamento para ele cai "
-"em uma chave de uso único diferente, então ninguém consegue relacioná-los — "
-"nem mesmo observando o ledger."
+"Compartilhe este endereço quantas vezes quiser. Pagamentos enviados com "
+"privacidade total, como este app os envia, não podem ser ligados a ele no "
+"ledger. Pagamentos com menos privacidade, e transferências da Hathor "
+"Network, podem. O wallet service vê todos os pagamentos que você recebe."
 
-#: src/multichain/content.js:75
+#: src/multichain/content.js:85
 msgid ""
 "Syncing your Hathor Next balance. It can still rise until the sync ends."
 msgstr ""
 "Sincronizando seu saldo da Hathor Next. Ele ainda pode aumentar até a "
 "sincronização terminar."
 
-#: src/multichain/content.js:78 src/multichain/nextClientErrors.js:92
+#: src/multichain/content.js:88 src/multichain/nextClientErrors.js:92
 msgid "You can send once your balance finishes syncing."
 msgstr "Você poderá enviar quando seu saldo terminar de sincronizar."
 
@@ -4453,6 +4459,23 @@ msgstr "${ moved } ${ symbol } movidos"
 #: src/components/Multichain/TransfersOnTheirWay.js:46
 msgid "Transfers between chains"
 msgstr "Transferências entre chains"
+
+#~ msgid ""
+#~ "Every Hathor Next payment is private: the amount, the token and who you "
+#~ "paid never appear on the ledger. Only the exact network fee is public."
+#~ msgstr ""
+#~ "Todo pagamento na Hathor Next é privado: o valor, o token e para quem "
+#~ "você pagou nunca aparecem no ledger. Apenas a taxa exata da rede é "
+#~ "pública."
+
+#~ msgid ""
+#~ "Share this address as often as you like. Every payment to it lands on a "
+#~ "different one-time key, so nobody can link them together — not even by "
+#~ "watching the ledger."
+#~ msgstr ""
+#~ "Compartilhe este endereço quantas vezes quiser. Cada pagamento para ele "
+#~ "cai em uma chave de uso único diferente, então ninguém consegue relacioná-"
+#~ "los — nem mesmo observando o ledger."
 
 #~ msgid ""
 #~ "Hathor Next prepared this token with more of your HTR than its fee needs, "

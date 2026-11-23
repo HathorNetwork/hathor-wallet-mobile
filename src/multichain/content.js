@@ -65,11 +65,21 @@ export const expiredBody = () => t`This payment expired before the network got i
 /** What precedes the node's own words about a refusal. (src/content/finality.ts) */
 export const verdictLead = () => t`The network said:`;
 
-/** (src/content/copy.ts) */
-export const privateSendStatement = () => t`Every Hathor Next payment is private: the amount, the token and who you paid never appear on the ledger. Only the exact network fee is public.`;
+/**
+ * What a payment keeps private. This app pays at the highest privacy level, which hides who is
+ * paid; the coins it spends are named by index, so public ones (HTR that arrived by a transfer, a
+ * created token's supply and change) show their token and amount. The wallet service builds the
+ * payment and holds the view key.
+ */
+export const privateSendStatement = () => t`This payment keeps who you paid off the ledger, and the amount and token too, unless the coins it spends were public, such as HTR that arrived by transfer. The exact network fee is public, and the wallet service that prepares the payment sees all of it.`;
 
-/** (src/content/copy.ts, receive.body) */
-export const receiveReuseBody = () => t`Share this address as often as you like. Every payment to it lands on a different one-time key, so nobody can link them together — not even by watching the ledger.`;
+/**
+ * What receiving at this address keeps private. The sender picks the privacy level: only the
+ * highest, which this app pays at, hides the recipient; the others pay the spend key itself. A
+ * transfer between chains writes the address in the open on Hathor Network. The wallet service
+ * holds the view key.
+ */
+export const receiveReuseBody = () => t`Share this address as often as you like. Payments sent with full privacy, as this app sends them, can't be linked to it on the ledger. Payments with less privacy, and transfers from Hathor Network, can be. The wallet service sees every payment you receive.`;
 
 /** While the first sync runs, the balance is a rising lower bound, never a total. */
 export const syncingBody = () => t`Syncing your Hathor Next balance. It can still rise until the sync ends.`;
