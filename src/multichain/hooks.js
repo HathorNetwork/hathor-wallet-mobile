@@ -8,15 +8,21 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { mintScaleOf } from './amount';
-import { selectSideChainConfig, selectTokenMap } from './gating';
+import { isSideChainConnected, selectSideChainConfig, selectTokenMap } from './gating';
 import { combinedTokenList } from './tokens';
 
+// No list: the same one every time, so nothing that depends on it runs again.
+const NO_TOKENS = Object.freeze([]);
+
 /**
- * The Dashboard's list of both chains (combinedTokenList), from the state.
+ * The Dashboard's list of both chains (combinedTokenList), from the state. Only with the side
+ * chain connected: the Dashboard shows Hathor Network's own list otherwise, and every balance
+ * update would build this one for nothing, for every user, the multichain flag off included.
  *
  * @returns {Object[]}
  */
 export function useCombinedTokens() {
+  const connected = useSelector(isSideChainConnected);
   const hathorTokens = useSelector((state) => state.tokens);
   const hathorBalances = useSelector((state) => state.tokensBalance);
   const hathorDecimalPlaces = useSelector((state) => state.serverInfo?.decimal_places ?? 2);
@@ -27,7 +33,7 @@ export function useCombinedTokens() {
   const nativeTokenId = useSelector((state) => selectSideChainConfig(state)?.nativeTokenId);
   const mintScale = useSelector((state) => mintScaleOf(selectSideChainConfig(state)));
 
-  return useMemo(() => combinedTokenList({
+  return useMemo(() => (connected ? combinedTokenList({
     hathorTokens,
     hathorBalances,
     hathorDecimalPlaces,
@@ -37,7 +43,8 @@ export function useCombinedTokens() {
     nativeTokenId,
     transfers,
     mintScale,
-  }), [
+  }) : NO_TOKENS), [
+    connected,
     hathorTokens,
     hathorBalances,
     hathorDecimalPlaces,

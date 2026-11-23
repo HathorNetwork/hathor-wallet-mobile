@@ -37,6 +37,7 @@ import {
   verifyAndSign,
 } from './signer';
 import { createNonceStore } from './tokenNonces';
+import { reasonText } from './reasonText';
 import {
   SCOPE,
   authSecret,
@@ -97,6 +98,39 @@ const FREES_INPUTS = ['rejected', 'expired'];
 // The states a payment is no longer followed in. One the backend calls failed (unconfirmed) is
 // still followed: it can still settle.
 const SEND_SETTLED = ['recorded', 'failed', 'expired'];
+
+// The backend's states of a payment still on its way: at a connect, these go out again. Any other
+// answer holds the payment's inputs until the backend says more, an unknown state included. An
+// expired payment is final: its signatures never reached the backend in time, and the app never
+// submits it again.
+const STILL_ON_ITS_WAY = ['awaiting_signatures', 'submitted', 'failed'];
+
+// What a send the backend no longer keeps settles as: its inputs are free again.
+const FORGOTTEN = Object.freeze({ status: 'expired', reason: 'forgotten' });
+
+// The backend's own 404 for a send it doesn't have (sends.rs): one it never had, or one it deleted
+// a week after it last moved. Any other 404, a login's or a proxy's page, says nothing of the send.
+const UNKNOWN_SEND = 'unknown send';
+
+/**
+ * Whether two backend URLs name the same backend: the API drops trailing slashes (backendApi.js).
+ *
+ * @param {string|undefined} a
+ * @param {string|undefined} b
+ * @returns {boolean}
+ */
+const sameBackend = (a, b) => typeof a === 'string' && typeof b === 'string'
+  && a.replace(/\/+$/, '') === b.replace(/\/+$/, '');
+
+/**
+ * A send's status as the backend answers it, its reason made fit to keep and show (reasonText).
+ *
+ * @param {Object|null} answer
+ * @returns {Object|null}
+ */
+const statusFrom = (answer) => (answer && typeof answer === 'object'
+  ? { ...answer, reason: reasonText(answer.reason) }
+  : answer);
 
 // How often a payment the backend calls failed is submitted again while it is followed.
 const FAILED_RESUBMIT_MS = 60000;
@@ -421,6 +455,11 @@ export function createBackendNextClient({
       // Locked: the keys come back with the next unlock.
       throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
     }
+    if (!walletId) {
+      // Between two backends: a login now would carry the wallet id of the one before, signed,
+      // to the one after.
+      throw new NextClientError(NEXT_CLIENT_ERROR.NOT_CONNECTED);
+    }
     const ts = nowS();
     const secret = scope === SCOPE.FULL ? keys.auth : keys.read;
     const sig = schnorrSign(secret, loginMessage(walletId, scope, ts));
@@ -606,6 +645,34 @@ export function createBackendNextClient({
     throw new Error('The token registry is longer than this wallet reads.');
   }
 
+  /**
+   * Whether an error says the backend no longer keeps a send: its 409 for a resubmit, or its own
+   * 404 for the send ("unknown send") from the backend the send was signed for, which deletes a
+   * finished send that holds nothing a week after it last moved. Any other 404 (a login's, a
+   * proxy's page), and any other backend's answer, says nothing: the send may still land. An entry
+   * signed before its backend was recorded with it names none, and no 404 frees it.
+   *
+   * @param {Error} e
+   * @param {{ backend?: string }} entry
+   * @param {string} asked The backend the request went to, as it was when it went
+   * @returns {boolean}
+   */
+  function forgottenBy(e, entry, asked) {
+    return forgotten(e) || (e instanceof BackendError && e.status === 404
+      && e.message === UNKNOWN_SEND && sameBackend(entry.backend, asked));
+  }
+
+  /**
+   * Whether a payment or a creation is the connected backend's to follow: one signed for another
+   * backend is followed again once the app is back on it.
+   *
+   * @param {{ backend?: string }} entry
+   * @returns {boolean}
+   */
+  function ofThisBackend(entry) {
+    return !entry.backend || sameBackend(entry.backend, config?.backendUrl);
+  }
+
   // Follows something the backend submitted for this app until it settles, saying so with SEND
   // events. Bytes the backend lost go to it again, identical. `entry` is the payment's or the
   // creation's own record, which this keeps up to date.
@@ -618,7 +685,17 @@ export function createBackendNextClient({
     const tick = () => schedule(async () => {
       if (mine !== generation || SEND_SETTLED.includes(entry.status)) return;
       try {
-        let status = await withSession((token) => api.getSend(entry.sendId, token));
+        let status;
+        const asked = config?.backendUrl;
+        try {
+          status = statusFrom(await withSession((token) => api.getSend(entry.sendId, token)));
+        } catch (e) {
+          if (!forgottenBy(e, entry, asked)) {
+            throw e;
+          }
+          // Deleted by the backend: it holds nothing, so the inputs are free.
+          status = { ...FORGOTTEN };
+        }
         // Failed is no verdict: the same bytes go out again, now and then, as at a connect. An
         // answer that settles it (recorded, or its inputs free) is its state from now on.
         if (status?.status === 'failed'
@@ -735,12 +812,15 @@ export function createBackendNextClient({
    */
   async function resubmit(entry) {
     let status;
+    const asked = config?.backendUrl;
     try {
-      status = await withSession((token) => api.resubmitSend(entry.sendId, token, entry.signedTx));
+      status = statusFrom(await withSession(
+        (token) => api.resubmitSend(entry.sendId, token, entry.signedTx),
+      ));
     } catch (e) {
-      if (forgotten(e)) {
-        await ledger.markRejected(entry.txId, 'forgotten');
-        return { status: 'expired', reason: 'forgotten' };
+      if (forgottenBy(e, entry, asked)) {
+        await ledger.markRejected(entry.txId, FORGOTTEN.reason);
+        return { ...FORGOTTEN };
       }
       log.error('Could not submit a signed Hathor Next payment again.', e);
       return null;
@@ -757,9 +837,14 @@ export function createBackendNextClient({
    */
   async function statusOf(entry) {
     let status;
+    const asked = config?.backendUrl;
     try {
-      status = await withSession((token) => api.getSend(entry.sendId, token));
+      status = statusFrom(await withSession((token) => api.getSend(entry.sendId, token)));
     } catch (e) {
+      if (forgottenBy(e, entry, asked)) {
+        await ledger.markRejected(entry.txId, FORGOTTEN.reason);
+        return { ...FORGOTTEN };
+      }
       log.error('Could not read an earlier Hathor Next payment.', e);
       return null;
     }
@@ -767,16 +852,23 @@ export function createBackendNextClient({
     return status;
   }
 
-  // After a restart, what this app signed and the chain hasn't settled goes out again, byte for
-  // byte: the backend may have lost it, and nothing else may ever spend those outputs.
+  // After a restart, what this app signed and the chain hasn't settled is asked about first, as
+  // the follower asks in a session: a recorded payment is kept as such, an expired or rejected one
+  // is final and its outputs are free, one the backend forgot is let go (statusOf). What is left
+  // goes out again, byte for byte: the backend may have lost it, and nothing else may ever spend
+  // those outputs. One whose status can't be read now waits for the next connect: submitted
+  // blind, an expired payment would land long after the user was told it didn't.
   async function resubmitPending() {
     const recorded = new Set([...lines.values()].map((line) => line.tx_id));
-    await Promise.all(ledger.pending().map(async (entry) => {
+    await Promise.all(ledger.pending().filter(ofThisBackend).map(async (entry) => {
       if (recorded.has(entry.txId)) {
         await ledger.markRecorded(entry.txId);
         return;
       }
-      await resubmit(entry);
+      const status = await statusOf(entry);
+      if (STILL_ON_ITS_WAY.includes(status?.status)) {
+        await resubmit(entry);
+      }
     }));
   }
 
@@ -824,6 +916,10 @@ export function createBackendNextClient({
       openedAt = nowMs();
     };
     ws.onmessage = (event) => {
+      // A frame from a feed this client already left reads nothing.
+      if (socket !== ws) {
+        return;
+      }
       let frame;
       try {
         frame = JSON.parse(event.data);
@@ -969,6 +1065,9 @@ export function createBackendNextClient({
       network = connectNetwork;
       config = connectConfig;
       api = createBackendApi(config.backendUrl, { fetchImpl });
+      // The wallet id is this backend's once its config answers (below): until then, nothing logs
+      // in, whatever was on its way when the backend changed.
+      walletId = null;
       try {
         const remote = await api.getConfig();
         current();
@@ -1069,7 +1168,7 @@ export function createBackendNextClient({
       // The payments and creations followed before a reconnect are followed again: their outcome
       // still comes.
       for (const entry of [...sends.values(), ...creations.values()]) {
-        if (!SEND_SETTLED.includes(entry.status)) {
+        if (!SEND_SETTLED.includes(entry.status) && ofThisBackend(entry)) {
           followSent(mine, entry);
         }
       }
@@ -1235,12 +1334,17 @@ export function createBackendNextClient({
         await cancel();
         throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
       }
+      // The backend this payment is signed for, read once: the ledger and the record that follows
+      // the payment keep the same one, whatever connect runs while the signatures are saved.
+      const backend = config.backendUrl;
       const context = {
         b: keys.b,
         pubB: keys.pubB,
         intent: { to, amount, tokenId },
         nativeTokenId: native,
         serviceViewPub: config.serviceViewPub,
+        // The backend the transaction is signed for, which the ledger keeps with it.
+        backend,
         wireFormat: config.wireFormat,
         amountWidth,
         maxFee: maxFee(),
@@ -1272,11 +1376,15 @@ export function createBackendNextClient({
             if (!FREES_INPUTS.includes(earlier?.status)) {
               log.error('A Hathor Next payment found its outputs signed into an earlier one.');
               // This payment holds the same outputs until it is cancelled, and the backend
-              // refuses to submit the earlier one meanwhile: cancel first, then submit it.
+              // refuses to submit the earlier one meanwhile: cancel first, then submit it, only
+              // while the backend says it is on its way. One whose state can't be read may have
+              // expired, and goes out at no one's guess.
               // eslint-disable-next-line no-await-in-loop
               await cancel();
-              // eslint-disable-next-line no-await-in-loop
-              await resubmit(e.entry);
+              if (STILL_ON_ITS_WAY.includes(earlier?.status)) {
+                // eslint-disable-next-line no-await-in-loop
+                await resubmit(e.entry);
+              }
               throw new NextClientError(NEXT_CLIENT_ERROR.EARLIER_PENDING);
             }
           } else if (e instanceof SignRefusedError) {
@@ -1299,6 +1407,7 @@ export function createBackendNextClient({
       }
       const send = {
         sendId: request.id,
+        backend,
         txId: signed.txId,
         signedTx: signed.signedTx,
         to,
@@ -1490,12 +1599,16 @@ export function createBackendNextClient({
         await store.release(nonce);
         throw new NextClientError(NEXT_CLIENT_ERROR.NO_KEYS);
       }
+      // The backend this creation is signed for, read once, as a payment's.
+      const backend = config.backendUrl;
       let context = {
         b: keys.b,
         pubB: keys.pubB,
         intent: { symbol, name, amount, mintAuthority, meltAuthority },
         nativeTokenId: native,
         serviceViewPub: config.serviceViewPub,
+        // The backend the transaction is signed for, which the ledger keeps with it.
+        backend,
         amountWidth,
         maxFee: maxFee(),
         nowS: Math.floor(nowMs() / 1000),
@@ -1549,10 +1662,14 @@ export function createBackendNextClient({
         signed = await verifyAndSign(request, context, checkCreateRequest);
       } catch (e) {
         if (e instanceof LedgerConflictError) {
-          // An earlier transaction signed these outputs: it goes out again, and this one waits.
+          // An earlier transaction signed these outputs: it goes out again while the backend says
+          // it is on its way, as a payment's does, and this one waits.
           await cancel();
           await store.release(nonce);
-          await resubmit(e.entry);
+          const earlier = await statusOf(e.entry);
+          if (STILL_ON_ITS_WAY.includes(earlier?.status)) {
+            await resubmit(e.entry);
+          }
           throw new NextClientError(NEXT_CLIENT_ERROR.EARLIER_PENDING);
         }
         if (e instanceof SignRefusedError) {
@@ -1586,6 +1703,7 @@ export function createBackendNextClient({
       // provisional.
       const creation = {
         sendId: request.id,
+        backend,
         txId: signed.txId,
         provisional: true,
         // What the read-back needs: the wallet and mint key it was made with, and the recorded

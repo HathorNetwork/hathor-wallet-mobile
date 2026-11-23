@@ -21,16 +21,14 @@ import {
   MAX_SETTLED_ENTRIES,
   verifyAndSign,
 } from '../../../src/multichain/next/signer';
-import { EXCESS_DOMAIN, INPUT_DOMAIN, verifyIn } from '../../../src/multichain/next/kit/inputSig';
-import { hashToScalar } from '../../../src/multichain/next/kit/hash';
-import { expectedOutput } from '../../../src/multichain/next/kit/opening';
+import { INPUT_DOMAIN, verifyIn } from '../../../src/multichain/next/kit/inputSig';
 import {
   parseTx,
   signingHashOf,
   spentOutputsOfBytes,
   txIdOf,
 } from '../../../src/multichain/next/kit/tx';
-import { encodeAddress } from '../../../src/multichain/next/kit/address';
+import { decodeAddressKeys, encodeAddress } from '../../../src/multichain/next/kit/address';
 import { publicKeyOf } from '../../../src/multichain/next/kit/keys';
 import {
   bigintToBytesLE,
@@ -40,27 +38,28 @@ import {
   hexToBytes,
   modOrder,
   ORDER,
-  scalarFromCanonical,
 } from '../../../src/multichain/next/kit/scalar';
+import { REASON_MAX_LENGTH } from '../../../src/multichain/next/reasonText';
+import { SEND_1, SEND_2 } from '../fakes/sendIds';
+import {
+  forge,
+  inputsOf,
+  memoryStorage,
+  payingTo,
+  refusal,
+} from '../fakes/signing';
 
 const [CASE] = vectors.cases;
+const V3 = vectors.cases.find((c) => c.format === 'v3');
 const NATIVE = vectors.native_token;
-
-// What an honest backend sends: each input with the output index the transaction spends there.
-const inputsOf = (vector) => {
-  const tx = parseTx(hexToBytes(vector.unsigned_tx));
-  return vector.inputs.map((input, i) => ({
-    ...input,
-    global_index: Number(tx.inputs[i].outputIndex),
-  }));
-};
+const NOW = 1788000000;
 
 // The outputs a vector's inputs spend, as the ledger names them.
 const spentOf = (vector) => inputsOf(vector).map((input) => String(input.global_index));
 
 function requestOf(vector, patch = {}) {
   return {
-    id: 'send-1',
+    id: SEND_1,
     unsigned_tx: vector.unsigned_tx,
     signing_hash: vector.signing_hash,
     sender_opening: vector.sender_opening,
@@ -69,17 +68,6 @@ function requestOf(vector, patch = {}) {
     fee: vector.fee,
     expires_at: 4000000000,
     ...patch,
-  };
-}
-
-function memoryStorage({ failWrites = false } = {}) {
-  const data = {};
-  return {
-    getItem: (key) => (key in data ? JSON.parse(data[key]) : null),
-    setItemAsync: async (key, value) => {
-      if (failWrites) throw new Error('disk full');
-      data[key] = JSON.stringify(value);
-    },
   };
 }
 
@@ -94,19 +82,27 @@ function contextOf(vector, overrides = {}) {
     serviceViewPub: vector.pub_a,
     wireFormat: vector.format,
     maxFee: BigInt(vector.approved.max_fee),
+    nowS: NOW,
     ledger: createSignLedger(memoryStorage(), 'ledger'),
     ...overrides,
   };
 }
 
-const refusal = (fn) => {
-  try {
-    fn();
-  } catch (e) {
-    return e;
-  }
-  return null;
+// What a backend could send as a send's id instead of its own: 16 bytes in lowercase hex.
+const NOT_SEND_IDS = [
+  undefined, null, '', 7, 'send-1', SEND_1.toUpperCase(), `${SEND_1}0`, SEND_1.slice(1),
+  `../${SEND_1.slice(3)}`, `${SEND_1.slice(0, 31)}g`, 'a'.repeat(3000000),
+];
+
+// The refusal's words, so that no other check refusing the same request can stand in for the one
+// a case is about.
+const refusedFor = (request, context = contextOf(CASE)) => {
+  const e = refusal(() => checkSignRequest(request, context));
+  expect(e).toBeInstanceOf(SignRefusedError);
+  return e.message;
 };
+
+const PAYS_ELSE = 'The transaction pays someone or something else than the user approved.';
 
 describe('signing a Hathor Next sign request', () => {
   let context;
@@ -126,64 +122,84 @@ describe('signing a Hathor Next sign request', () => {
     expect(context.ledger.entries()).toHaveLength(1);
   });
 
-  it('refuses a payment to someone else, of another amount, or in another token', () => {
-    const other = encodeAddress(CASE.pub_a, bytesToHex(publicKeyOf(5n)));
-    const intents = [
-      { ...context.intent, to: other },
-      { ...context.intent, amount: context.intent.amount + 1n },
-      { ...context.intent, tokenId: 'ab'.repeat(32) },
-    ];
-    const refusals = intents.map((intent) => (
-      refusal(() => checkSignRequest(requestOf(CASE), { ...context, intent }))
-    ));
-    refusals.forEach((e) => expect(e).toBeInstanceOf(SignRefusedError));
+  const payee = (intent) => decodeAddressKeys(intent.to);
+  it.each([
+    ['someone else', (intent) => ({
+      ...intent, to: encodeAddress(CASE.pub_a, bytesToHex(publicKeyOf(5n))),
+    })],
+    ['the payee\'s spend key under another view key', (intent) => ({
+      ...intent,
+      to: encodeAddress(bytesToHex(publicKeyOf(9n)), bytesToHex(payee(intent).spend)),
+    })],
+    ['the payee\'s view key with another spend key', (intent) => ({
+      ...intent,
+      to: encodeAddress(bytesToHex(payee(intent).view), bytesToHex(publicKeyOf(5n))),
+    })],
+    ['one unit more', (intent) => ({ ...intent, amount: intent.amount + 1n })],
+    ['one unit less', (intent) => ({ ...intent, amount: intent.amount - 1n })],
+    ['another token', (intent) => ({ ...intent, tokenId: 'ab'.repeat(32) })],
+  ])('refuses a payment when the user approved %s', (name, change) => {
+    expect(refusedFor(requestOf(CASE), { ...context, intent: change(context.intent) }))
+      .toBe(PAYS_ELSE);
   });
 
   it('refuses a payment the backend calls change', () => {
     const outputs = CASE.outputs.map((o) => ({ ...o, is_change: true }));
-    expect(refusal(() => checkSignRequest(requestOf(CASE, { outputs }), context)))
-      .toBeInstanceOf(SignRefusedError);
+    expect(refusedFor(requestOf(CASE, { outputs })))
+      .toBe('The transaction doesn\'t make exactly the user\'s payment.');
   });
 
   it('refuses outputs that the bytes do not pay', () => {
     const outputs = CASE.outputs.map((o, i) => (
       i === 0 ? { ...o, amount: String(BigInt(o.amount) - 1n) } : o
     ));
-    expect(refusal(() => checkSignRequest(requestOf(CASE, { outputs }), context)))
-      .toBeInstanceOf(SignRefusedError);
+    expect(refusedFor(requestOf(CASE, { outputs })))
+      .toBe('The outputs don\'t open: Output 0 doesn\'t pay what it says.');
   });
 
   it('refuses a fee above what the user agreed to, or not the one in the bytes', () => {
-    const cheaper = { ...context, maxFee: BigInt(CASE.fee) - 1n };
-    expect(refusal(() => checkSignRequest(requestOf(CASE), cheaper)))
-      .toBeInstanceOf(SignRefusedError);
-    expect(refusal(() => checkSignRequest(requestOf(CASE, { fee: '1' }), context)))
-      .toBeInstanceOf(SignRefusedError);
+    const fee = 'The fee is not the one the user agreed to.';
+    // One unit above the ceiling, and a quote that is not what the bytes pay.
+    expect(refusedFor(requestOf(CASE), { ...context, maxFee: BigInt(CASE.fee) - 1n })).toBe(fee);
+    expect(refusedFor(requestOf(CASE, { fee: String(BigInt(CASE.fee) + 1n) }))).toBe(fee);
+    expect(refusedFor(requestOf(CASE, { fee: '1' }))).toBe(fee);
+    // A fee of exactly the ceiling is taken.
+    const atCeiling = { ...context, maxFee: BigInt(CASE.fee) };
+    expect(refusal(() => checkSignRequest(requestOf(CASE), atCeiling))).toBeNull();
   });
 
   it('refuses an input that is not this wallet\'s', () => {
     const inputs = inputsOf(CASE).map((i, k) => (
       k === 0 ? { ...i, otk_offset: '01'.padEnd(64, '0') } : i
     ));
-    expect(refusal(() => checkSignRequest(requestOf(CASE, { inputs }), context)))
-      .toBeInstanceOf(SignRefusedError);
-    const stranger = contextOf(CASE, { b: 12345n });
-    expect(refusal(() => checkSignRequest(requestOf(CASE), stranger)))
-      .toBeInstanceOf(SignRefusedError);
+    expect(refusedFor(requestOf(CASE, { inputs }))).toBe('An input is not this wallet\'s.');
+    expect(refusedFor(requestOf(CASE), contextOf(CASE, { b: 12345n })))
+      .toBe('An input is not this wallet\'s.');
   });
 
   it('refuses a broken excess signature or unreadable bytes', () => {
     const bytes = hexToBytes(CASE.unsigned_tx);
     bytes[bytes.length - 1] = bytes[bytes.length - 1] === 0 ? 1 : 0;
-    const broken = requestOf(CASE, { unsigned_tx: bytesToHex(bytes) });
-    expect(refusal(() => checkSignRequest(broken, context))).toBeInstanceOf(SignRefusedError);
-    expect(refusal(() => checkSignRequest(requestOf(CASE, { unsigned_tx: 'zz' }), context)))
-      .toBeInstanceOf(SignRefusedError);
+    expect(refusedFor(requestOf(CASE, { unsigned_tx: bytesToHex(bytes) })))
+      .toBe('The transaction\'s excess signature is wrong.');
+    expect(refusedFor(requestOf(CASE, { unsigned_tx: 'zz' })))
+      .toBe('The transaction can\'t be read: Not hexadecimal.');
+  });
+
+  // A field missing or not a number is refused like a wrong one: the caller lets its outputs go.
+  it('refuses, as a refusal, a request with a field it can\'t read', async () => {
+    const request = requestOf(CASE);
+    delete request.fee;
+    const why = refusal(() => BigInt(undefined)).message;
+    const e = await verifyAndSign(request, context).catch((thrown) => thrown);
+    expect(e).toBeInstanceOf(SignRefusedError);
+    expect(e.message).toBe(`The request can't be read: ${why}`);
+    expect(context.ledger.entries()).toEqual([]);
   });
 
   it('never signs an input into two transactions, and repeats the same signatures for the same one', async () => {
     const first = await verifyAndSign(requestOf(CASE), context);
-    const again = await verifyAndSign(requestOf(CASE, { id: 'send-2' }), context);
+    const again = await verifyAndSign(requestOf(CASE, { id: SEND_2 }), context);
     expect(again).toEqual(first);
     expect(context.ledger.entries()).toHaveLength(1);
 
@@ -218,9 +234,24 @@ describe.each(vectors.cases)('the remote-signing case "$name"', (vector) => {
 
   it('is refused on a network of the other format', () => {
     const other = vector.format === 'v2' ? 'v3' : 'v2';
-    const context = contextOf(vector, { wireFormat: other });
-    expect(refusal(() => checkSignRequest(requestOf(vector), context)))
-      .toBeInstanceOf(SignRefusedError);
+    expect(refusedFor(requestOf(vector), contextOf(vector, { wireFormat: other })))
+      .toBe(`The transaction is ${vector.format}; this network takes ${other}.`);
+  });
+
+  // Every request carries the true hash: one naming another must still be signed over the bytes'
+  // own, or the backend could have the inputs sign a transaction other than the one checked.
+  it('signs the hash of its own bytes, whatever signing_hash the request names', async () => {
+    const other = 'ab'.repeat(32);
+    const context = contextOf(vector);
+    const result = await verifyAndSign(requestOf(vector, { signing_hash: other }), context);
+    const own = hexToBytes(vector.signing_hash);
+    result.signatures.forEach((sig, i) => {
+      const key = hexToBytes(vector.inputs[i].one_time_key);
+      expect(verifyIn(INPUT_DOMAIN, key, own, hexToBytes(sig))).toBe(true);
+      expect(verifyIn(INPUT_DOMAIN, key, hexToBytes(other), hexToBytes(sig))).toBe(false);
+    });
+    // The ledger names the transaction by that same hash.
+    expect(context.ledger.entries()[0].signingHash).toBe(vector.signing_hash);
   });
 });
 
@@ -228,31 +259,34 @@ describe.each(vectors.cases)('the remote-signing case "$name"', (vector) => {
 // one this signer does not refuse: it needs the wallet's own record of which outputs it holds are
 // public, and the app keeps none. Counting every input as public instead would refuse a token
 // payment whose native change is the only native output.
-const SIGNER_REFUSES = ['fee', 'output', 'input'];
+const SIGNER_REFUSES = {
+  fee: 'The fee is not the one the user agreed to.',
+  output: 'A change output pays another wallet.',
+  input: 'An input is not this wallet\'s.',
+};
 
-describe.each(vectors.refused_cases.filter((r) => SIGNER_REFUSES.includes(r.refusal)))(
+describe.each(vectors.refused_cases.filter((r) => r.refusal in SIGNER_REFUSES))(
   'the refused case "$case.name"',
-  ({ case: vector }) => {
-    it('is refused', () => {
-      expect(refusal(() => checkSignRequest(requestOf(vector), contextOf(vector))))
-        .toBeInstanceOf(SignRefusedError);
+  ({ case: vector, refusal: kind }) => {
+    it('is refused, for what it is', () => {
+      expect(refusedFor(requestOf(vector), contextOf(vector))).toBe(SIGNER_REFUSES[kind]);
     });
   },
 );
 
 test('the refused cases are the ones this signer knows of', () => {
   expect(vectors.refused_cases.map((r) => r.refusal).sort())
-    .toEqual([...SIGNER_REFUSES, 'amount leak'].sort());
+    .toEqual([...Object.keys(SIGNER_REFUSES), 'amount leak'].sort());
 });
 
 describe('what the sign-once ledger and the inputs guard', () => {
   it('refuses inputs that are not the outputs the transaction spends', () => {
-    const context = contextOf(CASE);
     const shifted = inputsOf(CASE).map((i) => ({ ...i, global_index: i.global_index + 1 }));
     const missing = CASE.inputs;
+    expect(missing.some((i) => 'global_index' in i)).toBe(false);
     for (const inputs of [shifted, missing]) {
-      expect(refusal(() => checkSignRequest(requestOf(CASE, { inputs }), context)))
-        .toBeInstanceOf(SignRefusedError);
+      expect(refusedFor(requestOf(CASE, { inputs })))
+        .toBe('An input is not the output the transaction spends.');
     }
   });
 
@@ -342,13 +376,29 @@ describe('what the sign-once ledger and the inputs guard', () => {
     expect(context.ledger.entries()).toHaveLength(0);
   });
 
-  it('refuses a request past its time, or with none', () => {
-    const context = contextOf(CASE, { nowS: 1788000000 });
-    for (const expiresAt of [1788000000, 1787999999, undefined, '4000000000']) {
-      expect(refusal(() => checkSignRequest(requestOf(CASE, { expires_at: expiresAt }), context)))
-        .toBeInstanceOf(SignRefusedError);
+  // The ledger keeps the id with what was signed, and the app reads the ledger whole at every
+  // start: an id the backend doesn't make is refused before anything is signed or kept.
+  it('refuses a request whose id is not a send id, and keeps nothing', async () => {
+    const context = contextOf(CASE);
+    for (const id of NOT_SEND_IDS) {
+      expect(refusal(() => checkSignRequest(requestOf(CASE, { id }), context)).message)
+        .toBe('The payment has no valid id.');
+      // eslint-disable-next-line no-await-in-loop
+      await expect(verifyAndSign(requestOf(CASE, { id }), context))
+        .rejects.toThrow('The payment has no valid id.');
     }
-    expect(refusal(() => checkSignRequest(requestOf(CASE, { expires_at: 1788000001 }), context)))
+    expect(context.ledger.entries()).toHaveLength(0);
+    expect(refusal(() => checkSignRequest(requestOf(CASE), context))).toBeNull();
+  });
+
+  it('refuses a request past its time, or with none', () => {
+    const context = contextOf(CASE, { nowS: NOW });
+    // Now, a second ago, none, as text, and a time that is no whole second.
+    for (const expiresAt of [NOW, NOW - 1, undefined, '4000000000', NOW + 0.5]) {
+      expect(refusedFor(requestOf(CASE, { expires_at: expiresAt }), context))
+        .toBe('The payment expired before it was signed.');
+    }
+    expect(refusal(() => checkSignRequest(requestOf(CASE, { expires_at: NOW + 1 }), context)))
       .toBeNull();
   });
 
@@ -385,59 +435,13 @@ describe('what the sign-once ledger and the inputs guard', () => {
   });
 });
 
-// A transaction as a dishonest backend could build it: the vector's bytes changed by `change`, the
-// excess re-signed with a key the test holds. The app checks the excess signature, not that the
-// amounts balance (the network does), so such a transaction fails only the check under test.
-const FORGER = 777n;
-function forge(vector, change) {
-  const bytes = change(hexToBytes(vector.unsigned_tx));
-  const point = publicKeyOf(FORGER);
-  bytes.set(point, parseTx(bytes).excess.signatureOffset - 32);
-  const tx = parseTx(bytes);
-  const msg = signingHashOf(bytes, tx);
-  const k = 4242n;
-  const r = publicKeyOf(k);
-  const e = hashToScalar(EXCESS_DOMAIN, [point, r, msg]);
-  bytes.set(concatBytes(r, bigintToBytesLE(modOrder(k + e * FORGER))), tx.excess.signatureOffset);
-  return bytesToHex(bytes);
-}
-
-// Output `j` of a v2 transaction rewritten to pay `amount` of `token` to `address`, as the
-// vector's sender would have written it. The layout is kit/txV2.js's.
-function payingTo(vector, j, { address, token, amount }) {
-  return (bytes) => {
-    const tx = parseTx(bytes);
-    const u128 = tx.width === 'u128';
-    const points = u128 ? 5 : 4;
-    const linkLen = u128 ? 256 : 160;
-    const memoLen = u128 ? 16 : 8;
-    const surjectionLen = 36 + 32 * tx.nIn;
-    const outputLen = 32 * points + linkLen + surjectionLen + 1 + memoLen;
-    const inputsOff = 36 + (u128 ? 16 : 8) + 1 + 32 * tx.table.length;
-    const o = inputsOff + tx.nIn * (8 + 64) + j * outputLen;
-    const tagOff = o + 32 * points + linkLen + surjectionLen;
-    const r = scalarFromCanonical(hexToBytes(vector.sender_opening));
-    const want = expectedOutput(r, address, hexToBytes(token), BigInt(amount), j, memoLen);
-    bytes.set(want.oneTimeKey, o);
-    bytes.set(want.assetTag, o + 32);
-    bytes.set(want.commitment, o + 64);
-    bytes.set(Uint8Array.of(want.viewTag), tagOff);
-    bytes.set(want.memo, tagOff + 1);
-    return bytes;
-  };
-}
-
 // Each check on its own: every request below breaks only what one check guards, and the refusal
 // must name that check, so no other check can stand in for it.
 describe('each check of a payment, on its own', () => {
+  const PAY_AT = CASE.outputs.findIndex((o) => !o.is_change);
   const CHANGE_AT = CASE.outputs.findIndex((o) => o.is_change);
   const CHANGE = CASE.outputs[CHANGE_AT];
   const OTHER_TOKEN = 'cd'.repeat(32);
-  const refusedFor = (request, context = contextOf(CASE)) => {
-    const e = refusal(() => checkSignRequest(request, context));
-    expect(e).toBeInstanceOf(SignRefusedError);
-    return e.message;
-  };
   const claimsWith = (j, patch) => CASE.outputs.map((o, i) => (i === j ? { ...o, ...patch } : o));
 
   it('passes a forged transaction that changes nothing, so each case below fails one check', () => {
@@ -478,14 +482,38 @@ describe('each check of a payment, on its own', () => {
   });
 
   it('refuses claims the bytes don\'t pay, even when they are what the user approved', () => {
-    const payAt = CASE.outputs.findIndex((o) => !o.is_change);
-    const more = BigInt(CASE.outputs[payAt].amount) + 1n;
+    const more = BigInt(CASE.outputs[PAY_AT].amount) + 1n;
     const context = contextOf(CASE);
     const intent = { ...context.intent, amount: more };
     expect(refusedFor(
-      requestOf(CASE, { outputs: claimsWith(payAt, { amount: String(more) }) }),
+      requestOf(CASE, { outputs: claimsWith(PAY_AT, { amount: String(more) }) }),
       { ...context, intent },
-    )).toMatch(/^The outputs don't open/);
+    )).toBe(`The outputs don't open: Output ${PAY_AT} doesn't pay what it says.`);
+  });
+
+  // The approved payment is there, untouched; what would be the change pays a stranger instead,
+  // and is called a payment. Every output opens, the fee is right, the one approved payment is
+  // paid: only the count of payments refuses it.
+  it('refuses a second payment, to someone the user never approved', () => {
+    const stranger = encodeAddress(CASE.pub_a, bytesToHex(publicKeyOf(5n)));
+    const second = { ...CHANGE, address: stranger, is_change: false };
+    const request = requestOf(CASE, {
+      unsigned_tx: forge(CASE, payingTo(CASE, CHANGE_AT, second)),
+      outputs: claimsWith(CHANGE_AT, second),
+    });
+    expect(refusedFor(request)).toBe('The transaction doesn\'t make exactly the user\'s payment.');
+  });
+
+  // Nothing is paid to the address approved: every output comes back to this wallet, as change.
+  it('refuses a transaction that makes no payment, every output back to this wallet', () => {
+    const back = {
+      ...CASE.outputs[PAY_AT], address: encodeAddress(CASE.pub_a, CASE.pub_b), is_change: true,
+    };
+    const request = requestOf(CASE, {
+      unsigned_tx: forge(CASE, payingTo(CASE, PAY_AT, back)),
+      outputs: claimsWith(PAY_AT, back),
+    });
+    expect(refusedFor(request)).toBe('The transaction doesn\'t make exactly the user\'s payment.');
   });
 
   it('refuses change in a token that is neither the payment\'s nor the native one', () => {
@@ -509,8 +537,9 @@ describe('each check of a payment, on its own', () => {
   it('refuses, as a refusal, an address it can\'t read', () => {
     const context = contextOf(CASE);
     const intent = { ...context.intent, to: 'not an address' };
+    const why = refusal(() => decodeAddressKeys('not an address')).message;
     expect(refusedFor(requestOf(CASE), { ...context, intent }))
-      .toMatch(/^An address can't be read/);
+      .toBe(`An address can't be read: ${why}`);
   });
 });
 
@@ -547,6 +576,16 @@ describe('the sign-once ledger, kept small and true to disk', () => {
     // A recorded transaction is never signed again, and its outputs stay held.
     await expect(verifyAndSign(requestOf(CASE), context))
       .rejects.toThrow('This transaction was already recorded.');
+  });
+
+  it('keeps a rejection\'s reason as one short line, whatever words it was given', async () => {
+    const context = contextOf(CASE);
+    const { txId } = await verifyAndSign(requestOf(CASE), context);
+    const newline = String.fromCharCode(10);
+    await context.ledger.markRejected(txId, `fee${newline}too low ${'x'.repeat(5000)}`);
+    const { reason } = context.ledger.entries()[0];
+    expect(reason).toHaveLength(REASON_MAX_LENGTH);
+    expect(reason.startsWith('fee too low xxx')).toBe(true);
   });
 
   it('never lets a failed write take away an entry another write saved', async () => {
@@ -666,13 +705,49 @@ describe('the sign-once ledger, kept small and true to disk', () => {
   });
 });
 
-describe('shapes the network refuses, refused before signing', () => {
-  const refusedFor = (request, context = contextOf(CASE)) => {
-    const e = refusal(() => checkSignRequest(request, context));
-    expect(e).toBeInstanceOf(SignRefusedError);
-    return e.message;
-  };
+// The ledger kept before under another key (connect moves it here): what is still on its way
+// keeps holding its outputs, and nothing else comes in.
+describe('the sign-once ledger kept before, taken in', () => {
+  const pending = (txId, patch = {}) => ({
+    txId,
+    sendId: `s-${txId}`,
+    signingHash: 'aa'.repeat(32),
+    outputs: ['7'],
+    signedTx: 'cafe',
+    signedAt: 5,
+    ...patch,
+  });
 
+  it('keeps an entry already here as it is: the old ledger\'s copy is not added beside it', async () => {
+    const ledger = createSignLedger(memoryStorage(), 'ledger');
+    await ledger.record(pending('tx-a'));
+    await ledger.markRecorded('tx-a');
+    await ledger.adopt([pending('tx-a'), pending('tx-b', { outputs: ['8'] })]);
+    expect(ledger.entries().map((e) => e.txId)).toEqual(['tx-a', 'tx-b']);
+    // The recorded one is still recorded, and nothing of it is on its way again.
+    expect(ledger.pending().map((e) => e.txId)).toEqual(['tx-b']);
+  });
+
+  it('takes in nothing that is not an entry: no id, an id that is no text, nothing at all', async () => {
+    const ledger = createSignLedger(memoryStorage(), 'ledger');
+    await ledger.adopt([null, undefined, {}, { txId: 5, outputs: ['9'] }, { sendId: 's' }]);
+    expect(ledger.entries()).toEqual([]);
+    // And signing still works after it.
+    expect(ledger.check(new Uint8Array(32), ['9'], [new Uint8Array(32)])).toBeNull();
+  });
+
+  it('takes in only what is still on its way', async () => {
+    const ledger = createSignLedger(memoryStorage(), 'ledger');
+    await ledger.adopt([
+      pending('tx-rec', { recorded: true }),
+      pending('tx-rej', { rejected: true }),
+      pending('tx-go', { outputs: ['8'] }),
+    ]);
+    expect(ledger.entries().map((e) => e.txId)).toEqual(['tx-go']);
+  });
+});
+
+describe('shapes the network refuses, refused before signing', () => {
   it('refuses a transaction that spends one output twice', () => {
     const twice = forge(CASE, (b) => {
       const tx = parseTx(b);
@@ -706,6 +781,28 @@ describe('shapes the network refuses, refused before signing', () => {
       .toBe('An input\'s offset is not a canonical scalar.');
   });
 
+  // The order encodes zero in a form no honest backend writes. An input whose offset is zero pays
+  // the spend key itself (a declared coin): seen from a wallet whose spend secret is the first
+  // input's one-time secret, the vector's first input is one, and the second keeps its key.
+  it('refuses the group order as an offset, the one non-canonical zero', () => {
+    const b = bytesToBigintLE(hexToBytes(CASE.b));
+    const offsets = CASE.inputs.map((i) => bytesToBigintLE(hexToBytes(i.otk_offset)));
+    const context = contextOf(CASE, { b: modOrder(offsets[0] + b) });
+    const inputsWith = (zero) => inputsOf(CASE).map((input, i) => ({
+      ...input,
+      otk_offset: i === 0 ? zero : bytesToHex(bigintToBytesLE(modOrder(offsets[i] - offsets[0]))),
+    }));
+    // With a canonical zero the same request passes: only the encoding is wrong.
+    expect(refusal(() => checkSignRequest(
+      requestOf(CASE, { inputs: inputsWith('00'.repeat(32)) }),
+      context,
+    ))).toBeNull();
+    expect(refusedFor(
+      requestOf(CASE, { inputs: inputsWith(bytesToHex(bigintToBytesLE(ORDER))) }),
+      context,
+    )).toBe('An input\'s offset is not a canonical scalar.');
+  });
+
   it('refuses an input offset written in other than its 32 bytes', () => {
     // A zero byte more names the same scalar, in a form no honest backend writes.
     const inputs = inputsOf(CASE).map((input, i) => (i === 0
@@ -715,8 +812,26 @@ describe('shapes the network refuses, refused before signing', () => {
       .toBe('An input\'s offset is not a canonical scalar.');
   });
 
+  // The transaction's key in another form than its 32 canonical bytes names the same scalar.
+  describe.each([CASE, V3])('the opening of "$name"', (vector) => {
+    const r = bytesToBigintLE(hexToBytes(vector.sender_opening));
+
+    it('is refused written with a zero byte more', () => {
+      expect(refusedFor(
+        requestOf(vector, { sender_opening: `${vector.sender_opening}00` }),
+        contextOf(vector),
+      )).toBe('The outputs don\'t open: A scalar is 32 bytes.');
+    });
+
+    it('is refused written as the scalar plus the group order', () => {
+      expect(refusedFor(
+        requestOf(vector, { sender_opening: bytesToHex(bigintToBytesLE(r + ORDER)) }),
+        contextOf(vector),
+      )).toBe('The outputs don\'t open: Not a canonical scalar.');
+    });
+  });
+
   it('refuses a v3 transaction whose excess is the identity', () => {
-    const V3 = vectors.cases.find((c) => c.format === 'v3');
     const bytes = hexToBytes(V3.unsigned_tx);
     const tx = parseTx(bytes);
     bytes.set(new Uint8Array(32), tx.sections.coreLen - 32);

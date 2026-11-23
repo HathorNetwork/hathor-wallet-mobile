@@ -25,16 +25,20 @@ import { publicKeyOf } from '../../../src/multichain/next/kit/keys';
 import { bytesToHex, concatBytes, hexToBytes } from '../../../src/multichain/next/kit/scalar';
 import { CHAIN } from '../../../src/multichain/chains';
 import { HISTORY_VIEW, tokenHistory } from '../../../src/multichain/history';
+import { loggedRefusals } from '../fakes/signing';
 
 const network = new Network('privatenet');
 const TRANSFER = 'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL';
 const CHANGE = 'WXkMhVgRVmTXTVh47wauPKm1xcrW8Qf3Vb';
+// A spendable address that is neither the transfer's nor this wallet's change.
+const STRANGER = 'WY1URKUnqCTyiixW1Dw29vmeG99hNN4EW6';
 const DEST_NETWORK = 'd5'.repeat(32);
 const VIEW = bytesToHex(publicKeyOf(7n));
 const SPEND = bytesToHex(publicKeyOf(11n));
 const OWN = encodeAddress(VIEW, SPEND);
 const NATIVE = 'aa'.repeat(32);
 const UTXOS = [{ txId: '01'.repeat(32), index: 1, value: 1000n }];
+const OTHER_UTXOS = [{ txId: '02'.repeat(32), index: 0, value: 1000n }];
 
 const CONFIG = {
   client: 'backend',
@@ -48,10 +52,17 @@ const CONFIG = {
   },
 };
 
-function unsignedBurn({ spend = SPEND, amount = 700n } = {}) {
+function unsignedBurn({
+  spend = SPEND,
+  amount = 700n,
+  changeTo = CHANGE,
+  transferTo = TRANSFER,
+  destNetwork = DEST_NETWORK,
+  utxos = UTXOS,
+} = {}) {
   const payload = concatBytes(
     Uint8Array.of(0x43, 0x54, 1),
-    hexToBytes(DEST_NETWORK),
+    hexToBytes(destNetwork),
     hexToBytes(VIEW),
     hexToBytes(spend),
   );
@@ -59,11 +70,11 @@ function unsignedBurn({ spend = SPEND, amount = 700n } = {}) {
   const data = Buffer.from(script);
   const p2pkh = (address) => new Address(address, { network }).getScript();
   const tx = new Transaction(
-    UTXOS.map((u) => new Input(u.txId, u.index)),
+    utxos.map((u) => new Input(u.txId, u.index)),
     [
       new Output(BURN_DATA_VALUE, data),
-      new Output(amount, p2pkh(TRANSFER)),
-      new Output(1000n - amount - 1n, p2pkh(CHANGE)),
+      new Output(amount, p2pkh(transferTo)),
+      new Output(1000n - amount - 1n, p2pkh(changeTo)),
     ],
     { version: 1, timestamp: 1790000000, parents: ['aa'.repeat(32), 'bb'.repeat(32)], weight: 1 },
   );
@@ -94,6 +105,8 @@ function burnOnChain(hash, { spend = SPEND, amount = 700, spender = CHANGE } = {
 
 function fakes({
   burn = unsignedBurn(),
+  // What else the backend's answer carries beside the burn.
+  answer = {},
   signTransfer = null,
   transfer = null,
   onChain = (hash) => burnOnChain(hash),
@@ -119,7 +132,7 @@ function fakes({
     getAddress: () => OWN,
     createTransfer: async (request) => {
       calls.created = request;
-      return { id: 'transfer-1', unsigned_tx: burn };
+      return { id: 'transfer-1', unsigned_tx: burn, ...answer };
     },
     // The backend reports the destination it was asked for.
     signTransfer: signTransfer ?? (async (id, inputData) => {
@@ -383,6 +396,88 @@ describe('the bridge through the Hathor Next backend', () => {
       });
       expect(rows.map((row) => row.key)).toEqual(['next:paid', 'transfer:arrived']);
     });
+  });
+});
+
+describe('a transfer the bridge doesn\'t make, or signs only as the user chose it', () => {
+  afterEach(() => jest.restoreAllMocks());
+  const bridgeOf = (f, config = CONFIG) => createBackendBridge(config, {
+    wallet: f.wallet, network, client: f.client,
+  });
+
+  it.each([
+    ['a side chain with no transfer pinned', {}, { ...CONFIG, transfer: null }],
+    ['from Hathor Next', { from: CHAIN.HATHOR_NEXT }, CONFIG],
+    ['to Hathor Network', { to: CHAIN.HATHOR }, CONFIG],
+    ['another token than HTR', { tokenId: 'ab'.repeat(32) }, CONFIG],
+  ])('asks no backend and signs nothing for %s', async (name, patch, config) => {
+    const f = fakes();
+    await expect(bridgeOf(f, config).transfer({ ...transferArgs, ...patch }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.UNAVAILABLE });
+    expect(f.calls.created).toBeNull();
+    expect(f.calls.sign).toBe(0);
+  });
+
+  // The legacy form has no checksum to catch a typo, and a key that is the identity is one
+  // nobody can spend from: the HTR sent there would be lost for good.
+  it.each([
+    ['the legacy form of an address', `samba:${VIEW}${SPEND}`],
+    ['an address whose spend key is the identity', encodeAddress(VIEW, '00'.repeat(32))],
+    ['an address whose view key is the identity', encodeAddress('00'.repeat(32), SPEND)],
+  ])('asks no backend and signs nothing to %s', async (name, toAddress) => {
+    const f = fakes();
+    await expect(bridgeOf(f).transfer({ ...transferArgs, toAddress }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TRANSFER_BAD_ADDRESS });
+    expect(f.calls.created).toBeNull();
+    expect(f.calls.sign).toBe(0);
+  });
+
+  // The backend's answer carries the amount and the change address beside the burn: the burn is
+  // held to what the user chose and the wallet's own change address, never to those. The other
+  // fields are none of the answer's today: were one added and read, the backend would be
+  // approving its own burn.
+  const theirSpend = bytesToHex(publicKeyOf(12n));
+  const OTHER_NETWORK = 'e6'.repeat(32);
+  const listed = (utxos) => utxos.map((u) => ({
+    tx_id: u.txId, index: u.index, value: String(u.value),
+  }));
+  it.each([
+    ['the amount the user chose', { amount: 600n }, { amount: '600' },
+      'The burn moves another amount than the one chosen.'],
+    ['the wallet\'s own change address', { changeTo: STRANGER }, { change_address: STRANGER },
+      'The burn pays other outputs than the transfer and the change.'],
+    ['the destination the user chose', { spend: theirSpend },
+      { destination: encodeAddress(VIEW, theirSpend) },
+      'The burn sends the HTR somewhere else than the chosen Hathor Next address.'],
+    ['the pinned Hathor Next network', { destNetwork: OTHER_NETWORK },
+      { destination_network: OTHER_NETWORK },
+      'The burn sends the HTR somewhere else than the chosen Hathor Next address.'],
+    ['the pinned transfer address', { transferTo: STRANGER }, { transfer_address: STRANGER },
+      'The burn pays other outputs than the transfer and the change.'],
+    ['the outputs the wallet chose', { utxos: OTHER_UTXOS },
+      { utxos: listed(OTHER_UTXOS) },
+      'The burn spends other outputs than the ones this wallet chose.'],
+  ])('holds the burn to %s, whatever the answer names', async (name, burn, answer, words) => {
+    const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const f = fakes({ burn: unsignedBurn(burn), answer });
+    await expect(bridgeOf(f).transfer(transferArgs))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TRANSFER_REFUSED });
+    expect(loggedRefusals(errors, 'multichain-backend-bridge', 'A transfer was refused before signing: '))
+      .toEqual([words]);
+    expect(f.calls.sign).toBe(0);
+    expect(f.calls.cancelled).toEqual(['transfer-1']);
+  });
+
+  // Signed: an answer that makes no transfer of it (still awaiting its signatures, or cancelled)
+  // is not a failure the user may answer by burning again.
+  it.each(['awaiting_signatures', 'cancelled'])('leaves a signed burn uncertain, not failed, when the answer says %s', async (status) => {
+    const f = fakes({ signTransfer: async (id) => ({ id, amount: '700', status }) });
+    await expect(bridgeOf(f).transfer(transferArgs)).rejects.toMatchObject({
+      code: NEXT_CLIENT_ERROR.TRANSFER_UNCERTAIN,
+      transferId: 'transfer-1',
+      inputs: [{ txId: UTXOS[0].txId, index: UTXOS[0].index }],
+    });
+    expect(f.calls.sign).toBe(1);
   });
 });
 

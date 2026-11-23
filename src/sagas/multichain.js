@@ -1053,26 +1053,43 @@ export function* onNextSendRequested({ payload }) {
   try {
     const client = getNextClient();
     ({ sendId } = yield call([client, client.send], { tokenId, to, amount }));
-    yield put(multichainNextSendUpdate({ sendId }));
+    yield call(updatePayment, draftId, { sendId });
     // The payment may have settled while send() ran: its event came before the saga knew the id,
     // so the state it reached is read once now.
     const now = client.getSend(sendId);
     if (now && now.status !== 'pending') {
-      yield put(multichainNextSendUpdate({
+      yield call(updatePayment, draftId, {
         status: now.status,
         reason: now.reason ?? null,
         txId: now.txId ?? null,
-      }));
+      });
     }
   } catch (e) {
     log.error('The Hathor Next payment was refused before it was signed.', e);
-    yield put(multichainNextSendUpdate({
+    yield call(updatePayment, draftId, {
       status: OPERATION_STATUS.ERROR,
       error: userErrorText(e),
-    }));
+    });
     return;
   }
-  yield call(awaitSendOutcome, sendId);
+  yield call(awaitSendOutcome, sendId, { draftId });
+}
+
+/**
+ * A write of one payment's attempt, as a creation's (updateDraft): it applies while that draft
+ * owns the payment's state, or while no draft does (the app left Hathor Next, which cleared it,
+ * and the draft's screen still shows its outcome). Another draft's state is never touched: after
+ * the app left Hathor Next and came back, another payment may be on its way, and this one's late
+ * answer would show as that one's.
+ *
+ * @param {string} draftId
+ * @param {Object} patch Part of state.multichain.send
+ */
+function* updatePayment(draftId, patch) {
+  const owner = yield select((state) => state.multichain.send.draftId);
+  if (owner === draftId || owner === null) {
+    yield put(multichainNextSendUpdate({ ...patch, draftId }));
+  }
 }
 
 /**

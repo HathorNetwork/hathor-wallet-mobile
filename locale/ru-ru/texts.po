@@ -2612,25 +2612,28 @@ msgstr ""
 msgid "The network said:"
 msgstr ""
 
-#: src/multichain/content.js:69
+#: src/multichain/content.js:74
 msgid ""
-"Every Hathor Next payment is private: the amount, the token and who you paid "
-"never appear on the ledger. Only the exact network fee is public."
+"This payment keeps who you paid off the ledger, and the amount and token "
+"too, unless the coins it spends were public, such as HTR that arrived by "
+"transfer. The exact network fee is public, and the wallet service that "
+"prepares the payment sees all of it."
 msgstr ""
 
-#: src/multichain/content.js:72
+#: src/multichain/content.js:82
 msgid ""
-"Share this address as often as you like. Every payment to it lands on a "
-"different one-time key, so nobody can link them together — not even by "
-"watching the ledger."
+"Share this address as often as you like. Payments sent with full privacy, as "
+"this app sends them, can't be linked to it on the ledger. Payments with less "
+"privacy, and transfers from Hathor Network, can be. The wallet service sees "
+"every payment you receive."
 msgstr ""
 
-#: src/multichain/content.js:75
+#: src/multichain/content.js:85
 msgid ""
 "Syncing your Hathor Next balance. It can still rise until the sync ends."
 msgstr ""
 
-#: src/multichain/content.js:78 src/multichain/nextClientErrors.js:92
+#: src/multichain/content.js:88 src/multichain/nextClientErrors.js:92
 msgid "You can send once your balance finishes syncing."
 msgstr ""
 

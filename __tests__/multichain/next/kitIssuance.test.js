@@ -69,7 +69,7 @@ describe.each(vectors.cases)('the remote-issuance case "$name"', (vector) => {
     expect(tx.inputs.map((i) => i.outputIndex))
       .toEqual(vector.inputs.map((i) => BigInt(i.global_index)));
     expect(tx.outputs.map((o) => o.form)).toEqual(vector.outputs.map((o) => o.output_kind));
-    expect(() => parseTx(bytes)).toThrow();
+    expect(() => parseTx(bytes)).toThrow('Not a transaction this wallet signs.');
     if (vector.kind === 'token-create') {
       const utf8 = (text) => bytesToHex(utf8ToBytes(text));
       expect(bytesToHex(tx.definition.symbol)).toBe(utf8(vector.approved.symbol));
@@ -100,14 +100,23 @@ describe.each(vectors.cases)('the remote-issuance case "$name"', (vector) => {
     expect(recipients.map((r) => r.address)).not.toContain(stranger);
     expect(() => checkOpeningLevels(tx, recipients, opening, native)).not.toThrow();
     const changed = (patch) => recipients.map((r, i) => (i === 0 ? { ...r, ...patch } : r));
+    const elsewhere = 'Output 0 doesn\'t pay what it says.';
     for (const patch of [
       { amount: recipients[0].amount + 1n },
       { tokenId: new Uint8Array(32).fill(8) },
       { address: stranger },
-      // Every other level: another kind of output, or another recipient mode.
-      ...[1, 2, 3, 4].filter((l) => l !== recipients[0].level).map((level) => ({ level })),
     ]) {
-      expect(() => checkOpeningLevels(tx, changed(patch), opening, native)).toThrow();
+      expect(() => checkOpeningLevels(tx, changed(patch), opening, native)).toThrow(elsewhere);
+    }
+    // Every other level: another kind of output (1 transparent, 2 amount-shielded, 3 and 4
+    // shielded), or, at 3, the same kind paying the spend key itself where 4 pays a one-time key.
+    const [{ form }] = tx.outputs;
+    const LEVEL_FORMS = [null, 'transparent', 'amount-shielded', 'shielded', 'shielded'];
+    for (const level of [1, 2, 3, 4].filter((l) => l !== recipients[0].level)) {
+      const words = LEVEL_FORMS[level] === form
+        ? elsewhere
+        : `Output 0 is ${form}, not level ${level}.`;
+      expect(() => checkOpeningLevels(tx, changed({ level }), opening, native)).toThrow(words);
     }
   });
 
@@ -122,9 +131,12 @@ describe.each(vectors.cases)('the remote-issuance case "$name"', (vector) => {
     if (vector.authority) {
       const sig = hexToBytes(vector.authority_signature);
       expect(verifyIn(AUTHORITY_DOMAIN, hexToBytes(vector.authority), hash, sig)).toBe(true);
+      expect(() => withAuthoritySignature(signed, tx, sig.slice(1)))
+        .toThrow('A signature is 64 bytes.');
       signed = withAuthoritySignature(signed, tx, sig);
     } else {
-      expect(() => withAuthoritySignature(signed, tx, new Uint8Array(64))).toThrow();
+      expect(() => withAuthoritySignature(signed, tx, new Uint8Array(64)))
+        .toThrow('Only a mint or a melt is signed by an authority.');
     }
     expect(bytesToHex(signed)).toBe(vector.signed_tx);
     expect(bytesToHex(txIdOf(signed))).toBe(vector.tx_id);
@@ -156,9 +168,10 @@ describe('the token a creation creates', () => {
   const mint = parseIssuanceTx(hexToBytes(vectors.cases.find((c) => c.kind === 'mint').unsigned_tx));
 
   it('is named only by a creation\'s transparent outputs, as the node reads it', () => {
+    const words = 'Only a token creation\'s transparent outputs name the token it creates.';
     expect(bytesToHex(tokenOfIndex(create, 254, native))).toBe('ff'.repeat(32));
-    expect(() => tokenOfIndex(create, 254, native, 'amount-shielded')).toThrow();
-    expect(() => tokenOfIndex(mint, 254, native)).toThrow();
+    expect(() => tokenOfIndex(create, 254, native, 'amount-shielded')).toThrow(words);
+    expect(() => tokenOfIndex(mint, 254, native)).toThrow(words);
   });
 
   it('is never claimed on a shielded output', () => {
@@ -218,7 +231,10 @@ describe('token authorities', () => {
       { tokenId: 'aa'.repeat(32), nonce: 0, mint: true, melt: true },
       { tokenId: 'bb'.repeat(32), nonce: 15, mint: true, melt: false },
     ]);
-    // Past the gap from the last match, a token is out of reach.
+    // The last nonce a creation may take (nextNonce: highest + gap) is one the scan finds; past
+    // the gap from the last match, a token is out of reach.
+    const last = scanAuthorities(derivePub, [row('cc'.repeat(32), AUTHORITY_GAP - 1)]);
+    expect(last.highest).toBe(AUTHORITY_GAP - 1);
     const far = scanAuthorities(derivePub, [row('cc'.repeat(32), AUTHORITY_GAP)]);
     expect(far.highest).toBe(-1);
   });

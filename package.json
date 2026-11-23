@@ -13,6 +13,7 @@
     "start:clean": "react-native start --reset-cache",
     "lint": "eslint .",
     "test": "jest",
+    "test:ci": "jest --ci --forceExit --testPathIgnorePatterns /node_modules/ __tests__/multichain/fakes/ __tests__/sagas/nanoContracts/fixtures.js __tests__/App.test.tsx __tests__/sagas/reown.test.js __tests__/sagas/nanoContracts/historyNanoContract.test.js __tests__/sagas/nanoContracts/registerNanoContract.test.js",
     "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && npx patch-package",
     "setup:release": "npm ci && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && npx patch-package",
     "i18n": "make i18n",
@@ -162,11 +163,13 @@
       "<rootDir>/node_modules/(?!(@react-native|react-native|@notifee/react-native|react-native-device-info|react-native-gesture-handler|react-native-keychain|@react-navigation|react-native-status-bar-height|@react-native-firebase|@sentry/react-native|react-native-version-number|react-native-permissions|react-native-camera-kit|@fortawesome/react-native-fontawesome|react-native-qrcode-svg)/)"
     ],
     "setupFiles": [
-      "<rootDir>/jestMockSetup.js"
+      "<rootDir>/jestMockSetup.js",
+      "<rootDir>/jestNetworkGuard.js"
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "<rootDir>/__tests__/multichain/fakes/"
+      "<rootDir>/__tests__/multichain/fakes/",
+      "<rootDir>/__tests__/sagas/nanoContracts/fixtures.js"
     ],
     "cacheDirectory": ".jest/cache"
   },

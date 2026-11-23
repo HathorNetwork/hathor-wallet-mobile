@@ -54,6 +54,15 @@ describe('a send short on Hathor Next', () => {
     expect(onNext({ available: 100000000n, otherAvailable: 500n })).toBeNull();
   });
 
+  // The shortfall goes to the wallet's own address: without one known yet, no transfer is
+  // offered, to nowhere, and the two balances are only said.
+  test('offers no transfer while the wallet\'s own Hathor Next address is not known', () => {
+    expect(onNext({ available: 2000000000n, otherAvailable: 1500n, ownAddress: null })).toEqual({
+      message: 'You have 20.00 HTR on Hathor Next and 15.00 HTR on Hathor Network.',
+      transfer: null,
+    });
+  });
+
   test("sends the bridge's minimum only to its own address, and only when it can pay it", () => {
     // 0.40 HTR to send, with nothing on Hathor Next; the bridge moves 1.00 HTR at the least.
     const advise = (otherAvailable) => shortBalanceAdvice({

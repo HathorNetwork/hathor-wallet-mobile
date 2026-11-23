@@ -7,6 +7,7 @@
 
 import {
   afterEach,
+  beforeEach,
   describe,
   it,
   expect,
@@ -37,6 +38,8 @@ import {
   bytesToHex,
   hexToBytes,
 } from '../../../src/multichain/next/kit/scalar';
+import { CREATE_1, SEND_0 } from '../fakes/sendIds';
+import { loggedRefusals } from '../fakes/signing';
 
 // The vectors' wallet is account 3 of the test mnemonic, this client's, and its creation names
 // the keys this wallet derives at nonce 0: the nonce a wallet with no token takes. So the sign
@@ -72,7 +75,7 @@ function memoryStorage(initial = {}) {
 }
 
 const signRequest = () => ({
-  id: 'create-1',
+  id: CREATE_1,
   intent_id: 'i',
   expires_at: 4000000000,
   unsigned_tx: CASE.unsigned_tx,
@@ -117,6 +120,13 @@ function fakeBackend({
   recordedTxId = null,
   // Once signed, what the creation's status says: recorded, unless told.
   sendStatus: initialSendStatus = 'recorded',
+  // The fee the backend quotes, and the native token the wallet holds.
+  sendFee = CASE.fee,
+  balance = '10000000',
+  // What the backend says of an earlier payment the ledger holds (SEND_0): unreadable, unless told.
+  earlierStatus = null,
+  // A promise the other backend's config answer waits for.
+  otherConfigGate = null,
 } = {}) {
   const calls = [];
   let signatures = null;
@@ -132,6 +142,9 @@ function fakeBackend({
     const [, host, path] = /^http:\/\/(backend|other)\.test(.*)$/.exec(url);
     const data = body ? JSON.parse(body) : null;
     calls.push({ method, host, path, data });
+    if (path === '/v1/config' && host === 'other' && otherConfigGate) {
+      await otherConfigGate;
+    }
     if (path === '/v1/config') {
       return json(200, {
         next: {
@@ -141,7 +154,7 @@ function fakeBackend({
           wire_format: 'v3',
           genesis_ms: 0,
           epoch_ms: 500,
-          send_fee: CASE.fee,
+          send_fee: sendFee,
           ...(amountWidth ? { amount_width: amountWidth } : {}),
         },
         issuance,
@@ -164,7 +177,7 @@ function fakeBackend({
     if (path.endsWith('/balance')) {
       return json(200, {
         balance_state: 'live',
-        balances: [{ token: NATIVE, referenceable: '10000000' }],
+        balances: [{ token: NATIVE, referenceable: balance }],
       });
     }
     if (path.includes('/history')) return json(200, { history: [] });
@@ -176,14 +189,17 @@ function fakeBackend({
     if (method === 'POST' && path === `/v1/wallets/${walletId}/tokens`) {
       return createStatus === 200 ? json(200, request) : json(createStatus, { error: 'refused' });
     }
-    if (path === '/v1/sends/create-1/signatures') {
+    if (path === `/v1/sends/${CREATE_1}/signatures`) {
       ({ signatures } = data);
-      return json(200, { id: 'create-1', tx_id: CASE.tx_id, status: 'submitted' });
+      return json(200, { id: CREATE_1, tx_id: CASE.tx_id, status: 'submitted' });
     }
-    if (path === '/v1/sends/create-1' && method === 'GET') {
+    if (path === `/v1/sends/${SEND_0}` && method === 'GET') {
+      return earlierStatus ? json(200, { id: SEND_0, status: earlierStatus }) : json(500, { error: 'try again' });
+    }
+    if (path === `/v1/sends/${CREATE_1}` && method === 'GET') {
       return json(200, signatures
-        ? { id: 'create-1', status: sendStatus, tx_id: recordedTxId ?? signedTxId(signatures) }
-        : { id: 'create-1', status: 'awaiting_signatures', tx_id: null });
+        ? { id: CREATE_1, status: sendStatus, tx_id: recordedTxId ?? signedTxId(signatures) }
+        : { id: CREATE_1, status: 'awaiting_signatures', tx_id: null });
     }
     if (method === 'DELETE') return json(200, {});
     return json(404, { error: 'not found' });
@@ -254,7 +270,7 @@ describe('a token created on Hathor Next through the backend', () => {
       words: derivation.mnemonic,
       ...CREATION,
     });
-    expect(sendId).toBe('create-1');
+    expect(sendId).toBe(CREATE_1);
     const [create] = createCalls(backend);
     expect(create.data).toMatchObject({
       symbol: CREATION.symbol,
@@ -280,8 +296,8 @@ describe('a token created on Hathor Next through the backend', () => {
     expect(tokenId).toBe(bytesToHex(txIdOf(signed)));
     // Signed at nonce 0: it stays reserved and the floor says it was signed.
     expect(nonceRecord(storage)).toEqual({ reserved: [0], signedFloor: 0 });
-    await expect(recorded).resolves.toMatchObject({ sendId: 'create-1', status: 'recorded' });
-    expect(client.getCreation('create-1')).toMatchObject({ status: 'recorded', txId: tokenId });
+    await expect(recorded).resolves.toMatchObject({ sendId: CREATE_1, status: 'recorded' });
+    expect(client.getCreation(CREATE_1)).toMatchObject({ status: 'recorded', txId: tokenId });
   });
 
   it('sends no secret: not the words, the seed, the spend key nor an authority\'s', async () => {
@@ -337,7 +353,7 @@ describe('a token created on Hathor Next through the backend', () => {
     expect(second.data.mint_authority).toBe(bytesToHex(deriveAuthority(seed, 3, 'mint', 1).pub));
     expect(second.data.melt_authority).toBe(bytesToHex(deriveAuthority(seed, 3, 'melt', 1).pub));
     expect(nonceRecord(storage)).toEqual({ reserved: [0], signedFloor: 0 });
-    expect(backend.calls.some((c) => c.method === 'DELETE' && c.path === '/v1/sends/create-1'))
+    expect(backend.calls.some((c) => c.method === 'DELETE' && c.path === `/v1/sends/${CREATE_1}`))
       .toBe(true);
   });
 
@@ -412,7 +428,7 @@ describe('a token created on Hathor Next through the backend', () => {
     await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_REFUSED });
     expect(backend.signatures()).toBeNull();
-    expect(backend.calls.some((c) => c.method === 'DELETE' && c.path === '/v1/sends/create-1'))
+    expect(backend.calls.some((c) => c.method === 'DELETE' && c.path === `/v1/sends/${CREATE_1}`))
       .toBe(true);
     expect(nonceRecord(storage)).toEqual({ reserved: [], signedFloor: null });
   });
@@ -507,6 +523,49 @@ describe('a token created on Hathor Next through the backend', () => {
     expect(createCalls(backend)).toHaveLength(0);
     expect(backend.signatures()).toBeNull();
     expect(nonceRecord(storage)?.reserved ?? []).toEqual([]);
+  });
+
+  // A creation signed for this backend, saved while the app goes to another one in front of the
+  // same network: the other is asked nothing about it, and it goes out here at the next connect.
+  it('leaves a creation saved as the app goes to another backend to its own', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const ledgerWrite = { reach: null, release: null };
+    const reached = new Promise((resolve) => { ledgerWrite.reach = resolve; });
+    const released = new Promise((resolve) => { ledgerWrite.release = resolve; });
+    const base = memoryStorage();
+    let held = false;
+    const storage = {
+      ...base,
+      setItemAsync: async (key, value) => {
+        if (!held && key.startsWith('wallet:multichain:nextSigned:')) {
+          held = true;
+          ledgerWrite.reach();
+          await released;
+        }
+        return base.setItemAsync(key, value);
+      },
+    };
+    let openOther;
+    const otherConfigGate = new Promise((resolve) => { openOther = resolve; });
+    const backend = fakeBackend({ otherConfigGate });
+    client = await connected(backend, storage);
+    const creating = client.createToken({ words: derivation.mnemonic, ...CREATION });
+    creating.catch(() => {});
+    await reached;
+
+    const reconnecting = client.connect({
+      network: 'privatenet',
+      config: { ...CONFIG, backendUrl: 'http://other.test' },
+      birthday: 'genesis',
+    });
+    await new Promise((resolve) => { setTimeout(resolve, 10); });
+    ledgerWrite.release();
+    await creating.catch(() => {});
+    openOther();
+    await reconnecting;
+    await new Promise((resolve) => { setTimeout(resolve, 20); });
+
+    expect(backend.calls.filter((c) => c.host === 'other' && c.path.includes(CREATE_1))).toEqual([]);
   });
 
   it('signs nothing when the app leaves Hathor Next while the backend builds the token', async () => {
@@ -652,6 +711,36 @@ describe('a token created on Hathor Next through the backend', () => {
     }
   });
 
+  // An earlier payment holds the creation's outputs: the creation waits, and the earlier one goes
+  // out again only while the backend says it is on its way. One whose state can't be read may have
+  // expired, and is not sent again on a guess.
+  it.each([
+    ['whose state can\'t be read, sending it nothing', null, 0],
+    ['on its way, sending it again', 'submitted', 1],
+  ])('waits for an earlier payment over its outputs %s', async (_label, earlierStatus, resubmits) => {
+    const walletId = bytesToHex(walletIdOf(hexToBytes(CASE.pub_a), hexToBytes(CASE.pub_b)));
+    const earlier = {
+      sendId: SEND_0,
+      signingHash: 'ab'.repeat(32),
+      inputs: CASE.inputs.map((i) => i.one_time_key),
+      signatures: [],
+      signedTx: 'cafe',
+      txId: 'cd'.repeat(32),
+    };
+    const storage = memoryStorage({
+      [`wallet:multichain:nextSigned:1777:0:${walletId}`]: JSON.stringify({ entries: [earlier] }),
+    });
+    const backend = fakeBackend({ earlierStatus });
+    client = await connected(backend, storage);
+    // The connect reads it, and leaves it as it is.
+    backend.calls.length = 0;
+
+    await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
+      .rejects.toMatchObject({ code: 'earlier-pending' });
+    expect(backend.signatures()).toBeNull();
+    expect(backend.calls.filter((c) => c.path === `/v1/sends/${SEND_0}/resubmit`)).toHaveLength(resubmits);
+  });
+
   it('names the token the registry lists with this wallet\'s keys, once recorded', async () => {
     const recordedId = 'cd'.repeat(32);
     const backend = fakeBackend({
@@ -671,8 +760,8 @@ describe('a token created on Hathor Next through the backend', () => {
       });
     });
     await client.createToken({ words: derivation.mnemonic, ...CREATION });
-    await expect(named).resolves.toMatchObject({ sendId: 'create-1', status: 'recorded' });
-    expect(client.getCreation('create-1').txId).toBe(recordedId);
+    await expect(named).resolves.toMatchObject({ sendId: CREATE_1, status: 'recorded' });
+    expect(client.getCreation(CREATE_1).txId).toBe(recordedId);
   });
 
   describe('the change a creation makes public, shown before anything is signed', () => {
@@ -704,7 +793,7 @@ describe('a token created on Hathor Next through the backend', () => {
       await expect(create(client, async () => false))
         .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_DECLINED });
       expect(backend.signatures()).toBeNull();
-      expect(deletes(backend).map((c) => c.path)).toEqual(['/v1/sends/create-1']);
+      expect(deletes(backend).map((c) => c.path)).toEqual([`/v1/sends/${CREATE_1}`]);
       expect(nonceRecord(storage).reserved).toEqual([]);
     });
 
@@ -730,7 +819,7 @@ describe('a token created on Hathor Next through the backend', () => {
         return true;
       })).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NO_KEYS });
       expect(backend.signatures()).toBeNull();
-      expect(deletes(backend).map((c) => c.path)).toEqual(['/v1/sends/create-1']);
+      expect(deletes(backend).map((c) => c.path)).toEqual([`/v1/sends/${CREATE_1}`]);
       expect(nonceRecord(storage).reserved).toEqual([]);
     });
 
@@ -760,7 +849,7 @@ describe('a token created on Hathor Next through the backend', () => {
         .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_DECLINED });
       expect(approve).toHaveBeenCalledWith(0n);
       expect(backend.signatures()).toBeNull();
-      expect(deletes(backend).map((c) => c.path)).toEqual(['/v1/sends/create-1']);
+      expect(deletes(backend).map((c) => c.path)).toEqual([`/v1/sends/${CREATE_1}`]);
       expect(nonceRecord(storage).reserved).toEqual([]);
     });
 
@@ -776,7 +865,7 @@ describe('a token created on Hathor Next through the backend', () => {
         .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS });
       expect(approve).not.toHaveBeenCalled();
       expect(backend.signatures()).toBeNull();
-      expect(deletes(backend).map((c) => c.path)).toEqual(['/v1/sends/create-1']);
+      expect(deletes(backend).map((c) => c.path)).toEqual([`/v1/sends/${CREATE_1}`]);
       expect(nonceRecord(storage).reserved).toEqual([]);
     });
 
@@ -856,7 +945,7 @@ describe('a token created on Hathor Next through the backend', () => {
         });
       });
       const { sendId } = await client.createToken({ words: derivation.mnemonic, ...CREATION });
-      expect(sendId).toBe('create-1');
+      expect(sendId).toBe(CREATE_1);
       expect(backend.signatures()).toHaveLength(CASE.inputs.length);
       // Still reserved, so no other creation takes it.
       expect(nonceRecord(storage)).toEqual({ reserved: [0], signedFloor: null });
@@ -887,10 +976,10 @@ describe('a token created on Hathor Next through the backend', () => {
       const events = [];
       client.on(NEXT_CLIENT_EVENT.SEND, (event) => events.push(event));
       const { tokenId } = await client.createToken({ words: derivation.mnemonic, ...CREATION });
-      expect(client.getCreation('create-1')).toMatchObject({ txId: tokenId, provisional: true });
+      expect(client.getCreation(CREATE_1)).toMatchObject({ txId: tokenId, provisional: true });
       await settle();
       expect(fail).toEqual({ registry: 0, history: 0 });
-      expect(client.getCreation('create-1')).toMatchObject({
+      expect(client.getCreation(CREATE_1)).toMatchObject({
         status: 'recorded', txId: RECORDED_ID, provisional: false,
       });
       // Recorded first, with the signed id still provisional; then the id read back.
@@ -910,7 +999,7 @@ describe('a token created on Hathor Next through the backend', () => {
       client = await connected(backend);
       await client.createToken({ words: derivation.mnemonic, ...CREATION });
       await settle();
-      expect(client.getCreation('create-1')).toMatchObject({
+      expect(client.getCreation(CREATE_1)).toMatchObject({
         status: 'recorded', txId: RECORDED_ID, provisional: false,
       });
     });
@@ -922,7 +1011,7 @@ describe('a token created on Hathor Next through the backend', () => {
       client.on(NEXT_CLIENT_EVENT.SEND, (event) => events.push(event));
       const { tokenId } = await client.createToken({ words: derivation.mnemonic, ...CREATION });
       await settle();
-      expect(client.getCreation('create-1')).toMatchObject({
+      expect(client.getCreation(CREATE_1)).toMatchObject({
         status: 'recorded', txId: tokenId, provisional: true,
       });
       expect(events.some((e) => e.provisional === false)).toBe(false);
@@ -935,11 +1024,11 @@ describe('a token created on Hathor Next through the backend', () => {
       client = await connected(backend);
       await client.createToken({ words: derivation.mnemonic, ...CREATION });
       await settle();
-      expect(client.getCreation('create-1')).toMatchObject({ status: 'pending', provisional: true });
+      expect(client.getCreation(CREATE_1)).toMatchObject({ status: 'pending', provisional: true });
       await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
       backend.setSendStatus('recorded');
       await settle();
-      expect(client.getCreation('create-1')).toMatchObject({
+      expect(client.getCreation(CREATE_1)).toMatchObject({
         status: 'recorded', txId: RECORDED_ID, provisional: false,
       });
     });
@@ -962,11 +1051,11 @@ describe('a token created on Hathor Next through the backend', () => {
       await settle();
       // Its reads ran out: none since.
       expect(readBacks().length).toBe(tried);
-      expect(client.getCreation('create-1')).toMatchObject({ status: 'recorded', provisional: true });
+      expect(client.getCreation(CREATE_1)).toMatchObject({ status: 'recorded', provisional: true });
       registryDown = false;
       await client.connect({ network: 'privatenet', config: CONFIG, birthday: 'genesis' });
       await settle();
-      expect(client.getCreation('create-1')).toMatchObject({
+      expect(client.getCreation(CREATE_1)).toMatchObject({
         status: 'recorded', txId: RECORDED_ID, provisional: false,
       });
     });
@@ -984,10 +1073,10 @@ describe('a token created on Hathor Next through the backend', () => {
         });
       });
       await client.createToken({ words: derivation.mnemonic, ...CREATION });
-      await expect(recorded).resolves.toMatchObject({ sendId: 'create-1', provisional: true });
+      await expect(recorded).resolves.toMatchObject({ sendId: CREATE_1, provisional: true });
       await settle();
       expect(storage.failed()).toBe(true);
-      expect(client.getCreation('create-1')).toMatchObject({ txId: RECORDED_ID, provisional: false });
+      expect(client.getCreation(CREATE_1)).toMatchObject({ txId: RECORDED_ID, provisional: false });
     });
 
     it('cancels a creation whose signatures can\'t be saved, submits nothing and keeps its nonce', async () => {
@@ -999,7 +1088,7 @@ describe('a token created on Hathor Next through the backend', () => {
       expect(storage.failed()).toBe(true);
       expect(backend.signatures()).toBeNull();
       expect(backend.calls.filter((c) => c.method === 'DELETE').map((c) => c.path))
-        .toEqual(['/v1/sends/create-1']);
+        .toEqual([`/v1/sends/${CREATE_1}`]);
       // Its signatures may exist: the nonce is never handed out again.
       expect(nonceRecord(storage)).toEqual({ reserved: [0], signedFloor: null });
     });
@@ -1009,7 +1098,7 @@ describe('a token created on Hathor Next through the backend', () => {
       client = await connected(backend);
       await client.createToken({ words: derivation.mnemonic, ...CREATION });
       await settle();
-      const signedAt = backend.calls.findIndex((c) => c.path === '/v1/sends/create-1/signatures');
+      const signedAt = backend.calls.findIndex((c) => c.path === `/v1/sends/${CREATE_1}/signatures`);
       const after = backend.calls.slice(signedAt + 1).map((c) => c.path);
       const firstTokens = after.findIndex((path) => path.startsWith('/v1/tokens')
         && !path.includes('authorities=true'));
@@ -1026,5 +1115,176 @@ describe('a token created on Hathor Next through the backend', () => {
     await expect(client.createToken({ words: derivation.mnemonic, ...CREATION }))
       .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKENS_UNAVAILABLE });
     expect(backend.calls.some((c) => c.path.includes('authorities=true'))).toBe(false);
+  });
+});
+
+// What holds a creation's signing, each on its own, with the refusal's words as the client logs
+// them (it throws one code for them all).
+describe('what holds a token creation\'s signing', () => {
+  let client = null;
+  let errors = null;
+  beforeEach(() => {
+    errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    client?.disconnect();
+    client = null;
+    jest.restoreAllMocks();
+  });
+  const create = (patch = {}) => client.createToken({
+    words: derivation.mnemonic, ...CREATION, ...patch,
+  });
+  const refusals = () => loggedRefusals(
+    errors,
+    'next-backend-client',
+    'A Hathor Next token creation was refused before signing: ',
+  );
+  const registryReads = (backend) => backend.calls.filter((c) => c.path.includes('authorities=true'));
+  // The client's clock, pinned: the request expires long after it.
+  const NOW = 1788000000;
+  const clock = { nowMs: () => NOW * 1000 };
+
+  it('signs the honest creation once the answer is true: every case below changes one thing', async () => {
+    const backend = fakeBackend();
+    client = await connected(backend, memoryStorage(), CONFIG, clock);
+    await expect(create()).resolves.toMatchObject({ sendId: CREATE_1 });
+    expect(backend.signatures()).toHaveLength(CASE.inputs.length);
+    expect(refusals()).toEqual([]);
+  });
+
+  // Only `true` is a yes: nothing else a broken caller could hand back signs.
+  it.each([
+    ['nothing', undefined],
+    ['null', null],
+    ['a word', 'yes'],
+    ['a number', 1],
+    ['an object', { accept: true }],
+  ])('signs nothing when the answer is %s', async (name, answer) => {
+    const backend = fakeBackend();
+    client = await connected(backend, memoryStorage(), CONFIG, clock);
+    await expect(create({ approveSigning: async () => answer }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_DECLINED });
+    expect(backend.signatures()).toBeNull();
+  });
+
+  // Its screen gone, its channel closed: an answer that never comes is a no.
+  it('signs nothing when asking fails, and cancels the creation', async () => {
+    const backend = fakeBackend();
+    client = await connected(backend, memoryStorage(), CONFIG, clock);
+    const approveSigning = async () => { throw new Error('the screen is gone'); };
+    await expect(create({ approveSigning }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_DECLINED });
+    expect(backend.signatures()).toBeNull();
+    expect(backend.calls.filter((c) => c.method === 'DELETE').map((c) => c.path))
+      .toEqual([`/v1/sends/${CREATE_1}`]);
+  });
+
+  // The backend quotes the fee the creation pays, and the request names it too: only the app's
+  // own cap, pinned for the network, says no.
+  it('holds the fee to the app\'s own cap, whatever the backend quotes and the request names', async () => {
+    const backend = fakeBackend();
+    const cap = String(BigInt(CASE.fee) - 1n);
+    client = await connected(backend, memoryStorage(), { ...CONFIG, maxSendFee: cap }, clock);
+    const approveSigning = jest.fn(async () => true);
+    await expect(create({ approveSigning }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_REFUSED });
+    expect(refusals()).toEqual(['The fee is not the one the user agreed to.']);
+    expect(approveSigning).not.toHaveBeenCalled();
+    expect(backend.signatures()).toBeNull();
+    expect(createCalls(backend)[0].data.max_fee).toBe(cap);
+  });
+
+  it('holds the fee to the backend\'s quote, which the user saw', async () => {
+    const backend = fakeBackend({ sendFee: String(BigInt(CASE.fee) - 1n) });
+    client = await connected(backend, memoryStorage(), CONFIG, clock);
+    await expect(create()).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_REFUSED });
+    expect(refusals()).toEqual(['The fee is not the one the user agreed to.']);
+    expect(backend.signatures()).toBeNull();
+  });
+
+  // Already past its time when the backend hands it over: refused by its checks, before the user
+  // is asked anything.
+  it('refuses a creation that expired before it reached the app', async () => {
+    const backend = fakeBackend({ request: { ...signRequest(), expires_at: NOW - 1 } });
+    client = await connected(backend, memoryStorage(), CONFIG, clock);
+    const approveSigning = jest.fn(async () => true);
+    await expect(create({ approveSigning }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_REFUSED });
+    expect(refusals()).toEqual(['The token creation expired before it was signed.']);
+    expect(approveSigning).not.toHaveBeenCalled();
+    expect(backend.signatures()).toBeNull();
+  });
+
+  it.each([
+    ['no symbol', { symbol: '' }],
+    ['no name', { name: '' }],
+    ['a symbol over 16 bytes', { symbol: 'S'.repeat(17) }],
+    ['a symbol of 16 letters that are 17 bytes', { symbol: `${'S'.repeat(15)}é` }],
+    ['a name over 64 bytes', { name: 'N'.repeat(65) }],
+    ['no supply', { amount: 0n }],
+    ['a supply below zero', { amount: -1n }],
+  ])('reads no registry and asks no backend for a creation with %s', async (label, patch) => {
+    const backend = fakeBackend();
+    client = await connected(backend, memoryStorage(), CONFIG, clock);
+    await expect(create(patch))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_PREPARE_FAILED });
+    expect(registryReads(backend)).toEqual([]);
+    expect(createCalls(backend)).toEqual([]);
+  });
+
+  it('asks for a symbol of exactly 16 bytes and a name of exactly 64', async () => {
+    const backend = fakeBackend();
+    client = await connected(backend, memoryStorage(), CONFIG, clock);
+    // The vector's creation is another token: it is asked for, then refused by its checks.
+    await expect(create({ symbol: 'S'.repeat(16), name: 'N'.repeat(64) }))
+      .rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_REFUSED });
+    expect(createCalls(backend)).toHaveLength(1);
+    expect(refusals()).toEqual(['The token is not the one the user approved.']);
+  });
+
+  it('reads no registry and asks no backend for a creation whose fee the balance can\'t pay', async () => {
+    const backend = fakeBackend({ balance: String(BigInt(CASE.fee) - 1n) });
+    client = await connected(backend, memoryStorage(), CONFIG, clock);
+    await expect(create()).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS });
+    expect(registryReads(backend)).toEqual([]);
+    expect(createCalls(backend)).toEqual([]);
+  });
+
+  it('reads no registry and asks no backend while the app is locked', async () => {
+    const backend = fakeBackend();
+    client = await connected(backend, memoryStorage(), CONFIG, clock);
+    client.forgetKeys();
+    await expect(create()).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NO_KEYS });
+    expect(registryReads(backend)).toEqual([]);
+    expect(createCalls(backend)).toEqual([]);
+  });
+
+  // The storage, whose first write of the nonces runs `during` before it ends.
+  const reserving = (during) => {
+    const storage = memoryStorage();
+    let first = true;
+    return {
+      ...storage,
+      setItemAsync: async (key, value) => {
+        await storage.setItemAsync(key, value);
+        if (first && key.startsWith(STORAGE_KEY_PREFIX)) {
+          first = false;
+          during();
+        }
+      },
+    };
+  };
+
+  it.each([
+    ['leaves Hathor Next', () => client.disconnect(), NEXT_CLIENT_ERROR.NOT_CONNECTED],
+    ['locks', () => client.forgetKeys(), NEXT_CLIENT_ERROR.NO_KEYS],
+  ])('asks no backend, and gives the nonce back, when the app %s as the nonce is reserved', async (name, during, code) => {
+    const backend = fakeBackend();
+    const storage = reserving(() => during());
+    client = await connected(backend, storage, CONFIG, clock);
+    await expect(create()).rejects.toMatchObject({ code });
+    expect(createCalls(backend)).toEqual([]);
+    expect(nonceRecord(storage).reserved).toEqual([]);
+    expect(backend.signatures()).toBeNull();
   });
 });

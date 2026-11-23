@@ -611,6 +611,49 @@ describe('a Hathor Next payment', () => {
     expect(env.getState().multichain.next.balances[HTR].data.available).toBe(2395000000n);
   });
 
+  // The app left Hathor Next while this payment was on its way (its flag turned off, or its backend
+  // changed), and back there another payment took the payment's state. This one's late answer is
+  // not written over that one's: the other's screen would show this one's outcome.
+  test.each([
+    ['refused', () => Promise.reject(new NextClientError(NEXT_CLIENT_ERROR.REFUSED))],
+    ['signed', () => Promise.resolve({ sendId: 'send-late' })],
+  ])('%s late, leaves another payment started meanwhile as it is', async (_label, answer) => {
+    const env = setup();
+    await connect(env);
+    let finish = null;
+    jest.spyOn(getNextClient(), 'send').mockImplementationOnce(() => new Promise((resolve, reject) => {
+      finish = () => answer().then(resolve, reject);
+    }));
+    env.dispatch(draft('draft-late'));
+    await wait(10);
+    expect(finish).not.toBeNull();
+    env.dispatch(multichainNextReset());
+    env.dispatch(multichainNextSendUpdate({
+      status: OPERATION_STATUS.SENDING, draftId: 'draft-other', sendId: 'send-other',
+    }));
+    const other = env.getState().multichain.send;
+    finish();
+    await wait(10);
+    expect(env.getState().multichain.send).toEqual(other);
+  });
+
+  // With no other payment, the answer still reaches the draft that was waiting for it.
+  test('refused late, with no other payment started, is still told to its own draft', async () => {
+    const env = setup();
+    await connect(env);
+    let finish = null;
+    jest.spyOn(getNextClient(), 'send').mockImplementationOnce(() => new Promise((resolve, reject) => {
+      finish = () => reject(new NextClientError(NEXT_CLIENT_ERROR.REFUSED));
+    }));
+    env.dispatch(draft('draft-late'));
+    await wait(10);
+    env.dispatch(multichainNextReset());
+    finish();
+    await wait(10);
+    expect(env.getState().multichain.send)
+      .toMatchObject({ status: OPERATION_STATUS.ERROR, draftId: 'draft-late' });
+  });
+
   // The fake ledger's funded scenario holds two tokens besides HTR.
   test('in another token takes its amount from that token, and the fee from HTR', async () => {
     const env = setup();
@@ -2677,5 +2720,51 @@ describe('a Hathor Next token creation, after review', () => {
     expect(env.getState().multichain.createToken).toMatchObject({
       status: OPERATION_STATUS.RECORDED, sendId: 'held', draftId: 'token-held',
     });
+  });
+});
+
+// What the saga does with a creation's review, pinned one case at a time.
+describe('a Hathor Next token creation that makes the least HTR public', () => {
+  const SUPPLY = 100000000n;
+  const draft = (draftId, connection = connectionNow()) => multichainNextCreateTokenRequested({
+    symbol: 'ATT',
+    name: 'App Test Token',
+    amount: SUPPLY,
+    draftId,
+    pinCode: PIN,
+    connection,
+  });
+  const created = (env) => Object.values(env.getState().multichain.next.tokens)
+    .some((token) => token.symbol === 'ATT');
+
+  // One base unit is HTR made public all the same: the user is asked, and nothing is created
+  // until the answer.
+  test('of one base unit is shown before anything is signed, as any other', async () => {
+    const env = setup();
+    await connect(env);
+    saveLedger(NETWORK, { ...loadLedger(NETWORK), createChange: '1' });
+    env.dispatch(draft('token-g1'));
+    await wait(1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.SENDING, draftId: 'token-g1', sendId: null, review: { publicChange: 1n },
+    });
+    expect(created(env)).toBe(false);
+    env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-g1', accept: true }));
+    await wait(1000);
+    expect(env.getState().multichain.createToken).toMatchObject({
+      status: OPERATION_STATUS.RECORDED, draftId: 'token-g1', review: null,
+    });
+    expect(created(env)).toBe(true);
+  });
+
+  test('of one base unit creates nothing when the user declines', async () => {
+    const env = setup();
+    await connect(env);
+    saveLedger(NETWORK, { ...loadLedger(NETWORK), createChange: '1' });
+    env.dispatch(draft('token-g2'));
+    await wait(1000);
+    env.dispatch(multichainNextCreateTokenReviewed({ draftId: 'token-g2', accept: false }));
+    await wait(1000);
+    expect(created(env)).toBe(false);
   });
 });

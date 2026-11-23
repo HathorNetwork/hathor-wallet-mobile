@@ -34,7 +34,9 @@ import {
   bigintToBytesLE,
   bytesToBigintLE,
   bytesToHex,
+  concatBytes,
   hexToBytes,
+  ORDER,
 } from '../../../src/multichain/next/kit/scalar';
 
 // The vectors are Hathor Next's own (samba-wallet-sdk/tests/vectors/derivation.json,
@@ -67,10 +69,11 @@ describe('Hathor Next key derivation', () => {
     expect(deriveAccount(seed, 3).b).toBe(b);
   });
 
-  it('refuses an account index outside the hardened range', async () => {
+  it('refuses an account index that is not a whole number in the hardened range', async () => {
     const seed = await mnemonicToSeed(derivation.mnemonic);
-    expect(() => accountNode64(seed, 2 ** 31)).toThrow();
-    expect(() => accountNode64(seed, -1)).toThrow();
+    for (const index of [2 ** 31, -1, 1.5]) {
+      expect(() => accountNode64(seed, index)).toThrow('The account index is out of range.');
+    }
   });
 
   it('computes the wallet id from the service view key and the spend key', () => {
@@ -143,6 +146,38 @@ describe('Hathor Next wallet authentication', () => {
     const two = schnorrSign(auth, message, new Uint8Array(32).fill(2));
     expect(bytesToHex(one.slice(0, 32))).not.toBe(bytesToHex(two.slice(0, 32)));
   });
+
+  // A nonce that left the secret or the message out would repeat, or be anyone's to compute, with
+  // a weak random source: two signatures sharing a nonce give the key away.
+  it('takes its nonce from the secret and the message too', () => {
+    const auth = authSecret(5n);
+    const message = loginMessage(new Uint8Array(32), 'full', 1);
+    const entropy = new Uint8Array(32).fill(1);
+    const nonceOf = (...args) => bytesToHex(schnorrSign(...args).slice(0, 32));
+    const base = nonceOf(auth, message, entropy);
+    expect(nonceOf(auth, loginMessage(new Uint8Array(32), 'full', 2), entropy)).not.toBe(base);
+    expect(nonceOf(auth + 1n, message, entropy)).not.toBe(base);
+    expect(nonceOf(auth, message, entropy)).toBe(base);
+  });
+
+  it('never signs with a zero key, nor a login for an unknown scope', () => {
+    const message = loginMessage(new Uint8Array(32), 'full', 1);
+    expect(() => schnorrSign(0n, message)).toThrow('The signing key is unavailable.');
+    expect(() => loginMessage(new Uint8Array(32), 'admin', 1)).toThrow('Unknown session scope.');
+  });
+
+  it('verifies a signature only at 64 bytes, with s below the group order', () => {
+    const auth = authSecret(5n);
+    const key = publicKeyOf(auth);
+    const message = loginMessage(new Uint8Array(32), 'full', 1);
+    const sig = schnorrSign(auth, message);
+    expect(schnorrVerify(key, message, sig)).toBe(true);
+    expect(schnorrVerify(key, message, concatBytes(sig, Uint8Array.of(0)))).toBe(false);
+    // s + ℓ names the same scalar.
+    const s = bytesToBigintLE(sig.slice(32));
+    expect(schnorrVerify(key, message, concatBytes(sig.slice(0, 32), bigintToBytesLE(s + ORDER))))
+      .toBe(false);
+  });
 });
 
 describe('Hathor Next addresses', () => {
@@ -177,6 +212,12 @@ describe('Hathor Next addresses', () => {
     expect(error.code).toBe('not-a-point');
   });
 
+  it('is written only from two keys of 64 hex digits', () => {
+    const { view, spend } = addressVectors.valid.find((v) => v.form === 'v2');
+    expect(() => encodeAddress('zz'.repeat(32), spend)).toThrow('view key must be 64 hex characters');
+    expect(() => encodeAddress(view, spend.slice(2))).toThrow('spend key must be 64 hex characters');
+  });
+
   it('builds the address of a derived spend key under a service view key', async () => {
     const seed = await mnemonicToSeed(derivation.mnemonic);
     const pubB = bytesToHex(publicKeyOf(deriveAccount(seed).b));
@@ -187,5 +228,14 @@ describe('Hathor Next addresses', () => {
       view: hexToBytes(pubA),
       spend: hexToBytes(pubB),
     });
+  });
+});
+
+describe('Hathor Next hex, read strictly', () => {
+  it('refuses anything but hex digits, and an odd number of them', () => {
+    for (const text of ['zz', '0x00', 'ab cd', '-1', 'abc']) {
+      expect(() => hexToBytes(text)).toThrow('Not hexadecimal.');
+    }
+    expect(bytesToHex(hexToBytes('00aB'))).toBe('00ab');
   });
 });
