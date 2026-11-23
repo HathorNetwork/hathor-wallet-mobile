@@ -1037,6 +1037,7 @@ export function* onNextSendRequested({ payload }) {
       txId: null,
       reason: null,
       error: connectFailedText(),
+      errorCode: null,
     }));
     return;
   }
@@ -1048,6 +1049,7 @@ export function* onNextSendRequested({ payload }) {
     txId: null,
     reason: null,
     error: null,
+    errorCode: null,
   }));
   let sendId;
   try {
@@ -1069,6 +1071,7 @@ export function* onNextSendRequested({ payload }) {
     yield put(multichainNextSendUpdate({
       status: OPERATION_STATUS.ERROR,
       error: userErrorText(e),
+      errorCode: e instanceof NextClientError ? e.code : null,
     }));
     return;
   }

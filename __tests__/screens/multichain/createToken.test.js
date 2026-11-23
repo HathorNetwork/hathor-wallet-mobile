@@ -58,6 +58,7 @@ import SimpleInput from '../../../src/components/SimpleInput';
 import AmountTextInput from '../../../src/components/AmountTextInput';
 import FeedbackModal from '../../../src/components/FeedbackModal';
 import NewHathorButton from '../../../src/components/NewHathorButton';
+import { PrivacyWarningIcon } from '../../../src/components/Multichain/PrivacyWarningIcon';
 import { PortalProvider } from '../../../src/components/Portal';
 import { NEXT_STATUS, OPERATION_STATUS } from '../../../src/multichain/state';
 import { fakePeerAddress } from '../../multichain/fakes/fakeAddress';
@@ -360,8 +361,10 @@ describe('the token confirmation', () => {
 
     test('is shown with its amount before anything is signed, and Create answers yes', async () => {
       const { draftId, answers, modal, press } = await reviewing();
-      expect(modal().props.text).toBe(publicChangeText('ATT', '0.45 HTR'));
-      expect(modal().props.text).toContain('Creating ATT makes 0.45 HTR public');
+      expect(modal().props.text).toBe(publicChangeText('0.45 HTR'));
+      // A short warning, not an error: nothing went wrong, and the user decides.
+      expect(modal().props.text).toBe('Your change of 0.45 HTR will be public.');
+      expect(modal().props.icon.type).toBe(PrivacyWarningIcon);
       expect(answers()).toEqual([]);
       await press('Create ATT');
       expect(answers()).toEqual([{ draftId, accept: true }]);
@@ -383,7 +386,7 @@ describe('the token confirmation', () => {
         }));
       });
       const shown = screen.renderer.root.findAllByType(FeedbackModal).map((m) => m.props.text);
-      expect(shown.join(' ')).not.toContain('public. The fee');
+      expect(shown.join(' ')).not.toContain('will be public');
     });
   });
 

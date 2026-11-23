@@ -81,7 +81,7 @@ msgstr "CRIAR TOKEN DE TAXA"
 #: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:95
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:279
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:280
 #: src/screens/Multichain/NextCreateTokenScreen.js:157 src/utils.js:890
 msgid "CREATE TOKEN"
 msgstr "CRIAR TOKEN"
@@ -565,13 +565,13 @@ msgid "Amount of ${ name }"
 msgstr "Quantidade de ${ name }"
 
 #: src/screens/CreateTokenConfirm.js:272
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:283
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:284
 #: src/screens/Multichain/NextCreateTokenScreen.js:169
 msgid "Token name"
 msgstr "Nome do token"
 
 #: src/screens/CreateTokenConfirm.js:278 src/screens/CreateTokenSymbol.js:71
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:285
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:286
 #: src/screens/Multichain/NextCreateTokenScreen.js:181
 msgid "Token symbol"
 msgstr "Símbolo do token"
@@ -587,14 +587,14 @@ msgstr "Depósito"
 #: src/screens/CreateTokenConfirm.js:293
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:245
 #: src/screens/Multichain/ChainTransferScreen.js:274
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:290
-#: src/screens/Multichain/NextSendConfirmScreen.js:277
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:291
+#: src/screens/Multichain/NextSendConfirmScreen.js:310
 #: src/screens/SendConfirmScreen.js:688
 msgid "Network fee"
 msgstr "Taxa de Rede"
 
 #: src/screens/CreateTokenConfirm.js:302
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:305
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:306
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -1080,7 +1080,7 @@ msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:196
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:197
 #: src/screens/PinScreen.js:341 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr "Cancelar"
@@ -1506,12 +1506,12 @@ msgstr[1] "Taxa de Privacidade (${ shieldedCount } saídas)"
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:278
+#: src/screens/Multichain/NextSendConfirmScreen.js:311
 #: src/screens/SendConfirmScreen.js:724
 msgid "Total"
 msgstr "Total"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:294
+#: src/screens/Multichain/NextSendConfirmScreen.js:327
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:302
 #: src/screens/SendConfirmScreen.js:733
 msgid "Send"
@@ -2110,17 +2110,17 @@ msgstr "Transferindo para a Hathor Next…"
 #: src/components/AmountInputAccessory.js:105
 #: src/components/Multichain/TransferDetailsModal.js:105
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:188
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:210
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:228
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:237
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:246
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:258
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:267
-#: src/screens/Multichain/NextSendConfirmScreen.js:208
-#: src/screens/Multichain/NextSendConfirmScreen.js:217
-#: src/screens/Multichain/NextSendConfirmScreen.js:226
-#: src/screens/Multichain/NextSendConfirmScreen.js:238
-#: src/screens/Multichain/NextSendConfirmScreen.js:247
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:211
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:229
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:238
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:247
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:259
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:268
+#: src/screens/Multichain/NextSendConfirmScreen.js:234
+#: src/screens/Multichain/NextSendConfirmScreen.js:243
+#: src/screens/Multichain/NextSendConfirmScreen.js:252
+#: src/screens/Multichain/NextSendConfirmScreen.js:264
+#: src/screens/Multichain/NextSendConfirmScreen.js:278
 msgid "Done"
 msgstr "Ok"
 
@@ -2223,8 +2223,8 @@ msgstr "Usar meu endereço da Hathor Next"
 
 #: src/components/Reown/CreateTokenRequest.js:103
 #: src/screens/Multichain/ChainTransferScreen.js:255
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:287
-#: src/screens/Multichain/NextSendConfirmScreen.js:263
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:288
+#: src/screens/Multichain/NextSendConfirmScreen.js:296
 msgid "Amount"
 msgstr "Quantidade"
 
@@ -2236,7 +2236,7 @@ msgstr "Você receberá"
 msgid "HATHOR NEXT (LOCAL BACKEND)"
 msgstr "HATHOR NEXT (BACKEND LOCAL)"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:47
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:48
 msgid ""
 "The token creation was sent, but this screen lost track of it when the app "
 "left Hathor Next. Check your tokens on Hathor Next before you create this "
@@ -2246,7 +2246,7 @@ msgstr ""
 "o app saiu da Hathor Next. Confira seus tokens na Hathor Next antes de criar "
 "este de novo."
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:54
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:55
 msgid ""
 "This screen lost track of the token creation before it knew whether it was "
 "signed. Check your tokens on Hathor Next before you create this one again."
@@ -2254,36 +2254,30 @@ msgstr ""
 "Esta tela deixou de acompanhar a criação do token antes de saber se ela foi "
 "assinada. Confira seus tokens na Hathor Next antes de criar este de novo."
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:62
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:63
 #, javascript-format
-msgid ""
-"Creating ${ symbol } makes ${ shown } public. The fee is paid from your HTR, "
-"and what comes back to you as change is paid openly to your Hathor Next "
-"address, where anyone who knows that address can see it."
-msgstr ""
-"Criar ${ symbol } torna ${ shown } público. A taxa é paga com o seu HTR, e o "
-"que volta para você como troco é pago abertamente ao seu endereço da Hathor "
-"Next, onde qualquer pessoa que conheça esse endereço pode vê-lo."
+msgid "Your change of ${ shown } will be public."
+msgstr "Seu troco de ${ shown } ficará público."
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:156
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:157
 msgid "Enter your 6-digit pin to create the token"
 msgstr "Digite seu PIN de 6 dígitos para criar o token"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:157
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:158
 msgid "Create the token"
 msgstr "Criar o token"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:192
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:193
 #, javascript-format
 msgid "Create ${ symbol }"
 msgstr "Criar ${ symbol }"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:217
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:218
 #, javascript-format
 msgid "Creating ${ symbol } on Hathor Next…"
 msgstr "Criando ${ symbol } na Hathor Next…"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:223
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:224
 #, javascript-format
 msgid ""
 "${ symbol } was created on Hathor Next, and its whole supply is in your "
@@ -2293,11 +2287,11 @@ msgstr ""
 "carteira."
 
 #.  Once the registry named it: the signed transaction's id may not be the token's.
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:225
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:226
 msgid "Token id: ${ creation.tokenId }"
 msgstr "Id do token: ${ creation.tokenId }"
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:244
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:245
 msgid ""
 "The creation expired before the network got its signatures, so the token "
 "wasn't created. Nothing left your wallet and no fee was paid."
@@ -2305,16 +2299,16 @@ msgstr ""
 "A criação expirou antes de a rede receber as assinaturas, então o token não "
 "foi criado. Nada saiu da sua carteira e nenhuma taxa foi paga."
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:254
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:255
 msgid "The token wasn't created."
 msgstr "O token não foi criado."
 
 #: src/sagas/multichain.js:164
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:265
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:266
 msgid "The token couldn't be created."
 msgstr "Não foi possível criar o token."
 
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:295
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:296
 msgid ""
 "An earlier token creation is still on its way. You can create another once "
 "it settles."
@@ -2323,7 +2317,7 @@ msgstr ""
 "depois que ela for concluída."
 
 #: src/components/PrivacyModeCard.js:68
-#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:300
+#: src/screens/Multichain/NextCreateTokenConfirmScreen.js:301
 msgid "Public"
 msgstr "Público"
 
@@ -2419,7 +2413,7 @@ msgstr ""
 "{ feeSymbol } na Hathor Next."
 
 #: src/screens/Multichain/NextSendAmountInput.js:179
-#: src/screens/Multichain/NextSendConfirmScreen.js:259
+#: src/screens/Multichain/NextSendConfirmScreen.js:292
 #, javascript-format
 msgid "SEND ${ symbol }"
 msgstr "ENVIAR ${ symbol }"
@@ -2429,21 +2423,25 @@ msgstr "ENVIAR ${ symbol }"
 msgid "${ availableText } ${ symbol } available"
 msgstr "${ availableText } ${ symbol } disponível"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:140
+#: src/screens/Multichain/NextSendConfirmScreen.js:155
 msgid "The passkey couldn't authorize the payment."
 msgstr "A passkey não conseguiu autorizar o pagamento."
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:156
+#: src/screens/Multichain/NextSendConfirmScreen.js:171
 msgid "Enter your 6-digit pin to authorize the payment"
 msgstr "Digite seu PIN de 6 dígitos para autorizar o pagamento"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:157
+#: src/screens/Multichain/NextSendConfirmScreen.js:172
 msgid "Authorize the payment"
 msgstr "Autorizar o pagamento"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:245
+#: src/screens/Multichain/NextSendConfirmScreen.js:275
 msgid "The payment couldn't be sent."
 msgstr "Não foi possível enviar o pagamento."
+
+#: src/screens/Multichain/NextSendConfirmScreen.js:278
+msgid "Change amount"
+msgstr "Alterar valor"
 
 #: src/components/Multichain/NextTxDetailsModal.js:101
 #: src/components/NanoContract/EditAddressModal.js:63
@@ -2452,22 +2450,22 @@ msgstr "Não foi possível enviar o pagamento."
 #: src/components/Reown/SendTransactionRequest.js:343
 #: src/components/Reown/SignMessageRequest.js:40
 #: src/components/Reown/SignOracleDataRequest.js:59
-#: src/screens/Multichain/NextSendConfirmScreen.js:265
+#: src/screens/Multichain/NextSendConfirmScreen.js:298
 msgid "Address"
 msgstr "Endereço"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:270
+#: src/screens/Multichain/NextSendConfirmScreen.js:303
 msgid "Token id"
 msgstr "ID do token"
 
-#: src/screens/Multichain/NextSendConfirmScreen.js:283
+#: src/screens/Multichain/NextSendConfirmScreen.js:316
 msgid "An earlier payment is still on its way. You can send once it settles."
 msgstr ""
 "Um pagamento anterior ainda está a caminho. Você poderá enviar depois que "
 "ele for concluído."
 
 #: src/components/PrivacyModeCard.js:50
-#: src/screens/Multichain/NextSendConfirmScreen.js:288
+#: src/screens/Multichain/NextSendConfirmScreen.js:321
 msgid "Private"
 msgstr "Privado"
 
@@ -4453,6 +4451,16 @@ msgstr "${ moved } ${ symbol } movidos"
 #: src/components/Multichain/TransfersOnTheirWay.js:46
 msgid "Transfers between chains"
 msgstr "Transferências entre chains"
+
+#, javascript-format
+#~ msgid ""
+#~ "Creating ${ symbol } makes ${ shown } public. The fee is paid from your "
+#~ "HTR, and what comes back to you as change is paid openly to your Hathor "
+#~ "Next address, where anyone who knows that address can see it."
+#~ msgstr ""
+#~ "Criar ${ symbol } torna ${ shown } público. A taxa é paga com o seu HTR, "
+#~ "e o que volta para você como troco é pago abertamente ao seu endereço da "
+#~ "Hathor Next, onde qualquer pessoa que conheça esse endereço pode vê-lo."
 
 #~ msgid ""
 #~ "Hathor Next prepared this token with more of your HTR than its fee needs, "

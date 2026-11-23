@@ -2223,6 +2223,45 @@ describe('mainnet', () => {
   });
 });
 
+describe('a payment refused before it was signed', () => {
+  // The confirm screen offers a way on by the refusal's code: another amount for one it fixes.
+  test.each([
+    ['an amount that would go public', new NextClientError(NEXT_CLIENT_ERROR.AMOUNT_VISIBLE),
+      NEXT_CLIENT_ERROR.AMOUNT_VISIBLE],
+    ['a short balance', new NextClientError(NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS),
+      NEXT_CLIENT_ERROR.INSUFFICIENT_FUNDS],
+    ['a bug, which has none', new Error('a bug'), null],
+  ])('keeps the code of %s for the confirm screen', async (_what, refusal, code) => {
+    const env = setup();
+    await connect(env);
+    jest.spyOn(getNextClient(), 'send').mockRejectedValueOnce(refusal);
+    env.dispatch(multichainNextSendRequested({
+      tokenId: HTR, to: deriveFakeNextAddress('someone'), amount: 1n, draftId: 'refused-draft',
+    }));
+    await wait(10);
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.ERROR, draftId: 'refused-draft', errorCode: code,
+    });
+  });
+
+  test("a later draft doesn't carry the earlier refusal's code", async () => {
+    const env = setup();
+    await connect(env);
+    const send = jest.spyOn(getNextClient(), 'send')
+      .mockRejectedValueOnce(new NextClientError(NEXT_CLIENT_ERROR.AMOUNT_VISIBLE));
+    const to = deriveFakeNextAddress('someone');
+    env.dispatch(multichainNextSendRequested({ tokenId: HTR, to, amount: 1n, draftId: 'first' }));
+    await wait(10);
+    expect(env.getState().multichain.send.errorCode).toBe(NEXT_CLIENT_ERROR.AMOUNT_VISIBLE);
+    send.mockImplementationOnce(() => new Promise(() => {}));
+    env.dispatch(multichainNextSendRequested({ tokenId: HTR, to, amount: 1n, draftId: 'second' }));
+    await wait(10);
+    expect(env.getState().multichain.send).toMatchObject({
+      status: OPERATION_STATUS.SENDING, draftId: 'second', errorCode: null,
+    });
+  });
+});
+
 describe('a request where the side chain was turned off', () => {
   test('signs and burns nothing, and says so to the confirm screen still open', async () => {
     const env = setup();
