@@ -21,6 +21,9 @@ export const logger = (scope) => ({
   debug(msg) {
     console.debug(`[${scope}] ${msg}`);
   },
+  warn(msg) {
+    console.warn(`[${scope}] ${msg}`);
+  },
   error(msg, err) {
     console.error(`[${scope}] ${msg}`, err);
   }
