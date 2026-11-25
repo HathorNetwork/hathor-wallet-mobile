@@ -280,6 +280,9 @@ Tests the single/multi address mode behavior and network-dependent defaults. Fol
 ### Shielded Outputs
 Tests the shielded crypto provider, the Shielded Testnet preset and private funds in the balance. Follow the [Shielded Outputs QA](QA_SHIELDED.md)
 
+### Multi-chain
+Tests Hathor Next, the side chain, and transfers between chains. Follow the [Multi-chain QA](QA_MULTICHAIN.md)
+
 # Development Environment tests
 The following tests are executed only if for the development environment, with access to source code and building.
 
