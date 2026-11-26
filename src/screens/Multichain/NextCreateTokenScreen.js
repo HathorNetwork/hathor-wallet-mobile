@@ -53,9 +53,31 @@ const MAX_NAME_BYTES = 64;
 export const utf8Length = (text) => Buffer.byteLength(text, 'utf8');
 // The most of a token there can be: a u64, as the network's amounts are.
 const MAX_SUPPLY = 2n ** 64n - 1n;
-// The native tokens' own names: a token named after one could pass for it on a Dashboard.
-const NATIVE_NAMES = ['hathor'];
-const NATIVE_SYMBOLS = ['HTR'];
+// HTR's own name and symbol: a token named after either could pass for it.
+const HTR_NAMES = ['Hathor', 'HTR'];
+// What a person can't see in a name, besides spaces: characters drawn as nothing (soft hyphen,
+// zero widths, joiners, direction marks, fillers, variation selectors, tags), by code point.
+const UNSEEN = [
+  [0x00AD, 0x00AD], [0x034F, 0x034F], [0x061C, 0x061C], [0x115F, 0x1160], [0x17B4, 0x17B5],
+  [0x180B, 0x180F], [0x200B, 0x200F], [0x202A, 0x202E], [0x2060, 0x206F], [0x3164, 0x3164],
+  [0xFE00, 0xFE0F], [0xFEFF, 0xFEFF], [0xFFA0, 0xFFA0], [0xE0000, 0xE007F], [0xE0100, 0xE01EF],
+];
+const seen = (char) => {
+  const code = char.codePointAt(0);
+  return !/\s/.test(char) && !UNSEEN.some(([from, to]) => code >= from && code <= to);
+};
+
+/**
+ * A name or symbol as a person reads it, to compare it with another: letter case, spaces, unseen
+ * characters and the other widths of the same letters (NFKC: "Ｈａｔｈｏｒ" is "Hathor") don't tell
+ * two apart.
+ *
+ * @param {string|null|undefined} text
+ * @returns {string}
+ */
+export function asRead(text) {
+  return [...(text ?? '').normalize('NFKC')].filter(seen).join('').toLowerCase();
+}
 
 /**
  * What creating a token on Hathor Next makes public: everything about it, by the protocol. A
@@ -79,15 +101,16 @@ export function tokenKeysNote() {
 }
 
 /**
- * Why the form can't go on, in the user's terms, or null.
+ * Why the form can't go on, in the user's terms, or null. A token can't take a native token's
+ * name or symbol, HTR's or the side chain's own, as its name or as its symbol, however written.
  *
  * @param {{ name: string, symbol: string, amount: bigint|null }} form
+ * @param {{ name?: string, symbol?: string }} [native] The side chain's native token
  * @returns {string|null}
  */
 export function tokenFormError({ name, symbol, amount }, native = {}) {
-  const nativeSymbols = [...NATIVE_SYMBOLS, native.symbol].filter(Boolean);
-  const nativeNames = [...NATIVE_NAMES, native.name?.toLowerCase()].filter(Boolean);
-  if (nativeSymbols.includes(symbol) || nativeNames.includes(name?.trim().toLowerCase())) {
+  const taken = [...HTR_NAMES, native.name, native.symbol].map(asRead).filter(Boolean);
+  if ([name, symbol].some((text) => taken.includes(asRead(text)))) {
     return t`This is a native token's name or symbol. Choose another, so your token can't be taken for it.`;
   }
   if (symbol && !/^[A-Z0-9]*$/.test(symbol)) {

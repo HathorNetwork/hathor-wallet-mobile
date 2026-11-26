@@ -110,6 +110,7 @@ export default function NextSendAmountInput() {
       name: token.name,
       plainName: token.plainName,
       idTag: token.idTag,
+      native: token.native,
       balance: render(balanceOf(token.uid)),
     }));
 

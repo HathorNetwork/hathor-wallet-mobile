@@ -10,6 +10,9 @@ import { CHAIN } from './chains';
 import { hathorToNextAmount, nextAmountForDisplay } from './amount';
 import { TRANSFER_STATUS } from './state';
 
+// HTR's id on Hathor Network.
+const HTR_UID = '00';
+
 /**
  * The first characters of a token id, the form a person compares two ids by.
  *
@@ -24,8 +27,9 @@ export const shortTokenId = (id) => id.trim().toLowerCase().slice(0, 6);
  * price feed to rank by value). Anyone can create a token on Hathor Next under any name and
  * symbol, "Hathor" and "HTR" included, and send it to any wallet, where it lists itself: every
  * token but those two, which the app knows by their pinned ids, carries its short id in its name,
- * so a look-alike can always be told apart. Screens still find every token by its id. A list that
- * cuts long names shows `plainName` cut and `idTag` whole, so a long name never hides the id.
+ * so a look-alike can always be told apart, and those two are marked `native` (NativeTag). Screens
+ * still find every token by its id. A list that cuts long names shows `plainName` cut and `idTag`
+ * whole, so a long name never hides the id.
  *
  * @param {{ [id: string]: { id, name, symbol, lastActivityAt } }} tokens
  * @param {string} nativeTokenId
@@ -35,6 +39,7 @@ export const shortTokenId = (id) => id.trim().toLowerCase().slice(0, 6);
  *   name: string,
  *   plainName: string,
  *   idTag: string|null,
+ *   native: boolean,
  *   symbol: string,
  *   lastActivityAt: number|null,
  * }[]}
@@ -51,6 +56,7 @@ export function nextTokenList(tokens, nativeTokenId, mintedId = null) {
         name: known ? token.name : `${token.name} · ${shortTokenId(token.id)}`,
         plainName: token.name,
         idTag: known ? null : shortTokenId(token.id),
+        native: known,
         symbol: token.symbol,
         lastActivityAt: token.lastActivityAt ?? null,
       };
@@ -98,7 +104,8 @@ export function arrivingAmounts(transfers, ids, scale) {
  * merge only by that map, never by name or symbol, which aren't unique on Hathor Next.
  *
  * Order: Hathor Network's list as it is, a mapped token in its place, then Hathor Next's own
- * tokens in Hathor Next's order (nextTokenList).
+ * tokens in Hathor Next's order (nextTokenList). HTR and Hathor Next's native token are marked
+ * `native`: HTR by its id, which no other Hathor Network token can have.
  *
  * @param {Object} params
  * @param {{ [uid: string]: { uid, name, symbol } }} params.hathorTokens state.tokens
@@ -118,6 +125,7 @@ export function arrivingAmounts(transfers, ids, scale) {
  *   name: string,
  *   plainName: string,
  *   idTag: string|null,
+ *   native: boolean,
  *   symbol: string,
  *   chains: string[],
  *   status: string,
@@ -153,6 +161,7 @@ export function combinedTokenList({
         name: token.name,
         plainName: token.name,
         idTag: null,
+        native: token.uid === HTR_UID,
         symbol: token.symbol,
         chains: [CHAIN.HATHOR],
         status: balance?.status ?? TOKEN_DOWNLOAD_STATUS.LOADING,
@@ -177,6 +186,7 @@ export function combinedTokenList({
       name: token.name,
       plainName: token.name,
       idTag: null,
+      native: token.uid === HTR_UID,
       symbol: token.symbol,
       chains: [CHAIN.HATHOR, CHAIN.HATHOR_NEXT],
       status: balance?.status ?? TOKEN_DOWNLOAD_STATUS.LOADING,
@@ -199,6 +209,7 @@ export function combinedTokenList({
       name: token.name,
       plainName: token.plainName,
       idTag: token.idTag,
+      native: token.native,
       symbol: token.symbol,
       chains: [CHAIN.HATHOR_NEXT],
       status: TOKEN_DOWNLOAD_STATUS.READY,
