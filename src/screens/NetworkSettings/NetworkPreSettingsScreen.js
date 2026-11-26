@@ -24,7 +24,7 @@ import {
   PRE_SETTINGS_MAINNET,
   PRE_SETTINGS_TESTNET,
   PRE_SETTINGS_SHIELDED_TESTNET,
-  PRE_SETTINGS_NEXT_DEVNET,
+  PRE_SETTINGS_NEXT_TESTNET,
 } from '../../constants';
 import { getShieldedNetworkPresetFeatureToggle } from '../../shielded/gating';
 import { getMultichainNetworkPresetFeatureToggle } from '../../multichain/gating';
@@ -88,14 +88,14 @@ export function NetworkPreSettingsScreen({ navigation }) {
   const dispatch = useDispatch();
   const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
   const shieldedPresetEnabled = useSelector(getShieldedNetworkPresetFeatureToggle);
-  const nextDevnetPresetEnabled = useSelector(getMultichainNetworkPresetFeatureToggle);
+  const nextTestnetPresetEnabled = useSelector(getMultichainNetworkPresetFeatureToggle);
   const setMainnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_MAINNET));
   const setTestnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_TESTNET));
   const setShieldedTestnetNetwork = () => dispatch(
     networkSettingsPersistStore(PRE_SETTINGS_SHIELDED_TESTNET)
   );
-  const setNextDevnetNetwork = () => dispatch(
-    networkSettingsPersistStore(PRE_SETTINGS_NEXT_DEVNET)
+  const setNextTestnetNetwork = () => dispatch(
+    networkSettingsPersistStore(PRE_SETTINGS_NEXT_TESTNET)
   );
   const setCustomNetwork = () => {
     navigation.push(CustomNetworkSettingsNav);
@@ -149,11 +149,11 @@ export function NetworkPreSettingsScreen({ navigation }) {
             onPress={setShieldedTestnetNetwork}
           />
         )}
-        {nextDevnetPresetEnabled && (
+        {nextTestnetPresetEnabled && (
           <CustomNetwork
-            title='Hathor Next Devnet'
-            url={PRE_SETTINGS_NEXT_DEVNET.nodeUrl}
-            onPress={setNextDevnetNetwork}
+            title='Hathor Next Testnet'
+            url={PRE_SETTINGS_NEXT_TESTNET.nodeUrl}
+            onPress={setNextTestnetNetwork}
           />
         )}
         <View style={styles.buttonContainer}>

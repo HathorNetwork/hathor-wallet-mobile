@@ -92,7 +92,7 @@ afterEach(async () => {
 /**
  * 1,000.00 HTR on Hathor Network unless asked otherwise, and 3.00 on Hathor Next.
  */
-function makeStore({ connected = true, hathorHtr = 100000n, next = {} } = {}) {
+function makeStore({ connected = true, hathorHtr = 100000n, next = {}, network = NETWORK } = {}) {
   const initial = reducer(undefined, { type: '@@INIT' });
   const actions = [];
   const record = () => (nextFn) => (action) => {
@@ -104,13 +104,13 @@ function makeStore({ connected = true, hathorHtr = 100000n, next = {} } = {}) {
     networkSettings: PRE_SETTINGS_TESTNET,
     featureToggles: { ...FEATURE_TOGGLE_DEFAULTS, [MULTICHAIN_FEATURE_TOGGLE]: true },
     serverInfo: { decimal_places: 2 },
-    fullNodeNetworkName: NETWORK,
+    fullNodeNetworkName: network,
     tokens: { '00': HTR },
     selectedToken: HTR,
     tokensBalance: { '00': { status: 'ready', data: { available: hathorHtr, locked: 0n } } },
     multichain: {
       ...initial.multichain,
-      connectedNetworks: connected ? { [NETWORK]: true } : {},
+      connectedNetworks: connected ? { [network]: true } : {},
       next: {
         ...initial.multichain.next,
         status: NEXT_STATUS.READY,
@@ -243,6 +243,65 @@ describe('a send short on Hathor Next', () => {
     const { renderer } = await amountStep(3000000000n, { hathorHtr: 100n });
     expect(textOf(renderer)).toContain('Insufficient funds');
     expect(button(renderer, 'Transfer between chains')).toBeUndefined();
+  });
+});
+
+describe('a Hathor Next payment in the HTR a transfer minted, where USDT pays the fees', () => {
+  // testnet-alpha: its native token is USDT, and a transfer mints HTR as a token of its own.
+  const USDT = 'd957d448377de9c9d313d545398677cd6df99ac051dcf2afcd1b38dcb22f92d8';
+  const MINTED_HTR = '664cf15052b6f66f1f06ac32189381a27f1bfe1eda2f77cea4fde760b5884d33';
+  // 1.00 USDT and 3.00 HTR on Hathor Next, and HTR on Hathor Network as asked.
+  const holding = (hathorHtr) => ({
+    network: 'testnet-juliet',
+    hathorHtr,
+    next: {
+      tokens: {
+        [USDT]: { id: USDT, name: 'US Dollar Tether', symbol: 'USDT' },
+        [MINTED_HTR]: { id: MINTED_HTR, name: 'Hathor', symbol: 'HTR', lastActivityAt: 1 },
+      },
+      balances: {
+        [USDT]: { status: 'ready', data: { available: 100000000n } },
+        [MINTED_HTR]: { status: 'ready', data: { available: 300000000n } },
+      },
+    },
+  });
+
+  async function amountStep(amount, hathorHtr) {
+    const navigation = { navigate: jest.fn(), goBack: jest.fn() };
+    useNavigation.mockReturnValue(navigation);
+    useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS } });
+    const renderer = await mount(makeStore(holding(hathorHtr)).store, <NextSendAmountInput />);
+    await act(async () => {
+      renderer.root.findByType(NextTokenPicker).props.onChange(MINTED_HTR);
+    });
+    await act(async () => {
+      renderer.root.findByType(AmountTextInput).props.onAmountUpdate('x', amount);
+    });
+    await act(async () => { button(renderer, 'Next').props.onPress(); });
+    return { renderer, navigation };
+  }
+
+  test('offers to send it from Hathor Network, as for HTR that is the native token', async () => {
+    const { renderer, navigation } = await amountStep(3000000000n, 100000n);
+    expect(textOf(renderer)).toContain(
+      'You have 3.00 HTR on Hathor Next. Send from Hathor Network instead? It arrives in about 2 minutes.',
+    );
+    await act(async () => { button(renderer, 'Transfer between chains').props.onPress(); });
+    expect(navigation.navigate).toHaveBeenCalledWith('ChainTransfer', {
+      toAddress: NEXT_ADDRESS,
+      amount: '3010',
+    });
+  });
+
+  test('transfers only the HTR missing first: the USDT fee is no HTR', async () => {
+    // 5.00 HTR to pay, 3.00 here, 3.00 on Hathor Network: 2.00 comes over, plus the bridge fee.
+    const { renderer, navigation } = await amountStep(500000000n, 300n);
+    expect(textOf(renderer).join(' ')).toContain('Transfer the rest to Hathor Next first.');
+    await act(async () => { button(renderer, 'Transfer between chains').props.onPress(); });
+    expect(navigation.navigate).toHaveBeenCalledWith('ChainTransfer', {
+      toAddress: OWN_ADDRESS,
+      amount: '210',
+    });
   });
 });
 

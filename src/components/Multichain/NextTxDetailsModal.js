@@ -25,6 +25,7 @@ import {
   unconfirmedBody,
   verdictLead,
 } from '../../multichain/content';
+import { nextExplorerTxUrl } from '../../multichain/chains';
 import { selectSideChainConfig } from '../../multichain/gating';
 import { COLORS } from '../../styles/themes';
 
@@ -69,7 +70,7 @@ export const NextTxDetailsModal = ({ row, token, onDismiss }) => {
   const incoming = row.direction === 'in';
   const amount = renderNextValue(BigInt(row.amount), hathorDecimalPlaces);
   const explanation = statusExplanation(row);
-  const canOpenExplorer = Boolean(row.txId && config?.explorerUrl);
+  const explorerLink = nextExplorerTxUrl(config, row.txId);
 
   return (
     <BackdropModal
@@ -108,12 +109,12 @@ export const NextTxDetailsModal = ({ row, token, onDismiss }) => {
             <CopyClipboard text={row.txId} textStyle={styles.copyText} />
           </>
         )}
-        {canOpenExplorer && (
+        {explorerLink && (
           <NewHathorButton
             secondary
             style={styles.button}
             title={t`View on explorer`}
-            onPress={() => Linking.openURL(`${config.explorerUrl}transaction/${row.txId}`)}
+            onPress={() => Linking.openURL(explorerLink)}
           />
         )}
       </View>

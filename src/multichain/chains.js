@@ -6,7 +6,7 @@
  */
 
 import { Address } from '@hathor/wallet-lib';
-import { FULL_NETWORK_MAINNET, NODE_SERVER_NEXT_DEVNET_URL } from '../constants';
+import { FULL_NETWORK_MAINNET, FULL_NETWORK_NEXT_TESTNET } from '../constants';
 
 /**
  * The chains a wallet can use on a network with a side chain: the network's own chain, and its
@@ -93,6 +93,18 @@ function addressHash(address) {
 }
 
 /**
+ * The Hathor Next token a transfer of HTR mints: the one the bridge's token map pairs with HTR,
+ * else the native token.
+ *
+ * @param {Object|null} config The side chain config
+ * @returns {string|null}
+ */
+export function mintedTokenId(config) {
+  return config?.tokenMap?.find((pair) => pair.hathor === '00')?.next
+    ?? config?.nativeTokenId ?? null;
+}
+
+/**
  * The symbol of what a transfer of Hathor Network's native token becomes on Hathor Next: the
  * same symbol where the bridge's token map carries the token, otherwise the side chain's native
  * token, which the burn mints at the chain's mint scale.
@@ -137,9 +149,8 @@ export function otherChain(chain) {
  * on a payment's fee, its explorer or null, the tokens the bridge carries by their id on each
  * chain (each shows as one row, with its balance on both chains), the mint scale, the ways the
  * bridge transfers and the transfer's pinned values. A network whose node reports a name others
- * share is pinned by its node instead (SIDE_CHAINS_BY_NODE).
+ * share is pinned by its node instead (SIDE_CHAINS_BY_NODE). Both come after the configs they pin.
  */
-const SIDE_CHAINS = {};
 
 /** The most a payment may cost on a backend set up for local testing: 0.1 of the native token. */
 const DEV_MAX_SEND_FEE = '10000000';
@@ -149,15 +160,20 @@ const DEV_MAX_SEND_FEE = '10000000';
  * pins are the backend's own GET /v1/config, read when the backend was set. Real side chains pin
  * their values in this file instead.
  *
- * A backend that transfers HTR mints it as its native token at the same value, so the two are
- * one token, HTR on both chains: one Dashboard row with both balances. A backend that transfers
- * nothing keeps its native token apart, under its own name.
+ * A backend that transfers HTR mints it at the same value as the token its config names
+ * (transfer.mint_token): HTR, one token on both chains, one Dashboard row with both balances.
+ * Without that name, the network mints its native token, which is then HTR. A network that
+ * mints another token keeps its native token apart, under its own name, as does a backend that
+ * transfers nothing.
  *
  * @param {{ url: string, pins: Object }} devBackend
  * @returns {Object}
  */
 export function devBackendSideChain({ url, pins }) {
   const carriesHtr = Boolean(pins.transfer);
+  // The token a transfer mints: its own, or else the native token.
+  const mintToken = carriesHtr ? (pins.transfer.mint_token ?? pins.next.native_token) : null;
+  const nativeIsHtr = carriesHtr && mintToken === pins.next.native_token;
   return {
     id: CHAIN.HATHOR_NEXT,
     name: CHAIN_NAME[CHAIN.HATHOR_NEXT],
@@ -165,8 +181,8 @@ export function devBackendSideChain({ url, pins }) {
     backendUrl: url,
     nextNetworkId: pins.next.network_id,
     nativeTokenId: pins.next.native_token,
-    nativeTokenSymbol: carriesHtr ? 'HTR' : (pins.next.native_token_symbol ?? 'USDT'),
-    nativeTokenName: carriesHtr ? 'Hathor' : (pins.next.native_token_name ?? 'Tether USD'),
+    nativeTokenSymbol: nativeIsHtr ? 'HTR' : (pins.next.native_token_symbol ?? 'USDT'),
+    nativeTokenName: nativeIsHtr ? 'Hathor' : (pins.next.native_token_name ?? 'Tether USD'),
     serviceViewPub: pins.next.service_view_pub,
     wireFormat: pins.next.wire_format,
     // The chain's genesis and its amounts' width: the client refuses a backend that changed them.
@@ -175,16 +191,17 @@ export function devBackendSideChain({ url, pins }) {
     // The Hathor Network this side chain transfers from, as the backend names it: on any other
     // network, it is no side chain.
     hathorNetwork: pins.hathor?.network ?? null,
-    // Whether its network holds value. None does yet: devnet-alpha and local networks hold play
+    // Whether its network holds value. None does yet: testnet-alpha and local networks hold play
     // money. A backend set up for local testing can never pass as one that does.
     holdsValue: false,
     // The app's own ceiling on a payment's fee, in the native token's base units, whatever the
     // backend quotes.
     maxSendFee: DEV_MAX_SEND_FEE,
+    // Hathor Next's explorer (nextExplorerTxUrl), or null for none.
     explorerUrl: null,
     explorerApiBase: null,
-    tokenMap: carriesHtr ? [{ hathor: '00', next: pins.next.native_token }] : [],
-    // hathor-next mints a burn at the same value: 1.00 HTR becomes 1.00000000 of the native token.
+    tokenMap: carriesHtr ? [{ hathor: '00', next: mintToken }] : [],
+    // hathor-next mints a burn at the same value: 1.00 HTR becomes 1.00000000 of the token minted.
     mintScale: '1000000',
     directions: pins.transfer ? [{ from: CHAIN.HATHOR, to: CHAIN.HATHOR_NEXT }] : [],
     transfer: pins.transfer ?? null,
@@ -192,43 +209,54 @@ export function devBackendSideChain({ url, pins }) {
 }
 
 /**
- * The backend of devnet-alpha, hathor-next's deployed devnet, and its GET /v1/config as the app
- * pins it. The client refuses a backend whose network, native token, view key, wire format,
- * amounts' width or genesis differ from these, and the burn check pays only this transfer
- * address: a devnet reset needs them updated here.
+ * The backend of testnet-alpha, hathor-next's testnet, and its GET /v1/config as the app pins it.
+ * Its Hathor Network is hathor-core's testnet-juliet. Its native token is USDT, which pays every
+ * fee, and a transfer mints HTR as a token of its own (transfer.mint_token). The client refuses a
+ * backend whose network, native token, view key, wire format, amounts' width or genesis differ
+ * from these, and the burn check pays only this transfer address: a reset of either network
+ * needs them updated here.
  */
-const DEVNET_ALPHA_BACKEND_URL = 'https://wallet-backend.devnet-alpha.samba.hathor.network';
-const DEVNET_ALPHA_PINS = {
+const TESTNET_ALPHA_BACKEND_URL = 'https://wallet-backend.testnet-alpha.samba.hathor.network';
+const TESTNET_ALPHA_PINS = {
   contract: 1,
-  hathor: { network: 'privatenet' },
+  hathor: { network: FULL_NETWORK_NEXT_TESTNET },
   next: {
-    network_id: 1003,
-    native_token: 'e5bcdd06b7d2b896fe194e09b55d687737af3767407d9efc957ac0ea84f1e54c',
-    service_view_pub: 'b292d1f347dd954a23814d66d60adc6848d89e97f09be952bb2f5f9025fe2e0e',
+    network_id: 1004,
+    native_token: 'd957d448377de9c9d313d545398677cd6df99ac051dcf2afcd1b38dcb22f92d8',
+    service_view_pub: 'ee29df21a6c64fe43fc8ec6cd7b8c1ecfc4c89eec9370086129e367693bbf400',
     wire_format: 'v3',
     amount_width: 'u64',
-    genesis_ms: 1794240267000,
-    native_token_symbol: 'nHTR',
-    native_token_name: 'new HTR (devnet-alpha play money)',
+    genesis_ms: 1795542160000,
+    native_token_symbol: 'USDT',
+    native_token_name: 'US Dollar Tether (testnet-alpha play money)',
   },
   transfer: {
     transfer_address: 'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL',
-    destination_network: '8822d70f304ab62d1198004dedeff39e2da86c259ca5669a2ad0b8c6bb641064',
+    destination_network: 'fb3694106fd98e1dc5aa959ef2dc8b1792d593846de685af69c39590a7642b23',
     confirmations: 21,
-    mean_block_ms: 5000,
+    mean_block_ms: 30000,
     data_output_value: '1',
-    hathor_network: 'privatenet',
+    hathor_network: FULL_NETWORK_NEXT_TESTNET,
+    mint_token: '664cf15052b6f66f1f06ac32189381a27f1bfe1eda2f77cea4fde760b5884d33',
   },
 };
 
+/** testnet-alpha's explorer: hathor-next-explorer, on the network's explorer surface. */
+const TESTNET_ALPHA_EXPLORER_URL = 'https://samba.explorer.hathor.dev/';
+
 /**
- * Hathor Next on devnet-alpha, through its backend. A transfer mints HTR as its native token at
- * the same value, so the two show as one token, HTR on both chains.
+ * Hathor Next on testnet-alpha, through its backend. A transfer mints HTR as a token of its own,
+ * so HTR shows as one token on both chains, and USDT, the native token, apart.
  */
-const DEVNET_ALPHA_HATHOR_NEXT = devBackendSideChain({
-  url: DEVNET_ALPHA_BACKEND_URL,
-  pins: DEVNET_ALPHA_PINS,
-});
+const TESTNET_ALPHA_HATHOR_NEXT = {
+  ...devBackendSideChain({ url: TESTNET_ALPHA_BACKEND_URL, pins: TESTNET_ALPHA_PINS }),
+  explorerUrl: TESTNET_ALPHA_EXPLORER_URL,
+};
+
+/** The side chains pinned by the name of their Hathor Network. */
+const SIDE_CHAINS = {
+  [FULL_NETWORK_NEXT_TESTNET]: TESTNET_ALPHA_HATHOR_NEXT,
+};
 
 /** Every side chain this app pins, by network name or by node. */
 const PINNED_SIDE_CHAINS = () => [
@@ -261,12 +289,27 @@ export function impersonatedSideChain(pins, pinned = PINNED_SIDE_CHAINS()) {
  * The side chains of networks whose fullnode reports a name other networks share: every
  * privatenet reports 'privatenet'. By the node the wallet runs on (its network settings' nodeUrl).
  */
-const SIDE_CHAINS_BY_NODE = [
-  { nodeUrl: NODE_SERVER_NEXT_DEVNET_URL, config: DEVNET_ALPHA_HATHOR_NEXT },
-];
+const SIDE_CHAINS_BY_NODE = [];
 
 function withoutTrailingSlashes(url) {
   return url.trim().replace(/\/+$/, '');
+}
+
+/**
+ * The page of a Hathor Next transaction on its side chain's explorer, or null when the side chain
+ * has none or the id isn't one. Hathor Next's explorer, hathor-next-explorer, has a transaction's
+ * page at /tx/<the id, 64 hex>.
+ *
+ * @param {Object|null} config The side chain config
+ * @param {string|null|undefined} txId
+ * @returns {string|null}
+ */
+export function nextExplorerTxUrl(config, txId) {
+  if (typeof config?.explorerUrl !== 'string' || config.explorerUrl === ''
+    || typeof txId !== 'string' || !/^[0-9a-fA-F]{64}$/.test(txId)) {
+    return null;
+  }
+  return `${withoutTrailingSlashes(config.explorerUrl)}/tx/${txId.toLowerCase()}`;
 }
 
 /**
@@ -287,8 +330,8 @@ export function nodeSideChain(nodeUrl) {
 /**
  * The side chain of a network, or null when it has none. Pass the name the fullnode reports
  * (state.fullNodeNetworkName): a custom network pointed at a side chain's nodes has it too. Pass
- * the node too (the network settings' nodeUrl): a network whose name others share, such as
- * devnet-alpha's privatenet, is known by its node. A backend set up for local testing gives every
+ * the node too (the network settings' nodeUrl): a network whose name others share, such as a
+ * privatenet, is known by its node. A backend set up for local testing gives every
  * network but mainnet a side chain, in place of its own. Mainnet has none, and a side chain is
  * none on a network other than the one it names.
  *

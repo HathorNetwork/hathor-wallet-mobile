@@ -299,7 +299,7 @@ export default function NextCreateTokenConfirmScreen() {
         )}
         <View style={styles.note}>
           <Text style={styles.noteTitle}>{t`Public`}</Text>
-          <Text style={styles.noteText}>{publicTokenNote()}</Text>
+          <Text style={styles.noteText}>{publicTokenNote(nativeSymbol)}</Text>
         </View>
       </ScrollView>
       <View style={styles.footer}>

@@ -61,9 +61,14 @@ const NATIVE_SYMBOLS = ['HTR'];
  * What creating a token on Hathor Next makes public: everything about it, by the protocol. A
  * creation's outputs are transparent and paid to the creator's spend key, which is half of the
  * address, so they also show who created the token.
+ *
+ * @param {string} feeSymbol The symbol of the token that pays the fee: the network's native token
+ * @returns {string}
  */
-export function publicTokenNote() {
-  return t`Creating a token is public. Its name, its symbol, the amount you create and the HTR that comes back to you as change from the fee go on Hathor Next in the clear, paid openly to your address: anyone who knows your Hathor Next address can see the tokens you created. You'll see how much HTR that is before the token is created.`;
+export function publicTokenNote(feeSymbol) {
+  // Each placeholder has a name of its own: ttag can't translate a message that repeats one.
+  const changeSymbol = feeSymbol;
+  return t`Creating a token is public. Its name, its symbol, the amount you create and the ${feeSymbol} that comes back to you as change from the fee go on Hathor Next in the clear, paid openly to your address: anyone who knows your Hathor Next address can see the tokens you created. You'll see how much ${changeSymbol} that is before the token is created.`;
 }
 
 /**
@@ -212,7 +217,7 @@ export default function NextCreateTokenScreen() {
             {sweeping && <SyncingNotice text={syncingSendBody()} style={styles.syncing} />}
             <Text style={styles.error}>{error ?? formError}</Text>
             <View style={styles.note}>
-              <Text style={styles.noteText}>{publicTokenNote()}</Text>
+              <Text style={styles.noteText}>{publicTokenNote(nativeSymbol)}</Text>
             </View>
             <View style={styles.note}>
               <Text style={styles.noteText}>{tokenKeysNote()}</Text>

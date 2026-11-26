@@ -33,7 +33,7 @@ import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_FEATURE_TOGGLE,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
-  PRE_SETTINGS_NEXT_DEVNET,
+  PRE_SETTINGS_NEXT_TESTNET,
 } from '../../../src/constants';
 import { STORE } from '../../../src/store';
 import { selectSideChainConfig, selectSideChainKey } from '../../../src/multichain/gating';
@@ -72,20 +72,20 @@ afterEach(async () => {
 });
 
 /**
- * The Hathor Next Devnet preset with its side chain connected: the config the app runs there.
+ * The Hathor Next Testnet preset with its side chain connected: the config the app runs there.
  */
 function makeStore() {
   const initial = reducer(undefined, { type: '@@INIT' });
   const base = {
     ...initial,
-    networkSettings: PRE_SETTINGS_NEXT_DEVNET,
+    networkSettings: PRE_SETTINGS_NEXT_TESTNET,
     featureToggles: {
       ...FEATURE_TOGGLE_DEFAULTS,
       [MULTICHAIN_FEATURE_TOGGLE]: true,
       [MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE]: true,
     },
     serverInfo: { decimal_places: 2 },
-    fullNodeNetworkName: 'privatenet',
+    fullNodeNetworkName: 'testnet-juliet',
     tokensBalance: { '00': { status: 'ready', data: { available: 100000n, locked: 0n } } },
   };
   const config = selectSideChainConfig(base);
@@ -101,7 +101,7 @@ function makeStore() {
         online: true,
         address: NEXT_ADDRESS,
         sendFee: 5000000n,
-        tokens: { [native]: { id: native, name: 'Hathor', symbol: 'HTR' } },
+        tokens: { [native]: { id: native, name: 'US Dollar Tether', symbol: 'USDT' } },
         balances: { [native]: { status: 'ready', data: { available: 500000000000n } } },
       },
     },
@@ -140,8 +140,9 @@ describe('the screens that make a bridge of their own, with the app\'s bridge', 
     expect(texts).toContain('Network fee');
   });
 
-  test('Send\'s amount on Hathor Next renders', async () => {
+  test('Send\'s amount on Hathor Next renders, in the native token, which pays the fee', async () => {
     const renderer = await mount(<NextSendAmountInput />);
-    expect(textOf(renderer)).toContain('SEND HTR');
+    expect(textOf(renderer)).toContain('SEND USDT');
+    expect(textOf(renderer)).toContain('Network fee: 0.05 USDT');
   });
 });

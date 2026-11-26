@@ -15,7 +15,7 @@ import { setFeatureToggles, types } from '../../src/actions';
 import {
   FEATURE_TOGGLE_DEFAULTS,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
-  PRE_SETTINGS_NEXT_DEVNET,
+  PRE_SETTINGS_NEXT_TESTNET,
   PRE_SETTINGS_SHIELDED_TESTNET,
   SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE,
   SHIELDED_OUTPUTS_FEATURE_TOGGLE,
@@ -103,21 +103,21 @@ describe('NetworkPreSettingsScreen', () => {
   });
 });
 
-describe('the Hathor Next Devnet preset', () => {
+describe('the Hathor Next Testnet preset', () => {
   test('shows only while its flag is on', async () => {
     const off = await render({});
-    expect(off.presetTitles).not.toContain('Hathor Next Devnet');
+    expect(off.presetTitles).not.toContain('Hathor Next Testnet');
     await act(async () => { mounted.unmount(); });
     mounted = null;
     const on = await render({ nextPresetFlag: true });
-    expect(on.presetTitles).toEqual(['Mainnet', 'Testnet', 'Hathor Next Devnet']);
+    expect(on.presetTitles).toEqual(['Mainnet', 'Testnet', 'Hathor Next Testnet']);
   });
 
-  test('saves the devnet, its node and tx mining set, when it is pressed', async () => {
+  test('saves the testnet, its node, tx mining and wallet-service set, when it is pressed', async () => {
     const { actions, findPreset } = await render({ nextPresetFlag: true });
 
     await act(async () => {
-      findPreset('Hathor Next Devnet').props.onPress();
+      findPreset('Hathor Next Testnet').props.onPress();
     });
 
     const persisted = actions.filter(
@@ -125,7 +125,7 @@ describe('the Hathor Next Devnet preset', () => {
     );
     expect(persisted).toEqual([{
       type: types.NETWORKSETTINGS_PERSIST_STORE,
-      payload: PRE_SETTINGS_NEXT_DEVNET,
+      payload: PRE_SETTINGS_NEXT_TESTNET,
     }]);
   });
 });

@@ -282,9 +282,9 @@ export const SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE = 'shielded-outputs-network.
  */
 export const MULTICHAIN_FEATURE_TOGGLE = 'multichain.rollout';
 /**
- * Shows the Hathor Next Devnet preset in Network Settings, and nothing else. It is separate from
+ * Shows the Hathor Next Testnet preset in Network Settings, and nothing else. It is separate from
  * MULTICHAIN_FEATURE_TOGGLE for the reason SHIELDED_NETWORK_PRESET_FEATURE_TOGGLE is: a flag
- * targeted at the devnet is off on the network the user switches from.
+ * targeted at the Hathor Next testnet is off on the network the user switches from.
  */
 export const MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE = 'multichain-network.rollout';
 /**
@@ -421,25 +421,29 @@ export const PRE_SETTINGS_SHIELDED_TESTNET = {
 };
 
 /**
- * Hathor Next Devnet: the hathor-core privatenet beside hathor-next's devnet-alpha. Its node
- * reports the name every privatenet reports, so its node is what tells the app that the network
- * has a side chain (see src/multichain/chains.js). It has no wallet-service, so a wallet runs on
- * the fullnode facade, and no hathor-core explorer: the explorer URLs are the node's, which the
- * form requires, so explorer links lead nowhere.
+ * Hathor Next Testnet: hathor-core's testnet-juliet, the Hathor Network paired with hathor-next's
+ * testnet-alpha (src/multichain/chains.js pins its side chain by that name). It has a node, a
+ * tx-mining service, a wallet-service and an explorer, but no explorer-service: the form requires
+ * one, so that URL is the node's, and what the app asks of it there finds nothing.
  */
-export const FULL_NETWORK_NEXT_DEVNET = 'privatenet';
-export const NODE_SERVER_NEXT_DEVNET_URL = 'https://legacy-node.devnet-alpha.samba.hathor.network/v1a/';
-export const EXPLORER_NEXT_DEVNET_URL = 'https://legacy-node.devnet-alpha.samba.hathor.network/';
-export const TX_MINING_SERVICE_NEXT_DEVNET_URL = 'https://tx-mining.devnet-alpha.samba.hathor.network/';
+export const FULL_NETWORK_NEXT_TESTNET = 'testnet-juliet';
+export const NODE_SERVER_NEXT_TESTNET_URL = 'https://legacy-node.testnet-alpha.samba.hathor.network/v1a/';
+export const EXPLORER_NEXT_TESTNET_URL = 'https://legacy-explorer.testnet-alpha.samba.hathor.network/';
+export const EXPLORER_SERVICE_NEXT_TESTNET_URL = 'https://legacy-node.testnet-alpha.samba.hathor.network/';
+export const TX_MINING_SERVICE_NEXT_TESTNET_URL = 'https://tx-mining.testnet-alpha.samba.hathor.network/';
+export const WALLET_SERVICE_NEXT_TESTNET_BASE_URL = 'https://legacy-wallet-service.testnet-alpha.samba.hathor.network/';
+export const WALLET_SERVICE_NEXT_TESTNET_BASE_WS_URL = 'wss://legacy-wallet-service-ws.testnet-alpha.samba.hathor.network/';
 
-export const PRE_SETTINGS_NEXT_DEVNET = {
-  stage: STAGE_DEV_PRIVNET,
-  network: FULL_NETWORK_NEXT_DEVNET,
-  fullNetwork: FULL_NETWORK_NEXT_DEVNET,
-  nodeUrl: NODE_SERVER_NEXT_DEVNET_URL,
-  explorerUrl: EXPLORER_NEXT_DEVNET_URL,
-  explorerServiceUrl: EXPLORER_NEXT_DEVNET_URL,
-  txMiningServiceUrl: TX_MINING_SERVICE_NEXT_DEVNET_URL,
+export const PRE_SETTINGS_NEXT_TESTNET = {
+  stage: STAGE_TESTNET,
+  network: NETWORK_TESTNET,
+  fullNetwork: FULL_NETWORK_NEXT_TESTNET,
+  walletServiceUrl: WALLET_SERVICE_NEXT_TESTNET_BASE_URL,
+  walletServiceWsUrl: WALLET_SERVICE_NEXT_TESTNET_BASE_WS_URL,
+  nodeUrl: NODE_SERVER_NEXT_TESTNET_URL,
+  explorerUrl: EXPLORER_NEXT_TESTNET_URL,
+  explorerServiceUrl: EXPLORER_SERVICE_NEXT_TESTNET_URL,
+  txMiningServiceUrl: TX_MINING_SERVICE_NEXT_TESTNET_URL,
 };
 
 /**

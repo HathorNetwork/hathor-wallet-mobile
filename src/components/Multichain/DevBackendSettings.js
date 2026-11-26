@@ -50,6 +50,7 @@ export function isUsableBackendConfig(pins) {
       && HEX_64.test(transfer.destination_network ?? '')
       && Number.isSafeInteger(transfer.confirmations) && transfer.confirmations >= 0
       && Number.isSafeInteger(transfer.mean_block_ms) && transfer.mean_block_ms > 0
+      && (transfer.mint_token === undefined || HEX_64.test(transfer.mint_token))
     ));
 }
 
@@ -80,6 +81,7 @@ export function usedBackendConfig(pins) {
       destination_network: transfer.destination_network,
       confirmations: transfer.confirmations,
       mean_block_ms: transfer.mean_block_ms,
+      ...(transfer.mint_token ? { mint_token: transfer.mint_token } : {}),
     } : null,
   };
 }

@@ -74,7 +74,7 @@ import {
   MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE,
   multichainKeyMap,
   PRE_SETTINGS_MAINNET,
-  PRE_SETTINGS_NEXT_DEVNET,
+  PRE_SETTINGS_NEXT_TESTNET,
   PRE_SETTINGS_TESTNET,
 } from '../../src/constants';
 import { STORE } from '../../src/store';
@@ -96,7 +96,6 @@ import { FAKE_SCENARIO } from '../multichain/fakes/scenarios';
 import { FAKE_NETWORK, FAKE_SIDE_CHAIN } from '../multichain/fakes/sideChain';
 import {
   isSideChainAvailable,
-  isSideChainConnected,
   selectSideChainConfig,
   selectSideChainConnection,
   selectSideChainKey,
@@ -1891,53 +1890,61 @@ describe('the backend for local testing', () => {
   });
 });
 
-describe('Hathor Next Devnet', () => {
+describe('Hathor Next Testnet', () => {
   // The client here is the tests' fake: what matters is the side chain it connects with.
-  test("connects to devnet-alpha's backend, with no backend set for local testing", async () => {
-    const env = setup({ network: 'privatenet', networkSettings: PRE_SETTINGS_NEXT_DEVNET });
+  test("connects to testnet-alpha's backend, with no backend set for local testing", async () => {
+    const env = setup({ network: 'testnet-juliet', networkSettings: PRE_SETTINGS_NEXT_TESTNET });
     await wait(0);
     const connectSpy = jest.spyOn(ensureNextClient(), 'connect');
     await connect(env);
     expect(connectSpy).toHaveBeenCalledWith(expect.objectContaining({
-      network: 'privatenet',
+      network: 'testnet-juliet',
       config: expect.objectContaining({
-        backendUrl: 'https://wallet-backend.devnet-alpha.samba.hathor.network',
+        backendUrl: 'https://wallet-backend.testnet-alpha.samba.hathor.network',
       }),
     }));
-    // Saved under the network and its node: every privatenet reports the same name.
-    expect(env.getState().multichain.connectedNetworks).toEqual({
-      'privatenet https://legacy-node.devnet-alpha.samba.hathor.network/v1a': true,
-    });
+    // Saved under the network's name: no other network reports it.
+    expect(env.getState().multichain.connectedNetworks).toEqual({ 'testnet-juliet': true });
   });
 
-  test('keeps the setting under the node: another privatenet reports the same name', async () => {
+  test('leaves devnet-alpha, a privatenet like any other, with no side chain to offer', async () => {
     const env = setup({
       network: 'privatenet',
-      networkSettings: { ...PRE_SETTINGS_NEXT_DEVNET, nodeUrl: 'http://192.168.0.10:8080/v1a/' },
-    });
-    await wait(0);
-    expect(selectSideChainKey(env.getState())).toBe('privatenet http://192.168.0.10:8080/v1a');
-  });
-
-  test("keeps a tester's setting saved under the network's name alone, under its node now", async () => {
-    STORE.setItem(multichainKeyMap.connectedNetworks, { privatenet: true, testnet: true });
-    const env = setup({ network: 'privatenet', networkSettings: PRE_SETTINGS_NEXT_DEVNET });
-    await wait(0);
-    const key = 'privatenet https://legacy-node.devnet-alpha.samba.hathor.network/v1a';
-    expect(env.getState().multichain.connectedNetworks).toEqual({ [key]: true, testnet: true });
-    expect(STORE.getItem(multichainKeyMap.connectedNetworks))
-      .toEqual({ [key]: true, testnet: true });
-    expect(isSideChainConnected(env.getState())).toBe(true);
-  });
-
-  test('has no side chain on another privatenet, so Settings offers none', async () => {
-    const env = setup({
-      network: 'privatenet',
-      networkSettings: { ...PRE_SETTINGS_NEXT_DEVNET, nodeUrl: 'http://192.168.0.10:8080/v1a/' },
+      networkSettings: {
+        ...PRE_SETTINGS_NEXT_TESTNET,
+        network: 'privatenet',
+        fullNetwork: 'privatenet',
+        nodeUrl: 'https://legacy-node.devnet-alpha.samba.hathor.network/v1a/',
+      },
     });
     await wait(0);
     expect(selectSideChainConfig(env.getState())).toBeNull();
     expect(isSideChainAvailable(env.getState())).toBe(false);
+  });
+});
+
+describe("a privatenet's side chain setting", () => {
+  const PRIVATENET = {
+    ...PRE_SETTINGS_NEXT_TESTNET,
+    network: 'privatenet',
+    fullNetwork: 'privatenet',
+    nodeUrl: 'http://192.168.0.10:8080/v1a/',
+  };
+
+  test('is kept under the node: another privatenet reports the same name', async () => {
+    const env = setup({ network: 'privatenet', networkSettings: PRIVATENET });
+    await wait(0);
+    expect(selectSideChainKey(env.getState())).toBe('privatenet http://192.168.0.10:8080/v1a');
+  });
+
+  test("moves a tester's setting saved under the network's name alone to its node", async () => {
+    STORE.setItem(multichainKeyMap.connectedNetworks, { privatenet: true, testnet: true });
+    const env = setup({ network: 'privatenet', networkSettings: PRIVATENET });
+    await wait(0);
+    const key = 'privatenet http://192.168.0.10:8080/v1a';
+    expect(env.getState().multichain.connectedNetworks).toEqual({ [key]: true, testnet: true });
+    expect(STORE.getItem(multichainKeyMap.connectedNetworks))
+      .toEqual({ [key]: true, testnet: true });
   });
 });
 

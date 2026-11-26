@@ -6,7 +6,8 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, Text, View } from 'react-native';
+import { useSelector } from 'react-redux';
 import moment from 'moment';
 import { t } from 'ttag';
 import BackdropModal from '../BackdropModal';
@@ -18,10 +19,12 @@ import {
   renderChainValue,
   transferTitle,
 } from './TransferRow';
-import { CHAIN_NAME, NEXT_COLORS } from '../../multichain/chains';
+import { CHAIN, CHAIN_NAME, NEXT_COLORS, nextExplorerTxUrl } from '../../multichain/chains';
+import { selectSideChainConfig } from '../../multichain/gating';
 import { HISTORY_ROW } from '../../multichain/history';
 import { TRANSFER_STATUS } from '../../multichain/state';
 import { COLORS } from '../../styles/themes';
+import { combineURLs } from '../../utils';
 
 /**
  * One step of a transfer: a transaction on one chain, with its status.
@@ -33,8 +36,9 @@ import { COLORS } from '../../styles/themes';
  * @param {string} props.status
  * @param {boolean} [props.pending]
  * @param {string|null} [props.txId]
+ * @param {string|null} [props.link] The transaction's page on its chain's explorer
  */
-const Step = ({ index, title, amount, status, pending = false, txId = null }) => (
+const Step = ({ index, title, amount, status, pending = false, txId = null, link = null }) => (
   <View style={styles.step}>
     <View style={[styles.stepNumber, pending && styles.stepNumberPending]}>
       <Text style={styles.stepNumberText}>{index}</Text>
@@ -46,14 +50,19 @@ const Step = ({ index, title, amount, status, pending = false, txId = null }) =>
       </View>
       <Text style={[styles.stepStatus, pending && styles.pending]}>{status}</Text>
       {txId && <CopyClipboard text={txId} textStyle={styles.copyText} />}
+      {link && (
+        <Text style={styles.link} onPress={() => Linking.openURL(link)}>
+          {t`View on explorer`}
+        </Text>
+      )}
     </View>
   </View>
 );
 
 /**
  * A transfer between chains, opened from any of its rows: one transfer with its two steps, the
- * transaction that left one chain and the one that reached the other, with the address and the
- * fees.
+ * transaction that left one chain and the one that reached the other, each with its link to its
+ * own chain's explorer, with the address and the fees.
  *
  * @param {Object} props
  * @param {Object|null} props.transfer TransferRecord, or null for none
@@ -62,9 +71,23 @@ const Step = ({ index, title, amount, status, pending = false, txId = null }) =>
  * @param {Function} props.onDismiss
  */
 export const TransferDetailsModal = ({ transfer, symbol, hathorDecimalPlaces, onDismiss }) => {
+  const hathorExplorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
+  const sideChainConfig = useSelector(selectSideChainConfig);
   if (!transfer) {
     return null;
   }
+  // A transaction's page on the explorer of the chain it is on: Hathor Network's is the network
+  // settings', Hathor Next's the side chain's.
+  const explorerLinkOf = (chain, txId) => {
+    if (!txId) {
+      return null;
+    }
+    if (chain === CHAIN.HATHOR) {
+      return hathorExplorerUrl ? combineURLs(hathorExplorerUrl, `transaction/${txId}`) : null;
+    }
+    return nextExplorerTxUrl(sideChainConfig, txId);
+  };
+  const mintTxId = transfer.progress?.mintTxId ?? null;
   const pending = transfer.status === TRANSFER_STATUS.PENDING;
   const failed = transfer.status === TRANSFER_STATUS.FAILED;
   const source = CHAIN_NAME[transfer.from];
@@ -104,6 +127,7 @@ export const TransferDetailsModal = ({ transfer, symbol, hathorDecimalPlaces, on
           amount={`-${sent} ${symbol}`}
           status={failed ? progressText({ stage: 'failed' }) : t`Done`}
           txId={transfer.sourceTxId}
+          link={explorerLinkOf(transfer.from, transfer.sourceTxId)}
         />
         {!failed && (
         <Step
@@ -118,6 +142,8 @@ export const TransferDetailsModal = ({ transfer, symbol, hathorDecimalPlaces, on
             ].filter(Boolean).join(' · ')
             : t`Done · ${arrivedAt}`}
           pending={pending}
+          txId={mintTxId}
+          link={explorerLinkOf(transfer.to, mintTxId)}
         />
         )}
         {failed && transfer.reason && <Text style={styles.value}>{transfer.reason}</Text>}
@@ -225,5 +251,11 @@ const styles = StyleSheet.create({
   },
   copyText: {
     fontSize: 12,
+  },
+  link: {
+    marginTop: 4,
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: COLORS.primary,
   },
 });
