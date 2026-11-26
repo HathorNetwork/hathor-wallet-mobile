@@ -19,15 +19,17 @@ import { TRANSFER_STATUS } from './state';
 export const shortTokenId = (id) => id.trim().toLowerCase().slice(0, 6);
 
 /**
- * Hathor Next's tokens as the token list shows them: the native token first, then by most recent
- * activity (there is no price feed to rank by value). Anyone can create a token on Hathor Next
- * under any name and symbol, "Hathor" and "HTR" included, and send it to any wallet, where it
- * lists itself: every token but the native one carries its short id in its name, so a look-alike
- * can always be told apart. Screens still find every token by its id. A list that cuts long names
- * shows `plainName` cut and `idTag` whole, so a long name never hides the id.
+ * Hathor Next's tokens as the token list shows them: the native token first, then the HTR a
+ * transfer mints when that is a token of its own, then by most recent activity (there is no
+ * price feed to rank by value). Anyone can create a token on Hathor Next under any name and
+ * symbol, "Hathor" and "HTR" included, and send it to any wallet, where it lists itself: every
+ * token but those two, which the app knows by their pinned ids, carries its short id in its name,
+ * so a look-alike can always be told apart. Screens still find every token by its id. A list that
+ * cuts long names shows `plainName` cut and `idTag` whole, so a long name never hides the id.
  *
  * @param {{ [id: string]: { id, name, symbol, lastActivityAt } }} tokens
  * @param {string} nativeTokenId
+ * @param {string|null} [mintedId] The token a transfer of HTR mints (mintedTokenId), if any
  * @returns {{
  *   uid: string,
  *   name: string,
@@ -37,23 +39,24 @@ export const shortTokenId = (id) => id.trim().toLowerCase().slice(0, 6);
  *   lastActivityAt: number|null,
  * }[]}
  */
-export function nextTokenList(tokens, nativeTokenId) {
+export function nextTokenList(tokens, nativeTokenId, mintedId = null) {
+  // The tokens the app knows by their pinned ids, in the order they come first.
+  const pinned = [nativeTokenId, mintedId].filter(Boolean);
+  const rank = (uid) => (pinned.includes(uid) ? pinned.indexOf(uid) : pinned.length);
   return Object.values(tokens)
-    .map((token) => ({
-      uid: token.id,
-      name: token.id === nativeTokenId
-        ? token.name
-        : `${token.name} · ${shortTokenId(token.id)}`,
-      plainName: token.name,
-      idTag: token.id === nativeTokenId ? null : shortTokenId(token.id),
-      symbol: token.symbol,
-      lastActivityAt: token.lastActivityAt ?? null,
-    }))
-    .sort((a, b) => {
-      if (a.uid === nativeTokenId) return -1;
-      if (b.uid === nativeTokenId) return 1;
-      return (b.lastActivityAt ?? 0) - (a.lastActivityAt ?? 0);
-    });
+    .map((token) => {
+      const known = pinned.includes(token.id);
+      return {
+        uid: token.id,
+        name: known ? token.name : `${token.name} · ${shortTokenId(token.id)}`,
+        plainName: token.name,
+        idTag: known ? null : shortTokenId(token.id),
+        symbol: token.symbol,
+        lastActivityAt: token.lastActivityAt ?? null,
+      };
+    })
+    .sort((a, b) => rank(a.uid) - rank(b.uid)
+      || (b.lastActivityAt ?? 0) - (a.lastActivityAt ?? 0));
 }
 
 /**

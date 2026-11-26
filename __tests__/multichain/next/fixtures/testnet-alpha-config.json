@@ -1,0 +1,30 @@
+{
+  "contract": 1,
+  "hathor": {
+    "network": "testnet-juliet"
+  },
+  "next": {
+    "network_id": 1004,
+    "native_token": "d957d448377de9c9d313d545398677cd6df99ac051dcf2afcd1b38dcb22f92d8",
+    "service_view_pub": "ee29df21a6c64fe43fc8ec6cd7b8c1ecfc4c89eec9370086129e367693bbf400",
+    "wire_format": "v3",
+    "amount_width": "u64",
+    "genesis_ms": 1795542160000,
+    "epoch_ms": 500,
+    "send_fee": "5000000",
+    "native_token_symbol": "USDT",
+    "native_token_name": "US Dollar Tether (testnet-alpha play money)"
+  },
+  "transfer": {
+    "transfer_address": "WScTqhLsBQnz3HMdQqh66JBgWqb255XffL",
+    "destination_network": "fb3694106fd98e1dc5aa959ef2dc8b1792d593846de685af69c39590a7642b23",
+    "confirmations": 21,
+    "mean_block_ms": 30000,
+    "data_output_value": "1",
+    "hathor_network": "testnet-juliet",
+    "mint_token": "664cf15052b6f66f1f06ac32189381a27f1bfe1eda2f77cea4fde760b5884d33",
+    "mint_token_symbol": "nHTR",
+    "mint_token_name": "new HTR (testnet-juliet's HTR on testnet-alpha)"
+  },
+  "issuance": true
+}

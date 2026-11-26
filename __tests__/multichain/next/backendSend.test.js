@@ -73,6 +73,8 @@ function fakeBackend({
   balances = [{ token: NATIVE, referenceable: '100000' }],
   transfers = [{ id: 't-1', amount: '600', status: 'confirming', confirmations: 3, needed: 21 }],
   genesisMs = 0,
+  // What the backend answers a payment it can't prepare: { status, error }.
+  prepareFailure = null,
 } = {}) {
   const calls = [];
   let sendStatus = initialSendStatus;
@@ -120,6 +122,9 @@ function fakeBackend({
     if (path.includes('/history')) return json(200, { history: [] });
     if (path.split('?')[0] === '/v1/tokens') return json(200, { tokens: [] });
     if (method === 'POST' && path.endsWith('/sends')) {
+      if (prepareFailure) {
+        return json(prepareFailure.status, { error: prepareFailure.error });
+      }
       return json(200, request ?? {
         id: 'send-1',
         unsigned_tx: CASE.unsigned_tx,
@@ -436,6 +441,29 @@ describe('what the user is told when the backend can\'t prepare a payment', () =
   it('tells a payment of the native token to send a little less', () => {
     expect(prepareError(feeLeak, { tokenId: NATIVE, nativeTokenId: NATIVE }).code)
       .toBe('amount-visible');
+  });
+
+  describe('from the client, on a network whose fees are paid in USDT', () => {
+    let client = null;
+    afterEach(() => {
+      client?.disconnect();
+      client = null;
+    });
+
+    it('names USDT when the fee would make the change public', async () => {
+      const backend = fakeBackend({
+        balances: [
+          { token: NATIVE, referenceable: '100000000' },
+          { token: OTHER_TOKEN, referenceable: '1000' },
+        ],
+        prepareFailure: { status: 422, error: feeLeak.message },
+      });
+      client = await connected(backend);
+      const refused = client.send({ tokenId: OTHER_TOKEN, to: PAYMENT.address, amount: 10n });
+      await expect(refused).rejects.toMatchObject({ code: 'fee-amount-visible' });
+      await expect(refused).rejects.toThrow('Send some USDT to your own Hathor Next address');
+      expect(backend.signatures()).toBeNull();
+    });
   });
 
   it("tells a payment in another token to send less when that token's amount would show", () => {

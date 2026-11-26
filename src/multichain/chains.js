@@ -142,16 +142,6 @@ export function otherChain(chain) {
   return chain === CHAIN.HATHOR ? CHAIN.HATHOR_NEXT : CHAIN.HATHOR;
 }
 
-/**
- * The side chains, by the network name the fullnode reports. A side chain is pinned here once its
- * network is deployed, with what the app needs to reach it (the shape devBackendSideChain builds):
- * its backend, its network id, native token, service view key and wire format, the app's ceiling
- * on a payment's fee, its explorer or null, the tokens the bridge carries by their id on each
- * chain (each shows as one row, with its balance on both chains), the mint scale, the ways the
- * bridge transfers and the transfer's pinned values. A network whose node reports a name others
- * share is pinned by its node instead (SIDE_CHAINS_BY_NODE). Both come after the configs they pin.
- */
-
 /** The most a payment may cost on a backend set up for local testing: 0.1 of the native token. */
 const DEV_MAX_SEND_FEE = '10000000';
 
@@ -253,7 +243,15 @@ const TESTNET_ALPHA_HATHOR_NEXT = {
   explorerUrl: TESTNET_ALPHA_EXPLORER_URL,
 };
 
-/** The side chains pinned by the name of their Hathor Network. */
+/**
+ * The side chains, by the network name the fullnode reports. A side chain is pinned here once its
+ * network is deployed, with what the app needs to reach it (the shape devBackendSideChain builds):
+ * its backend, its network id, native token, service view key and wire format, the app's ceiling
+ * on a payment's fee, its explorer or null, the tokens the bridge carries by their id on each
+ * chain (each shows as one row, with its balance on both chains), the mint scale, the ways the
+ * bridge transfers and the transfer's pinned values. A network whose node reports a name others
+ * share is pinned by its node instead (SIDE_CHAINS_BY_NODE).
+ */
 const SIDE_CHAINS = {
   [FULL_NETWORK_NEXT_TESTNET]: TESTNET_ALPHA_HATHOR_NEXT,
 };

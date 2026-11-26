@@ -165,6 +165,9 @@ function readAmount(value) {
   return BigInt(value);
 }
 
+/** What pinMismatch names a backend that serves no transfer block, where the app transfers. */
+export const TRANSFER_PIN = 'transfer';
+
 /**
  * Whether the backend's pinned values are the ones this app was built with. The backend is
  * trusted to build transactions only for the network the app expects: a backend on any other
@@ -196,9 +199,12 @@ export function pinMismatch(config, remote) {
     pins.push(['amount_width', config.amountWidth, next.amount_width]);
   }
   // The token a transfer mints, which its rows and the balance it arrives in are read in. A
-  // backend that names none mints the native token.
+  // backend that names none mints the native token. One that serves no transfer block transfers
+  // nothing: the app transfers by its own pins, so HTR it burned to the transfer address would
+  // never arrive. That backend is refused too, under its own name (TRANSFER_PIN).
   const minted = config.tokenMap?.find((pair) => pair.hathor === '00')?.next;
   if (minted) {
+    pins.push([TRANSFER_PIN, true, Boolean(remote?.transfer)]);
     pins.push(['transfer.mint_token', minted, remote?.transfer?.mint_token ?? next.native_token]);
   }
   const wrong = pins.find(([, mine, theirs]) => mine !== theirs);
@@ -981,7 +987,9 @@ export function createBackendNextClient({
         current();
         const wrong = pinMismatch(config, remote);
         if (wrong) {
-          log.error(`The Hathor Next backend is on another network: ${wrong} differs.`);
+          log.error(wrong === TRANSFER_PIN
+            ? 'The Hathor Next backend serves no transfer block: it transfers nothing, and this app transfers HTR to it.'
+            : `The Hathor Next backend is on another network: ${wrong} differs.`);
           throw new NextClientError(NEXT_CLIENT_ERROR.NETWORK_CHANGED);
         }
         // The app holds its own ceiling on a payment's fee: without one pinned for the network,

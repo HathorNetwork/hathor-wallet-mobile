@@ -50,7 +50,8 @@ export function isUsableBackendConfig(pins) {
       && HEX_64.test(transfer.destination_network ?? '')
       && Number.isSafeInteger(transfer.confirmations) && transfer.confirmations >= 0
       && Number.isSafeInteger(transfer.mean_block_ms) && transfer.mean_block_ms > 0
-      && (transfer.mint_token === undefined || HEX_64.test(transfer.mint_token))
+      // None named (JSON writes that as null too): the network mints its native token.
+      && (transfer.mint_token == null || HEX_64.test(transfer.mint_token))
     ));
 }
 
