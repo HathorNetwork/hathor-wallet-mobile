@@ -220,6 +220,8 @@ describe('the token form', () => {
 
   test('takes a well-formed token', () => {
     expect(tokenFormError({ name: 'App Test Token', symbol: 'ATT', amount: 1n })).toBeNull();
+    // A name that only starts like HTR's is no native token's.
+    expect(tokenFormError({ name: 'Hathor Fan Club', symbol: 'HFC', amount: 1n })).toBeNull();
   });
 
   test.each([
@@ -227,6 +229,13 @@ describe('the token form', () => {
     ["HTR's name", { name: 'Hathor', symbol: 'ATT', amount: 1n }],
     ["HTR's name in other letters", { name: 'HATHOR', symbol: 'ATT', amount: 1n }],
     ["the side chain native token's symbol", { name: 'Token', symbol: 'NHTR', amount: 1n }],
+    ["HTR's symbol as a name", { name: 'HTR', symbol: 'ATT', amount: 1n }],
+    ["the side chain native token's symbol as a name", { name: 'nhtr', symbol: 'ATT', amount: 1n }],
+    ["the side chain native token's name, spaced otherwise", { name: 'newHTR', symbol: 'ATT', amount: 1n }],
+    ["HTR's name with a space inside", { name: 'Ha thor', symbol: 'ATT', amount: 1n }],
+    ["HTR's name with an unseen character", { name: 'Hat\u200Bhor', symbol: 'ATT', amount: 1n }],
+    ["HTR's name with an unseen tag character", { name: 'Hath\u{E0061}or', symbol: 'ATT', amount: 1n }],
+    ["HTR's name in wide letters", { name: '\uFF28\uFF41\uFF54\uFF48\uFF4F\uFF52', symbol: 'ATT', amount: 1n }],
   ])('refuses %s, so the token can\'t pass for a native one', (_, form) => {
     expect(tokenFormError(form, { name: 'new HTR', symbol: 'NHTR' }))
       .toContain("native token's name or symbol");

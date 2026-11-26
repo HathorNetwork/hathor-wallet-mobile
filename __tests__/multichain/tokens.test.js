@@ -8,7 +8,7 @@
 import { describe, test, expect } from '@jest/globals';
 import { CHAIN } from '../../src/multichain/chains';
 import { nextAmountForDisplay, nextToHathorAmount } from '../../src/multichain/amount';
-import { combinedTokenList } from '../../src/multichain/tokens';
+import { combinedTokenList, nextTokenList } from '../../src/multichain/tokens';
 import { TRANSFER_STATUS } from '../../src/multichain/state';
 
 const HTR = { uid: '00', name: 'Hathor', symbol: 'HTR' };
@@ -109,6 +109,64 @@ describe('the Dashboard list of both chains', () => {
     ]);
     // A token whose symbol no other shares carries its id too.
     expect(rows.find((row) => row.uid === 'next:b3').name).toMatch(/ · b3$/);
+  });
+
+  test("marks HTR and Hathor Next's native token native, and no token named after them", () => {
+    // testnet-alpha: USDT is native there, and a transfer mints HTR as a token of its own.
+    const rows = combinedTokenList({
+      hathorTokens: { '00': HTR, a1: MY_TOKEN },
+      hathorBalances: { '00': ready(100n), a1: ready(100n) },
+      hathorDecimalPlaces: 2,
+      nextTokens: {
+        usdt: { id: 'usdt', name: 'US Dollar Tether', symbol: 'USDT' },
+        nhtr: { id: 'nhtr', name: 'Hathor', symbol: 'HTR' },
+        c9look: { id: 'c9look', name: 'Hathor', symbol: 'HTR', lastActivityAt: 9 },
+        b1: NEXT_TST_A,
+      },
+      nextBalances: {},
+      tokenMap: [{ hathor: '00', next: 'nhtr' }],
+      mintScale: 1000000n,
+      nativeTokenId: 'usdt',
+      transfers: [],
+    });
+    expect(rows.map((row) => [row.uid, row.native])).toEqual([
+      ['00', true],
+      ['a1', false],
+      ['next:usdt', true],
+      ['next:c9look', false],
+      ['next:b1', false],
+    ]);
+  });
+
+  test('marks HTR native where the side chain carries nothing, its row Hathor Network\'s alone', () => {
+    const rows = combinedTokenList({
+      hathorTokens: { '00': HTR, a1: MY_TOKEN },
+      hathorBalances: { '00': ready(100n), a1: ready(100n) },
+      hathorDecimalPlaces: 2,
+      nextTokens: { usdt: { id: 'usdt', name: 'US Dollar Tether', symbol: 'USDT' } },
+      nextBalances: {},
+      tokenMap: [],
+      nativeTokenId: 'usdt',
+      transfers: [],
+    });
+    expect(rows.map((row) => [row.uid, row.chains, row.native])).toEqual([
+      ['00', [CHAIN.HATHOR], true],
+      ['a1', [CHAIN.HATHOR], false],
+      ['next:usdt', [CHAIN.HATHOR_NEXT], true],
+    ]);
+  });
+
+  test("marks Hathor Next's native token and the HTR a transfer mints native in its own list", () => {
+    const rows = nextTokenList({
+      c9look: { id: 'c9look', name: 'Hathor', symbol: 'HTR', lastActivityAt: 9 },
+      nhtr: { id: 'nhtr', name: 'Hathor', symbol: 'HTR' },
+      usdt: { id: 'usdt', name: 'US Dollar Tether', symbol: 'USDT' },
+    }, 'usdt', 'nhtr');
+    expect(rows.map((row) => [row.uid, row.native, row.idTag])).toEqual([
+      ['usdt', true, null],
+      ['nhtr', true, null],
+      ['c9look', false, 'c9look'],
+    ]);
   });
 
   test('gives a list that cuts long names the id apart, and none to the native token', () => {

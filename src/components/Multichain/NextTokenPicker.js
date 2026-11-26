@@ -11,12 +11,14 @@ import { t } from 'ttag';
 import BackdropModal from '../BackdropModal';
 import TokenBox from '../TokenBox';
 import { COLORS } from '../../styles/themes';
+import { NativeTag } from './NativeTag';
 
 /**
  * The token a Hathor Next payment sends: a box with its symbol, as Hathor Network's Send has,
  * which opens a sheet of the tokens the wallet holds on Hathor Next, each with its balance. Token
  * symbols aren't unique on Hathor Next, so each row also names the token, and its short id
- * (idTag) whole after a name cut to the row: a long name never hides it.
+ * (idTag) whole after a name cut to the row: a long name never hides it. A native token, which
+ * has no id there, is marked by a NativeTag.
  *
  * @param {Object} props
  * @param {string} props.tokenId The token picked
@@ -27,6 +29,7 @@ import { COLORS } from '../../styles/themes';
  *   name: string,
  *   plainName?: string,
  *   idTag?: string|null,
+ *   native?: boolean,
  *   balance: string,
  * }[]} props.options
  * @param {Function} props.onChange Called with the id of the token picked
@@ -68,7 +71,10 @@ export const NextTokenPicker = ({ tokenId, symbol, options, onChange }) => {
                 accessibilityState={{ selected: option.id === tokenId }}
               >
                 <View style={styles.rowName}>
-                  <Text style={styles.rowSymbol}>{option.symbol}</Text>
+                  <View style={styles.rowSymbolLine}>
+                    <Text style={styles.rowSymbol}>{option.symbol}</Text>
+                    {option.native && <NativeTag style={styles.nativeTag} />}
+                  </View>
                   {option.idTag ? (
                     <View style={styles.rowTitleLine}>
                       <Text style={[styles.rowTitle, styles.rowTitleName]} numberOfLines={1}>
@@ -126,6 +132,13 @@ const styles = StyleSheet.create({
   rowName: {
     flex: 1,
     marginRight: 12,
+  },
+  rowSymbolLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  nativeTag: {
+    marginLeft: 6,
   },
   rowSymbol: {
     fontSize: 15,

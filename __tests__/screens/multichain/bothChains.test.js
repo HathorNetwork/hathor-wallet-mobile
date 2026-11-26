@@ -46,6 +46,7 @@ import { Dashboard } from '../../../src/screens/Dashboard';
 import NextTokenScreen from '../../../src/screens/Multichain/NextTokenScreen';
 import CopyClipboard from '../../../src/components/CopyClipboard';
 import TokenSelect from '../../../src/components/TokenSelect';
+import { NativeTag } from '../../../src/components/Multichain/NativeTag';
 import { PortalProvider } from '../../../src/components/Portal';
 import { ChainFilter } from '../../../src/components/Multichain/ChainFilter';
 import { MultichainTokenBody } from '../../../src/components/Multichain/MultichainTokenBody';
@@ -165,6 +166,9 @@ describe('the Dashboard with the side chain connected', () => {
     const renderer = await mount(store, <Dashboard />);
     const list = renderer.root.findByType(TokenSelect);
     expect(list.props.tokens.map((row) => row.uid)).toEqual(['00', 'a1', 'next:b1']);
+    // HTR, here Hathor Next's native token too, is the one row marked native.
+    expect(list.props.tokens.filter((row) => row.native).map((row) => row.uid)).toEqual(['00']);
+    expect(renderer.root.findAllByType(NativeTag)).toHaveLength(1);
     const texts = textOf(renderer);
     expect(texts).toEqual(expect.arrayContaining([
       '120.00', '2 chains', ' · 25.00 arriving', 'Hathor Network', 'Hathor Next',
@@ -216,6 +220,7 @@ describe('the Dashboard with the side chain connected', () => {
     const list = renderer.root.findByType(TokenSelect);
     expect(Object.keys(list.props.tokens)).toEqual(['00', 'a1']);
     expect(textOf(renderer)).not.toContain('2 chains');
+    expect(renderer.root.findAllByType(NativeTag)).toHaveLength(0);
   });
 });
 

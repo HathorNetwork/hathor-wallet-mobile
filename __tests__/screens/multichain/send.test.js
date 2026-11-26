@@ -32,7 +32,7 @@ jest.mock('../../../src/multichain/bridge', () => require('../../multichain/fake
 
 /* eslint-disable import/first */
 import React from 'react';
-import { Alert, Keyboard, Text, TextInput } from 'react-native';
+import { Alert, Keyboard, Pressable, Text, TextInput } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 import { legacy_createStore as createStore, applyMiddleware } from 'redux';
@@ -53,6 +53,7 @@ import NextSendConfirmScreen from '../../../src/screens/Multichain/NextSendConfi
 import { NextTokenPicker } from '../../../src/components/Multichain/NextTokenPicker';
 import TokenBox from '../../../src/components/TokenBox';
 import BackdropModal from '../../../src/components/BackdropModal';
+import { NativeTag } from '../../../src/components/Multichain/NativeTag';
 import UnifiedQRScanner from '../../../src/screens/UnifiedQRScanner';
 import AmountTextInput from '../../../src/components/AmountTextInput';
 import FeedbackModal from '../../../src/components/FeedbackModal';
@@ -321,18 +322,60 @@ describe('a Hathor Next payment in the HTR a transfer minted, where USDT pays th
     expect(navigation.navigate).not.toHaveBeenCalled();
   });
 
+  async function confirmStep(tokenId) {
+    useNavigation.mockReturnValue({
+      navigate: jest.fn(), goBack: jest.fn(), popToTop: jest.fn(), addListener: () => () => {},
+    });
+    useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS, amount: '100000000', tokenId } });
+    const { store } = makeStore(holding(100000n, {
+      tokens: { [LOOK_ALIKE]: { id: LOOK_ALIKE, name: 'Hathor', symbol: 'HTR' } },
+      balances: { [LOOK_ALIKE]: { status: 'ready', data: { available: 500000000n } } },
+    }));
+    return mount(store, <NextSendConfirmScreen />);
+  }
+
+  test('confirms a payment in the minted HTR as native, without its id, as one in USDT', async () => {
+    for (const [tokenId, symbol] of [[MINTED_HTR, 'HTR'], [USDT, 'USDT']]) {
+      // eslint-disable-next-line no-await-in-loop
+      const renderer = await confirmStep(tokenId);
+      expect(textOf(renderer)).toEqual(expect.arrayContaining(['Token', symbol, 'Native']));
+      expect(renderer.root.findAllByType(NativeTag)).toHaveLength(1);
+      expect(textOf(renderer)).not.toContain('Token id');
+      expect(textOf(renderer).join(' ')).not.toContain(tokenId);
+      // eslint-disable-next-line no-await-in-loop
+      await act(async () => { renderer.unmount(); });
+      mounted = null;
+    }
+  });
+
+  test('confirms a payment in a token named after HTR with its full id, never as native', async () => {
+    const renderer = await confirmStep(LOOK_ALIKE);
+    expect(textOf(renderer)).toEqual(expect.arrayContaining(['Token id', LOOK_ALIKE]));
+    expect(renderer.root.findAllByType(NativeTag)).toHaveLength(0);
+  });
+
   test('lists the minted HTR right after USDT, without an id, and a look-alike with its id', async () => {
     const { renderer } = await amountStep(100000000n, 300n, {
       // The look-alike moved last, which would otherwise put it first.
       tokens: { [LOOK_ALIKE]: { id: LOOK_ALIKE, name: 'Hathor', symbol: 'HTR', lastActivityAt: 9 } },
       balances: { [LOOK_ALIKE]: { status: 'ready', data: { available: 500000000n } } },
     });
-    const { options } = renderer.root.findByType(NextTokenPicker).props;
-    expect(options.map(({ id, name, idTag }) => [id, name, idTag])).toEqual([
-      [USDT, 'US Dollar Tether', null],
-      [MINTED_HTR, 'Hathor', null],
-      [LOOK_ALIKE, 'Hathor · fa11fa', 'fa11fa'],
-    ]);
+    const picker = renderer.root.findByType(NextTokenPicker);
+    expect(picker.props.options.map(({ id, name, idTag, native }) => [id, name, idTag, native]))
+      .toEqual([
+        [USDT, 'US Dollar Tether', null, true],
+        [MINTED_HTR, 'Hathor', null, true],
+        [LOOK_ALIKE, 'Hathor · fa11fa', 'fa11fa', false],
+      ]);
+    // The sheet marks the two native tokens, and only them.
+    await act(async () => { picker.findByType(TokenBox).props.onPress(); });
+    // BackdropModal shows its content 100 ms after it opens.
+    await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 150); }); });
+    expect(picker.findByType(BackdropModal).props.visible).toBe(true);
+    // The sheet's rows, which it draws through the portal: each says whether it is the one picked.
+    const rows = renderer.root.findAll((node) => node.type === Pressable
+      && node.props.accessibilityState?.selected !== undefined);
+    expect(rows.map((row) => row.findAllByType(NativeTag).length)).toEqual([1, 1, 0]);
   });
 });
 
@@ -376,7 +419,13 @@ describe('a Hathor Next payment in another token', () => {
     const { renderer, navigation, pickAtt, next } = await amountStep();
     expect(renderer.root.findByType(NextTokenPicker).props.options).toEqual([
       {
-        id: '00', symbol: 'HTR', name: 'Hathor', plainName: 'Hathor', idTag: null, balance: '3.00',
+        id: '00',
+        symbol: 'HTR',
+        name: 'Hathor',
+        plainName: 'Hathor',
+        idTag: null,
+        native: true,
+        balance: '3.00',
       },
       {
         id: ATT,
@@ -384,6 +433,7 @@ describe('a Hathor Next payment in another token', () => {
         name: 'App Test Token · c230a6',
         plainName: 'App Test Token',
         idTag: 'c230a6',
+        native: false,
         balance: '250.00',
       },
     ]);

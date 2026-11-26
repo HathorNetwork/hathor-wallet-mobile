@@ -16,6 +16,7 @@ import Spinner from '../../components/Spinner';
 import OfflineBar from '../../components/OfflineBar';
 import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
 import { PrivacyWarningIcon } from '../../components/Multichain/PrivacyWarningIcon';
+import { NativeTag } from '../../components/Multichain/NativeTag';
 import { multichainNextSendRequested, multichainNextSendReset } from '../../actions';
 import { renderNextValue } from '../../multichain/amount';
 import {
@@ -31,6 +32,7 @@ import {
   unconfirmedBody,
   verdictLead,
 } from '../../multichain/content';
+import { mintedTokenId } from '../../multichain/chains';
 import { selectSideChainConfig } from '../../multichain/gating';
 import { NEXT_CLIENT_ERROR } from '../../multichain/nextClientErrors';
 import { OPERATION_STATUS, SEND_IN_FLIGHT } from '../../multichain/state';
@@ -99,6 +101,8 @@ export default function NextSendConfirmScreen() {
   // What the payment sends: the native token unless the amount step picked another.
   const tokenId = params.tokenId ?? config?.nativeTokenId;
   const native = tokenId === config?.nativeTokenId;
+  // The native token and the HTR a transfer mints: the app knows both by their pinned ids.
+  const pinned = native || tokenId === mintedTokenId(config);
   const tokenSymbol = useSelector((state) => state.multichain.next.tokens[tokenId]?.symbol);
   const send = useSelector((state) => state.multichain.send);
   const online = useSelector((state) => state.multichain.next.online);
@@ -297,8 +301,18 @@ export default function NextSendConfirmScreen() {
         <Text style={styles.amount}>{render(amount)}</Text>
         <Text style={styles.label}>{t`Address`}</Text>
         <Text style={styles.address} selectable>{address}</Text>
-        {/* Anyone can name a token anything on Hathor Next: its id is what tells it apart. */}
-        {!native && (
+        {/* Anyone can name a token anything on Hathor Next: its id is what tells it apart, but
+            for the two native ones the app knows by their pinned ids, as the token list shows
+            them. */}
+        {pinned ? (
+          <>
+            <Text style={styles.label}>{t`Token`}</Text>
+            <View style={styles.tokenLine}>
+              <Text style={styles.token}>{symbol}</Text>
+              <NativeTag style={styles.nativeTag} />
+            </View>
+          </>
+        ) : (
           <>
             <Text style={styles.label}>{t`Token id`}</Text>
             <Text style={styles.address} selectable>{tokenId}</Text>
@@ -361,6 +375,19 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: COLORS.textColor,
+  },
+  tokenLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  token: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: COLORS.textColor,
+  },
+  nativeTag: {
+    marginLeft: 6,
   },
   address: {
     marginTop: 6,

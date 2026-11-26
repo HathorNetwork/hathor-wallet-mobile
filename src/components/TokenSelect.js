@@ -20,6 +20,52 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from './HathorFlatList';
 import { TokenChains } from './Multichain/TokenChains';
+import { NativeTag } from './Multichain/NativeTag';
+
+/**
+ * An item's name: cut to the row, with its id tag or its NativeTag after it when it has one.
+ *
+ * @param {Object} item
+ */
+const nameLine = (item) => {
+  if (item.idTag) {
+    return (
+      <View style={styles.nameRow}>
+        <Text
+          style={[styles.nameText, styles.nameShrink]}
+          numberOfLines={1}
+          ellipsizeMode='tail'
+        >
+          {item.plainName}
+        </Text>
+        <Text style={styles.nameText}>{` · ${item.idTag}`}</Text>
+      </View>
+    );
+  }
+  if (item.native) {
+    return (
+      <View style={styles.nameRow}>
+        <Text
+          style={[styles.nameText, styles.nameShrink]}
+          numberOfLines={1}
+          ellipsizeMode='tail'
+        >
+          {item.name}
+        </Text>
+        <NativeTag style={styles.nativeTag} />
+      </View>
+    );
+  }
+  return (
+    <Text
+      style={styles.nameText}
+      numberOfLines={1}
+      ellipsizeMode='tail'
+    >
+      {item.name}
+    </Text>
+  );
+};
 
 /**
  * @typedef TokenBalance
@@ -47,7 +93,8 @@ import { TokenChains } from './Multichain/TokenChains';
  *
  * An item with `chains` (the Dashboard's list of both chains) shows them under its name. An item
  * with `idTag` (a Hathor Next token, whose name anyone may choose) shows its name cut and the tag
- * whole after it, so a long name never hides the id.
+ * whole after it, so a long name never hides the id. An item marked `native` (HTR, and Hathor
+ * Next's native token) shows a NativeTag after its name.
  */
 const TokenSelect = (props) => {
   const tokens = Object.values(props.tokens);
@@ -68,26 +115,7 @@ const TokenSelect = (props) => {
         <View style={styles.itemWrapper}>
           <TokenAvatar uid={item.uid} symbol={item.symbol} size={40} />
           <View style={styles.itemCenterWrapper}>
-            {item.idTag ? (
-              <View style={styles.nameRow}>
-                <Text
-                  style={[styles.nameText, styles.nameShrink]}
-                  numberOfLines={1}
-                  ellipsizeMode='tail'
-                >
-                  {item.plainName}
-                </Text>
-                <Text style={styles.nameText}>{` · ${item.idTag}`}</Text>
-              </View>
-            ) : (
-              <Text
-                style={styles.nameText}
-                numberOfLines={1}
-                ellipsizeMode='tail'
-              >
-                {item.name}
-              </Text>
-            )}
+            {nameLine(item)}
             {item.chains && (
               <TokenChains
                 chains={item.chains}
@@ -175,6 +203,9 @@ const styles = StyleSheet.create({
   },
   nameShrink: {
     flexShrink: 1,
+  },
+  nativeTag: {
+    marginLeft: 6,
   },
   rightSymbolText: {
     fontSize: 13,
