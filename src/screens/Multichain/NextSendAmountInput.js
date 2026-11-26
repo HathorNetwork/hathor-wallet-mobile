@@ -123,9 +123,9 @@ export default function NextSendAmountInput() {
   };
 
   // What the user is told when Hathor Next doesn't have the amount: Hathor Network may, for the
-  // token the bridge carries.
+  // token the bridge carries. The fee is the native token's: it adds to the amount only there.
   const adviseShortBalance = () => {
-    const mapped = native && config?.tokenMap?.some((pair) => pair.next === nativeTokenId);
+    const mapped = config?.tokenMap?.some((pair) => pair.next === tokenId);
     if (!mapped) {
       return null;
     }
@@ -137,7 +137,7 @@ export default function NextSendAmountInput() {
     return shortBalanceAdvice({
       chain: CHAIN.HATHOR_NEXT,
       amount,
-      fee,
+      fee: native ? fee : 0n,
       available,
       otherAvailable: hathorAvailable,
       config,

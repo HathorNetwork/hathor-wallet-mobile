@@ -82,9 +82,14 @@ export const NEXT_CLIENT_ERROR = {
  * What the user is told about a client error.
  *
  * @param {string} code One of NEXT_CLIENT_ERROR
+ * @param {{ feeSymbol?: string }} [details] The symbol of the token that pays the network's fees,
+ *   its native token
  * @returns {string}
  */
-export function nextClientErrorMessage(code) {
+export function nextClientErrorMessage(code, { feeSymbol = 'HTR' } = {}) {
+  // Each placeholder has a name of its own: ttag can't translate a message that repeats one.
+  const changeSymbol = feeSymbol;
+  const sendSymbol = feeSymbol;
   switch (code) {
     case NEXT_CLIENT_ERROR.OFFLINE:
       return t`No internet connection`;
@@ -102,7 +107,7 @@ export function nextClientErrorMessage(code) {
     case NEXT_CLIENT_ERROR.AMOUNT_VISIBLE:
       return t`Sending all of these funds would make the amount public on Hathor Next. Send a little less, so some comes back to you as change.`;
     case NEXT_CLIENT_ERROR.FEE_AMOUNT_VISIBLE:
-      return t`The network fee would come from HTR whose amount is already public, so the HTR you'd get back would be public on Hathor Next too. Send some HTR to your own Hathor Next address first, then try again.`;
+      return t`The network fee would come from ${feeSymbol} whose amount is already public, so the ${changeSymbol} you'd get back would be public on Hathor Next too. Send some ${sendSymbol} to your own Hathor Next address first, then try again.`;
     case NEXT_CLIENT_ERROR.EARLIER_PENDING:
       return t`An earlier payment from these funds hasn't settled yet, so it was sent again. Try this payment once it settles.`;
     case NEXT_CLIENT_ERROR.TRANSFER_BAD_ADDRESS:
@@ -124,7 +129,7 @@ export function nextClientErrorMessage(code) {
     case NEXT_CLIENT_ERROR.TOKEN_REFUSED:
       return t`Hathor Next prepared a different token than the one you approved, so nothing was signed or created.`;
     case NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS:
-      return t`Hathor Next couldn't pay this token's fee from one of your HTR coins, and paying it from several would make them public together, so nothing was signed or created. Send some HTR to your own Hathor Next address first, so one coin can pay the fee, then try again.`;
+      return t`Hathor Next couldn't pay this token's fee from one of your ${feeSymbol} coins, and paying it from several would make them public together, so nothing was signed or created. Send some ${sendSymbol} to your own Hathor Next address first, so one coin can pay the fee, then try again.`;
     case NEXT_CLIENT_ERROR.TOKEN_DECLINED:
       return t`The token wasn't created. Nothing was signed and no fee was paid.`;
     case NEXT_CLIENT_ERROR.TOKEN_REVIEW_EXPIRED:
@@ -145,10 +150,11 @@ export function nextClientErrorMessage(code) {
 export class NextClientError extends Error {
   /**
    * @param {string} code One of NEXT_CLIENT_ERROR
-   * @param {Object} [details] What the caller needs to recover, e.g. a transfer's id
+   * @param {Object} [details] What the caller needs to recover, e.g. a transfer's id, or what
+   *   its message names: the fee's token's symbol (feeSymbol)
    */
   constructor(code, details = {}) {
-    super(nextClientErrorMessage(code));
+    super(nextClientErrorMessage(code, details));
     this.name = 'NextClientError';
     this.code = code;
     Object.assign(this, details);

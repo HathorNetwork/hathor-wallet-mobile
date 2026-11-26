@@ -20,7 +20,7 @@ import {
   MULTICHAIN_FEATURE_TOGGLE,
   MULTICHAIN_NETWORK_PRESET_FEATURE_TOGGLE,
   MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE,
-  PRE_SETTINGS_NEXT_DEVNET,
+  PRE_SETTINGS_NEXT_TESTNET,
 } from '../../src/constants';
 import { canTransfer, CHAIN, getSideChainConfig, otherChain } from '../../src/multichain/chains';
 import {
@@ -63,15 +63,17 @@ const state = ({
   },
 });
 
-describe('the Hathor Next Devnet preset', () => {
-  test("names devnet-alpha's hathor-core node and tx mining, with no wallet-service", () => {
-    expect(PRE_SETTINGS_NEXT_DEVNET).toMatchObject({
-      network: 'privatenet',
-      fullNetwork: 'privatenet',
-      nodeUrl: 'https://legacy-node.devnet-alpha.samba.hathor.network/v1a/',
-      txMiningServiceUrl: 'https://tx-mining.devnet-alpha.samba.hathor.network/',
+describe('the Hathor Next Testnet preset', () => {
+  test("names testnet-juliet's node, tx mining, wallet-service and explorer", () => {
+    expect(PRE_SETTINGS_NEXT_TESTNET).toMatchObject({
+      network: 'testnet',
+      fullNetwork: 'testnet-juliet',
+      nodeUrl: 'https://legacy-node.testnet-alpha.samba.hathor.network/v1a/',
+      txMiningServiceUrl: 'https://tx-mining.testnet-alpha.samba.hathor.network/',
+      walletServiceUrl: 'https://legacy-wallet-service.testnet-alpha.samba.hathor.network/',
+      walletServiceWsUrl: 'wss://legacy-wallet-service-ws.testnet-alpha.samba.hathor.network/',
+      explorerUrl: 'https://legacy-explorer.testnet-alpha.samba.hathor.network/',
     });
-    expect(PRE_SETTINGS_NEXT_DEVNET.walletServiceUrl).toBeUndefined();
   });
 
   test('shows only with its own flag', () => {
@@ -82,39 +84,42 @@ describe('the Hathor Next Devnet preset', () => {
   });
 });
 
-describe("devnet-alpha's side chain", () => {
-  const DEVNET_NODE = PRE_SETTINGS_NEXT_DEVNET.nodeUrl;
-  const NHTR = 'e5bcdd06b7d2b896fe194e09b55d687737af3767407d9efc957ac0ea84f1e54c';
+describe("testnet-alpha's side chain", () => {
+  const TESTNET_NODE = PRE_SETTINGS_NEXT_TESTNET.nodeUrl;
+  const USDT = 'd957d448377de9c9d313d545398677cd6df99ac051dcf2afcd1b38dcb22f92d8';
+  const NHTR = '664cf15052b6f66f1f06ac32189381a27f1bfe1eda2f77cea4fde760b5884d33';
 
   test("is its backend's, with the values the app pins", () => {
-    const config = actualChains.getSideChainConfig('privatenet', null, DEVNET_NODE);
+    const config = actualChains.getSideChainConfig('testnet-juliet', null, TESTNET_NODE);
     expect(config).toMatchObject({
       client: 'backend',
-      backendUrl: 'https://wallet-backend.devnet-alpha.samba.hathor.network',
-      nextNetworkId: 1003,
-      nativeTokenId: NHTR,
-      serviceViewPub: 'b292d1f347dd954a23814d66d60adc6848d89e97f09be952bb2f5f9025fe2e0e',
+      backendUrl: 'https://wallet-backend.testnet-alpha.samba.hathor.network',
+      nextNetworkId: 1004,
+      nativeTokenId: USDT,
+      serviceViewPub: 'ee29df21a6c64fe43fc8ec6cd7b8c1ecfc4c89eec9370086129e367693bbf400',
       wireFormat: 'v3',
+      explorerUrl: 'https://samba.explorer.hathor.dev/',
     });
     expect(config.transfer).toMatchObject({
       transfer_address: 'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL',
       confirmations: 21,
-      hathor_network: 'privatenet',
+      hathor_network: 'testnet-juliet',
+      mint_token: NHTR,
     });
     expect(BigInt(config.maxSendFee)).toBeGreaterThan(0n);
   });
 
-  test('carries HTR to nHTR as one token, HTR on both chains', () => {
-    const config = actualChains.getSideChainConfig('privatenet', null, DEVNET_NODE);
+  test('carries HTR to nHTR as one token, HTR on both chains, and USDT apart', () => {
+    const config = actualChains.getSideChainConfig('testnet-juliet', null, TESTNET_NODE);
     expect(config.tokenMap).toEqual([{ hathor: '00', next: NHTR }]);
-    expect(config.nativeTokenSymbol).toBe('HTR');
+    expect(config.nativeTokenSymbol).toBe('USDT');
     expect(actualChains.transferReceiveSymbol(config, 'HTR')).toBe('HTR');
     expect(canTransfer(config, CHAIN.HATHOR, CHAIN.HATHOR_NEXT)).toBe(true);
     expect(actualChains.isTransferAddress('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL', config)).toBe(true);
   });
 
   test('refuses the P2SH address of a transfer address\'s hash too', () => {
-    const net = new Network('privatenet');
+    const net = new Network('testnet');
     const hash = new Address('WScTqhLsBQnz3HMdQqh66JBgWqb255XffL', { network: net })
       .decode().subarray(1, 21);
     const p2sh = helpersUtils.encodeAddressP2SH(hash, net).base58;
@@ -122,12 +127,16 @@ describe("devnet-alpha's side chain", () => {
     expect(actualChains.isTransferAddress(p2sh, null)).toBe(true);
   });
 
-  test('is known by the node, with or without its trailing slash', () => {
-    expect(actualChains.getSideChainConfig('privatenet', null, DEVNET_NODE.replace(/\/$/, '')))
-      .toMatchObject({ client: 'backend' });
+  test('is known by the name its node reports, through any node', () => {
+    expect(actualChains.getSideChainConfig('testnet-juliet', null, 'http://192.168.0.10:8080/v1a/'))
+      .toMatchObject({ client: 'backend', nextNetworkId: 1004 });
+    expect(actualChains.getSideChainConfig('testnet-juliet', null, null))
+      .toMatchObject({ client: 'backend', nextNetworkId: 1004 });
   });
 
-  test("is no other privatenet's", () => {
+  test("is no other network's, through its node or any other", () => {
+    expect(actualChains.getSideChainConfig('privatenet', null, TESTNET_NODE)).toBeNull();
+    expect(actualChains.getSideChainConfig('testnet-india', null, TESTNET_NODE)).toBeNull();
     expect(actualChains.getSideChainConfig('privatenet', null, 'http://192.168.0.10:8080/v1a/'))
       .toBeNull();
   });
@@ -137,21 +146,21 @@ describe("devnet-alpha's side chain", () => {
       url: 'http://192.168.0.10:8930',
       pins: { next: { network_id: 1777, native_token: '00' }, transfer: null },
     };
-    expect(actualChains.getSideChainConfig('privatenet', devBackend, DEVNET_NODE))
+    expect(actualChains.getSideChainConfig('testnet-juliet', devBackend, TESTNET_NODE))
       .toMatchObject({ backendUrl: 'http://192.168.0.10:8930' });
   });
 
   test('waits, like every side chain, for the wallet to know its network', () => {
-    expect(actualChains.getSideChainConfig(null, null, DEVNET_NODE)).toBeNull();
+    expect(actualChains.getSideChainConfig(null, null, TESTNET_NODE)).toBeNull();
   });
 
   test('shows "Connect to side chain" there with the multichain flag alone', () => {
-    const devnet = {
-      ...state({ network: 'privatenet', connected: false }),
-      networkSettings: PRE_SETTINGS_NEXT_DEVNET,
+    const testnet = {
+      ...state({ network: 'testnet-juliet', connected: false }),
+      networkSettings: PRE_SETTINGS_NEXT_TESTNET,
     };
-    expect(isSideChainAvailable(devnet)).toBe(true);
-    expect(isSideChainAvailable({ ...devnet, featureToggles: {} })).toBe(false);
+    expect(isSideChainAvailable(testnet)).toBe(true);
+    expect(isSideChainAvailable({ ...testnet, featureToggles: {} })).toBe(false);
   });
 });
 
@@ -378,41 +387,41 @@ describe('the token map', () => {
 });
 
 describe('a side chain on the real pins', () => {
-  const DEVNET = 'https://legacy-node.devnet-alpha.samba.hathor.network/v1a/';
+  const TESTNET = 'https://legacy-node.testnet-alpha.samba.hathor.network/v1a/';
   const local = { url: 'http://192.168.0.10:8930', pins: { next: {}, transfer: null } };
 
-  test('is none on mainnet, even with the devnet\'s node or a backend for local testing', () => {
-    // A mainnet wallet service names the network mainnet; the node was pointed at the devnet.
-    expect(actualChains.getSideChainConfig('mainnet', null, DEVNET)).toBeNull();
-    expect(actualChains.getSideChainConfig('mainnet', local, DEVNET)).toBeNull();
+  test('is none on mainnet, even with the testnet\'s node or a backend for local testing', () => {
+    // A mainnet wallet service names the network mainnet; the node was pointed at the testnet.
+    expect(actualChains.getSideChainConfig('mainnet', null, TESTNET)).toBeNull();
+    expect(actualChains.getSideChainConfig('mainnet', local, TESTNET)).toBeNull();
     expect(actualChains.getSideChainConfig('mainnet', local, null)).toBeNull();
   });
 
   test('is none on a network other than the one it names', () => {
-    expect(actualChains.getSideChainConfig('privatenet', null, DEVNET)).not.toBeNull();
-    expect(actualChains.getSideChainConfig('testnet', null, DEVNET)).toBeNull();
+    expect(actualChains.getSideChainConfig('testnet-juliet', null, TESTNET)).not.toBeNull();
+    expect(actualChains.getSideChainConfig('testnet', null, TESTNET)).toBeNull();
   });
 
   test('refuses, in its place, a backend for local testing that passes as one holding value', () => {
-    // devnet-alpha's own values, given by a backend set for local testing.
+    // testnet-alpha's own values, given by a backend set for local testing.
     const devBackend = () => ({
       url: 'http://192.168.0.10:8930',
       pins: {
         next: {
-          network_id: 1003,
-          native_token: 'e5bcdd06b7d2b896fe194e09b55d687737af3767407d9efc957ac0ea84f1e54c',
-          service_view_pub: 'b292d1f347dd954a23814d66d60adc6848d89e97f09be952bb2f5f9025fe2e0e',
+          network_id: 1004,
+          native_token: 'd957d448377de9c9d313d545398677cd6df99ac051dcf2afcd1b38dcb22f92d8',
+          service_view_pub: 'ee29df21a6c64fe43fc8ec6cd7b8c1ecfc4c89eec9370086129e367693bbf400',
           wire_format: 'v3',
         },
         transfer: null,
       },
     });
-    expect(actualChains.getSideChainConfig('privatenet', devBackend(), DEVNET)).not.toBeNull();
-    // Were devnet-alpha to hold value, that backend would be no side chain at all.
-    const pinned = actualChains.nodeSideChain(DEVNET);
+    expect(actualChains.getSideChainConfig('testnet-juliet', devBackend(), TESTNET)).not.toBeNull();
+    // Were testnet-alpha to hold value, that backend would be no side chain at all.
+    const pinned = actualChains.getSideChainConfig('testnet-juliet', null, TESTNET);
     pinned.holdsValue = true;
     try {
-      expect(actualChains.getSideChainConfig('privatenet', devBackend(), DEVNET)).toBeNull();
+      expect(actualChains.getSideChainConfig('testnet-juliet', devBackend(), TESTNET)).toBeNull();
     } finally {
       pinned.holdsValue = false;
     }

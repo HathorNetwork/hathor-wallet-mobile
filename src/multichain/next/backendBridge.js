@@ -9,7 +9,7 @@ import { TxNotFoundError } from '@hathor/wallet-lib/lib/errors';
 import { logger } from '../../logger';
 import { nextAddressError, normalizeNextAddress, sameNextAddress } from '../address';
 import { mintScaleOf } from '../amount';
-import { CHAIN } from '../chains';
+import { CHAIN, mintedTokenId } from '../chains';
 import { NEXT_CLIENT_ERROR, NextClientError } from '../nextClientErrors';
 import { TRANSFER_STATUS } from '../state';
 import {
@@ -29,7 +29,8 @@ const log = logger('multichain-backend-bridge');
  * The bridge to Hathor Next through the Hathor Next backend: Hathor Network's HTR moves to an
  * address on Hathor Next by a burn the backend builds and this wallet checks (burnCheck.js) and
  * signs with its own Hathor Network keys. The minted HTR arrives at the address the burn names,
- * this wallet's own or anyone's, as Hathor Next's native token, at the network's pinned scale.
+ * this wallet's own or anyone's, as the token the network mints for it (its native token, or a
+ * token of its own), at the network's pinned scale.
  * Its interface is the bridge's (bridge.js).
  */
 
@@ -108,7 +109,7 @@ export function recordOf(status, config, ownAddress, own = null) {
     from: CHAIN.HATHOR,
     to: CHAIN.HATHOR_NEXT,
     hathorTokenId: NATIVE_HTR,
-    nextTokenId: config.nativeTokenId,
+    nextTokenId: mintedTokenId(config),
     amount,
     receiveAmount: (BigInt(amount) * mintScaleOf(config)).toString(),
     bridgeFee: '0',
@@ -271,7 +272,7 @@ export function createBackendBridge(config, { wallet, network, client }) {
   };
 
   return {
-    tokenMap: [{ hathor: NATIVE_HTR, next: config.nativeTokenId }],
+    tokenMap: [{ hathor: NATIVE_HTR, next: mintedTokenId(config) }],
     directions: config.directions,
 
     /**

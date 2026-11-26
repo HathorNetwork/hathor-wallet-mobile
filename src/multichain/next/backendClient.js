@@ -195,6 +195,12 @@ export function pinMismatch(config, remote) {
   if (config.amountWidth) {
     pins.push(['amount_width', config.amountWidth, next.amount_width]);
   }
+  // The token a transfer mints, which its rows and the balance it arrives in are read in. A
+  // backend that names none mints the native token.
+  const minted = config.tokenMap?.find((pair) => pair.hathor === '00')?.next;
+  if (minted) {
+    pins.push(['transfer.mint_token', minted, remote?.transfer?.mint_token ?? next.native_token]);
+  }
   const wrong = pins.find(([, mine, theirs]) => mine !== theirs);
   return wrong ? wrong[0] : null;
 }
@@ -268,8 +274,8 @@ export function rowsOfLine(line, timing, sent, nativeTokenId) {
  * What the user is told when the backend couldn't prepare a payment.
  *
  * @param {Error} e
- * @param {{ tokenId: string, nativeTokenId: string }} [payment] What the payment sends, and the
- *   network's native token
+ * @param {{ tokenId: string, nativeTokenId: string, feeSymbol?: string }} [payment] What the
+ *   payment sends, and the network's native token, which pays the fee, and its symbol
  * @param {string} [fallback] The error of a refusal no other one names: a payment's, or a token
  *   creation's
  * @returns {Error}
@@ -295,6 +301,7 @@ export function prepareError(e, payment = null, fallback = NEXT_CLIENT_ERROR.PRE
       && leaked === payment.nativeTokenId;
     return new NextClientError(
       feeChange ? NEXT_CLIENT_ERROR.FEE_AMOUNT_VISIBLE : NEXT_CLIENT_ERROR.AMOUNT_VISIBLE,
+      { feeSymbol: payment?.feeSymbol },
     );
   }
   if (e.status === 422 && /insufficient|not enough|funds/i.test(e.message)) {
@@ -1115,12 +1122,15 @@ export function createBackendNextClient({
         last[line.token] = Math.max(last[line.token] ?? 0, at);
       }
       const ids = new Set([...Object.keys(balances), ...Object.keys(last)]);
+      // The HTR a transfer mints as a token of its own is HTR here too, as on Hathor Network.
+      const mintedHtr = config.tokenMap?.find((pair) => pair.hathor === '00')?.next;
       return [...ids].map((id) => {
         const native = id === config.nativeTokenId;
-        const meta = tokenMeta[id] ?? {};
+        const meta = id === mintedHtr && !native ? { name: 'Hathor', symbol: 'HTR' } : (tokenMeta[id] ?? {});
         return {
           id,
-          // The native token's name is the app's own: the token list is anyone's to fill.
+          // The names of the native token and of the minted HTR are the app's own: the token list
+          // is anyone's to fill.
           name: native ? config.nativeTokenName : (meta.name ?? id.slice(0, 8)),
           symbol: native ? config.nativeTokenSymbol : (meta.symbol ?? id.slice(0, 4).toUpperCase()),
           lastActivityAt: last[id] ?? null,
@@ -1225,7 +1235,9 @@ export function createBackendNextClient({
           max_fee: maxFee().toString(),
         }));
       } catch (e) {
-        throw prepareError(e, { tokenId, nativeTokenId: native });
+        throw prepareError(e, {
+          tokenId, nativeTokenId: native, feeSymbol: config.nativeTokenSymbol,
+        });
       }
       const cancel = () => withSession((token) => api.cancelSend(request.id, token))
         .catch((e) => log.error('Could not cancel an unsigned Hathor Next payment.', e));
@@ -1505,8 +1517,11 @@ export function createBackendNextClient({
         log.error(`A Hathor Next token creation was refused before signing: ${e.message}`);
         await cancel();
         await store.release(nonce);
-        return new NextClientError(e instanceof CoinsNotNeededError
-          ? NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS : NEXT_CLIENT_ERROR.TOKEN_REFUSED);
+        return new NextClientError(
+          e instanceof CoinsNotNeededError
+            ? NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS : NEXT_CLIENT_ERROR.TOKEN_REFUSED,
+          { feeSymbol: config.nativeTokenSymbol },
+        );
       };
       // Checked once before it is approved, so the change the user sees is the one they'd sign.
       let reviewed;

@@ -80,7 +80,7 @@ export function getMultichainFeatureToggleAtUnlock(state) {
 }
 
 /**
- * Whether the flag that shows the Hathor Next Devnet preset in Network Settings is on.
+ * Whether the flag that shows the Hathor Next Testnet preset in Network Settings is on.
  *
  * @param {Object} state Redux state
  * @returns {boolean}
@@ -186,7 +186,7 @@ export function isSideChainAvailable(state) {
 /**
  * What "Connect to side chain" is saved under: the network, by the name the fullnode reports.
  * Every privatenet reports the same name, so a privatenet's node is part of it: the side chain
- * turned on for devnet-alpha is not on for another privatenet. The backend for local testing is
+ * turned on for one privatenet is not on for another. The backend for local testing is
  * not: switching to it, or back, keeps the setting. Null until the wallet knows its network.
  *
  * @param {Object} state Redux state

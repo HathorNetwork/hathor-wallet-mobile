@@ -66,7 +66,7 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "This wallet does not support shielded addresses."
 msgstr ""
 
-#: src/multichain/address.js:204 src/multichain/nextClientErrors.js:109
+#: src/multichain/address.js:204 src/multichain/nextClientErrors.js:114
 #: src/utils.js:305
 msgid "Invalid address"
 msgstr "Неправильный адрес"
@@ -83,7 +83,7 @@ msgstr ""
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:280
-#: src/screens/Multichain/NextCreateTokenScreen.js:157 src/utils.js:890
+#: src/screens/Multichain/NextCreateTokenScreen.js:162 src/utils.js:890
 msgid "CREATE TOKEN"
 msgstr "СОЗДАТЬ ТОКЕН"
 
@@ -444,7 +444,7 @@ msgid "Back"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/Multichain/NextCreateTokenScreen.js:98
+#: src/screens/Multichain/NextCreateTokenScreen.js:103
 #: src/screens/Multichain/NextSendAmountInput.js:154
 #: src/screens/SendAmountInput.js:165
 msgid "Invalid amount"
@@ -475,7 +475,7 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421
-#: src/screens/Multichain/NextCreateTokenScreen.js:223
+#: src/screens/Multichain/NextCreateTokenScreen.js:228
 #: src/screens/Multichain/NextSendAmountInput.js:231
 #: src/screens/SendAddressInput.js:224 src/screens/SendAmountInput.js:287
 msgid "Next"
@@ -528,13 +528,13 @@ msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:272
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:284
-#: src/screens/Multichain/NextCreateTokenScreen.js:169
+#: src/screens/Multichain/NextCreateTokenScreen.js:174
 msgid "Token name"
 msgstr "Имя токена"
 
 #: src/screens/CreateTokenConfirm.js:278 src/screens/CreateTokenSymbol.js:71
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:286
-#: src/screens/Multichain/NextCreateTokenScreen.js:181
+#: src/screens/Multichain/NextCreateTokenScreen.js:186
 msgid "Token symbol"
 msgstr "Символ токена"
 
@@ -544,7 +544,7 @@ msgstr "Символ токена"
 msgid "Deposit"
 msgstr "Депозит"
 
-#: src/components/Multichain/TransferDetailsModal.js:129
+#: src/components/Multichain/TransferDetailsModal.js:155
 #: src/components/Shielded/FeeBreakdown.js:70
 #: src/screens/CreateTokenConfirm.js:293
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:245
@@ -1256,7 +1256,7 @@ msgstr ""
 msgid "Transfer between chains"
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:94
+#: src/multichain/nextClientErrors.js:99
 #: src/screens/Multichain/ChainTransferScreen.js:172
 #: src/screens/Multichain/NextSendAmountInput.js:160
 #: src/screens/SendAmountInput.js:170
@@ -1406,7 +1406,7 @@ msgstr ""
 msgid "Transaction summary"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:124
+#: src/components/Multichain/TransferDetailsModal.js:150
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:240
 #: src/screens/Multichain/ChainTransferScreen.js:215
 #: src/screens/SendConfirmScreen.js:647
@@ -1456,12 +1456,12 @@ msgstr "ОТПРАВИТЬ"
 msgid "Scan the QR code"
 msgstr "Сканировать QR-код"
 
-#: src/components/Multichain/DevBackendSettings.js:114
+#: src/components/Multichain/DevBackendSettings.js:116
 #: src/screens/Settings.js:177
 msgid "Enter your 6-digit pin to connect to Hathor Next"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:115
+#: src/components/Multichain/DevBackendSettings.js:117
 #: src/screens/Settings.js:178
 msgid "Connect to Hathor Next"
 msgstr ""
@@ -2011,7 +2011,7 @@ msgid "Transferring to Hathor Next…"
 msgstr ""
 
 #: src/components/AmountInputAccessory.js:105
-#: src/components/Multichain/TransferDetailsModal.js:105
+#: src/components/Multichain/TransferDetailsModal.js:128
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:188
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:211
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:229
@@ -2048,7 +2048,7 @@ msgstr ""
 msgid "To your address"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:127
+#: src/components/Multichain/TransferDetailsModal.js:153
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:244
 #: src/screens/Multichain/ChainTransferScreen.js:273
 msgid "Bridge fee"
@@ -2206,70 +2206,71 @@ msgstr ""
 msgid "Public"
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:66
+#: src/screens/Multichain/NextCreateTokenScreen.js:71
+#, javascript-format
 msgid ""
 "Creating a token is public. Its name, its symbol, the amount you create and "
-"the HTR that comes back to you as change from the fee go on Hathor Next in "
-"the clear, paid openly to your address: anyone who knows your Hathor Next "
-"address can see the tokens you created. You'll see how much HTR that is "
-"before the token is created."
+"the ${ feeSymbol } that comes back to you as change from the fee go on "
+"Hathor Next in the clear, paid openly to your address: anyone who knows your "
+"Hathor Next address can see the tokens you created. You'll see how much $"
+"{ changeSymbol } that is before the token is created."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:73
+#: src/screens/Multichain/NextCreateTokenScreen.js:78
 msgid ""
 "The keys that let you create more of this token, or destroy some, come from "
 "your recovery words: this wallet holds them on any device you restore it to, "
 "and they never leave it. There is nothing more to back up."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:86
+#: src/screens/Multichain/NextCreateTokenScreen.js:91
 msgid ""
 "This is a native token's name or symbol. Choose another, so your token can't "
 "be taken for it."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:89
+#: src/screens/Multichain/NextCreateTokenScreen.js:94
 msgid "Symbols use letters and numbers only."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:92
+#: src/screens/Multichain/NextCreateTokenScreen.js:97
 #, javascript-format
 msgid "A symbol has 2 to ${ MAX_SYMBOL } letters or numbers."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:95
+#: src/screens/Multichain/NextCreateTokenScreen.js:100
 msgid "The name can't start or end with a space, nor be this long."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:101
+#: src/screens/Multichain/NextCreateTokenScreen.js:106
 msgid "That is more than a token can have."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:167
+#: src/screens/Multichain/NextCreateTokenScreen.js:172
 msgid "On Hathor Next"
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:171
+#: src/screens/Multichain/NextCreateTokenScreen.js:176
 #, javascript-format
 msgid "${ nameLength }/${ MAX_NAME } characters"
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:183
+#: src/screens/Multichain/NextCreateTokenScreen.js:188
 #, javascript-format
 msgid "${ symbol.length }/${ MAX_SYMBOL } letters or numbers"
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:193
+#: src/screens/Multichain/NextCreateTokenScreen.js:198
 msgid ""
 "Symbols aren't unique: anyone can create a token with the same letters. A "
 "token is told apart by its id."
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:196
+#: src/screens/Multichain/NextCreateTokenScreen.js:201
 msgid "Amount to create"
 msgstr ""
 
-#: src/screens/Multichain/NextCreateTokenScreen.js:211
+#: src/screens/Multichain/NextCreateTokenScreen.js:216
 #: src/screens/Multichain/NextSendAmountInput.js:214
 #, javascript-format
 msgid "Network fee: ${ feeText } ${ nativeSymbol }"
@@ -2313,7 +2314,7 @@ msgstr ""
 msgid "Change amount"
 msgstr ""
 
-#: src/components/Multichain/NextTxDetailsModal.js:101
+#: src/components/Multichain/NextTxDetailsModal.js:102
 #: src/components/NanoContract/EditAddressModal.js:63
 #: src/components/NanoContract/SelectAddressModal.js:131
 #: src/components/Reown/GetAddressRequest.js:42
@@ -2337,7 +2338,7 @@ msgstr ""
 msgid "Private"
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:97 src/sagas/multichain.js:158
+#: src/multichain/nextClientErrors.js:102 src/sagas/multichain.js:158
 msgid "Couldn't connect to Hathor Next."
 msgstr ""
 
@@ -2631,128 +2632,131 @@ msgid ""
 "Syncing your Hathor Next balance. It can still rise until the sync ends."
 msgstr ""
 
-#: src/multichain/content.js:78 src/multichain/nextClientErrors.js:92
+#: src/multichain/content.js:78 src/multichain/nextClientErrors.js:97
 msgid "You can send once your balance finishes syncing."
 msgstr ""
 
-#: src/components/OfflineBar.js:60 src/multichain/nextClientErrors.js:90
+#: src/components/OfflineBar.js:60 src/multichain/nextClientErrors.js:95
 msgid "No internet connection"
 msgstr "Нет соединения с интернетом"
 
-#: src/multichain/nextClientErrors.js:99
+#: src/multichain/nextClientErrors.js:104
 msgid ""
 "Hathor Next prepared a different payment than the one you approved, so "
 "nothing was signed or sent."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:101
+#: src/multichain/nextClientErrors.js:106
 msgid "Hathor Next couldn't prepare this payment. Nothing was sent."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:103
+#: src/multichain/nextClientErrors.js:108
 msgid ""
 "Sending all of these funds would make the amount public on Hathor Next. Send "
 "a little less, so some comes back to you as change."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:105
+#: src/multichain/nextClientErrors.js:110
+#, javascript-format
 msgid ""
-"The network fee would come from HTR whose amount is already public, so the "
-"HTR you'd get back would be public on Hathor Next too. Send some HTR to your "
-"own Hathor Next address first, then try again."
+"The network fee would come from ${ feeSymbol } whose amount is already "
+"public, so the ${ changeSymbol } you'd get back would be public on Hathor "
+"Next too. Send some ${ sendSymbol } to your own Hathor Next address first, "
+"then try again."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:107
+#: src/multichain/nextClientErrors.js:112
 msgid ""
 "An earlier payment from these funds hasn't settled yet, so it was sent "
 "again. Try this payment once it settles."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:111
+#: src/multichain/nextClientErrors.js:116
 msgid ""
 "Hathor Next prepared a different transfer than the one you approved, so "
 "nothing was signed or sent."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:113
+#: src/multichain/nextClientErrors.js:118
 msgid ""
 "We couldn't confirm the transfer yet. Check your Hathor Network history "
 "before trying again."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:115
+#: src/multichain/nextClientErrors.js:120
 msgid "The transfer didn't go through. Nothing left your wallet."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:117
+#: src/multichain/nextClientErrors.js:122
 msgid ""
 "Hathor Next no longer knows this transfer. Check your Hathor Network history "
 "before you transfer again."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:119
+#: src/multichain/nextClientErrors.js:124
 msgid ""
 "This amount needs too many of your Hathor Network outputs for one transfer. "
 "Try a smaller amount."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:121
+#: src/multichain/nextClientErrors.js:126
 msgid "Tokens can't be created on this Hathor Next network yet."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:123
+#: src/multichain/nextClientErrors.js:128
 msgid "Hathor Next couldn't prepare this token. Nothing was created."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:125
+#: src/multichain/nextClientErrors.js:130
 msgid ""
 "Hathor Next prepared a different token than the one you approved, so nothing "
 "was signed or created."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:127
+#: src/multichain/nextClientErrors.js:132
+#, javascript-format
 msgid ""
-"Hathor Next couldn't pay this token's fee from one of your HTR coins, and "
-"paying it from several would make them public together, so nothing was "
-"signed or created. Send some HTR to your own Hathor Next address first, so "
-"one coin can pay the fee, then try again."
+"Hathor Next couldn't pay this token's fee from one of your ${ feeSymbol } "
+"coins, and paying it from several would make them public together, so "
+"nothing was signed or created. Send some ${ sendSymbol } to your own Hathor "
+"Next address first, so one coin can pay the fee, then try again."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:129
+#: src/multichain/nextClientErrors.js:134
 msgid "The token wasn't created. Nothing was signed and no fee was paid."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:131
+#: src/multichain/nextClientErrors.js:136
 msgid ""
 "The token creation expired before you confirmed it, so nothing was signed "
 "and no fee was paid. Create the token again."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:133
+#: src/multichain/nextClientErrors.js:138
 msgid ""
 "Hathor Next's list of tokens couldn't be read, so this wallet can't safely "
 "pick the keys for a new token. Nothing was created. Try again later."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:135
+#: src/multichain/nextClientErrors.js:140
 msgid ""
 "Too many token creations were started without finishing. A new token "
 "couldn't be found again from your recovery words, so none was created."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:137
+#: src/multichain/nextClientErrors.js:142
 msgid ""
 "Hathor Next's network changed, and this version of the app can't connect to "
 "it. Update the app, or disconnect the side chain for now."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:139
+#: src/multichain/nextClientErrors.js:144
 msgid ""
 "Couldn't sign in to Hathor Next: your phone's date and time are off. Set "
 "them to update automatically, then try again."
 msgstr ""
 
-#: src/multichain/nextClientErrors.js:141
+#: src/multichain/nextClientErrors.js:146
 msgid "Something went wrong on Hathor Next."
 msgstr ""
 
@@ -3103,7 +3107,7 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/Multichain/NextTxDetailsModal.js:107
+#: src/components/Multichain/NextTxDetailsModal.js:108
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
 #: src/components/TxDetailsModal.js:143
@@ -3976,51 +3980,51 @@ msgstr ""
 msgid "Connecting to Hathor Next…"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:126
+#: src/components/Multichain/DevBackendSettings.js:128
 msgid "This backend runs a Hathor Next network this app can't use."
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:132
+#: src/components/Multichain/DevBackendSettings.js:134
 msgid ""
 "This backend gives the values of a Hathor Next network that holds value, so "
 "it can't be used for testing."
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:137
+#: src/components/Multichain/DevBackendSettings.js:139
 msgid "Couldn't reach this backend."
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:149
+#: src/components/Multichain/DevBackendSettings.js:151
 msgid "Hathor Next backend"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:152
+#: src/components/Multichain/DevBackendSettings.js:154
 #, javascript-format
 msgid "Network ${ networkId }, native token ${ nativeToken }"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:155
+#: src/components/Multichain/DevBackendSettings.js:157
 msgid ""
 "Hathor Next runs on this backend on every network but mainnet. Your keys "
 "never leave this device: the backend gets public keys and signatures, and "
 "its wallet service sees your payments and their amounts."
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:159
+#: src/components/Multichain/DevBackendSettings.js:161
 msgid "Stop using this backend"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:168
+#: src/components/Multichain/DevBackendSettings.js:170
 msgid "Hathor Next backend (local testing)"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:178
+#: src/components/Multichain/DevBackendSettings.js:180
 msgid ""
 "Runs Hathor Next on a backend you run, instead of the network's own. After "
 "you set it, Hathor Next loads again on it."
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:181
+#: src/components/Multichain/DevBackendSettings.js:183
 msgid "Use this backend"
 msgstr ""
 
@@ -4047,15 +4051,16 @@ msgstr ""
 msgid "Here is my Hathor Next address: ${ address }"
 msgstr ""
 
-#: src/components/Multichain/NextTxDetailsModal.js:91
+#: src/components/Multichain/NextTxDetailsModal.js:92
 msgid "Status"
 msgstr "Статус"
 
-#: src/components/Multichain/NextTxDetailsModal.js:97
+#: src/components/Multichain/NextTxDetailsModal.js:98
 msgid "Date"
 msgstr ""
 
-#: src/components/Multichain/NextTxDetailsModal.js:115
+#: src/components/Multichain/NextTxDetailsModal.js:116
+#: src/components/Multichain/TransferDetailsModal.js:55
 msgid "View on explorer"
 msgstr ""
 
@@ -4083,26 +4088,26 @@ msgstr[2] ""
 msgid "${ arrivingText } arriving"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:103
+#: src/components/Multichain/TransferDetailsModal.js:126
 #, javascript-format
 msgid "Sent on ${ source }"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:111
+#: src/components/Multichain/TransferDetailsModal.js:135
 #, javascript-format
 msgid "Received on ${ destination }"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:117
+#: src/components/Multichain/TransferDetailsModal.js:141
 msgid "Usually about ${ usualMinutes } min"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:119
+#: src/components/Multichain/TransferDetailsModal.js:143
 #, javascript-format
 msgid "Done · ${ arrivedAt }"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:125
+#: src/components/Multichain/TransferDetailsModal.js:151
 #, javascript-format
 msgid "Your ${ destination } address"
 msgstr ""

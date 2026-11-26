@@ -496,6 +496,37 @@ describe('what the backend answers, read with care', () => {
     expect(pages).toBeLessThanOrEqual(50);
   });
 
+  it('names the HTR a transfer mints as HTR, whatever the token list calls it', async () => {
+    const backend = fakeBackend({
+      remote: { ...REMOTE_CONFIG, transfer: { mint_token: OTHER_TOKEN } },
+      tokens: () => ({ tokens: [{ token_id: OTHER_TOKEN, symbol: 'nHTR', name: 'new HTR' }] }),
+    });
+    client = createBackendNextClient({ fetchImpl: backend.fetchImpl, WebSocketImpl: null });
+    await client.prepareKeys({ words: WORDS });
+    await client.connect({
+      network: 'privatenet',
+      config: { ...CONFIG, tokenMap: [{ hathor: '00', next: OTHER_TOKEN }] },
+      birthday: 'genesis',
+    });
+    const tokens = client.getTokens();
+    expect(tokens.find((t) => t.id === OTHER_TOKEN)).toMatchObject({ symbol: 'HTR', name: 'Hathor' });
+    expect(tokens.find((t) => t.id === NATIVE)).toMatchObject({ symbol: 'USDT', name: 'Tether USD' });
+  });
+
+  it('refuses a backend whose transfers mint another token than the one pinned', async () => {
+    const backend = fakeBackend({
+      remote: { ...REMOTE_CONFIG, transfer: { mint_token: 'cd'.repeat(32) } },
+    });
+    client = createBackendNextClient({ fetchImpl: backend.fetchImpl, WebSocketImpl: null });
+    await client.prepareKeys({ words: WORDS });
+    await expect(client.connect({
+      network: 'privatenet',
+      config: { ...CONFIG, tokenMap: [{ hathor: '00', next: OTHER_TOKEN }] },
+      birthday: 'genesis',
+    })).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NETWORK_CHANGED });
+    expect(backend.requests.some((r) => r.path === '/v1/wallets')).toBe(false);
+  });
+
   it('reads the registry on until every token the wallet holds is named', async () => {
     const backend = fakeBackend({
       tokens: (query) => (query.get('from')
