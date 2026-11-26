@@ -23,7 +23,12 @@ import InputLabel from '../../components/InputLabel';
 import OfflineBar from '../../components/OfflineBar';
 import { SyncingNotice } from '../../components/Multichain/SyncingNotice';
 import { NextTokenPicker } from '../../components/Multichain/NextTokenPicker';
-import { canTransfer, CHAIN, NEXT_DECIMAL_PLACES } from '../../multichain/chains';
+import {
+  canTransfer,
+  CHAIN,
+  mintedTokenId,
+  NEXT_DECIMAL_PLACES,
+} from '../../multichain/chains';
 import { syncingSendBody } from '../../multichain/content';
 import { selectSideChainConfig } from '../../multichain/gating';
 import { shortBalanceAdvice } from '../../multichain/transfer';
@@ -97,7 +102,7 @@ export default function NextSendAmountInput() {
   const availableText = render(available);
   const feeText = render(fee);
   // The tokens a payment can send: the native one, and every other the wallet holds some of.
-  const options = nextTokenList(tokens, nativeTokenId)
+  const options = nextTokenList(tokens, nativeTokenId, mintedTokenId(config))
     .filter((token) => token.uid === nativeTokenId || balanceOf(token.uid) > 0n)
     .map((token) => ({
       id: token.uid,
@@ -154,14 +159,16 @@ export default function NextSendAmountInput() {
       setError(t`Invalid amount`);
       return;
     }
+    // Another token's payment pays its fee in the native token, which no transfer brings: told
+    // first, so no one transfers a token only to find they can't pay the fee once it arrives.
+    if (!native && fee > nativeAvailable) {
+      setError(feeShortText(feeText, nativeSymbol));
+      return;
+    }
     if ((native ? amount + fee : amount) > available) {
       const shortBalance = adviseShortBalance();
       setAdvice(shortBalance);
       setError(shortBalance ? null : t`Insufficient funds`);
-      return;
-    }
-    if (!native && fee > nativeAvailable) {
-      setError(feeShortText(feeText, nativeSymbol));
       return;
     }
     navigation.navigate('NextSendConfirmScreen', {

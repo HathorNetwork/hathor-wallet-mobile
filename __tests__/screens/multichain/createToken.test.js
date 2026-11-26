@@ -44,6 +44,7 @@ import {
 } from '../../../src/constants';
 import { STORE } from '../../../src/store';
 import NextCreateTokenScreen, {
+  publicTokenNote,
   tokenFormError,
   utf8Length,
 } from '../../../src/screens/Multichain/NextCreateTokenScreen';
@@ -82,7 +83,12 @@ afterEach(async () => {
   jest.restoreAllMocks();
 });
 
-function makeStore({ nativeBalance = 300000000n, next = {}, tokenFlag = true } = {}) {
+function makeStore({
+  nativeBalance = 300000000n,
+  next = {},
+  tokenFlag = true,
+  network = NETWORK,
+} = {}) {
   const initial = reducer(undefined, { type: '@@INIT' });
   const actions = [];
   const record = () => (nextFn) => (action) => {
@@ -98,12 +104,12 @@ function makeStore({ nativeBalance = 300000000n, next = {}, tokenFlag = true } =
       [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: tokenFlag,
     },
     serverInfo: { decimal_places: 2 },
-    fullNodeNetworkName: NETWORK,
+    fullNodeNetworkName: network,
     tokens: { '00': HTR },
     selectedToken: HTR,
     multichain: {
       ...initial.multichain,
-      connectedNetworks: { [NETWORK]: true },
+      connectedNetworks: { [network]: true },
       next: {
         ...initial.multichain.next,
         status: NEXT_STATUS.READY,
@@ -610,5 +616,33 @@ describe('a token creation that expired', () => {
     const [outcome] = renderer.root.findAllByType(FeedbackModal);
     expect(outcome.props.text).toMatch(/^Expired\. The creation expired before the network got its signatures/);
     expect(outcome.props.text).not.toMatch(/turned it down/);
+  });
+});
+
+describe('a creation on a network whose fees are paid in USDT', () => {
+  // testnet-alpha, the side chain of testnet-juliet: its native token is USDT.
+  const USDT = 'd957d448377de9c9d313d545398677cd6df99ac051dcf2afcd1b38dcb22f92d8';
+  const onTestnetAlpha = {
+    network: 'testnet-juliet',
+    next: {
+      tokens: { [USDT]: { id: USDT, name: 'US Dollar Tether', symbol: 'USDT' } },
+      balances: { [USDT]: { status: 'ready', data: { available: 300000000n } } },
+    },
+  };
+
+  test.each([
+    ['form', NextCreateTokenScreen],
+    ['confirmation', NextCreateTokenConfirmScreen],
+  ])('says in the %s that the change made public is USDT', async (_, Screen) => {
+    useNavigation.mockReturnValue({
+      navigate: jest.fn(), goBack: jest.fn(), addListener: jest.fn(() => jest.fn()),
+    });
+    useRoute.mockReturnValue({
+      params: { name: 'App Test Token', symbol: 'ATT', amount: '100000000000' },
+    });
+    const renderer = await mount(makeStore(onTestnetAlpha).store, <Screen />);
+    const text = textOf(renderer);
+    expect(text).toContain(publicTokenNote('USDT'));
+    expect(text).not.toContain('undefined');
   });
 });

@@ -527,6 +527,26 @@ describe('what the backend answers, read with care', () => {
     expect(backend.requests.some((r) => r.path === '/v1/wallets')).toBe(false);
   });
 
+  it('refuses a backend that transfers nothing where the app transfers HTR, and says why', async () => {
+    const logged = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const backend = fakeBackend({ remote: { ...REMOTE_CONFIG, transfer: null } });
+      client = createBackendNextClient({ fetchImpl: backend.fetchImpl, WebSocketImpl: null });
+      await client.prepareKeys({ words: WORDS });
+      await expect(client.connect({
+        network: 'privatenet',
+        config: { ...CONFIG, tokenMap: [{ hathor: '00', next: OTHER_TOKEN }] },
+        birthday: 'genesis',
+      })).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.NETWORK_CHANGED });
+      expect(backend.requests.some((r) => r.path === '/v1/wallets')).toBe(false);
+      expect(logged.mock.calls.map(([message]) => message)).toContain(
+        '[next-backend-client] The Hathor Next backend serves no transfer block: it transfers nothing, and this app transfers HTR to it.',
+      );
+    } finally {
+      logged.mockRestore();
+    }
+  });
+
   it('reads the registry on until every token the wallet holds is named', async () => {
     const backend = fakeBackend({
       tokens: (query) => (query.get('from')

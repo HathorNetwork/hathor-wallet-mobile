@@ -250,27 +250,35 @@ describe('a Hathor Next payment in the HTR a transfer minted, where USDT pays th
   // testnet-alpha: its native token is USDT, and a transfer mints HTR as a token of its own.
   const USDT = 'd957d448377de9c9d313d545398677cd6df99ac051dcf2afcd1b38dcb22f92d8';
   const MINTED_HTR = '664cf15052b6f66f1f06ac32189381a27f1bfe1eda2f77cea4fde760b5884d33';
-  // 1.00 USDT and 3.00 HTR on Hathor Next, and HTR on Hathor Network as asked.
-  const holding = (hathorHtr) => ({
+  // A token someone created under HTR's name and symbol, and sent to the wallet.
+  const LOOK_ALIKE = 'fa11'.repeat(16);
+  // 1.00 USDT unless asked otherwise and 3.00 HTR on Hathor Next, and HTR on Hathor Network as
+  // asked.
+  const holding = (hathorHtr, { usdt = 100000000n, tokens = {}, balances = {} } = {}) => ({
     network: 'testnet-juliet',
     hathorHtr,
     next: {
       tokens: {
         [USDT]: { id: USDT, name: 'US Dollar Tether', symbol: 'USDT' },
         [MINTED_HTR]: { id: MINTED_HTR, name: 'Hathor', symbol: 'HTR', lastActivityAt: 1 },
+        ...tokens,
       },
       balances: {
-        [USDT]: { status: 'ready', data: { available: 100000000n } },
+        [USDT]: { status: 'ready', data: { available: usdt } },
         [MINTED_HTR]: { status: 'ready', data: { available: 300000000n } },
+        ...balances,
       },
     },
   });
 
-  async function amountStep(amount, hathorHtr) {
+  async function amountStep(amount, hathorHtr, options) {
     const navigation = { navigate: jest.fn(), goBack: jest.fn() };
     useNavigation.mockReturnValue(navigation);
     useRoute.mockReturnValue({ params: { address: NEXT_ADDRESS } });
-    const renderer = await mount(makeStore(holding(hathorHtr)).store, <NextSendAmountInput />);
+    const renderer = await mount(
+      makeStore(holding(hathorHtr, options)).store,
+      <NextSendAmountInput />,
+    );
     await act(async () => {
       renderer.root.findByType(NextTokenPicker).props.onChange(MINTED_HTR);
     });
@@ -302,6 +310,29 @@ describe('a Hathor Next payment in the HTR a transfer minted, where USDT pays th
       toAddress: OWN_ADDRESS,
       amount: '210',
     });
+  });
+
+  test('says the USDT fee is short before offering a transfer, which would bring no USDT', async () => {
+    const { renderer, navigation } = await amountStep(500000000n, 300n, { usdt: 0n });
+    expect(textOf(renderer)).toContain(
+      'The network fee is paid in USDT. You need 0.05 USDT on Hathor Next.',
+    );
+    expect(button(renderer, 'Transfer between chains')).toBeUndefined();
+    expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+
+  test('lists the minted HTR right after USDT, without an id, and a look-alike with its id', async () => {
+    const { renderer } = await amountStep(100000000n, 300n, {
+      // The look-alike moved last, which would otherwise put it first.
+      tokens: { [LOOK_ALIKE]: { id: LOOK_ALIKE, name: 'Hathor', symbol: 'HTR', lastActivityAt: 9 } },
+      balances: { [LOOK_ALIKE]: { status: 'ready', data: { available: 500000000n } } },
+    });
+    const { options } = renderer.root.findByType(NextTokenPicker).props;
+    expect(options.map(({ id, name, idTag }) => [id, name, idTag])).toEqual([
+      [USDT, 'US Dollar Tether', null],
+      [MINTED_HTR, 'Hathor', null],
+      [LOOK_ALIKE, 'Hathor · fa11fa', 'fa11fa'],
+    ]);
   });
 });
 

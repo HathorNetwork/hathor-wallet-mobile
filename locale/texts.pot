@@ -447,7 +447,7 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:96
 #: src/screens/CreateTokenAmount.js:108
 #: src/screens/Multichain/NextCreateTokenScreen.js:103
-#: src/screens/Multichain/NextSendAmountInput.js:154
+#: src/screens/Multichain/NextSendAmountInput.js:159
 #: src/screens/SendAmountInput.js:165
 msgid "Invalid amount"
 msgstr ""
@@ -480,7 +480,7 @@ msgstr ""
 #: src/screens/InitWallet.js:268
 #: src/screens/InitWallet.js:421
 #: src/screens/Multichain/NextCreateTokenScreen.js:228
-#: src/screens/Multichain/NextSendAmountInput.js:231
+#: src/screens/Multichain/NextSendAmountInput.js:238
 #: src/screens/SendAddressInput.js:224
 #: src/screens/SendAmountInput.js:287
 msgid "Next"
@@ -1257,14 +1257,14 @@ msgstr ""
 msgid "Paste or type address"
 msgstr ""
 
-#: src/screens/Multichain/NextSendAmountInput.js:221
+#: src/screens/Multichain/NextSendAmountInput.js:228
 #: src/screens/SendAddressInput.js:231
 msgid "Transfer between chains"
 msgstr ""
 
 #: src/multichain/nextClientErrors.js:99
 #: src/screens/Multichain/ChainTransferScreen.js:172
-#: src/screens/Multichain/NextSendAmountInput.js:160
+#: src/screens/Multichain/NextSendAmountInput.js:171
 #: src/screens/SendAmountInput.js:170
 msgid "Insufficient funds"
 msgstr ""
@@ -1470,12 +1470,12 @@ msgstr ""
 msgid "Scan the QR code"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:116
+#: src/components/Multichain/DevBackendSettings.js:117
 #: src/screens/Settings.js:177
 msgid "Enter your 6-digit pin to connect to Hathor Next"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:117
+#: src/components/Multichain/DevBackendSettings.js:118
 #: src/screens/Settings.js:178
 msgid "Connect to Hathor Next"
 msgstr ""
@@ -2287,25 +2287,25 @@ msgid "Amount to create"
 msgstr ""
 
 #: src/screens/Multichain/NextCreateTokenScreen.js:216
-#: src/screens/Multichain/NextSendAmountInput.js:214
+#: src/screens/Multichain/NextSendAmountInput.js:221
 #, javascript-format
 msgid "Network fee: ${ feeText } ${ nativeSymbol }"
 msgstr ""
 
-#: src/screens/Multichain/NextSendAmountInput.js:56
+#: src/screens/Multichain/NextSendAmountInput.js:61
 #, javascript-format
 msgid ""
 "The network fee is paid in ${ nativeSymbol }. You need ${ feeText } ${ "
 "feeSymbol } on Hathor Next."
 msgstr ""
 
-#: src/screens/Multichain/NextSendAmountInput.js:179
+#: src/screens/Multichain/NextSendAmountInput.js:186
 #: src/screens/Multichain/NextSendConfirmScreen.js:292
 #, javascript-format
 msgid "SEND ${ symbol }"
 msgstr ""
 
-#: src/screens/Multichain/NextSendAmountInput.js:212
+#: src/screens/Multichain/NextSendAmountInput.js:219
 #, javascript-format
 msgid "${ availableText } ${ symbol } available"
 msgstr ""
@@ -3998,51 +3998,51 @@ msgstr ""
 msgid "Connecting to Hathor Next…"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:128
+#: src/components/Multichain/DevBackendSettings.js:129
 msgid "This backend runs a Hathor Next network this app can't use."
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:134
+#: src/components/Multichain/DevBackendSettings.js:135
 msgid ""
 "This backend gives the values of a Hathor Next network that holds value, so "
 "it can't be used for testing."
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:139
+#: src/components/Multichain/DevBackendSettings.js:140
 msgid "Couldn't reach this backend."
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:151
+#: src/components/Multichain/DevBackendSettings.js:152
 msgid "Hathor Next backend"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:154
+#: src/components/Multichain/DevBackendSettings.js:155
 #, javascript-format
 msgid "Network ${ networkId }, native token ${ nativeToken }"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:157
+#: src/components/Multichain/DevBackendSettings.js:158
 msgid ""
 "Hathor Next runs on this backend on every network but mainnet. Your keys "
 "never leave this device: the backend gets public keys and signatures, and "
 "its wallet service sees your payments and their amounts."
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:161
+#: src/components/Multichain/DevBackendSettings.js:162
 msgid "Stop using this backend"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:170
+#: src/components/Multichain/DevBackendSettings.js:171
 msgid "Hathor Next backend (local testing)"
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:180
+#: src/components/Multichain/DevBackendSettings.js:181
 msgid ""
 "Runs Hathor Next on a backend you run, instead of the network's own. After "
 "you set it, Hathor Next loads again on it."
 msgstr ""
 
-#: src/components/Multichain/DevBackendSettings.js:183
+#: src/components/Multichain/DevBackendSettings.js:184
 msgid "Use this backend"
 msgstr ""
 

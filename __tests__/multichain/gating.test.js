@@ -400,6 +400,12 @@ describe('a side chain on the real pins', () => {
   test('is none on a network other than the one it names', () => {
     expect(actualChains.getSideChainConfig('testnet-juliet', null, TESTNET)).not.toBeNull();
     expect(actualChains.getSideChainConfig('testnet', null, TESTNET)).toBeNull();
+    // A backend for local testing that names its Hathor Network: the one place the check alone
+    // decides, since no side chain is pinned by its node now.
+    const named = { ...local, pins: { ...local.pins, hathor: { network: 'privatenet' } } };
+    expect(actualChains.getSideChainConfig('privatenet', named, null)).not.toBeNull();
+    expect(actualChains.getSideChainConfig('testnet', named, null)).toBeNull();
+    expect(actualChains.getSideChainConfig('testnet-juliet', named, TESTNET)).toBeNull();
   });
 
   test('refuses, in its place, a backend for local testing that passes as one holding value', () => {
@@ -440,7 +446,7 @@ describe('a side chain on the real pins', () => {
     expect(actualChains.impersonatedSideChain(pins({}), [valued])).toBeNull();
     const playMoney = { ...valued, holdsValue: false };
     expect(actualChains.impersonatedSideChain(pins({ network_id: 7 }), [playMoney])).toBeNull();
-    // None of the pinned networks holds value yet.
-    expect(actualChains.impersonatedSideChain(pins({ network_id: 1003 }))).toBeNull();
+    // None of the pinned networks holds value yet: testnet-alpha is play money.
+    expect(actualChains.impersonatedSideChain(pins({ network_id: 1004 }))).toBeNull();
   });
 });

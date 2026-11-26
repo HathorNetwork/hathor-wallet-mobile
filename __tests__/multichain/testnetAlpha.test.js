@@ -19,7 +19,7 @@ import {
   nextExplorerTxUrl,
   transferReceiveSymbol,
 } from '../../src/multichain/chains';
-import { pinMismatch, prepareError } from '../../src/multichain/next/backendClient';
+import { pinMismatch, prepareError, TRANSFER_PIN } from '../../src/multichain/next/backendClient';
 import { BackendError } from '../../src/multichain/next/backendApi';
 import { createBackendBridge, recordOf } from '../../src/multichain/next/backendBridge';
 import {
@@ -32,40 +32,12 @@ import {
   nextClientErrorMessage,
 } from '../../src/multichain/nextClientErrors';
 import { publicTokenNote } from '../../src/screens/Multichain/NextCreateTokenScreen';
+// testnet-alpha's GET /v1/config, saved as its backend answered it on 2026-11-26.
+import LIVE from './next/fixtures/testnet-alpha-config.json';
 
 const USDT = 'd957d448377de9c9d313d545398677cd6df99ac051dcf2afcd1b38dcb22f92d8';
 const NHTR = '664cf15052b6f66f1f06ac32189381a27f1bfe1eda2f77cea4fde760b5884d33';
 const TX_ID = '2243044bc6be978eec0d8ab1ef80422f011bbee6f13dbde11a43612e1b0a3213';
-
-// testnet-alpha's GET /v1/config, as its backend answered it on 2026-11-25.
-const LIVE = {
-  contract: 1,
-  hathor: { network: 'testnet-juliet' },
-  next: {
-    network_id: 1004,
-    native_token: USDT,
-    service_view_pub: 'ee29df21a6c64fe43fc8ec6cd7b8c1ecfc4c89eec9370086129e367693bbf400',
-    wire_format: 'v3',
-    amount_width: 'u64',
-    genesis_ms: 1795542160000,
-    epoch_ms: 500,
-    send_fee: '5000000',
-    native_token_symbol: 'USDT',
-    native_token_name: 'US Dollar Tether (testnet-alpha play money)',
-  },
-  transfer: {
-    transfer_address: 'WScTqhLsBQnz3HMdQqh66JBgWqb255XffL',
-    destination_network: 'fb3694106fd98e1dc5aa959ef2dc8b1792d593846de685af69c39590a7642b23',
-    confirmations: 21,
-    mean_block_ms: 30000,
-    data_output_value: '1',
-    hathor_network: 'testnet-juliet',
-    mint_token: NHTR,
-    mint_token_symbol: 'nHTR',
-    mint_token_name: "new HTR (testnet-juliet's HTR on testnet-alpha)",
-  },
-  issuance: true,
-};
 
 const withTransfer = (transfer) => ({ ...LIVE, transfer: { ...LIVE.transfer, ...transfer } });
 const testnet = () => getSideChainConfig(
@@ -118,6 +90,22 @@ describe('the Hathor Next Testnet preset', () => {
     expect(pinMismatch(config, { ...LIVE, hathor: { network: 'privatenet' } }))
       .toBe('hathor.network');
   });
+
+  test('pins every transfer value as its backend serves them', () => {
+    // The burn check pays only this address, with this destination and data output, and the
+    // wait is counted from these: none is compared with the backend when the app connects.
+    const pinned = testnet().transfer;
+    expect(Object.keys(pinned).sort()).toEqual([
+      'confirmations',
+      'data_output_value',
+      'destination_network',
+      'hathor_network',
+      'mean_block_ms',
+      'mint_token',
+      'transfer_address',
+    ]);
+    expect(LIVE.transfer).toMatchObject(pinned);
+  });
 });
 
 describe('a side chain whose transfers mint HTR as a token of its own', () => {
@@ -136,6 +124,15 @@ describe('a side chain whose transfers mint HTR as a token of its own', () => {
       .toBe('transfer.mint_token');
     expect(pinMismatch(config, withTransfer({ mint_token: undefined })))
       .toBe('transfer.mint_token');
+  });
+
+  test('is refused, by that name, when its backend transfers nothing', () => {
+    // The app would still transfer by its own pins, and the HTR it burned would never arrive.
+    const config = testnet();
+    const noBlock = { ...LIVE };
+    delete noBlock.transfer;
+    expect(pinMismatch(config, { ...LIVE, transfer: null })).toBe(TRANSFER_PIN);
+    expect(pinMismatch(config, noBlock)).toBe(TRANSFER_PIN);
   });
 
   test('the bridge carries HTR to that token', () => {
@@ -165,6 +162,17 @@ describe('a side chain whose transfers mint HTR as a token of its own', () => {
     expect(usedBackendConfig(LIVE).transfer.mint_token).toBe(NHTR);
     expect(isUsableBackendConfig(LIVE)).toBe(true);
     expect(isUsableBackendConfig(withTransfer({ mint_token: 'nHTR' }))).toBe(false);
+  });
+
+  test('takes a backend that names its minted token null as one that names none', () => {
+    // JSON has no undefined: a backend may write a missing value as null.
+    const pins = withTransfer({ mint_token: null });
+    expect(isUsableBackendConfig(pins)).toBe(true);
+    const used = usedBackendConfig(pins);
+    expect(used.transfer).not.toHaveProperty('mint_token');
+    const config = devBackendSideChain({ url: 'http://backend.test', pins: used });
+    expect(config.tokenMap).toEqual([{ hathor: '00', next: USDT }]);
+    expect(pinMismatch(config, pins)).toBeNull();
   });
 });
 

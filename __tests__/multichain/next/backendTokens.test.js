@@ -780,6 +780,18 @@ describe('a token created on Hathor Next through the backend', () => {
       expect(nonceRecord(storage).reserved).toEqual([]);
     });
 
+    it('names the token that pays the fee when it refuses coins a creation doesn\'t need', async () => {
+      jest.spyOn(signerModule, 'checkCreateRequest').mockImplementation(() => {
+        throw new signerModule.CoinsNotNeededError();
+      });
+      const backend = fakeBackend();
+      client = await connected(backend, memoryStorage(), { ...CONFIG, nativeTokenSymbol: 'USDT' });
+      const refused = create(client, jest.fn(async () => true));
+      await expect(refused).rejects.toMatchObject({ code: NEXT_CLIENT_ERROR.TOKEN_EXTRA_COINS });
+      await expect(refused).rejects.toThrow('one of your USDT coins');
+      expect(backend.signatures()).toBeNull();
+    });
+
     it('creates nothing without a way to ask', async () => {
       const backend = fakeBackend();
       client = await connected(backend);
