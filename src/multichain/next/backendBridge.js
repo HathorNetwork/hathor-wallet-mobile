@@ -118,6 +118,8 @@ export function recordOf(status, config, ownAddress, own = null) {
     toOwn: sameNextAddress(toAddress, ownAddress),
     sentAt,
     arriveAt,
+    // How long a transfer usually takes: its burn's confirmations, at the network's pace.
+    usualMs: needed * blockMs,
     status: state,
     sourceTxId: own?.burnTxId ?? null,
     // A failed burn never left the balance; any other this wallet saw for itself did.

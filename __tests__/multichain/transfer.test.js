@@ -9,7 +9,11 @@ import { describe, test, expect } from '@jest/globals';
 import { CHAIN, transferReceiveSymbol } from '../../src/multichain/chains';
 import { shortBalanceAdvice } from '../../src/multichain/transfer';
 import { nextToHathorRoundedUp } from '../../src/multichain/amount';
-import { progressText, transferChange } from '../../src/components/Multichain/TransferRow';
+import {
+  progressText,
+  transferChange,
+  waitsForNext,
+} from '../../src/components/Multichain/TransferRow';
 import { HISTORY_ROW } from '../../src/multichain/history';
 import { TRANSFER_STATUS } from '../../src/multichain/state';
 import { fakePeerAddress } from './fakes/fakeAddress';
@@ -117,6 +121,27 @@ describe('a transfer\'s progress, as its bridge follows it', () => {
       .toBe('Minting on Hathor Next');
     expect(progressText(undefined)).toBeNull();
     expect(progressText({ stage: 'arrived' })).toBeNull();
+  });
+
+  test('says it waits for Hathor Next once the burn has its confirmations, not more of them', () => {
+    const waiting = 'Confirmed on Hathor Network, waiting for Hathor Next';
+    // The bridge still holds it, past every confirmation it needed.
+    expect(progressText({ stage: 'confirming', confirmations: 213, needed: 21 })).toBe(waiting);
+    expect(progressText({ stage: 'confirming', confirmations: 21, needed: 21 })).toBe(waiting);
+    expect(progressText({ stage: 'pushed', confirmations: 21, needed: 21 })).toBe(waiting);
+    expect(progressText({ stage: 'confirming', confirmations: 20, needed: 21 }))
+      .toBe('Confirming 20 of 21 on Hathor Network');
+    // Without a number of confirmations to reach, none were reached.
+    expect(progressText({ stage: 'pushed', confirmations: 0, needed: 0 }))
+      .toBe('Confirming 0 of 0 on Hathor Network');
+  });
+
+  test('takes only a burn still confirming as waiting for Hathor Next', () => {
+    expect(waitsForNext({ stage: 'confirming', confirmations: 213, needed: 21 })).toBe(true);
+    expect(waitsForNext({ stage: 'eligible', confirmations: 213, needed: 21 })).toBe(false);
+    expect(waitsForNext({ stage: 'minting', confirmations: 213, needed: 21 })).toBe(false);
+    expect(waitsForNext({ stage: 'failed', confirmations: 213, needed: 21 })).toBe(false);
+    expect(waitsForNext(undefined)).toBe(false);
   });
 });
 

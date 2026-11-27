@@ -377,14 +377,14 @@ describe('loading Hathor Next when the wallet starts', () => {
     });
   });
 
-  test('fails without the keys, and loads once the PIN derives them', async () => {
+  test('fails without the keys, asking for an unlock, and loads once the PIN derives them', async () => {
     STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
     STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
     const env = setup();
     await wait(10);
     expect(env.getState().multichain.next).toMatchObject({
       status: NEXT_STATUS.FAILED,
-      error: "Couldn't connect to Hathor Next.",
+      error: 'Unlock your wallet to load Hathor Next.',
     });
     env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
     await wait(2000);
@@ -406,6 +406,54 @@ describe('loading Hathor Next when the wallet starts', () => {
     });
   });
 
+  describe('after a switch to the network with the side chain', () => {
+    // The PIN was entered on a network whose multichain flag Unleash answered off, which derives
+    // no keys there; the wallet then switched to the network with the side chain, connected
+    // before, where the flag is on.
+    async function unlockThenSwitch(flagAtUnlock) {
+      STORE.setItem(multichainKeyMap.next, { address: ADDRESS, registered: { [NETWORK]: true } });
+      STORE.setItem(multichainKeyMap.connectedNetworks, { [NETWORK]: true });
+      const env = setup({ flag: flagAtUnlock, start: false, network: 'testnet' });
+      env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+      env.dispatch(startWalletSuccess());
+      await wait(2000);
+      // The switch: the network's name is cleared and the network changes; the wallet starts
+      // again, reads Unleash for the new network, then the node's name, and says it started.
+      env.dispatch(setFullNodeNetworkName(''));
+      env.dispatch(networkChanged());
+      await wait(10);
+      env.dispatch(setFeatureToggles({
+        [MULTICHAIN_FEATURE_TOGGLE]: true,
+        [MULTICHAIN_TOKEN_CREATE_FEATURE_TOGGLE]: true,
+      }));
+      env.dispatch(setFullNodeNetworkName(NETWORK));
+      env.dispatch(startWalletSuccess());
+      await wait(2000);
+      return env;
+    }
+
+    test('asks for an unlock when the flag was off where the PIN was entered', async () => {
+      const env = await unlockThenSwitch(false);
+      expect(STORE.getWalletWords).not.toHaveBeenCalled();
+      expect(env.getState().multichain.next).toMatchObject({
+        status: NEXT_STATUS.FAILED,
+        error: 'Unlock your wallet to load Hathor Next.',
+        keysReady: false,
+      });
+      // The loading screen's Unlock locks the app; its PIN derives the keys and loads.
+      env.dispatch(multichainNextKeysUnlockRequested({ pinCode: PIN }));
+      await wait(2000);
+      expect(env.getState().multichain.next).toMatchObject({
+        status: NEXT_STATUS.READY, keysReady: true,
+      });
+    });
+
+    test('loads with no prompt when the flag was on where the PIN was entered', async () => {
+      const env = await unlockThenSwitch(true);
+      expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.READY);
+    });
+  });
+
   test('tries again from the loading screen', async () => {
     const env = setup();
     await connect(env);
@@ -415,7 +463,10 @@ describe('loading Hathor Next when the wallet starts', () => {
     await wait(10);
     env.dispatch(startWalletSuccess());
     await wait(2000);
-    expect(env.getState().multichain.next.status).toBe(NEXT_STATUS.FAILED);
+    expect(env.getState().multichain.next).toMatchObject({
+      status: NEXT_STATUS.FAILED,
+      error: "Couldn't connect to Hathor Next.",
+    });
     resetLedger(NETWORK, FAKE_SCENARIO.FUNDED);
     env.dispatch(multichainLoadRequested());
     await wait(2000);

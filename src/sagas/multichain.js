@@ -157,6 +157,13 @@ const TURNING_ON = [CONNECT_STATUS.UNLOCKING, CONNECT_STATUS.CONNECTING];
 /** What the user is told when Hathor Next can't be loaded. */
 export const connectFailedText = () => t`Couldn't connect to Hathor Next.`;
 
+/**
+ * What the user is told when Hathor Next can't be loaded without its keys, which only an unlock
+ * derives: on a switch to a network with a side chain, when the unlock was on one whose flag was
+ * off, so no keys were derived there.
+ */
+export const keysNeededText = () => t`Unlock your wallet to load Hathor Next.`;
+
 /** What the user is told when a transfer fails for a reason that has no words of its own. */
 export const transferFailedText = () => t`The transfer failed.`;
 
@@ -191,6 +198,10 @@ function loadFailedText(e) {
   }
   if (e instanceof NextClientError && LOAD_FAILURES_TOLD.includes(e.code)) {
     return e.message;
+  }
+  // Nothing failed to connect: the loading screen's way on is an unlock.
+  if (e instanceof NextClientError && e.code === NEXT_CLIENT_ERROR.NO_KEYS) {
+    return keysNeededText();
   }
   return connectFailedText();
 }

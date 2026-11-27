@@ -319,7 +319,10 @@ describe('the app waiting for Hathor Next', () => {
     });
 
     test('waits the whole time again when a load comes back to a status it waited on', async () => {
-      const { store } = makeStore({ connected: true, next: { status: NEXT_STATUS.CONNECTING } });
+      const { store } = makeStore({
+        connected: true,
+        next: { status: NEXT_STATUS.CONNECTING, keysReady: true },
+      });
       const setStatus = async (status) => {
         await act(async () => { store.dispatch(multichainNextUpdate({ status })); });
       };
@@ -378,12 +381,26 @@ describe('the app waiting for Hathor Next', () => {
     expect(store.getState().resetOnLockScreen).toBe(true);
   });
 
-  test("locks the app for the PIN when a seed wallet's keys are missing", async () => {
+  test("offers Unlock, which locks the app for the PIN, when a seed wallet's keys are missing", async () => {
     const { store, actions } = failedStore(false);
     const renderer = await mount(store, <MultichainLoadScreen />);
-    await act(async () => { button(renderer, 'Try again').props.onPress(); });
+    expect(renderer.root.findAllByType(SimpleButton).map((node) => node.props.title))
+      .toEqual(['Unlock', 'Disconnect side chain', 'Reset wallet']);
+    await act(async () => { button(renderer, 'Unlock').props.onPress(); });
     expect(actions.map((a) => a.type)).toContain(types.SET_LOCK_SCREEN);
     expect(actions.map((a) => a.type)).not.toContain(types.MULTICHAIN_LOAD_REQUESTED);
+  });
+
+  test("offers Unlock, which runs the passkey, when a passkey wallet's keys are missing", async () => {
+    jest.spyOn(STORE, 'isPasskeyWallet').mockReturnValue(true);
+    const { store, actions } = failedStore(false);
+    const renderer = await mount(store, <MultichainLoadScreen />);
+    await act(async () => { button(renderer, 'Unlock').props.onPress(); });
+    expect(actions).toContainEqual({
+      type: types.MULTICHAIN_LOAD_REQUESTED,
+      payload: { pinCode: undefined },
+    });
+    expect(actions.map((a) => a.type)).not.toContain(types.SET_LOCK_SCREEN);
   });
 });
 

@@ -543,7 +543,7 @@ msgstr "Token symbol"
 msgid "Deposit"
 msgstr "Indsæt"
 
-#: src/components/Multichain/TransferDetailsModal.js:155
+#: src/components/Multichain/TransferDetailsModal.js:165
 #: src/components/Shielded/FeeBreakdown.js:70
 #: src/screens/CreateTokenConfirm.js:293
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:245
@@ -897,7 +897,7 @@ msgid "Enter your seed words separated by space"
 msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
 #: src/components/ImportTokensModal.js:72
-#: src/components/Multichain/MultichainLoadScreen.js:89
+#: src/components/Multichain/MultichainLoadScreen.js:91
 #: src/components/Multichain/TokenHistoryList.js:54
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
@@ -927,7 +927,7 @@ msgstr "**${ props.loadedData.addresses } adresser** fundet"
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/components/Multichain/MultichainLoadScreen.js:101
+#: src/components/Multichain/MultichainLoadScreen.js:103
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:227
 #: src/screens/PinScreen.js:350 src/screens/Settings.js:312
 msgid "Reset wallet"
@@ -1000,6 +1000,7 @@ msgstr ""
 msgid "Unlock with your passkey"
 msgstr ""
 
+#: src/components/Multichain/MultichainLoadScreen.js:91
 #: src/screens/PasskeyLockScreen.js:212
 msgid "Unlock"
 msgstr ""
@@ -1403,7 +1404,7 @@ msgstr ""
 msgid "Transaction summary"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:150
+#: src/components/Multichain/TransferDetailsModal.js:160
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:240
 #: src/screens/Multichain/ChainTransferScreen.js:215
 #: src/screens/SendConfirmScreen.js:647
@@ -1994,7 +1995,7 @@ msgstr ""
 msgid "Close"
 msgstr "Luk"
 
-#: src/sagas/multichain.js:161
+#: src/sagas/multichain.js:168
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:166
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:205
 msgid "The transfer failed."
@@ -2005,7 +2006,7 @@ msgid "Transferring to Hathor Next…"
 msgstr ""
 
 #: src/components/AmountInputAccessory.js:105
-#: src/components/Multichain/TransferDetailsModal.js:128
+#: src/components/Multichain/TransferDetailsModal.js:136
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:188
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:211
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:229
@@ -2042,7 +2043,7 @@ msgstr ""
 msgid "To your address"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:153
+#: src/components/Multichain/TransferDetailsModal.js:163
 #: src/screens/Multichain/ChainTransferConfirmScreen.js:244
 #: src/screens/Multichain/ChainTransferScreen.js:273
 msgid "Bridge fee"
@@ -2185,7 +2186,7 @@ msgstr ""
 msgid "The token wasn't created."
 msgstr ""
 
-#: src/sagas/multichain.js:164
+#: src/sagas/multichain.js:171
 #: src/screens/Multichain/NextCreateTokenConfirmScreen.js:266
 msgid "The token couldn't be created."
 msgstr ""
@@ -2337,13 +2338,17 @@ msgstr ""
 msgid "Couldn't connect to Hathor Next."
 msgstr ""
 
-#: src/sagas/multichain.js:170
+#: src/sagas/multichain.js:165
+msgid "Unlock your wallet to load Hathor Next."
+msgstr ""
+
+#: src/sagas/multichain.js:177
 msgid ""
 "Hathor Next was disconnected before the token was signed, so it wasn't "
 "created. Nothing left your wallet."
 msgstr ""
 
-#: src/sagas/multichain.js:176
+#: src/sagas/multichain.js:183
 msgid ""
 "The token creation was stopped before the token was signed, so it wasn't "
 "created. Nothing left your wallet."
@@ -4037,12 +4042,12 @@ msgstr ""
 msgid "Use this backend"
 msgstr ""
 
-#: src/components/Multichain/MultichainLoadScreen.js:95
-#: src/components/Multichain/MultichainLoadScreen.js:117
+#: src/components/Multichain/MultichainLoadScreen.js:97
+#: src/components/Multichain/MultichainLoadScreen.js:119
 msgid "Disconnect side chain"
 msgstr ""
 
-#: src/components/Multichain/MultichainLoadScreen.js:111
+#: src/components/Multichain/MultichainLoadScreen.js:113
 msgid "Loading Hathor Next…"
 msgstr ""
 
@@ -4073,7 +4078,7 @@ msgid "Date"
 msgstr ""
 
 #: src/components/Multichain/NextTxDetailsModal.js:116
-#: src/components/Multichain/TransferDetailsModal.js:55
+#: src/components/Multichain/TransferDetailsModal.js:56
 msgid "View on explorer"
 msgstr ""
 
@@ -4100,26 +4105,25 @@ msgstr[1] ""
 msgid "${ arrivingText } arriving"
 msgstr ""
 
-#: src/components/Multichain/TransferDetailsModal.js:126
+#: src/components/Multichain/TransferDetailsModal.js:113
 #, javascript-format
-msgid "Sent on ${ source }"
-msgstr ""
-
-#: src/components/Multichain/TransferDetailsModal.js:135
-#, javascript-format
-msgid "Received on ${ destination }"
-msgstr ""
-
-#: src/components/Multichain/TransferDetailsModal.js:141
 msgid "Usually about ${ usualMinutes } min"
+msgstr ""
+
+#: src/components/Multichain/TransferDetailsModal.js:134
+msgid "Sent on ${ source }"
 msgstr ""
 
 #: src/components/Multichain/TransferDetailsModal.js:143
 #, javascript-format
-msgid "Done · ${ arrivedAt }"
+msgid "Received on ${ destination }"
 msgstr ""
 
 #: src/components/Multichain/TransferDetailsModal.js:151
+msgid "Done · ${ arrivedAt }"
+msgstr ""
+
+#: src/components/Multichain/TransferDetailsModal.js:161
 #, javascript-format
 msgid "Your ${ destination } address"
 msgstr ""
@@ -4129,43 +4133,47 @@ msgstr ""
 msgid "Arriving in about ${ minutes } min"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:44
+#: src/components/Multichain/TransferRow.js:58
+msgid "Confirmed on Hathor Network, waiting for Hathor Next"
+msgstr ""
+
+#: src/components/Multichain/TransferRow.js:61
 #, javascript-format
 msgid "Confirming ${ confirmations } of ${ needed } on Hathor Network"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:48
+#: src/components/Multichain/TransferRow.js:65
 msgid "Minting on Hathor Next"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:50
+#: src/components/Multichain/TransferRow.js:67
 msgid "Didn't go through: nothing moved"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:83
+#: src/components/Multichain/TransferRow.js:100
 #, javascript-format
 msgid "Transfer from ${ source }"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:86
+#: src/components/Multichain/TransferRow.js:103
 msgid "Moved to ${ destination }"
 msgstr ""
 
-#: src/components/Multichain/TransferRow.js:88
+#: src/components/Multichain/TransferRow.js:105
 #, javascript-format
 msgid "Transferred to ${ destination }"
 msgstr ""
 
 #.  Between the wallet's own addresses on all chains, the row's amount is what the transfer cost,
 #.  not what it moved: the line under the title says both.
-#: src/components/Multichain/TransferRow.js:149
+#: src/components/Multichain/TransferRow.js:166
 #, javascript-format
 msgid "${ moved } ${ symbol } moved · ${ shown } fee"
 msgstr ""
 
 #.  Between the wallet's own addresses on all chains, the row's amount is what the transfer cost,
 #.  not what it moved: the line under the title says both.
-#: src/components/Multichain/TransferRow.js:150
+#: src/components/Multichain/TransferRow.js:167
 msgid "${ moved } ${ symbol } moved"
 msgstr ""
 
