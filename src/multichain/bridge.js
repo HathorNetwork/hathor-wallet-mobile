@@ -19,8 +19,10 @@ import { NextClientError, NEXT_CLIENT_ERROR } from './nextClientErrors';
  *
  * A TransferRecord is one transfer, made of a transaction on each chain:
  * { id, from, to, hathorTokenId, nextTokenId, amount, receiveAmount, bridgeFee, networkFee,
- *   toAddress, toOwn, sentAt, arriveAt, status, sourceTxId, debitedOnSource }. Amounts are strings
- * in base units: amount and the fees in the source chain's, receiveAmount in the destination's.
+ *   toAddress, toOwn, sentAt, arriveAt, usualMs, status, sourceTxId, debitedOnSource }. Amounts
+ * are strings in base units: amount and the fees in the source chain's, receiveAmount in the
+ * destination's. usualMs is how long a transfer usually takes from sent to arrived, when the
+ * bridge knows it.
  * toOwn says the address is the wallet's own, so the transfer arrives here. status is 'pending'
  * or 'arrived' (TRANSFER_STATUS). sourceTxId is the source chain's transaction, which the screens
  * show as the transfer's row; debitedOnSource says the source balance already moved, so a combined

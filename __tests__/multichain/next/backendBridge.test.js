@@ -360,6 +360,17 @@ describe('the bridge through the Hathor Next backend', () => {
       return recordOf(arrived, CONFIG, OWN);
     };
 
+    it('says how long a transfer usually takes: its confirmations at the network pace', () => {
+      expect(readAt(sentAt + 60 * 60000).usualMs).toBe(105000);
+      // One the bridge still holds, long past its confirmations, takes as long as any usually
+      // does, not as long as it has taken.
+      const held = recordOf({ ...arrived, status: 'confirming', confirmations: 213 }, CONFIG, OWN);
+      expect(held.usualMs).toBe(105000);
+      // The backend's own number of confirmations, without the network's block time: 30 s blocks.
+      const pinned = { ...CONFIG, transfer: { ...CONFIG.transfer, mean_block_ms: undefined } };
+      expect(recordOf({ ...arrived, needed: 10 }, pinned, OWN).usualMs).toBe(300000);
+    });
+
     it('keeps the time it arrived, however much later it is read', () => {
       const soon = readAt(sentAt + 3 * 60000);
       const later = readAt(sentAt + 60 * 60000);

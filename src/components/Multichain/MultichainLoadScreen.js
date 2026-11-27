@@ -34,9 +34,11 @@ export const LOAD_EXIT_AFTER_MS = 30000;
  * wallet, the wallet's own error screen's last resort. Settings is out of reach here, and a
  * backend that stays down would otherwise keep the wallet shut at every start.
  *
- * Try again needs the Hathor Next keys. They are derived at unlock, so they are missing only when
- * that failed: a passkey wallet's Try again runs the passkey ceremony, and a seed wallet's locks
- * the app, whose PIN derives them and loads Hathor Next again.
+ * Try again needs the Hathor Next keys. They are derived at unlock where the multichain flag is
+ * on, so they are missing when that failed, or when the unlock was on a network whose flag was
+ * off and the wallet then switched to one with a side chain. Without them the button is Unlock: a
+ * passkey wallet's runs the passkey ceremony, and a seed wallet's locks the app, whose PIN derives
+ * them and loads Hathor Next again.
  *
  * While it loads, the spinner shows alone. A load ends, in Hathor Next or in its failure; should
  * the spinner still show after LOAD_EXIT_AFTER_MS, Disconnect side chain shows under it too, so
@@ -86,7 +88,7 @@ export function MultichainLoadScreen() {
           containerStyle={styles.button}
           textStyle={styles.buttonText}
           onPress={tryAgain}
-          title={t`Try again`}
+          title={keysReady ? t`Try again` : t`Unlock`}
         />
         <SimpleButton
           containerStyle={styles.button}

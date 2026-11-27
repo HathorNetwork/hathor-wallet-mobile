@@ -30,6 +30,20 @@ export function arrivingText(arriveAt, now = Date.now()) {
 }
 
 /**
+ * Whether a transfer on its way has every confirmation it needs on Hathor Network, and Hathor Next
+ * still hasn't taken it to mint: the bridge holds it, and when it arrives is unknown. Its backend
+ * may say why (the transfer's reason).
+ *
+ * @param {{ stage: string, confirmations: number, needed: number }|undefined} progress
+ * @returns {boolean}
+ */
+export function waitsForNext(progress) {
+  return ['pushed', 'confirming'].includes(progress?.stage)
+    && progress.needed > 0
+    && progress.confirmations >= progress.needed;
+}
+
+/**
  * Where a transfer on its way is, when its bridge follows it: the burn's confirmations on Hathor
  * Network, then the mint on Hathor Next.
  *
@@ -40,6 +54,9 @@ export function progressText(progress) {
   switch (progress?.stage) {
     case 'pushed':
     case 'confirming': {
+      if (waitsForNext(progress)) {
+        return t`Confirmed on Hathor Network, waiting for Hathor Next`;
+      }
       const { confirmations, needed } = progress;
       return t`Confirming ${confirmations} of ${needed} on Hathor Network`;
     }

@@ -18,6 +18,7 @@ import {
   progressText,
   renderChainValue,
   transferTitle,
+  waitsForNext,
 } from './TransferRow';
 import { CHAIN, CHAIN_NAME, NEXT_COLORS, nextExplorerTxUrl } from '../../multichain/chains';
 import { selectSideChainConfig } from '../../multichain/gating';
@@ -102,7 +103,14 @@ export const TransferDetailsModal = ({ transfer, symbol, hathorDecimalPlaces, on
   const bridgeFee = onSource(BigInt(transfer.bridgeFee));
   const networkFee = onSource(BigInt(transfer.networkFee));
   const arrivedAt = moment(transfer.arriveAt).format('lll');
-  const usualMinutes = Math.max(1, Math.round((transfer.arriveAt - transfer.sentAt) / 60000));
+  // Held by the bridge with its confirmations done: no time to arrive can be given, and the
+  // backend's reason, when it gives one, says why.
+  const held = pending && waitsForNext(transfer.progress);
+  // How long a transfer usually takes, as its bridge says: never the time this one has taken.
+  const usualMinutes = Number.isFinite(transfer.usualMs)
+    ? Math.max(1, Math.round(transfer.usualMs / 60000))
+    : null;
+  const usualText = usualMinutes === null ? null : t`Usually about ${usualMinutes} min`;
 
   return (
     <BackdropModal
@@ -137,8 +145,8 @@ export const TransferDetailsModal = ({ transfer, symbol, hathorDecimalPlaces, on
           status={pending
             ? [
               progressText(transfer.progress),
-              arrivingText(transfer.arriveAt),
-              t`Usually about ${usualMinutes} min`,
+              held ? null : arrivingText(transfer.arriveAt),
+              usualText,
             ].filter(Boolean).join(' · ')
             : t`Done · ${arrivedAt}`}
           pending={pending}
@@ -146,7 +154,9 @@ export const TransferDetailsModal = ({ transfer, symbol, hathorDecimalPlaces, on
           link={explorerLinkOf(transfer.to, mintTxId)}
         />
         )}
-        {failed && transfer.reason && <Text style={styles.value}>{transfer.reason}</Text>}
+        {(failed || held) && transfer.reason && (
+          <Text style={styles.value}>{transfer.reason}</Text>
+        )}
         <Text style={styles.label}>{t`To`}</Text>
         {transfer.toOwn && <Text style={styles.value}>{t`Your ${destination} address`}</Text>}
         <CopyClipboard text={transfer.toAddress} textStyle={styles.copyText} />
